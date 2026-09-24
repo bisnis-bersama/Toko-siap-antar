@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A YUDI THEA | Servis Handphone</title>
+
+<style>
+
+/* ===== RESET ===== */
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Segoe UI',sans-serif;
+}
+
+body{
+background:#f4f6f9;
+color:#333;
+}
+
+/* ===== COLOR ===== */
+:root{
+--primary:#1faa59;
+--primary-dark:#178a47;
+--accent:#ff9800;
+--accent-dark:#e68900;
+}
+
+/* HEADER */
+.header{
+background:white;
+display:flex;
+align-items:center;
+justify-content:center;
+height:420px;
+position:relative;
+}
+
+.header img{
+width:90%;
+max-width:480px;
+}
+
+.header::after{
+content:"";
+position:absolute;
+bottom:0;
+left:0;
+width:100%;
+height:4px;
+background:linear-gradient(90deg,var(--primary),var(--accent));
+}
+
+/* HERO */
+.hero{
+padding:40px 20px;
+text-align:center;
+background:white;
+}
+
+.hero h2{
+color:var(--primary);
+font-size:32px !important;
+font-weight:700;
+margin-bottom:20px;
+}
+
+.hero p{
+color:#666;
+margin-bottom:20px;
+}
+
+/* BUTTON */
+.btn-modern{
+display:inline-block;
+padding:14px 22px;
+border-radius:40px;
+color:white;
+text-decoration:none;
+font-weight:600;
+box-shadow:0 6px 15px rgba(0,0,0,0.25);
+}
+.btn-cart{
+margin-top:auto;
+width:100%;
+border:none;
+background:#1faa59;
+color:white;
+padding:8px;
+border-radius:6px;
+}
+.btn-green{
+background:linear-gradient(145deg,#16a34a,#15803d);
+}
+
+.btn-orange{
+background:linear-gradient(145deg,#f59e0b,#ea580c);
+}
+
+/* MENU */
+.menu-pro{
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+gap:12px;
+margin-top:25px;
+}
+
+.menu-pro a{
+padding:12px 20px;
+background:linear-gradient(145deg,#16a34a,#15803d);
+color:white;
+border-radius:40px;
+text-decoration:none;
+}
+
+/* PRODUK */
+.produk-container{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:12px;
+padding:15px;
+max-width:900px;
+margin:auto;
+}
+
+.produk-card{
+background:white;
+border-radius:12px;
+overflow:hidden;
+box-shadow:0 6px 18px rgba(0,0,0,0.12);
+display:flex;
+flex-direction:column;
+height:100%;
+}
+
+.produk-img{
+width:100%;
+height:150px;
+object-fit:cover;
+}
+
+.produk-info{
+padding:10px;
+display:flex;
+flex-direction:column;
+flex:1;
+}
+
+.produk-nama{
+font-size:14px;
+font-weight:600;
+}
+
+.produk-harga{
+color:#ff6a00;
+font-weight:bold;
+margin:6px 0;
+}
+
+.btn-cart{
+width:100%;
+border:none;
+background:#1faa59;
+color:white;
+padding:8px;
+border-radius:6px;
+}
+
+/* CART FLOAT */
+#cartFloat{
+position:fixed;
+bottom:25px;
+right:20px;
+background:linear-gradient(145deg,#16a34a,#15803d);
+color:white;
+padding:12px 18px;
+border-radius:50px;
+font-weight:600;
+box-shadow:0 8px 20px rgba(0,0,0,0.25);
+cursor:pointer;
+z-index:9999;
+}
+
+#cartCount{
+background:#ff9800;
+padding:3px 8px;
+border-radius:50px;
+font-size:12px;
+}
+.search-box{
+  width:100%;
+  max-width:500px;
+  margin:15px auto;
+  text-align:center;
+}
+
+.search-box input{
+  width:90%;
+  padding:10px 15px;
+  border-radius:25px;
+  border:2px solid #16a34a;
+  outline:none;
+  font-size:14px;
+  box-shadow:0 3px 8px rgba(0,0,0,0.1);
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- FLOAT CART -->
+<div id="cartFloat" onclick="window.location.href='cart.html'">
+🛒 <span id="cartCount">0</span>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+
+<div class="slider">
+
+<img src="slide1.png" class="slide">
+<img src="slide2.png" class="slide">
+<img src="slide3.png" class="slide">
+<img src="slide4.png" class="slide">
+<img src="slide5.png" class="slide">
+
+</div>
+
+</div>
+<div class="running-text">
+  <marquee behavior="scroll" direction="left" scrollamount="10">
+  🚀 Selamat Datang di TOKO SIAP ANTAR • Ready Stock LCD, Baterai, IC, Speaker & Sparepart Handphone • Harga Grosir & Bergaransi • Bisa COD / Transfer • Pengiriman Super Cepat Estimasi 1 Jam Area Kabupaten Majalengka • Order Sekarang Kami Siap Antar ke Lokasi Anda! 🔥
+  </marquee>
+</div>
+<!-- HERO -->
+<div class="hero">
+<h2>Solusi Cepat Saat Stok Sparepart Darurat</h2>
+<p>Ready Stock • Harga Grosir • Bergaransi</p>
+
+<a href="#" class="btn-modern btn-green">
+ ⚡ Pengiriman Super Cepat 🚀
+</a>
+
+<a href="#" class="btn-modern btn-orange">
+Estimasi 1 Jam Pesanan Sampai Ke lokasi
+</a>
+
+</div>
+<div class="search-box">
+  <input type="text" id="searchInput" placeholder="🔎 Cari produk... (LCD, baterai, IC)">
+</div>
+<!-- MENU -->
+<div class="menu-pro">
+<a href="lcdhp.html?kategori=LCD HP">📱LCD HP</a>
+<a href="battery.html?kategori=BATTERY HP">🔋 BATTERY HP</a>
+<a href="sparepart.html?kategori=SPAREPART">🧩 TOOLS & SPAREPART</a>
+<a href="flexi.html?kategori=FLEXI">🚧 FLEXIBLE</a>
+<a href="cart.html">🛒 KERANJANG</a>
+</div>
+
+<!-- PRODUK -->
+<div id="produkList" class="produk-container"></div>
+
+<!-- FOOTER -->
+<div style="text-align:center;margin-top:30px">
+
+📍 Lokasi Toko Kami<br><br>
+
+<a href="https://www.google.com/maps?q=-6.883831,108.302788"
+target="_blank"
+class="btn-modern btn-orange">
+Buka di Google Maps
+</a>
+
+<br><br>
+
+WA: 082319264646
+
+</div>
+
+<!-- SCRIPT CART -->
+<script>
+function updateCartCount(){
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let total=0;
+
+cart.forEach(p=>{
+total+=p.qty;
+});
+
+document.getElementById("cartCount").innerText=total;
+}
+
+updateCartCount();
+
+function tambahKeranjang(nama,harga,foto){
+
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+let index = cart.findIndex(p => p.nama === nama);
+
+if(index >= 0){
+
+cart[index].qty += 1;
+
+}else{
+
+cart.push({
+nama:nama,
+harga:Number(harga),
+foto:foto,
+qty:1
+});
+
+}
+
+localStorage.setItem("cart", JSON.stringify(cart));
+
+updateCartCount();
+
+popup("Produk yang anda pilih sudah dimasukkan ke keranjang");
+}
+function popup(pesan){
+
+let box=document.createElement("div");
+
+box.style.position="fixed";
+box.style.top="0";
+box.style.left="0";
+box.style.width="100%";
+box.style.height="100%";
+box.style.background="rgba(0,0,0,0.5)";
+box.style.display="flex";
+box.style.alignItems="center";
+box.style.justifyContent="center";
+box.style.zIndex="9999";
+
+box.innerHTML=`
+<div style="background:white;padding:20px;border-radius:12px;width:80%;max-width:300px;text-align:center">
+<h3 style="color:#15803d;margin-top:0">TOKO SIAP ANTAR</h3>
+<p>${pesan}</p>
+<button onclick="this.parentElement.parentElement.remove()" style="background:#15803d;color:white;border:none;padding:10px 20px;border-radius:6px">OK</button>
+</div>
+`;
+
+document.body.appendChild(box);
+
+}
+function updateCartCount(){
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let total=0;
+
+cart.forEach(p=>{
+total+=p.qty;
+});
+
+document.getElementById("cartCount").innerText=total;
+}
+
+updateCartCount();
+function convertDrive(link){
+
+if(!link) return "";
+
+let id = "";
+
+if(link.includes("id=")){
+id = link.split("id=")[1];
+}
+
+if(link.includes("/d/")){
+id = link.split("/d/")[1].split("/")[0];
+}
+
+return "https://drive.google.com/uc?export=view&id="+id;
+
+}
+</script>
+
+<!-- SCRIPT PRODUK GOOGLE SHEET -->
+<script>
+
+const sheetURL =
+"https://docs.google.com/spreadsheets/d/19AfachAS9ZyNuut61RB1wqyI_AI6BsmNT1SIWhmSIn8/gviz/tq?sheet=MEMBER";
+
+fetch(sheetURL)
+.then(res => res.text())
+.then(data => {
+
+const json = JSON.parse(data.substring(47).slice(0,-2));
+
+let rows = json.table.rows;
+
+let html = "";
+
+rows.forEach(r=>{
+
+let nama = r.c[1]?.v;
+let harga = r.c[7]?.v;
+let foto = convertDrive(r.c[9]?.v);
+if(!nama) return;
+
+html += `
+<div class="produk-card">
+
+<div class="produk-img"
+style="
+height:120px;
+display:flex;
+align-items:center;
+justify-content:center;
+background:linear-gradient(135deg,#16a34a,#f97316);
+">
+
+<a href="${foto}" target="_blank"
+style="
+text-decoration:none;
+color:white;
+font-weight:bold;
+font-size:18px;
+background:rgba(0,0,0,0.2);
+padding:10px 16px;
+border-radius:8px;
+">
+📷 Lihat Foto
+</a>
+
+</div>
+
+<div class="produk-info">
+
+<div class="produk-nama">${nama}</div>
+
+<div class="produk-harga">
+Rp ${Number(harga).toLocaleString()}
+</div>
+
+<button class="btn-cart"
+onclick="tambahKeranjang('${nama}','${harga}','${foto}')">
++ Keranjang
+</button>
+
+</div>
+</div>
+`;
+
+});
+
+document.getElementById("produkList").innerHTML = html;
+
+});
+
+</script>
+<script>
+document.getElementById("searchInput").addEventListener("keyup", function() {
+  let filter = this.value.toLowerCase();
+  let products = document.querySelectorAll(".produk-card");
+
+  products.forEach(function(item){
+    let text = item.innerText.toLowerCase();
+    if(text.includes(filter)){
+      item.style.display="block";
+    }else{
+      item.style.display="none";
+    }
+  });
+});
+</script>
+<!-- POPUP PROMOSI TOKO SIAP ANTAR -->
+
+<div id="promoPopup">
+
+<div class="promo-box">
+
+<img src="logo2.png" class="logo">
+
+<h2>Belanja Sparepart HP Lebih Mudah!</h2>
+
+<p class="promo-text">
+🔥 Ready Stock LCD, Battery & Sparepart HP<br>
+💰 Harga Grosir & Bergaransi<br>
+⚡ Pengiriman Super Cepat Estimasi 1 Jam<br>
+📍 Area Kabupaten Majalengka
+</p>
+<audio id="laguPromo" preload="auto">
+<source src="promo.mp3" type="audio/mpeg">
+</audio>
+<button onclick="playLagu()" class="btn-belanja">
+🎵 Dengarkan Promo
+</button>
+<div class="promo-highlight">
+🚀 Pesan Sekarang – Kami Siap Antar ke Lokasi Anda!
+</div>
+
+<button onclick="tutupPromo()" class="btn-belanja">
+Mulai Belanja
+</button>
+
+<button onclick="tutupPromo()" class="btn-close">
+Tutup
+</button>
+
+</div>
+
+</div>
+
+
+<style>
+
+#promoPopup{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.6);
+display:flex;
+align-items:center;
+justify-content:center;
+z-index:9999;
+animation:fadeIn 0.5s;
+}
+
+.promo-box{
+background:white;
+width:90%;
+max-width:400px;
+padding:25px;
+border-radius:15px;
+text-align:center;
+box-shadow:0 10px 25px rgba(0,0,0,0.3);
+}
+
+.logo{
+width:200px;
+margin-bottom:10px;
+}
+
+.promo-box h2{
+font-size:20px;
+margin-bottom:15px;
+color:#0aa34f;
+}
+
+.promo-text{
+font-size:15px;
+line-height:1.6;
+color:#444;
+}
+
+.promo-highlight{
+background:#0aa34f;
+color:white;
+padding:10px;
+border-radius:8px;
+margin:15px 0;
+font-weight:bold;
+}
+
+.btn-belanja{
+background:linear-gradient(45deg,#0aa34f,#0c7f3e);
+color:white;
+border:none;
+padding:12px;
+border-radius:25px;
+font-size:16px;
+cursor:pointer;
+width:100%;
+margin-bottom:10px;
+}
+
+.btn-close{
+background:#ddd;
+border:none;
+padding:8px 20px;
+border-radius:20px;
+cursor:pointer;
+}
+
+@keyframes fadeIn{
+from{opacity:0;}
+to{opacity:1;}
+}
+.slider{
+text-align:center;
+}
+
+.slide{
+width:320px;
+display:none;
+margin:auto;
+}
+
+.slide.active{
+display:block;
+  }
+</style>
+
+
+<script>
+
+function tutupPromo(){
+document.getElementById("promoPopup").style.display="none";
+}
+
+</script>
+<script>
+function playLagu(){
+var lagu = document.getElementById("laguPromo");
+lagu.currentTime = 0;
+lagu.play();
+}
+</script>
+  <script>
+
+let slides=document.querySelectorAll(".slide");
+let index=0;
+
+function showSlide(){
+
+slides.forEach(s=>s.classList.remove("active"));
+
+slides[index].classList.add("active");
+
+index++;
+
+if(index>=slides.length){
+index=0;
+}
+
+}
+
+setInterval(showSlide,3000);
+
+showSlide();
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Metode Pembayaran</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{font-family:Arial;background:#f2f2f2;margin:0;padding:20px}
+.card{background:white;padding:20px;border-radius:12px;
+box-shadow:0 2px 8px rgba(0,0,0,0.1);margin-bottom:15px}
+button{width:100%;padding:15px;border:none;
+border-radius:8px;margin-top:10px;font-weight:bold;cursor:pointer}
+.green{background:#15803d;color:white}
+.gray{background:#9ca3af;color:white}
+h2{text-align:center}
+</style>
+</head>
+
+<body>
+
+<h2>Pilih Metode Pembayaran</h2>
+
+<div class="card">
+  <button class="green" onclick="pilihCOD()">
+    💵 COD (Bayar di Tempat)
+  </button>
+
+  <button class="green" onclick="tampilkanTransfer()">
+    🏦 Transfer Bank
+  </button>
+
+  <div id="opsiTransfer" style="display:none;">
+    <button onclick="pilihTransfer('BRI','0046 0105 1342 504','INA KHOZINATUL ASROR')">
+      Bank BRI
+    </button>
+
+    <button onclick="pilihTransfer('DANA','082319264646','YUDI ALIYUDIN')">
+      Bank DANA
+    </button>
+  </div>
+
+  <button class="gray" onclick="kembali()">
+    ⬅ Kembali ke Keranjang
+  </button>
+</div>
+
+<script>
+
+function kembali(){
+  window.location.href = "cart.html";
+}
+
+function tampilkanTransfer(){
+  document.getElementById("opsiTransfer").style.display="block";
+}
+
+function pilihCOD(){
+
+  alert("Maaf, metode COD sementara belum bisa digunakan.\nSilakan pilih Transfer.");
+
+  return; // berhenti di sini, tidak lanjut kirim WA
+}
+
+function pilihTransfer(bank,norek,nama){
+  kirimWA("TRANSFER",bank,norek,nama);
+}
+
+async function kirimWA(metode,bank,norek,nama){
+
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+  if(cart.length===0){
+    alert("Keranjang kosong");
+    return;
+  }
+// ================= AMBIL DATA LOKASI =================
+let checkoutData = JSON.parse(localStorage.getItem("checkoutData")) || {};
+
+let lat = checkoutData.lat || "-";
+let lng = checkoutData.lng || "-";
+let desa = checkoutData.desa || "-";
+let kecamatan = checkoutData.kecamatan || "-";
+let ongkir = checkoutData.ongkir || 0;
+let noWa = checkoutData.noWa || "-";
+
+let linkMaps =
+"https://www.google.com/maps/search/?api=1&query="
++ lat + "," + lng;
+
+  let total=0;
+  let totalItem=0;
+  let detail="";
+
+  cart.forEach(p=>{
+    total+=p.harga*p.qty;
+    totalItem+=p.qty;
+
+    detail+="• "+p.nama+"\n"+
+            "  Qty: "+p.qty+"\n"+
+            "  Harga: Rp"+Math.round(p.harga*p.qty).toLocaleString("id-ID")+"\n\n";
+  });
+
+  let now = new Date();
+  let orderId = Date.now();
+
+  let tanggal = now.toLocaleDateString("id-ID");
+  let jam = now.toLocaleTimeString("id-ID");
+
+  let infoPembayaran="";
+
+  if(metode==="COD"){
+    infoPembayaran="Metode Pembayaran : COD (Bayar di Tempat)\n";
+  }else{
+    infoPembayaran=
+    "Metode Pembayaran : TRANSFER\n\n"+
+    "Bank "+bank+"\n"+
+    norek+"\n"+
+    "a.n "+nama+"\n\n"+
+    "Status : MENUNGGU TRANSFER\n";
+  }
+let totalBayar = total + ongkir;
+  let pesan =
+"━━━━━━━━━━━━━━━━━━━━\n"+
+"🧾 INVOICE PESANAN\n"+
+"━━━━━━━━━━━━━━━━━━━━\n\n"+
+
+"📌 ID Sistem : #"+orderId+"\n"+
+"📅 Tanggal   : "+tanggal+"\n"+
+"🕒 Jam       : "+jam+"\n\n"+
+"👤 Nomor Pembeli:\n"+noWa+"\n\n"+
+"━━━━━━━━━━━━━━━━━━━━\n"+
+"📦 DETAIL PRODUK\n"+
+"━━━━━━━━━━━━━━━━━━━━\n\n"+
+detail+
+
+"━━━━━━━━━━━━━━━━━━━━\n"+
+"💰 RINCIAN PEMBAYARAN\n"+
+"━━━━━━━━━━━━━━━━━━━━\n\n"+
+"Total Item   : "+totalItem+" pcs\n"+
+"Total Barang : Rp"+Math.round(total).toLocaleString("id-ID")+"\n"+
+"Ongkir       : Rp"+Math.round(ongkir).toLocaleString("id-ID")+"\n"+
+"────────────────────\n"+
+"TOTAL BAYAR  : Rp"+Math.round(totalBayar).toLocaleString("id-ID")+"\n\n"+
+"━━━━━━━━━━━━━━━━━━━━\n"+
+"📍 LOKASI PENGIRIMAN\n"+
+"━━━━━━━━━━━━━━━━━━━━\n"+
+"Desa       : "+desa+"\n"+
+"Kecamatan  : "+kecamatan+"\n"+
+linkMaps+"\n\n"+
+
+"━━━━━━━━━━━━━━━━━━━━\n"+
+"💳 METODE PEMBAYARAN\n"+
+"━━━━━━━━━━━━━━━━━━━━\n"+
+infoPembayaran+
+
+"━━━━━━━━━━━━━━━━━━━━";
+
+  window.open(
+    "https://wa.me/62895707182299?text="+encodeURIComponent(pesan),
+    "_blank"
+  );
+}
+
+</script>
+
+</body>
+</html>
