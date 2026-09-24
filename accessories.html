@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Daftar Sparepart Member</title>
+<title>Daftar Accessories Member</title>
 <style>
 body{margin:0;font-family:Arial;background:#f5f5f5}
 header{position:sticky;top:0;background:#16a34a;color:#fff;padding:14px;text-align:center;font-weight:bold;font-size:20px}
@@ -52,13 +52,13 @@ margin-left:5px;
 <div id="cartFloat" onclick="window.location.href='cart.html'">
 🛒 Keranjang <span id="cartCount">0</span>
 </div>
-<header>DAFTAR SPAREPART MEMBER</header>
-<input id="search" placeholder="Cari Sparepart..." onkeyup="filterProduk()">
+<header>DAFTAR ACCESSORIES MEMBER</header>
+<input id="search" placeholder="Cari Accessories..." onkeyup="filterProduk()">
 <div class="az" id="az"></div>
 <div id="list">Memuat data...</div>
 
 <script>
-const url="https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=SPAREPART";
+const url="https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=ACCESSORIES";
 let data=[];
 
 fetch(url).then(r=>r.text()).then(t=>{
@@ -87,7 +87,7 @@ fetch(url).then(r=>r.text()).then(t=>{
 }).catch(()=>{
 
  document.getElementById("list").innerHTML=
- "<center>Data tidak dapat dimuat.<br>Pastikan sheet SPAREPART dapat diakses.</center>";
+ "<center>Data tidak dapat dimuat.<br>Pastikan sheet ACCESSORIES dapat diakses.</center>";
 
 });
 
@@ -115,7 +115,7 @@ onclick="simpanKeKeranjang('${p.nama}',${p.harga},this)">
 onclick="beliSekarang('${p.nama}',${p.harga},this)">
 🛍️ Beli
 </button>
-<a class="btn wa" target="_blank" href="https://wa.me/6282319264646?text=${encodeURIComponent('Halo Admin, saya ingin bertanya tentang Sparepart '+p.nama)}">💬 WA</a>
+<a class="btn wa" target="_blank" href="https://wa.me/6282319264646?text=${encodeURIComponent('Halo Admin, saya ingin bertanya tentang Accessories '+p.nama)}">💬 WA</a>
 </div></div>`;
  });
  document.getElementById("list").innerHTML=h;

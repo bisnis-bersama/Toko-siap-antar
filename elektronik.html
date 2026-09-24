@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Jual Beli Elektronik</title>
+<style>
+
+/* =========================
+   UMUM
+========================= */
+.sticky-top{
+position:sticky;
+top:0;
+z-index:1000;
+background:#f4f4f4;
+padding-bottom:10px;
+}
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+font-family:Arial,sans-serif;
+background:#f4f4f4;
+}
+
+header{
+background:#16a34a;
+color:#fff;
+text-align:center;
+padding:20px;
+}
+
+.top{
+display:flex;
+justify-content:center;
+align-items:center;
+gap:12px;
+flex-wrap:wrap;
+padding:15px;
+}
+
+a.btn{
+background:#ff9800;
+color:#fff;
+text-decoration:none;
+padding:10px 18px;
+border-radius:8px;
+font-weight:bold;
+}
+
+#cari{
+width:600px;
+max-width:95%;
+padding:12px;
+border:2px solid #16a34a;
+border-radius:8px;
+display:block;
+margin:0 auto 20px;
+}
+
+.card{
+background:#fff;
+border-radius:10px;
+overflow:hidden;
+box-shadow:0 2px 8px rgba(0,0,0,.15);
+display:flex;
+flex-direction:column;
+}
+
+.card{
+background:#fff;
+border-radius:10px;
+overflow:hidden;
+box-shadow:0 2px 8px rgba(0,0,0,.15);
+display:flex;
+flex-direction:column;
+height:100%;
+}
+
+.info{
+padding:8px;
+display:flex;
+flex-direction:column;
+height:100%;
+}
+
+.info h3{
+font-size:18px;
+margin:0 0 6px;
+}
+
+.info p{
+font-size:14px;
+margin:2px 0;
+}
+
+.footer-card{
+margin-top:auto;
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:8px;
+padding-top:8px;
+}
+
+.harga{
+font-size:22px;
+font-weight:bold;
+color:#ff6a00;
+margin:0;
+}
+
+.chat{
+width:120px;
+height:40px;
+display:flex;
+justify-content:center;
+align-items:center;
+background:#16a34a;
+color:#fff;
+text-decoration:none;
+border-radius:8px;
+font-size:14px;
+font-weight:bold;
+}
+/* =========================
+   MODE HP
+   3 KOLOM
+========================= */
+
+@media (max-width:768px){
+.sticky-top{
+position:sticky;
+top:0;
+z-index:1000;
+background:#f4f4f4;
+padding-bottom:10px;
+}
+
+header{
+padding:12px;
+}
+
+header h2{
+font-size:20px;
+}
+
+header p{
+font-size:12px;
+}
+
+.top{
+gap:8px;
+padding:10px;
+}
+
+a.btn{
+font-size:12px;
+padding:8px 10px;
+}
+
+#cari{
+width:95%;
+padding:10px;
+}
+
+#list{
+display:grid;
+grid-template-columns:repeat(3,minmax(0,1fr));
+gap:8px;
+padding:8px;
+}
+
+.card img{
+height:100px;
+}
+
+.info{
+padding:5px;
+}
+
+.info h3{
+font-size:11px;
+line-height:1.2;
+}
+
+.info p{
+font-size:9px;
+line-height:1.2;
+}
+
+.harga{
+font-size:13px;
+}
+
+.chat{
+display:flex;
+justify-content:center;
+align-items:center;
+width:100%;
+height:32px;
+background:#16a34a;
+color:#fff;
+text-decoration:none;
+border-radius:8px;
+font-size:11px;
+font-weight:bold;
+margin-top:8px;
+transition:.2s;
+}
+
+.chat:hover{
+background:#12863d;
+}
+}
+
+
+/* =========================
+   DESKTOP
+   4 KOLOM
+========================= */
+
+@media (min-width:769px) and (max-width:1279px){
+.sticky-top{
+position:sticky;
+top:0;
+z-index:1000;
+background:#f4f4f4;
+padding-bottom:10px;
+}
+
+#list{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:20px;
+padding:20px;
+}
+
+.card img{
+height:230px;
+}
+
+.info{
+padding:12px;
+}
+
+.info h3{
+font-size:18px;
+}
+
+.info p{
+font-size:14px;
+}
+
+.harga{
+font-size:22px;
+}
+
+.chat{
+display:flex;
+justify-content:center;
+align-items:center;
+width:100%;
+height:40px;
+background:#16a34a;
+color:#fff;
+text-decoration:none;
+border-radius:8px;
+font-size:14px;
+font-weight:bold;
+margin-top:10px;
+transition:.2s;
+}
+
+.chat:hover{
+background:#12863d;
+}
+}
+
+
+/* =========================
+   LAPTOP / LAYAR LANDSCAPE
+   OTOMATIS MENGIKUTI LEBAR
+========================= */
+
+@media (min-width:1280px){
+
+#list{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+gap:20px;
+padding:20px;
+}
+
+.card img{
+height:240px;
+}
+
+.info h3{
+font-size:18px;
+}
+
+.info p{
+font-size:14px;
+}
+
+.harga{
+font-size:22px;
+}
+
+.chat{
+display:flex;
+justify-content:center;
+align-items:center;
+width:100%;
+height:40px;
+background:#16a34a;
+color:#fff;
+text-decoration:none;
+border-radius:8px;
+font-size:14px;
+font-weight:bold;
+margin-top:10px;
+transition:.2s;
+}
+
+.chat:hover{
+background:#12863d;
+}
+.sticky-top{
+position:sticky;
+top:0;
+z-index:1000;
+background:#f4f4f4;
+padding-bottom:10px;
+}
+}
+</style>
+</head>
+<body>
+<div class="sticky-top">
+
+<header>
+<h2>📱 Jual Beli Elektronik</h2>
+<p>Marketplace Elektronik - Toko Siap Antar</p>
+</header>
+
+<div class="top">
+<a class="btn" href="https://forms.gle/9G2KmNJ14a3jKpyK8" target="_blank">📝 Upload produck jualan anda di sini</a>
+<a class="btn" href="index.html">🏠 Kembali ke menu utama</a>
+</div>
+
+<input id="cari" placeholder="Cari elektronik...">
+
+</div>
+
+<div id="list"></div>
+
+<script>
+const sheet="https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=Produck%20Elektronik";
+
+function drive(url){
+
+if(!url) return "";
+
+let id="";
+
+if(url.includes("/file/d/")){
+id=url.split("/file/d/")[1].split("/")[0];
+}else if(url.includes("/d/")){
+id=url.split("/d/")[1].split("/")[0];
+}else if(url.includes("id=")){
+id=url.split("id=")[1].split("&")[0];
+}else{
+return url;
+}
+
+return "https://drive.google.com/thumbnail?id="+id+"&sz=w1000";
+}
+
+fetch(sheet).then(r=>r.text()).then(t=>{
+ const j=JSON.parse(t.substring(47).slice(0,-2));
+ const rows=j.table.rows;
+ let out="";
+ rows.forEach(r=>{
+
+const c=r.c||[];
+// Hilangkan produk yang sudah lebih dari 7 hari
+const timestamp = c[0]?.v;
+
+if(timestamp){
+    const tglUpload = new Date(timestamp);
+    const sekarang = new Date();
+
+    const selisihHari = Math.floor(
+        (sekarang - tglUpload) / (1000 * 60 * 60 * 24)
+    );
+
+    if(selisihHari >= 7){
+        return; // Jangan tampilkan produk
+    }
+}
+
+// Urutan sesuai Google Form
+const nama = c[1]?.v || "";
+const desk = c[2]?.v || "";
+const harga = parseInt(c[3]?.v || 0);
+const alamat = c[4]?.v || "";
+const wa = (c[5]?.v || "").toString().replace(/^0/,"62");
+const foto = drive(c[6]?.v || "");
+
+out += `
+<div class="card">
+
+<img src="${foto}" onerror="this.src='logo2.png'">
+
+<div class="info">
+
+<h3>${nama}</h3>
+
+<p>${desk}</p>
+
+<p>📍 ${alamat}</p>
+
+<div class="harga">
+Rp ${harga.toLocaleString('id-ID')}
+</div>
+
+<a class="chat"
+target="_blank"
+href="https://wa.me/${wa}?text=${encodeURIComponent('Halo, saya tertarik dengan '+nama)}">
+💬 Chat Penjual
+</a>
+
+</div>
+
+</div>`;  
+});  
+ document.getElementById("list").innerHTML=out;  
+});  
+  
+document.getElementById("cari").onkeyup=function(){
+ const f=this.value.toLowerCase();
+ document.querySelectorAll(".card").forEach(x=>{
+   x.style.display=x.innerText.toLowerCase().includes(f)?"block":"none";
+ });
+}
+</script>
+</body>
+</html>

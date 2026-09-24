@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Login Premium</title>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
+<style>
+*{
+  box-sizing:border-box;
+}
+
+body{
+  background: radial-gradient(circle at top,#1e3a8a,#0f172a);
+  font-family:'Segoe UI', sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  margin:0;
+  padding:20px;
+  color:white;
+}
+
+.box{
+  background:#1e293b;
+  width:100%;
+  max-width:650px;          /* Lebih besar lagi */
+  padding:80px 55px;        /* Padding besar */
+  border-radius:28px;
+  text-align:center;
+  box-shadow:0 40px 100px rgba(0,0,0,0.9);
+  transform:scale(1.05);    /* Sedikit dibesarkan */
+}
+
+h2{
+  font-size:36px;           /* Judul besar */
+  margin-bottom:15px;
+}
+
+.badge{
+  font-size:18px;
+  margin-bottom:20px;
+  color:#22c55e;
+}
+
+.desc{
+  font-size:18px;
+  margin-bottom:40px;
+  line-height:1.6;
+  color:#cbd5e1;
+}
+
+input{
+  padding:22px;
+  margin:18px 0;
+  width:100%;
+  border-radius:16px;
+  border:none;
+  font-size:18px;
+  background:#334155;
+  color:white;
+}
+
+button{
+  padding:22px;
+  width:100%;
+  border:none;
+  background:linear-gradient(90deg,#2563eb,#1d4ed8);
+  color:white;
+  border-radius:16px;
+  font-size:20px;
+  cursor:pointer;
+  margin-top:30px;
+  font-weight:bold;
+}
+.wa-btn{
+  display:block;
+  margin-top:25px;
+  padding:22px;
+  background:linear-gradient(90deg,#16a34a,#15803d);
+  color:#ffffff;
+  text-decoration:none;
+  border-radius:16px;
+  font-weight:700;              /* Lebih tebal */
+  font-size:20px;               /* Lebih besar */
+  letter-spacing:0.5px;
+  text-shadow:0 2px 6px rgba(0,0,0,0.4);  /* Biar kontras */
+  box-shadow:0 8px 25px rgba(0,0,0,0.4);
+}
+
+.footer-note{
+  font-size:15px;
+  margin-top:25px;
+  color:#94a3b8;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>🔒 Khusus Member</h2>
+
+<div class="desc">
+Daftar Member Gratis
+</div>
+
+<input type="email" id="email" placeholder="Email">
+<input type="password" id="password" placeholder="Password">
+
+<button onclick="login()">Masuk Sekarang</button>
+
+<a href="https://wa.me/6282319264646?text=Halo%20saya%20ingin%20Daftar%20Menjadi%20Member%20LCD%20Tempo"
+   target="_blank"
+   class="wa-btn">
+   💬 Klik Untuk Mendapatkan<br>
+ ID Member
+</a>
+
+<div class="footer-note">
+Akun hanya dibuat oleh admin
+</div>
+
+</div>
+
+<script>
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBrSk6ZyoxvKAEQFFkEHMT-PenWSSsFSdQ",
+  authDomain: "ic-reference-teknisi.firebaseapp.com",
+  projectId: "ic-reference-teknisi",
+  storageBucket: "ic-reference-teknisi.firebasestorage.app",
+  messagingSenderId: "376962038194",
+  appId: "1:376962038194:web:fa8475c2e097f5e0548cab"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+function login(){
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  if(email === "" || password === ""){
+    alert("Isi email dan password dulu");
+    return;
+  }
+
+  auth.signInWithEmailAndPassword(email, password)
+  .then(function(){
+    window.location.href = "upload.html";
+  })
+  .catch(function(error){
+    alert("Akun tidak ditemukan / salah password");
+  });
+}
+
+</script>
+
+</body>
+</html>

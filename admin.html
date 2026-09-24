@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Admin TOKO SIAP ANTAR</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+
+body{
+font-family:Arial;
+background:#f1f5f9;
+margin:0;
+padding:20px;
+}
+
+header{
+background:#15803d;
+color:white;
+padding:15px;
+text-align:center;
+border-radius:10px;
+font-weight:bold;
+}
+
+.card{
+background:white;
+padding:15px;
+margin-top:15px;
+border-radius:10px;
+box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+.big{
+font-size:22px;
+font-weight:bold;
+color:#15803d;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+}
+
+td,th{
+padding:8px;
+border-bottom:1px solid #ddd;
+font-size:14px;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+📊 ADMIN TOKO SIAP ANTAR
+</header>
+
+<div class="card">
+Total Pelanggan<br>
+<div class="big" id="totalPelanggan">0</div>
+</div>
+
+<div class="card">
+Total Transaksi<br>
+<div class="big" id="totalTransaksi">0</div>
+</div>
+
+<div class="card">
+🏆 Pelanggan Paling Aktif
+<div id="topUser"></div>
+</div>
+
+<div class="card">
+📋 Data Pelanggan
+<table id="tabel"></table>
+</div>
+
+<script>
+
+let db = JSON.parse(localStorage.getItem("dbPelanggan")) || {};
+
+let totalPelanggan = Object.keys(db).length;
+let totalTransaksi = 0;
+
+let topUser = "";
+let topJumlah = 0;
+
+for(let no in db){
+
+totalTransaksi += db[no];
+
+if(db[no] > topJumlah){
+topJumlah = db[no];
+topUser = no;
+}
+
+}
+
+document.getElementById("totalPelanggan").innerText = totalPelanggan;
+document.getElementById("totalTransaksi").innerText = totalTransaksi;
+
+document.getElementById("topUser").innerHTML =
+"No WA : "+topUser+"<br>"+
+"Transaksi : "+topJumlah;
+
+function level(trans){
+
+if(trans < 3) return "Member Baru";
+if(trans < 7) return "Silver";
+if(trans < 15) return "Gold";
+
+return "Prioritas";
+
+}
+
+let tabel = document.getElementById("tabel");
+
+tabel.innerHTML =
+"<tr><th>No WA</th><th>Transaksi</th><th>Level</th></tr>";
+
+for(let no in db){
+
+tabel.innerHTML +=
+"<tr>"+
+"<td>"+no+"</td>"+
+"<td>"+db[no]+"</td>"+
+"<td>"+level(db[no])+"</td>"+
+"</tr>";
+
+}
+
+</script>
+
+</body>
+</html>

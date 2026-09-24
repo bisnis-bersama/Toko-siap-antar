@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="id">
+<head><!-- PLAYABLE_TOUCH_PATCH_V1 --><script>
+(function() {
+  if (window.__playableTouchPatchInstalled) return;
+  window.__playableTouchPatchInstalled = true;
+  var origAdd = EventTarget.prototype.addEventListener;
+  var blockedTypes = { touchstart: 1, touchmove: 1, wheel: 1 };
+  EventTarget.prototype.addEventListener = function(type, listener, options) {
+    if (blockedTypes[type]) {
+      if (options === undefined || options === null) {
+        options = { passive: true };
+      } else if (typeof options === 'boolean') {
+        options = { capture: options, passive: true };
+      } else {
+        options = Object.assign({}, options, { passive: true });
+      }
+    }
+    return origAdd.call(this, type, listener, options);
+  };
+})();
+</script><script>window.Intl=window.Intl||{};Intl.t=function(s){return(Intl._locale&&Intl._locale[s])||s;};</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard - Legends Portal - Realtime + ShopeePay FIX</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif;}
+body{background:#0b1220;color:#fff;}
+header{height:70px;background:#182235;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:2px solid #ffd54a;position:sticky;top:0;z-index:100;}
+header h2{color:#ffd54a;font-size:22px;}
+header button{padding:10px 18px;border:none;border-radius:8px;background:#ff4444;color:#fff;font-weight:bold;cursor:pointer;}
+.container{display:flex;min-height:calc(100vh - 70px);}
+.sidebar{position:fixed;top:70px;left:-260px;width:240px;height:calc(100vh - 70px);background:#182235;padding:15px;overflow-y:auto;transition:.3s;z-index:999;}
+.sidebar.show{left:0;}
+#overlay{position:fixed;top:70px;left:0;width:100%;height:calc(100vh - 70px);background:rgba(0,0,0,.45);display:none;z-index:998;}
+#overlay.show{display:block;}
+.sidebar button{width:100%;padding:14px;margin-bottom:10px;border:none;border-radius:10px;background:#22314f;color:#fff;font-size:15px;cursor:pointer;text-align:left;}
+.sidebar button:hover{background:#2563eb;}
+.sidebar button.active{background:#ffd54a;color:#000;font-weight:bold;}
+.content{width:100%;flex:1;padding:20px;overflow:auto;}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;margin-bottom:20px;}
+.card{background:#182235;border-radius:15px;padding:20px;}
+.card small{display:block;color:#bbb;margin-bottom:8px;}
+.card h1{color:#ffd54a;font-size:30px;}
+.section{background:#182235;border-radius:15px;padding:20px;margin-top:20px;}
+table{width:100%;border-collapse:collapse;margin-top:15px;}
+th{background:#22314f;padding:12px;}
+td{padding:12px;border-bottom:1px solid #333;text-align:center;}
+input,select{width:100%;padding:10px;border:none;border-radius:8px;margin:5px 0;background:#0b1220;color:#fff;border:1px solid #333;}
+.btn{padding:10px 15px;border:none;border-radius:8px;cursor:pointer;font-weight:bold;}
+#btnMenu{padding:8px 12px;font-size:20px;}
+.green{background:#00b894;color:white;}
+.red{background:#e74c3c;color:white;}
+.blue{background:#2563eb;color:white;}
+.yellow{background:#ffd54a;color:black;}
+.purple{background:#9b59b6;color:white;}
+.orange{background:#ff6b00;color:white;}
+.hidden{display:none;}
+.progress{height:18px;background:#0b1220;border-radius:10px;overflow:hidden;margin-top:8px;border:1px solid #333;}
+.progress-bar{height:100%;transition:width .5s;text-align:center;font-size:11px;line-height:18px;font-weight:bold;color:#000;}
+.checkbox{width:18px;height:18px;cursor:pointer;}
+.onlineDot{width:10px;height:10px;background:#00ff88;border-radius:50%;display:inline-block;box-shadow:0 0 8px #00ff88;animation:blink 1s infinite}
+.offlineDot{width:10px;height:10px;background:#555;border-radius:50%;display:inline-block}
+.badge{padding:4px 8px;border-radius:12px;font-size:9px;font-weight:900;border:1px solid #333;display:inline-flex;align-items:center;gap:4px}
+.badge.online{background:#0f2a0f;color:#00ff88;border-color:#1a5a1a}
+.badge.offline{background:#222;color:#888}
+.badge.playing{background:#2a1a00;color:#ffcc00;border-color:#5a4a1a}
+.badge.pending{background:#2a2510;color:#ffd54a;border-color:#5a4a1a}
+.badge.shopeepay{background:#2a1a00;color:#ff6b00;border-color:#5a3a1a}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@media (max-width:768px){
+header{padding:8px;gap:6px;}header h2{font-size:18px;line-height:1.2;}
+header>div{gap:5px !important;}
+#btnRefresh,#btnNotif,#btnLogout{padding:8px 10px;font-size:13px;}
+#adminName{display:none;}.card-grid{grid-template-columns:1fr;}.content{padding:10px;}.section{padding:12px;}
+table{display:block;overflow-x:auto;white-space:nowrap;}input,select{font-size:14px;}
+.sidebar{width:220px;left:-220px;}.sidebar.show{left:0;}
+}
+</style>
+</head>
+<body>
+<header>
+<button id="btnMenu" class="btn blue">☰</button>
+<h2>👑 Legends Portal Admin</h2>
+<div style="display:flex;align-items:center;gap:12px;">
+<button class="btn blue" id="btnRefresh">🔄 Refresh</button>
+<button class="btn yellow" id="btnNotif">🔔 0</button>
+<span id="adminName">Administrator</span>
+<button id="btnLogout">Logout</button>
+</div>
+</header>
+<div class="container">
+<div id="overlay"></div>
+<div class="sidebar">
+<button class="active" data-page="dashboard" id="menuDashboard">🏠 Dashboard</button>
+<button data-page="deposit" id="menuDeposit">📥 Deposit</button>
+<button data-page="withdraw" id="menuWithdraw">📤 Withdraw</button>
+<button data-page="shopeepay" id="menuShopeepay" style="background:#ff6b00;color:#fff;border:2px solid #ffd54a;">📱 ShopeePay <span id="shopeepayBadge" style="background:#fff;color:#ff6b00;padding:2px 6px;border-radius:10px;font-size:10px;margin-left:6px">0</span></button>
+<button data-page="player" id="menuPlayer">👥 Player <span id="onlineBadge" style="background:#00ff88;color:#000;padding:2px 6px;border-radius:10px;font-size:10px;margin-left:6px">0 ON</span></button>
+<button data-page="laba" id="menuLaba">💹 Laba Admin</button>
+<button data-page="kapasitas" id="menuKapasitas">🔥 Kapasitas Firebase</button>
+<button data-page="bonus" id="menuBonus" style="background:#9b59b6;color:#fff;border:2px solid #ffd54a;">🎁 Bonus Global Pool</button>
+</div>
+<div class="content">
+
+<div id="pageDashboard">
+<div class="card-grid"><div class="card"><small>Total Player</small><h1 id="totalPlayer">0</h1><small id="totalPlayerOnline" style="color:#00ff88">0 online</small></div><div class="card" style="border-left:4px solid #00ff88"><small>🟢 Player Online Sekarang</small><h1 id="totalOnline" style="color:#00ff88">0</h1><small id="onlineInfo">Aktif &lt;5 menit</small></div><div class="card"><small>Deposit Pending</small><h1 id="depositPending">0</h1></div><div class="card"><small>Withdraw Pending</small><h1 id="withdrawPending">0</h1></div></div>
+<div class="card-grid" style="margin-top:15px;">
+  <div class="card" style="border-left:4px solid #ff6b00;background:#2a1a00;"><small>📱 ShopeePay Pending</small><h1 id="dashShopeepayPending" style="color:#ff6b00;">0</h1><small id="dashShopeepayInfo">Menunggu MacroDroid</small></div>
+  <div class="card" style="border-left:4px solid #ff6b6b;background:#2a1820;"><small>🔥 Saldo Kekalahan (Global Pool)</small><h1 id="dashGlobalPool" style="color:#ff6b6b;">Rp0</h1><small id="dashGlobalInfo">Loading...</small></div>
+  <div class="card" style="border-left:4px solid #00ff88;background:#102a20;"><small>💰 Laba Admin REALTIME</small><h1 id="dashLabaReal" style="color:#00ff88;">Rp0</h1><small id="dashLabaPct">0%</small></div>
+</div>
+<div class="section"><h3>Aktivitas Hari Ini - Realtime</h3><p id="aktivitasText">Menunggu data realtime...</p></div>
+</div>
+
+<div id="pageShopeepay" class="hidden">
+<div class="card-grid">
+  <div class="card" style="border-left:4px solid #ff6b00;background:#2a1a00;"><small>📱 Total Notif Masuk</small><h1 id="spTotal" style="color:#ff6b00;">0</h1><small>Dari MacroDroid</small></div>
+  <div class="card" style="border-left:4px solid #ffd54a;background:#2a2510;"><small>⏳ Pending</small><h1 id="spPending" style="color:#ffd54a;">0</h1><small id="spPendingNominal">Rp0</small></div>
+  <div class="card" style="border-left:4px solid #00ff88;background:#102a20;"><small>✅ Sudah Approve</small><h1 id="spApproved" style="color:#00ff88;">0</h1><small>Uang masuk ke player</small></div>
+  <div class="card" style="border-left:4px solid #00b894;background:#102a20;"><small>💰 Total Nominal Pending</small><h1 id="spTotalRp" style="color:#00b894;">Rp0</h1><small>Butuh approval</small></div>
+</div>
+<div class="section" style="border:2px solid #ff6b00;">
+<h3 style="color:#ff6b00;">📱 ShopeePay Notifikasi - Realtime dari MacroDroid</h3>
+<p style="font-size:12px;color:#8aa0c7;margin:8px 0;">MacroDroid kirim notifikasi Shopee -> Firestore <b>shopee_notifs</b> -> Muncul di sini. Pilih player tujuan, klik APPROVE, saldo otomatis masuk.</p>
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin:12px 0;">
+<input type="text" id="cariShopeepay" placeholder="🔍 Cari isi notif / nominal..." style="flex:2;min-width:200px">
+<select id="filterShopeepay" style="flex:1;max-width:160px"><option value="all">Semua</option><option value="pending">Pending Saja</option><option value="approved">Approved Saja</option></select>
+<button class="btn orange" onclick="document.getElementById('shopeeSound').play()">🔊 Test Suara</button>
+</div>
+<table><thead><tr><th>Waktu</th><th>Isi Notifikasi (RAW)</th><th>Nominal</th><th>Status</th><th>Player Tujuan</th><th>Aksi</th></tr></thead><tbody id="shopeepayTable"><tr><td colspan="6">Menunggu data dari MacroDroid... Pastikan MacroDroid ON (diperbolehkan)</td></tr></tbody></table>
+</div>
+</div>
+
+<div id="pageDeposit" class="hidden">
+<div class="card-grid"><div class="card"><small>Pending</small><h1 id="depPending">0</h1></div><div class="card"><small>Success</small><h1 id="depSuccess">0</h1></div><div class="card"><small>Reject</small><h1 id="depReject">0</h1></div><div class="card"><small>Total Deposit</small><h1 id="depNominal">Rp0</h1></div></div>
+<div class="section">
+<h3>Kelola Deposit - Realtime</h3>
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
+<input type="text" id="cariDeposit" placeholder="Cari Nickname / Email" style="flex:2;">
+<select id="filterDeposit" style="flex:1;"><option value="Semua">Semua</option><option value="Pending">Pending</option><option value="Success">Success</option><option value="Reject">Reject</option></select>
+</div>
+<table><thead><tr><th>Tanggal</th><th>Player (Email)</th><th>Nominal</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="depositTable"><tr><td colspan="5">Memuat realtime...</td></tr></tbody></table>
+</div>
+</div>
+
+<div id="pageWithdraw" class="hidden">
+<div class="section">
+<h3>Daftar Withdraw - Realtime</h3>
+<table><thead><tr><th>Player (Email)</th><th>Nominal</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="withdrawTable"><tr><td colspan="4">Memuat realtime...</td></tr></tbody></table>
+</div>
+</div>
+
+<div id="pagePlayer" class="hidden">
+<div class="section">
+<h3>Data Player - Realtime <span style="font-size:11px;color:#888">🟢 Online = aktif &lt;5 menit</span></h3>
+<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+<input type="text" id="cariPlayer" placeholder="🔍 Cari player..." style="flex:1;min-width:180px">
+<select id="filterOnline" style="width:160px"><option value="all">Semua</option><option value="online">🟢 Online Saja</option><option value="offline">⚫ Offline</option><option value="playing">🎮 Sedang Main</option></select>
+</div>
+<table><thead><tr><th>STATUS</th><th>Nickname</th><th>Email</th><th>Coin</th><th>Game</th><th>Last Aktif</th><th>Aksi</th></tr></thead><tbody id="playerTable"><tr><td colspan="7">Memuat...</td></tr></tbody></table>
+</div></div>
+
+<div id="pageLaba" class="hidden">
+<div class="card-grid">
+  <div class="card" style="border-left:4px solid #ff6b6b;background:#2a1820;"><small>🔥 Saldo Kekalahan (Global Pool)</small><h1 id="globalPoolDisplay" style="color:#ff6b6b;">Rp0</h1><small id="globalPoolInfo">0 spin</small></div>
+  <div class="card" style="border-left:4px solid #00ff88;background:#102a20;"><small>💰 Laba Admin REALTIME</small><h1 id="labaReal" style="color:#00ff88;">Rp0</h1><small id="labaRealPct">0%</small></div>
+  <div class="card" style="border-left:4px solid #ffd54a;background:#2a2510;"><small>🎰 Total Spin Global</small><h1 id="totalSpinGlobal" style="color:#ffd54a;">0</h1><small id="totalBetGlobalInfo">Total BET Rp0</small></div>
+  <div class="card" style="border-left:4px solid #00b894;"><small>📊 Pool vs Laba</small><h1 id="poolVsLaba" style="color:#00b894;">0%</h1><small id="poolVsLabaInfo">Pool sisa</small></div>
+</div>
+<div class="card-grid">
+  <div class="card" style="border-left:4px solid #00b894;"><small>Total Deposit Success</small><h1 id="labaDepo" style="color:#00b894;">Rp0</h1><small id="labaDepoCount">0x</small></div>
+  <div class="card" style="border-left:4px solid #e74c3c;"><small>Total Withdraw Success</small><h1 id="labaWd" style="color:#e74c3c;">Rp0</h1><small id="labaWdCount">0x</small></div>
+  <div class="card" style="border-left:4px solid #ffd54a;"><small>Saldo Coin Beredar</small><h1 id="labaSaldo">0</h1><small id="labaPlayerCount">0 player</small></div>
+  <div class="card" style="border-left:4px solid #2563eb;background:#1a2a4a;"><small>Laba Kotor</small><h1 id="labaKotor">Rp0</h1><small>Hutang ke player</small></div>
+</div>
+<div class="section" style="border:2px solid #ffd54a;">
+<h3 style="color:#ffd54a;">💰 Kalkulasi Laba Admin</h3>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:15px;">
+  <div style="background:#0b1220;padding:15px;border-radius:10px;">
+    <p style="font-size:13px;color:#8aa0c7;line-height:1.8;">Laba Bersih = Depo - WD - Saldo<br><b style='color:#00ff88;'>Laba Realtime:</b><br>BET 200-1k = 20%<br>BET 1.2k-10k = 15%<br>BET 12k-100k = 10%<br>BET 120k-1jt = 5% VIP</p>
+    <div style="background:#22314f;padding:12px;border-radius:8px;margin-top:10px;text-align:center;"><small>Laba Bersih</small><h1 id="labaBersih" style="color:#ffd54a;font-size:28px;">Rp0</h1></div>
+    <div style="background:#102a20;padding:12px;border-radius:8px;margin-top:10px;text-align:center;border:2px solid #00ff88;"><small>💰 LABA REALTIME GAME</small><h1 id="labaBersihReal" style="color:#00ff88;font-size:28px;">Rp0</h1><small id="labaBersihRealInfo">Tier 20%-5%</small></div>
+  </div>
+  <div style="background:#0b1220;padding:15px;border-radius:10px;">
+    <h4>Detail Lengkap</h4>
+    <div style="font-size:13px;line-height:2;">
+      <div style="display:flex;justify-content:space-between;"><span>Total Deposit:</span><b id="detDepoAll">Rp0</b></div>
+      <div style="display:flex;justify-content:space-between;"><span>Total Withdraw:</span><b id="detWdAll">Rp0</b></div>
+      <div style="display:flex;justify-content:space-between;"><span>Deposit Pending:</span><b id="detDepoPen" style="color:#ffd54a;">Rp0</b></div>
+      <div style="display:flex;justify-content:space-between;"><span>Withdraw Pending:</span><b id="detWdPen" style="color:#ffd54a;">Rp0</b></div>
+      <hr style="margin:10px 0;border-color:#333;">
+      <div style="display:flex;justify-content:space-between;"><span>Total Player:</span><b id="detTotalPlayer">0</b></div>
+      <div style="display:flex;justify-content:space-between;"><span>Online:</span><b id="detOnline" style="color:#00ff88">0</b></div>
+      <div style="display:flex;justify-content:space-between;"><span>Total Coin + Diamond:</span><b id="detTotalCoinDia">0</b></div>
+      <hr style="margin:10px 0;border-color:#333;">
+      <div style="display:flex;justify-content:space-between;"><span style="color:#ff6b6b;">Global Pool:</span><b id="detGlobalPool" style="color:#ff6b6b;">Rp0</b></div>
+      <div style="display:flex;justify-content:space-between;"><span style="color:#00ff88;">Laba Realtime:</span><b id="detLabaReal" style="color:#00ff88;">Rp0</b></div>
+      <div style="display:flex;justify-content:space-between;"><span>Total Spin:</span><b id="detTotalSpin">0</b></div>
+      <div style="display:flex;justify-content:space-between;"><span>Total BET:</span><b id="detTotalBetGlobal">Rp0</b></div>
+    </div>
+  </div>
+</div>
+<div style="margin-top:15px;background:#0b1220;padding:12px;border-radius:8px;display:flex;gap:10px;">
+  <button class="btn blue" onclick="updateCounters()">🔄 Refresh</button>
+  <button class="btn yellow" onclick="resetGlobalPool()" style="color:#000;">⚠️ Reset Global Pool</button>
+</div>
+</div>
+</div>
+
+<div id="pageKapasitas" class="hidden">
+<div class="card-grid">
+  <div class="card" style="border-left:4px solid #00b894;background:#102a20;"><small>✅ Status Quota</small><h1 id="quotaStatus" style="color:#00ff88;">AMAN</h1><small id="quotaStatusInfo">Semua di bawah 80%</small></div>
+  <div class="card" style="border-left:4px solid #ffd54a;background:#2a2510;"><small>📅 Reset Harian</small><h1 id="quotaReset" style="color:#ffd54a;">00:00 WIB</h1><small>Firestore reset tiap jam 00:00 PST (14:00 WIB)</small></div>
+  <div class="card" style="border-left:4px solid #2563eb;background:#1a2a4a;"><small>💾 Project</small><h1 style="color:#2563eb;font-size:20px;">game-demo-4db7f</h1><small>Spark Plan (Gratis)</small></div>
+  <div class="card" style="border-left:4px solid #ff6b6b;background:#2a1820;"><small>⚠️ Estimasi Biaya Jika Lebih</small><h1 id="quotaCost" style="color:#ff6b6b;">Rp0</h1><small>$0.06 / 100k reads</small></div>
+</div>
+<div class="section" style="border:2px solid #00ff88;">
+<h3 style="color:#00ff88;">🔥 Kapasitas Firebase Gratis (Spark) - Realtime Kontrol</h3>
+<p style="font-size:12px;color:#8aa0c7;margin:8px 0;">Disediakan Google gratis per hari, Terpakai dihitung dari game + admin, Sisa = Disediakan - Terpakai.</p>
+<table><thead><tr><th>Jenis</th><th>Disediakan (Gratis)</th><th>Terpakai (Hari Ini)</th><th>Sisa</th><th>% Pakai</th><th>Status</th></tr></thead><tbody id="kapasitasTable"><tr><td colspan="6">Memuat...</td></tr></tbody></table>
+<div style="margin-top:15px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+  <div style="background:#0b1220;padding:12px;border-radius:10px;">
+    <h4 style="color:#ffd54a;">📊 Detail Pemakaian Hari Ini</h4>
+    <div style="font-size:12px;line-height:2;margin-top:8px;">
+      <div style="display:flex;justify-content:space-between;"><span>Spin Game (Write Pool):</span><b id="kapSpinWrite">0</b></div>
+      <div style="display:flex;justify-content:space-between;"><span>Spin Game (Read Pool):</span><b id="kapSpinRead">0</b></div>
+      <div style="display:flex;justify-content:space-between;"><span>Admin Dashboard (Reads):</span><b id="kapAdminRead">0</b></div>
+      <div style="display:flex;justify-content:space-between;"><span>Login Player (Reads):</span><b id="kapPlayerRead">0</b></div>
+      <hr style="margin:8px 0;border-color:#333;">
+      <div style="display:flex;justify-content:space-between;"><span>Total Dokumen:</span><b id="kapTotalDocs">0</b></div>
+      <div style="display:flex;justify-content:space-between;"><span>Estimasi Storage:</span><b id="kapStorage">0 MB / 1024 MB</b></div>
+    </div>
+  </div>
+  <div style="background:#0b1220;padding:12px;border-radius:10px;">
+    <h4 style="color:#00ff88;">💡 Cara Kontrol Biar Tidak Jebol</h4>
+    <ul style="font-size:12px;color:#8aa0c7;line-height:1.8;margin-left:15px;margin-top:8px;">
+      <li><b style="color:#fff;">Reads 50k/hari:</b> Admin jangan buka terus</li>
+      <li><b style="color:#fff;">Writes 20k/hari:</b> 1 spin = 1 write</li>
+      <li><b style="color:#fff;">Reset:</b> Otomatis reset tiap 14:00 WIB</li>
+    </ul>
+    <div style="margin-top:10px;display:flex;gap:8px;">
+      <button class="btn blue" onclick="refreshKapasitas()">🔄 Refresh Kapasitas</button>
+      <button class="btn yellow" onclick="resetKapasitasCounter()" style="color:#000;">♻️ Reset Counter Lokal</button>
+    </div>
+  </div>
+</div>
+</div>
+<div class="section"><h3 style="color:#ffd54a;">📈 Grafik Pemakaian (Estimasi)</h3><div id="kapasitasBars" style="margin-top:12px;"></div></div>
+</div>
+
+<div id="pageBonus" class="hidden">
+<div class="card-grid">
+  <div class="card" style="border-left:4px solid #ff6b6b;background:#2a1820;"><small>🔥 Global Pool</small><h1 id="bonusGlobalPool" style="color:#ff6b6b;">Rp0</h1><small id="bonusGlobalInfo">Bisa dipakai bonus</small></div>
+  <div class="card" style="border-left:4px solid #9b59b6;background:#1a102a;"><small>🎁 Total Bonus Hari Ini</small><h1 id="bonusTotalToday" style="color:#9b59b6;">Rp0</h1><small id="bonusCountToday">0x pemberian</small></div>
+  <div class="card" style="border-left:4px solid #ffd54a;background:#2a2510;"><small>✅ Player Terpilih</small><h1 id="bonusSelectedCount" style="color:#ffd54a;">0</h1><small id="bonusSelectedInfo">Belum pilih</small></div>
+  <div class="card" style="border-left:4px solid #00ff88;background:#102a20;"><small>💰 Total Bagi Manual</small><h1 id="bonusTotalPreview" style="color:#00ff88;">Rp0</h1><small id="bonusPreviewInfo">Isi nominal dulu</small></div>
+</div>
+<div class="section" style="border:2px solid #9b59b6;">
+<h3 style="color:#9b59b6;">🎁 Bagi Bonus - Pilih Player Pakai Ceklis</h3>
+<div style="background:#0b1220;padding:12px;border-radius:10px;margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+  <div>
+    <label style="font-size:12px;">💰 Nominal Total Bonus:</label>
+    <input type="number" id="bonusTotalInput" placeholder="100000" style="font-size:18px;font-weight:bold;border:2px solid #9b59b6;" oninput="hitungPembagian()">
+    <div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;">
+      <button class="btn" style="background:#333;font-size:11px;" onclick="setTotal(50000)">50k</button>
+      <button class="btn" style="background:#333;font-size:11px;" onclick="setTotal(100000)">100k</button>
+      <button class="btn" style="background:#333;font-size:11px;" onclick="setTotal(500000)">500k</button>
+      <button class="btn" style="background:#333;font-size:11px;" onclick="setTotal(1000000)">1jt</button>
+    </div>
+  </div>
+  <div>
+    <button class="btn purple" style="width:100%;padding:14px;font-size:14px;" onclick="kirimBonusCeklis()">🎁 KIRIM BONUS ATOMIK (FIX)</button>
+    <button class="btn blue" style="width:100%;margin-top:6px;" onclick="hitungPembagian()">📊 Hitung Ulang</button>
+    <div style="background:#102a20;padding:8px;border-radius:6px;margin-top:8px;font-size:12px;line-height:1.8;">
+      <div style="display:flex;justify-content:space-between;"><span>Total Rugi Terpilih:</span><b id="totalRugiTerpilih" style="color:#ff6b6b;">Rp0</b></div>
+      <div style="display:flex;justify-content:space-between;"><span>Total Bonus Dibagi:</span><b id="totalBonusDibagi" style="color:#00ff88;">Rp0</b></div>
+      <div style="display:flex;justify-content:space-between;"><span>Sisa Pool Setelah Bagi:</span><b id="sisaPoolSetelah">Rp0</b></div>
+    </div>
+    <div id="bonusLog" style="margin-top:8px;font-size:10px;color:#888;max-height:80px;overflow-y:auto;background:#000;padding:6px;border-radius:6px"></div>
+  </div>
+</div>
+<div style="margin-top:12px;background:#0b1220;border-radius:10px;padding:10px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+    <h4 style="color:#ffd54a;font-size:13px;">📋 Daftar Player + Rating Kekalahan + Ceklis</h4>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <input type="text" id="searchPlayerBonus" placeholder="Cari nickname..." style="width:140px;padding:6px;">
+      <button class="btn yellow" style="font-size:10px;padding:6px 10px;" onclick="toggleSelectAll(true)">✅ Semua</button>
+      <button class="btn" style="background:#333;font-size:10px;padding:6px 10px;" onclick="toggleSelectAll(false)">❌ Batal</button>
+      <select id="filterBonusOnline" style="width:110px;padding:6px;font-size:10px"><option value="all">Semua</option><option value="online">🟢 Online</option></select>
+    </div>
+  </div>
+  <table><thead><tr><th style="width:60px;"><input type="checkbox" id="checkAll" class="checkbox" onchange="toggleSelectAll(this.checked)"> Semua</th><th>Rank</th><th>Player</th><th>Status</th><th>Saldo</th><th>Rugi</th><th>Rating %</th><th>Dapat Bonus</th></tr></thead><tbody id="bonusCeklisTable"><tr><td colspan="8">Memuat player...</td></tr></tbody></table>
+</div>
+</div>
+<div class="section"><h3 style="color:#9b59b6;">📜 Riwayat Bonus Hari Ini</h3><table><thead><tr><th>Waktu</th><th>Player</th><th>Nominal</th><th>Tipe</th><th>Sisa Pool</th></tr></thead><tbody id="bonusHistoryTable"><tr><td colspan="5">Belum ada bonus</td></tr></tbody></table></div>
+</div>
+
+</div>
+</div>
+
+<datalist id="playerList"></datalist>
+<audio id="shopeeSound" src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3?filename=notification-112506.mp3"></audio>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+apiKey:"AIzaSyBeTALsF43ij3aAlZjF1XeBjB1gNtaTb2I",
+authDomain:"game-demo-4db7f.firebaseapp.com",
+projectId:"game-demo-4db7f",
+storageBucket:"game-demo-4db7f.firebasestorage.app",
+messagingSenderId:"405381506143",
+appId:"1:405381506143:web:da63f34a24f01e4f0367ea"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+function isPlayerOnline(p){
+  if(p.isOnline===true) return true;
+  let last = p.lastActive?.seconds ? p.lastActive.seconds*1000 : (p.lastActive ? new Date(p.lastActive).getTime() : 0);
+  if(!last && p.lastSeen) last = p.lastSeen?.seconds ? p.lastSeen.seconds*1000 : new Date(p.lastSeen).getTime();
+  if(!last) return false;
+  return (Date.now() - last) < 5*60*1000;
+}
+function lastActiveText(p){
+  let last = p.lastActive?.seconds ? p.lastActive.seconds*1000 : (p.lastActive ? new Date(p.lastActive).getTime() : 0);
+  if(!last) return "-";
+  let diff = Date.now() - last;
+  if(diff<60*1000) return Math.floor(diff/1000)+"d lalu";
+  if(diff<60*60*1000) return Math.floor(diff/60000)+"m lalu";
+  if(diff<24*60*60*1000) return Math.floor(diff/3600000)+"j lalu";
+  return new Date(last).toLocaleDateString('id-ID');
+}
+
+const ADMIN_ID="A", ADMIN_PASSWORD="A";
+const adminName=document.getElementById("adminName");
+if(localStorage.getItem("adminLogin")!=="true"){
+  const id=prompt("ID Admin (A)");
+  const pass=prompt("Password (A)");
+  if(id!==ADMIN_ID || pass!==ADMIN_PASSWORD){
+    alert("Salah, tapi tetap bisa lihat data (mode read-only).");
+  }else{
+    localStorage.setItem("adminLogin","true");
+  }
+}
+adminName.innerText="Administrator";
+document.getElementById("btnRefresh").onclick=()=>{ location.reload(); };
+document.getElementById("btnLogout").onclick=()=>{
+  localStorage.removeItem("adminLogin");
+  localStorage.removeItem("adminLastPage");
+  alert("Logout");
+  location.reload();
+};
+
+const pages={dashboard:"pageDashboard", deposit:"pageDeposit", withdraw:"pageWithdraw", shopeepay:"pageShopeepay", player:"pagePlayer", laba:"pageLaba", kapasitas:"pageKapasitas", bonus:"pageBonus"};
+function hideAll(){ Object.values(pages).forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.add("hidden"); }); document.querySelectorAll(".sidebar button").forEach(b=>b.classList.remove("active")); }
+function showPage(name){
+  hideAll();
+  const pid=pages[name]||pages.dashboard;
+  const pageEl=document.getElementById(pid);
+  if(pageEl) pageEl.classList.remove("hidden");
+  const btn=document.querySelector(`[data-page="${name}"]`);
+  if(btn) btn.classList.add("active");
+  localStorage.setItem("adminLastPage", name);
+  location.hash=name;
+  document.querySelector(".sidebar").classList.remove("show");
+  document.getElementById("overlay").classList.remove("show");
+  if(name==="kapasitas") refreshKapasitas();
+  if(name==="bonus") hitungPembagian();
+  if(name==="shopeepay") renderShopeepayTable();
+}
+document.querySelectorAll(".sidebar button").forEach(btn=>{
+  btn.onclick=()=>showPage(btn.dataset.page);
+});
+document.getElementById("btnMenu").onclick=()=>{ document.querySelector(".sidebar").classList.toggle("show"); document.getElementById("overlay").classList.toggle("show"); };
+document.getElementById("overlay").onclick=()=>{ document.querySelector(".sidebar").classList.remove("show"); document.getElementById("overlay").classList.remove("show"); };
+const lastPage=location.hash.replace("#","") || localStorage.getItem("adminLastPage") || "dashboard";
+showPage(lastPage);
+
+let currentGlobalPool=0;
+db.collection("global").doc("pool").onSnapshot(snap=>{
+  if(!snap.exists) return;
+  const data=snap.data();
+  const pool = Number(data.pool||0);
+  const profit = Number(data.profit||0);
+  const totalBet = Number(data.totalBet||0);
+  const totalSpin = Math.floor(totalBet/200);
+  const pct = totalBet>0 ? (profit/totalBet*100).toFixed(1) : 0;
+  currentGlobalPool=pool;
+  const set=(id,val)=>{ const el=document.getElementById(id); if(el) el.innerText=val; };
+  set("dashGlobalPool","Rp"+pool.toLocaleString("id-ID"));
+  const dashInfo=document.getElementById("dashGlobalInfo"); if(dashInfo) dashInfo.innerText=`${totalSpin.toLocaleString("id-ID")} spin kalah | Pool JP`;
+  const dashLaba=document.getElementById("dashLabaReal"); if(dashLaba) dashLaba.innerText="Rp"+profit.toLocaleString("id-ID");
+  const dashPct=document.getElementById("dashLabaPct"); if(dashPct) dashPct.innerText=`${pct}% | Tier 20%-5%`;
+  const elPool=document.getElementById("globalPoolDisplay"); if(elPool) elPool.innerText="Rp"+pool.toLocaleString("id-ID");
+  const elPoolInfo=document.getElementById("globalPoolInfo"); if(elPoolInfo) elPoolInfo.innerText=`${totalSpin.toLocaleString("id-ID")} spin kalah`;
+  const elLaba=document.getElementById("labaReal"); if(elLaba) elLaba.innerText="Rp"+profit.toLocaleString("id-ID");
+  const elLabaPct=document.getElementById("labaRealPct"); if(elLabaPct) elLabaPct.innerText=`${pct}% | ${totalSpin.toLocaleString("id-ID")} spin`;
+  const elTotalSpin=document.getElementById("totalSpinGlobal"); if(elTotalSpin) elTotalSpin.innerText=totalSpin.toLocaleString("id-ID");
+  const elTotalBet=document.getElementById("totalBetGlobalInfo"); if(elTotalBet) elTotalBet.innerText=`Total BET Rp${totalBet.toLocaleString("id-ID")}`;
+  const elPoolVs=document.getElementById("poolVsLaba"); if(elPoolVs) elPoolVs.innerText=pct+"%";
+  const elBersihReal=document.getElementById("labaBersihReal"); if(elBersihReal) elBersihReal.innerText="Rp"+profit.toLocaleString("id-ID");
+  const detPool=document.getElementById("detGlobalPool"); if(detPool) detPool.innerText="Rp"+pool.toLocaleString("id-ID");
+  const detLaba=document.getElementById("detLabaReal"); if(detLaba) detLaba.innerText="Rp"+profit.toLocaleString("id-ID");
+  const detSpin=document.getElementById("detTotalSpin"); if(detSpin) detSpin.innerText=totalSpin.toLocaleString("id-ID")+" spin";
+  const detBet=document.getElementById("detTotalBetGlobal"); if(detBet) detBet.innerText="Rp"+totalBet.toLocaleString("id-ID");
+  const bonusPool=document.getElementById("bonusGlobalPool"); if(bonusPool) bonusPool.innerText="Rp"+pool.toLocaleString("id-ID");
+  const bonusInfo=document.getElementById("bonusGlobalInfo"); if(bonusInfo) bonusInfo.innerText=`${totalSpin.toLocaleString("id-ID")} spin kalah | Bisa untuk bonus`;
+  const sisaPool=document.getElementById("sisaPoolSetelah"); if(sisaPool) {
+    const totalBonus=Number(document.getElementById("bonusTotalInput")?.value||0);
+    sisaPool.innerText="Rp"+(pool-totalBonus).toLocaleString("id-ID");
+  }
+}, err=>{});
+
+async function resetGlobalPool(){
+  if(!confirm("Yakin reset Global Pool?")) return;
+  if(prompt("Ketik RESET:")!=="RESET") return;
+  try{ await db.collection("global").doc("pool").set({pool:0, profit:0, totalBet:0, lastUpdate:Date.now()}, {merge:true}); alert("Reset!"); }catch(e){ alert("Gagal: "+e); }
+}
+
+const KAPASITAS_KEY="firebase_kapasitas_counter";
+function getKapasitasCounter(){
+  try{
+    let d=JSON.parse(localStorage.getItem(KAPASITAS_KEY));
+    let today=new Date().toDateString();
+    if(!d || d.date!==today) return {date:today, reads:0, writes:0, deletes:0, docs:0};
+    return d;
+  }catch(e){ return {date:new Date().toDateString(), reads:0, writes:0, deletes:0, docs:0}; }
+}
+function incKapasitas(type, n=1){
+  let c=getKapasitasCounter();
+  c[type]=(c[type]||0)+n;
+  localStorage.setItem(KAPASITAS_KEY, JSON.stringify(c));
+}
+function resetKapasitasCounter(){
+  if(confirm("Reset counter lokal hari ini?")){ localStorage.removeItem(KAPASITAS_KEY); refreshKapasitas(); alert("Counter lokal direset!"); }
+}
+async function refreshKapasitas(){
+  let counter=getKapasitasCounter();
+  let totalDocs=0;
+  try{
+    const playersSnap=await db.collection("players").get(); totalDocs+=playersSnap.size;
+    const depoSnap=await db.collection("deposit").get(); totalDocs+=depoSnap.size;
+    const wdSnap=await db.collection("withdraw").get(); totalDocs+=wdSnap.size;
+    const poolSnap=await db.collection("global").doc("pool").get();
+    let poolData=poolSnap.exists?poolSnap.data():{totalBet:0};
+    let totalBet=Number(poolData.totalBet||0);
+    let totalSpinEst=Math.floor(totalBet/200);
+    let writesEst = totalSpinEst + counter.writes;
+    let readsEst = (totalSpinEst*2) + (totalDocs*2) + counter.reads + 100;
+    const quotas=[
+      {jenis:"Firestore Reads", disediakan:50000, terpakai:readsEst, satuan:""},
+      {jenis:"Firestore Writes", disediakan:20000, terpakai:writesEst, satuan:""},
+      {jenis:"Firestore Deletes", disediakan:20000, terpakai:counter.deletes||0, satuan:""},
+      {jenis:"Storage", disediakan:1024, terpakai:Math.ceil(totalDocs*0.05), satuan:" MB"},
+      {jenis:"Total Dokumen", disediakan:1000000, terpakai:totalDocs, satuan:" docs"},
+    ];
+    let html=""; let bars=""; let allSafe=true;
+    quotas.forEach(q=>{
+      let sisa = q.disediakan - q.terpakai; if(sisa<0) sisa=0;
+      let pct = q.disediakan>0 ? (q.terpakai/q.disediakan*100) : 0;
+      let status="AMAN"; let color="#00b894";
+      if(pct>=90){ status="BAHAYA!"; color="#e74c3c"; allSafe=false; }
+      else if(pct>=70){ status="WASPADA"; color="#ffd54a"; }
+      if(q.jenis==="Storage" && pct<5) { status="AMAN"; color="#00b894"; }
+      html+=`<tr><td style="text-align:left"><b>${q.jenis}</b></td><td>${q.disediakan.toLocaleString("id-ID")}${q.satuan}</td><td style="color:#ffd54a;">${q.terpakai.toLocaleString("id-ID")}${q.satuan}</td><td style="color:#00ff88;">${sisa.toLocaleString("id-ID")}${q.satuan}</td><td>${pct.toFixed(1)}%</td><td><span style="background:${color};color:${color==="#ffd54a"?"#000":"#fff"};padding:4px 8px;border-radius:6px;font-size:11px;font-weight:bold;">${status}</span></td></tr>`;
+      bars+=`<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span>${q.jenis}</span><span>${q.terpakai.toLocaleString("id-ID")} / ${q.disediakan.toLocaleString("id-ID")} (${pct.toFixed(1)}%)</span></div><div class="progress"><div class="progress-bar" style="width:${Math.min(pct,100)}%;background:${color};">${pct.toFixed(0)}%</div></div></div>`;
+    });
+    const elTab=document.getElementById("kapasitasTable");
+    if(elTab) elTab.innerHTML=html;
+    const elBar=document.getElementById("kapasitasBars");
+    if(elBar) elBar.innerHTML=bars;
+    const el1=document.getElementById("kapSpinWrite"); if(el1) el1.innerText=totalSpinEst.toLocaleString("id-ID")+" writes";
+    const el2=document.getElementById("kapSpinRead"); if(el2) el2.innerText=(totalSpinEst*2).toLocaleString("id-ID")+" reads";
+    const el3=document.getElementById("kapAdminRead"); if(el3) el3.innerText=(counter.reads||0).toLocaleString("id-ID")+" reads (lokal)";
+    const el4=document.getElementById("kapPlayerRead"); if(el4) el4.innerText=totalDocs.toLocaleString("id-ID")+" docs";
+    const el5=document.getElementById("kapTotalDocs"); if(el5) el5.innerText=totalDocs.toLocaleString("id-ID")+" dokumen";
+    const el6=document.getElementById("kapStorage"); if(el6) el6.innerText=Math.ceil(totalDocs*0.05).toLocaleString("id-ID")+" MB / 1024 MB";
+    let statusEl=document.getElementById("quotaStatus"); let statusInfo=document.getElementById("quotaStatusInfo");
+    if(statusEl){ if(allSafe){ statusEl.innerText="AMAN ✅"; statusEl.style.color="#00ff88"; if(statusInfo) statusInfo.innerText="Semua di bawah 80%, aman"; } else { statusEl.innerText="WASPADA ⚠️"; statusEl.style.color="#ffd54a"; if(statusInfo) statusInfo.innerText="Ada >70%, kurangi spin"; } }
+    let costEl=document.getElementById("quotaCost"); if(costEl){ let overRead=Math.max(0, quotas[0].terpakai - 50000); let overWrite=Math.max(0, quotas[1].terpakai - 20000); let cost = (overRead*0.00006 + overWrite*0.00018); costEl.innerText=cost>0 ? "$"+cost.toFixed(2) : "$0"; }
+    incKapasitas("reads", 4);
+  }catch(e){ const el=document.getElementById("kapasitasTable"); if(el) el.innerHTML=`<tr><td colspan="6">Error: ${e.message}</td></tr>`; }
+}
+
+let playerCache=new Map(), allDepositData=[], allWithdrawData=[], allPlayersData=[], allShopeepayData=[], bonusHistory=[];
+
+function parseShopeeAmount(text){
+  if(!text) return 0;
+  const m = text.match(/Rp\.?\s?([\d\.\,]+)/i) || text.match(/(\d+[\.,]\d+)/);
+  if(!m) return 0;
+  let num = m[1].replace(/\./g,'').replace(/,/g,'');
+  return parseInt(num)||0;
+}
+
+db.collection("shopee_notifs").onSnapshot(snap=>{
+  allShopeepayData=[];
+  snap.forEach(doc=>{
+    const d=doc.data();
+    allShopeepayData.push({id:doc.id, ...d});
+  });
+  allShopeepayData.sort((a,b)=>{
+    const ta = a.createdAt?.seconds ? a.createdAt.seconds : (a.timestamp?.seconds||0);
+    const tb = b.createdAt?.seconds ? b.createdAt.seconds : (b.timestamp?.seconds||0);
+    if(tb!==ta) return tb-ta;
+    return b.id.localeCompare(a.id);
+  });
+  renderShopeepayTable();
+  const pending = allShopeepayData.filter(x=>!x.used).length;
+  const badge=document.getElementById('shopeepayBadge');
+  if(badge) badge.innerText=pending;
+  const dashP=document.getElementById('dashShopeepayPending');
+  if(dashP) dashP.innerText=pending;
+  const dashI=document.getElementById('dashShopeepayInfo');
+  if(dashI) dashI.innerText = pending>0 ? pending+" butuh approve" : "Semua clear";
+  const pendingDepo = allDepositData.filter(x=>x.data.status=="Pending").length;
+  const pendingWd = allWithdrawData.filter(x=>x.data.status=="Pending").length;
+  document.getElementById('btnNotif').innerText = "🔔 "+(pending + pendingDepo + pendingWd);
+  if(snap.docChanges().some(c=>c.type==='added') && !snap.metadata.fromCache){
+    const hasNewPending = snap.docChanges().some(c=>c.type==='added' && !c.doc.data().used);
+    if(hasNewPending){ document.getElementById('shopeeSound').play().catch(()=>{}); }
+  }
+});
+
+function renderShopeepayTable(){
+  const tbody=document.getElementById("shopeepayTable");
+  if(!tbody) return;
+  const keyword=(document.getElementById("cariShopeepay")?.value||"").toLowerCase();
+  const filter=document.getElementById("filterShopeepay")?.value||"all";
+  let filtered=allShopeepayData;
+  if(filter==="pending") filtered=filtered.filter(x=>!x.used);
+  if(filter==="approved") filtered=filtered.filter(x=>x.used);
+  if(keyword) filtered=filtered.filter(x=> (x.raw||"").toLowerCase().includes(keyword) || String(x.amount||"").includes(keyword));
+
+  const totalEl=document.getElementById('spTotal');
+  if(totalEl) totalEl.innerText=allShopeepayData.length;
+  const pendingEl=document.getElementById('spPending');
+  if(pendingEl) pendingEl.innerText=allShopeepayData.filter(x=>!x.used).length;
+  const approvedEl=document.getElementById('spApproved');
+  if(approvedEl) approvedEl.innerText=allShopeepayData.filter(x=>x.used).length;
+  const totalRp = allShopeepayData.filter(x=>!x.used).reduce((a,x)=>a+ (x.amount>0?x.amount:parseShopeeAmount(x.raw||"")),0);
+  const totalRpEl=document.getElementById('spTotalRp');
+  if(totalRpEl) totalRpEl.innerText="Rp"+totalRp.toLocaleString("id-ID");
+  const pendingNom=document.getElementById('spPendingNominal');
+  if(pendingNom) pendingNom.innerText="Rp"+totalRp.toLocaleString("id-ID");
+
+  if(filtered.length===0){ tbody.innerHTML=`<tr><td colspan="6">${allShopeepayData.length===0?"Belum ada notifikasi. Coba kirim ShopeePay 10k dan cek MacroDroid Log harus 200 OK.":"Tidak ada data sesuai filter"}</td></tr>`; return; }
+
+  tbody.innerHTML="";
+  filtered.forEach(item=>{
+    const raw = item.raw || "-";
+    const amount = item.amount && item.amount>0 ? item.amount : parseShopeeAmount(raw);
+    const time = item.createdAt ? (item.createdAt.seconds ? new Date(item.createdAt.seconds*1000).toLocaleString("id-ID") : new Date(item.createdAt).toLocaleString("id-ID")) : (item.timestamp?.seconds ? new Date(item.timestamp.seconds*1000).toLocaleString("id-ID") : "-");
+    const status = item.used ? `<span class="badge online">✅ APPROVED</span>` : `<span class="badge pending">⏳ PENDING</span>`;
+    const playerInput = item.used ? (item.creditedTo ? `<small>${item.creditedToName||item.creditedTo}</small>` : `<small>Sudah approve</small>`) : `<input list="playerList" id="playerFor_${item.id}" placeholder="Ketik nickname..." style="padding:6px;font-size:12px;width:150px">`;
+    const action = item.used ? `<button class="btn" style="background:#333;font-size:11px" onclick="hapusShopeepay('${item.id}')">Hapus</button>` : `<button class="btn green" style="font-size:11px" onclick="approveShopeepay('${item.id}', ${amount})">✅ APPROVE</button> <button class="btn red" style="font-size:11px" onclick="hapusShopeepay('${item.id}')">❌</button>`;
+    tbody.innerHTML+=`<tr><td style="font-size:11px">${time}</td><td style="text-align:left;max-width:280px;word-break:break-word;font-size:12px" title="${raw.replace(/"/g,'&quot;')}">${raw}</td><td style="font-weight:bold;color:#ff6b00">Rp${amount.toLocaleString("id-ID")}</td><td>${status}</td><td>${playerInput}</td><td>${action}</td></tr>`;
+  });
+  const dl=document.getElementById('playerList');
+  if(dl){
+    dl.innerHTML = allPlayersData.map(p=>`<option value="${p.nickname}"></option>`).join('');
+  }
+}
+document.getElementById("cariShopeepay")?.addEventListener("input", renderShopeepayTable);
+document.getElementById("filterShopeepay")?.addEventListener("change", renderShopeepayTable);
+
+async function approveShopeepay(id, amount){
+  const inputEl=document.getElementById(`playerFor_${id}`);
+  const playerQuery = inputEl ? inputEl.value.trim() : "";
+  if(!playerQuery){ alert("Ketik dulu nickname player tujuan!"); return; }
+  let target = allPlayersData.find(p=> p.nickname.toLowerCase()===playerQuery.toLowerCase() || p.nickname.toLowerCase().includes(playerQuery.toLowerCase()));
+  if(!target){ alert("Player tidak ditemukan: "+playerQuery); return; }
+  if(amount<=0){ amount = parseInt(prompt("Nominal tidak terdeteksi, masukkan manual (contoh 10000):","10000")||"0"); if(amount<=0) return; }
+  if(!confirm(`Approve ShopeePay Rp${amount.toLocaleString("id-ID")} untuk ${target.nickname}?`)) return;
+  try{
+    const playerRef=db.collection("players").doc(target.uid);
+    const depositRef=db.collection("deposit").doc();
+    const spRef=db.collection("shopee_notifs").doc(id);
+    await db.runTransaction(async(tx)=>{
+      const pSnap=await tx.get(playerRef);
+      if(!pSnap.exists) throw "Player tidak ada";
+      const coin=Number(pSnap.data().wallet?.coin||0);
+      const spSnap=await tx.get(spRef);
+      if(spSnap.data().used) throw "Sudah diapprove";
+      tx.update(playerRef, {"wallet.coin": coin+amount});
+      tx.set(depositRef, {
+        uid: target.uid,
+        nickname: target.nickname,
+        email: target.email,
+        nominal: amount,
+        status: "Success",
+        credited: true,
+        source: "ShopeePay Auto",
+        shopeepayId: id,
+        raw: allShopeepayData.find(x=>x.id===id)?.raw||"",
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      tx.update(spRef, {
+        used: true,
+        usedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        creditedTo: target.uid,
+        creditedToName: target.nickname,
+        approvedAmount: amount
+      });
+    });
+    alert(`✅ Berhasil! Rp${amount.toLocaleString("id-ID")} masuk ke ${target.nickname}`);
+  }catch(e){ alert("Gagal approve: "+e); }
+}
+async function hapusShopeepay(id){
+  if(!confirm("Hapus notif ShopeePay ini?")) return;
+  await db.collection("shopee_notifs").doc(id).delete();
+}
+
+db.collection("players").onSnapshot(snap=>{
+  playerCache.clear(); allPlayersData=[];
+  let totalCoin=0; let onlineCount=0;
+  snap.forEach(doc=>{
+    const p=doc.data();
+    playerCache.set(doc.id, {email:p.profile?.email||p.email||"-", nickname:p.profile?.nickname||"-"});
+    let online = isPlayerOnline(p);
+    if(online) onlineCount++;
+    allPlayersData.push({
+      uid:doc.id, 
+      nickname:p.profile?.nickname||"-", 
+      email:p.profile?.email||"-", 
+      coin:Number(p.wallet?.coin||0),
+      lastActive:p.lastActive||null,
+      currentGame:p.currentGame||"-",
+      isOnline:online,
+      raw:p
+    });
+    totalCoin+=Number(p.wallet?.coin||0);
+  });
+  allPlayersData.sort((a,b)=>{ if(a.isOnline && !b.isOnline) return -1; if(!a.isOnline && b.isOnline) return 1; return b.coin - a.coin; });
+  const el1=document.getElementById("totalPlayer"); if(el1) el1.innerText=snap.size;
+  const elOnline=document.getElementById("totalOnline"); if(elOnline) elOnline.innerText=onlineCount;
+  const elBadge=document.getElementById("onlineBadge"); if(elBadge) elBadge.innerText=onlineCount+" ON";
+  const elSmall=document.getElementById("totalPlayerOnline"); if(elSmall) elSmall.innerText=onlineCount+" online • "+(snap.size-onlineCount)+" offline";
+  const el3=document.getElementById("labaSaldo"); if(el3) el3.innerText=totalCoin.toLocaleString("id-ID");
+  const el4=document.getElementById("aktivitasText"); if(el4) el4.innerText=`${snap.size} player total, ${onlineCount} online, ${totalCoin.toLocaleString("id-ID")} coin - ${new Date().toLocaleTimeString("id-ID")} (Realtime)`;
+  renderPlayerTable();
+  renderDepositTable(); renderWithdrawTable(); renderShopeepayTable();
+  incKapasitas("reads", snap.size);
+  if(!document.getElementById("pageBonus").classList.contains("hidden")) hitungPembagian();
+});
+
+function renderPlayerTable(){
+  const tbody=document.getElementById("playerTable"); if(!tbody) return;
+  const keyword=(document.getElementById("cariPlayer")?.value||"").toLowerCase();
+  const filterOnline=document.getElementById("filterOnline")?.value||"all";
+  tbody.innerHTML=""; let has=false;
+  allPlayersData.forEach(p=>{
+    if(filterOnline==="online" && !p.isOnline) return;
+    if(filterOnline==="offline" && p.isOnline) return;
+    if(filterOnline==="playing" && p.currentGame==="-") return;
+    const search=`${p.nickname} ${p.email} ${p.uid}`.toLowerCase();
+    if(keyword && !search.includes(keyword)) return;
+    has=true;
+    let statusHtml = p.isOnline ? `<span class="onlineDot"></span> <span class="badge online">ONLINE</span>` : `<span class="offlineDot"></span> <span class="badge offline">OFFLINE</span>`;
+    if(p.currentGame!=="-" && p.isOnline) statusHtml+=`<br><span class="badge playing">🎮 ${p.currentGame}</span>`;
+    tbody.innerHTML+=`<tr style="${p.isOnline?'background:rgba(0,255,136,0.06)':''}"><td>${statusHtml}</td><td style="text-align:left"><b style="color:${p.isOnline?'#00ff88':'#ffd54a'}">${p.nickname}</b></td><td style="text-align:left;font-size:11px">${p.email}</td><td>${p.coin.toLocaleString("id-ID")}</td><td>${p.currentGame}</td><td>${lastActiveText(p.raw)}</td><td><button class="btn blue" style="padding:6px 10px;font-size:11px" onclick="detailPlayer('${p.uid}')">Detail</button></td></tr>`;
+  });
+  if(!has) tbody.innerHTML=`<tr><td colspan="7">Tidak ada player ${filterOnline}</td></tr>`;
+}
+document.getElementById("cariPlayer")?.addEventListener("input", renderPlayerTable);
+document.getElementById("filterOnline")?.addEventListener("change", renderPlayerTable);
+
+db.collection("deposit").orderBy("createdAt","desc").onSnapshot(snap=>{
+  allDepositData=[];
+  snap.forEach(doc=>{ const d=doc.data(); if(d.uid) allDepositData.push({id:doc.id, data:d}); });
+  renderDepositTable(); updateCounters();
+  incKapasitas("reads", snap.size);
+});
+db.collection("withdraw").orderBy("createdAt","desc").onSnapshot(snap=>{
+  allWithdrawData=[];
+  snap.forEach(doc=>{ const d=doc.data(); if(d.uid) allWithdrawData.push({id:doc.id, data:d}); });
+  renderWithdrawTable(); updateCounters();
+  incKapasitas("reads", snap.size);
+});
+db.collection("bonus_history").orderBy("createdAt","desc").limit(30).onSnapshot(snap=>{
+  bonusHistory=[]; snap.forEach(doc=>bonusHistory.push(doc.data()));
+  renderBonusHistory();
+  const total=bonusHistory.reduce((a,b)=>a+Number(b.nominal||0),0);
+  const el1=document.getElementById("bonusTotalToday"); if(el1) el1.innerText="Rp"+total.toLocaleString("id-ID");
+  const el2=document.getElementById("bonusCountToday"); if(el2) el2.innerText=bonusHistory.length+"x pemberian";
+});
+
+function updateCounters(){
+  let depPen=0, depSuc=0, depRej=0, depTot=0, wdPen=0, depSucTot=0, wdSucTot=0;
+  allDepositData.forEach(x=>{ const n=Number(x.data.nominal||0); depTot+=n; if(x.data.status=="Pending") depPen++; else if(x.data.status=="Success"){ depSuc++; depSucTot+=n; } else if(x.data.status=="Reject") depRej++; });
+  allWithdrawData.forEach(x=>{ if(x.data.status=="Pending") wdPen++; if(x.data.status=="Success") wdSucTot+=Number(x.data.nominal||0); });
+  const set=(id,val)=>{ const el=document.getElementById(id); if(el) el.innerText=val; };
+  set("depositPending", depPen); set("withdrawPending", wdPen);
+  set("depPending", depPen); set("depSuccess", depSuc); set("depReject", depRej); set("depNominal","Rp"+depTot.toLocaleString("id-ID"));
+  const spPen = allShopeepayData.filter(x=>!x.used).length;
+  set("btnNotif","🔔 "+(depPen+wdPen+spPen));
+  set("labaDepo","Rp"+depSucTot.toLocaleString("id-ID")); set("labaWd","Rp"+wdSucTot.toLocaleString("id-ID"));
+  const elDepoCount=document.getElementById("labaDepoCount"); if(elDepoCount) elDepoCount.innerText=allDepositData.filter(x=>x.data.status=="Success").length+"x";
+  const elWdCount=document.getElementById("labaWdCount"); if(elWdCount) elWdCount.innerText=allWithdrawData.filter(x=>x.data.status=="Success").length+"x";
+  const elPlayerCount=document.getElementById("labaPlayerCount"); if(elPlayerCount) elPlayerCount.innerText=playerCache.size+" player";
+  db.collection("players").get().then(s=>{
+    let totalCoin=0, totalDia=0; s.forEach(d=>{ totalCoin+=Number(d.data().wallet?.coin||0); totalDia+=Number(d.data().wallet?.diamond||0); });
+    const kotor=depSucTot - wdSucTot; const bersih=depSucTot - wdSucTot - totalCoin;
+    const elKotor=document.getElementById("labaKotor"); if(elKotor) elKotor.innerText="Rp"+kotor.toLocaleString("id-ID");
+    const el=document.getElementById("labaBersih"); if(el){ el.innerText="Rp"+bersih.toLocaleString("id-ID"); el.style.color=bersih>=0?"#00b894":"#e74c3c"; }
+    const elAll=document.getElementById("detDepoAll"); if(elAll) elAll.innerText="Rp"+allDepositData.reduce((a,x)=>a+Number(x.data.nominal||0),0).toLocaleString("id-ID");
+    const elWdAll=document.getElementById("detWdAll"); if(elWdAll) elWdAll.innerText="Rp"+allWithdrawData.reduce((a,x)=>a+Number(x.data.nominal||0),0).toLocaleString("id-ID");
+    const elDepPen=document.getElementById("detDepoPen"); if(elDepPen) elDepPen.innerText="Rp"+allDepositData.filter(x=>x.data.status=="Pending").reduce((a,x)=>a+Number(x.data.nominal||0),0).toLocaleString("id-ID");
+    const elWdPen=document.getElementById("detWdPen"); if(elWdPen) elWdPen.innerText="Rp"+allWithdrawData.filter(x=>x.data.status=="Pending").reduce((a,x)=>a+Number(x.data.nominal||0),0).toLocaleString("id-ID");
+    const elTotP=document.getElementById("detTotalPlayer"); if(elTotP) elTotP.innerText=s.size+" player";
+    const elTotCD=document.getElementById("detTotalCoinDia"); if(elTotCD) elTotCD.innerText=totalCoin.toLocaleString("id-ID")+" coin / "+totalDia.toLocaleString("id-ID")+" diamond";
+  });
+}
+function renderDepositTable(){
+  const tbody=document.getElementById("depositTable"); if(!tbody) return;
+  const keyword=(document.getElementById("cariDeposit")?.value||"").toLowerCase();
+  const statusFilter=document.getElementById("filterDeposit")?.value||"Semua";
+  tbody.innerHTML=""; let has=false;
+  allDepositData.forEach(item=>{
+    const d=item.data; const id=item.id;
+    if(statusFilter!="Semua" && d.status!=statusFilter) return;
+    const info=playerCache.get(d.uid)||{email:d.email||"-", nickname:d.nickname||"-"};
+    const search=`${d.nickname||""} ${info.nickname} ${info.email} ${d.uid}`.toLowerCase();
+    if(keyword && !search.includes(keyword)) return;
+    has=true;
+    const tgl=d.createdAt?d.createdAt.toDate().toLocaleString("id-ID"):"-";
+    tbody.innerHTML+=`<tr><td>${tgl}</td><td style="text-align:left"><b>${d.nickname||info.nickname}</b><br><span style="color:#ffd54a;font-size:12px">${info.email}</span>${d.source?`<br><span class="badge shopeepay">${d.source}</span>`:""}</td><td>Rp${Number(d.nominal||0).toLocaleString("id-ID")}</td><td>${d.status} ${d.credited?"(credited)":""}</td><td>${d.status=="Pending"?`<button class="btn green" onclick="approveDeposit('${id}')">✅</button> <button class="btn red" onclick="rejectDeposit('${id}')">❌</button>`:"✅ "+d.status}</td></tr>`;
+  });
+  if(!has) tbody.innerHTML=`<tr><td colspan="5">Tidak ada data</td></tr>`;
+}
+function renderWithdrawTable(){
+  const tbody=document.getElementById("withdrawTable"); if(!tbody) return;
+  tbody.innerHTML=""; let has=false;
+  allWithdrawData.forEach(item=>{
+    const d=item.data; const id=item.id;
+    const info=playerCache.get(d.uid)||{email:d.email||"-", nickname:d.nickname||"-"};
+    has=true;
+    tbody.innerHTML+=`<tr><td style="text-align:left"><b>${d.nickname||info.nickname}</b><br><span style="color:#ffd54a;font-size:12px">${info.email}</span></td><td>Rp${Number(d.nominal||0).toLocaleString("id-ID")}</td><td>${d.status}</td><td>${d.status=="Pending"?`<button class="btn green" onclick="approveWithdraw('${id}')">✅</button> <button class="btn red" onclick="rejectWithdraw('${id}')">❌</button>`:"✅ "+d.status}</td></tr>`;
+  });
+  if(!has) tbody.innerHTML=`<tr><td colspan="4">Tidak ada withdraw</td></tr>`;
+}
+document.getElementById("cariDeposit")?.addEventListener("input", renderDepositTable);
+document.getElementById("filterDeposit")?.addEventListener("change", renderDepositTable);
+
+async function approveDeposit(id){
+  try{
+    const ref=db.collection("deposit").doc(id);
+    const snap=await ref.get();
+    if(!snap.exists){ alert("Tidak ada"); return; }
+    const data=snap.data();
+    if(data.status!="Pending"){ alert("Sudah diproses"); return; }
+    if(data.credited===true){ alert("Sudah credited"); await ref.update({status:"Success"}); return; }
+    const playerRef=db.collection("players").doc(data.uid);
+    await db.runTransaction(async(tx)=>{
+      const pSnap=await tx.get(playerRef);
+      if(!pSnap.exists) throw "Player tidak ada";
+      const dSnap=await tx.get(ref);
+      if(dSnap.data().credited===true) throw "Anti double";
+      const coin=Number(pSnap.data().wallet?.coin||0);
+      const nominal=Number(data.nominal||0);
+      tx.update(playerRef, {"wallet.coin": coin+nominal});
+      tx.update(ref, {status:"Success", credited:true, approvedAt: firebase.firestore.FieldValue.serverTimestamp()});
+    });
+    incKapasitas("writes", 2);
+    alert("Success +"+data.nominal);
+  }catch(e){ alert("Gagal: "+e); }
+}
+async function rejectDeposit(id){
+  const ref=db.collection("deposit").doc(id);
+  await ref.update({status:"Reject", credited:false});
+  incKapasitas("writes", 1);
+  alert("Rejected");
+}
+async function approveWithdraw(id){
+  const ref=db.collection("withdraw").doc(id);
+  await ref.update({status:"Success"});
+  incKapasitas("writes", 1);
+  alert("WD Success");
+}
+async function rejectWithdraw(id){
+  try{
+    const ref=db.collection("withdraw").doc(id);
+    const snap=await ref.get();
+    const data=snap.data();
+    const playerRef=db.collection("players").doc(data.uid);
+    await db.runTransaction(async(tx)=>{
+      const p=await tx.get(playerRef);
+      const coin=Number(p.data().wallet?.coin||0);
+      tx.update(playerRef, {"wallet.coin": coin+Number(data.nominal||0)});
+      tx.update(ref, {status:"Reject"});
+    });
+    incKapasitas("writes", 2);
+    alert("WD Reject");
+  }catch(e){ alert(e); }
+}
+
+function setTotal(n){ document.getElementById("bonusTotalInput").value=n; hitungPembagian(); }
+function hitungPembagian(){
+  const totalBonus=Number(document.getElementById("bonusTotalInput")?.value||0);
+  const search=(document.getElementById("searchPlayerBonus")?.value||"").toLowerCase();
+  const filterBonusOnline=document.getElementById("filterBonusOnline")?.value||"all";
+  let list=allPlayersData.map(p=>{
+    const dep=allDepositData.filter(x=>x.data.uid===p.uid && x.data.status==="Success").reduce((a,x)=>a+Number(x.data.nominal||0),0);
+    const wd=allWithdrawData.filter(x=>x.data.uid===p.uid && x.data.status==="Success").reduce((a,x)=>a+Number(x.data.nominal||0),0);
+    const rugi=dep - wd - p.coin;
+    return {...p, dep, wd, rugi: rugi>0?rugi:0};
+  }).filter(p=>{
+    if(search!=="" && !(p.nickname+" "+p.email).toLowerCase().includes(search)) return false;
+    if(filterBonusOnline==="online" && !p.isOnline) return false;
+    return true;
+  });
+  list.sort((a,b)=>{ if(a.isOnline && !b.isOnline) return -1; if(!a.isOnline && b.isOnline) return 1; return b.rugi-a.rugi; });
+  const checkedBoxes=document.querySelectorAll(".bonusCheck:checked");
+  let selectedUids=new Set(); checkedBoxes.forEach(cb=>selectedUids.add(cb.value));
+  let selectedList = list.filter(p=>selectedUids.has(p.uid));
+  if(selectedList.length===0 && checkedBoxes.length===0){ selectedList=list; }
+  let totalRugiSelected=selectedList.reduce((a,p)=>a+p.rugi,0); if(totalRugiSelected===0) totalRugiSelected=1;
+  const selCount=document.querySelectorAll(".bonusCheck:checked").length;
+  const elSelCount=document.getElementById("bonusSelectedCount"); if(elSelCount) elSelCount.innerText=selCount>0?selCount:list.length;
+  const elSelInfo=document.getElementById("bonusSelectedInfo"); if(elSelInfo) elSelInfo.innerText=selCount>0?selCount+" terpilih (ceklis)":"Preview semua (belum ceklis)";
+  const elTotalPreview=document.getElementById("bonusTotalPreview"); if(elTotalPreview) elTotalPreview.innerText=totalBonus>0?"Rp"+totalBonus.toLocaleString("id-ID"):"Rp0";
+  const elTotalRugi=document.getElementById("totalRugiTerpilih"); if(elTotalRugi) elTotalRugi.innerText="Rp"+totalRugiSelected.toLocaleString("id-ID");
+  const elTotalDibagi=document.getElementById("totalBonusDibagi"); if(elTotalDibagi) elTotalDibagi.innerText="Rp"+totalBonus.toLocaleString("id-ID");
+  const elSisaPool=document.getElementById("sisaPoolSetelah"); if(elSisaPool) elSisaPool.innerText="Rp"+(currentGlobalPool-totalBonus).toLocaleString("id-ID");
+  let html="";
+  list.forEach((p,i)=>{
+    const rating=totalRugiSelected>0 ? (p.rugi/totalRugiSelected*100) : 0;
+    const dapat=totalBonus>0 && p.rugi>0 ? Math.floor(totalBonus * p.rugi / totalRugiSelected) : 0;
+    const checkedAttr = selectedUids.has(p.uid) ? "checked" : "";
+    html+=`<tr style="${p.isOnline?'background:rgba(0,255,136,0.08)':''}">
+      <td><input type="checkbox" class="checkbox bonusCheck" value="${p.uid}" ${checkedAttr} onchange="hitungPembagian()"></td>
+      <td>${i+1}</td>
+      <td style="text-align:left"><b style="color:${p.isOnline?'#00ff88':'#fff'}">${p.nickname}</b><br><span style="font-size:10px;color:#8aa0c7;">${p.email.substring(0,22)}</span></td>
+      <td>${p.isOnline?'<span class="badge online">🟢 ONLINE</span>':'<span class="badge offline">OFFLINE</span>'}</td>
+      <td>${p.coin.toLocaleString("id-ID")}</td>
+      <td style="color:${p.rugi>0?'#ff6b6b':'#00ff88'};">Rp${p.rugi.toLocaleString("id-ID")}</td>
+      <td>${p.rugi>0?rating.toFixed(1)+"%":"0%"}</td>
+      <td style="color:#00ff88;font-weight:bold;">${p.rugi>0?"Rp"+dapat.toLocaleString("id-ID"):"-"}</td>
+    </tr>`;
+  });
+  if(list.length===0) html=`<tr><td colspan="8">Tidak ada player</td></tr>`;
+  const tbody=document.getElementById("bonusCeklisTable"); if(tbody) tbody.innerHTML=html;
+}
+document.getElementById("searchPlayerBonus")?.addEventListener("input", hitungPembagian);
+document.getElementById("filterBonusOnline")?.addEventListener("change", hitungPembagian);
+function toggleSelectAll(checked){
+  if(typeof checked==="boolean"){
+    document.querySelectorAll(".bonusCheck").forEach(cb=>cb.checked=checked);
+    const ca=document.getElementById("checkAll"); if(ca) ca.checked=checked;
+  }
+  hitungPembagian();
+}
+async function kirimBonusCeklis(){
+  const totalBonus=Number(document.getElementById("bonusTotalInput").value||0);
+  const logEl=document.getElementById("bonusLog");
+  if(totalBonus<=0){ alert("Isi nominal total bonus dulu!"); return; }
+  if(totalBonus>currentGlobalPool){ alert(`Pool tidak cukup! Pool: Rp${currentGlobalPool.toLocaleString("id-ID")}`); return; }
+  const checked=document.querySelectorAll(".bonusCheck:checked");
+  if(checked.length===0){ alert("Ceklis dulu player"); return; }
+  let selectedUids=[]; checked.forEach(cb=>selectedUids.push(cb.value));
+  let selectedList=allPlayersData.map(p=>{
+    const dep=allDepositData.filter(x=>x.data.uid===p.uid && x.data.status==="Success").reduce((a,x)=>a+Number(x.data.nominal||0),0);
+    const wd=allWithdrawData.filter(x=>x.data.uid===p.uid && x.data.status==="Success").reduce((a,x)=>a+Number(x.data.nominal||0),0);
+    const rugi=dep - wd - p.coin;
+    return {...p, rugi: rugi>0?rugi:0};
+  }).filter(p=>selectedUids.includes(p.uid) && p.rugi>0);
+  if(selectedList.length===0){ alert("Tidak ada yang rugi"); return; }
+  let totalRugi=selectedList.reduce((a,p)=>a+p.rugi,0);
+  if(totalRugi===0){ alert("Total rugi 0"); return; }
+  if(!confirm(`Bagi Rp${totalBonus.toLocaleString("id-ID")} ke ${selectedList.length} player?`)) return;
+  if(logEl) logEl.innerHTML="⏳ Memproses batch atomik...";
+  try{
+    const batch = db.batch();
+    const poolRef = db.collection("global").doc("pool");
+    batch.update(poolRef, {
+      pool: firebase.firestore.FieldValue.increment(-totalBonus),
+      profit: firebase.firestore.FieldValue.increment(-totalBonus),
+      lastUpdate: Date.now()
+    });
+    for(let p of selectedList){
+      const dapat=Math.floor(totalBonus * p.rugi / totalRugi);
+      if(dapat<=0) continue;
+      const playerRef=db.collection("players").doc(p.uid);
+      batch.update(playerRef, {
+        "wallet.coin": firebase.firestore.FieldValue.increment(dapat)
+      });
+      if(logEl) logEl.innerHTML+=`<br>✅ ${p.nickname} +Rp${dapat.toLocaleString("id-ID")}`;
+    }
+    await batch.commit();
+    if(logEl) logEl.innerHTML+=`<br><br>✅ Batch sukses!`;
+    for(let p of selectedList){
+      const dapat=Math.floor(totalBonus * p.rugi / totalRugi);
+      if(dapat<=0) continue;
+      await db.collection("bonus_history").add({
+        uid:p.uid, nickname:p.nickname, email:p.email, nominal:dapat,
+        type:`Ceklis Rating ${(p.rugi/totalRugi*100).toFixed(1)}%`,
+        rugi:p.rugi, fromPool:true, sisaPool: currentGlobalPool - totalBonus,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+    alert(`✅ BERHASIL! Rp${totalBonus.toLocaleString("id-ID")} dibagi ke ${selectedList.length} player.`);
+    document.getElementById("bonusTotalInput").value="";
+    toggleSelectAll(false);
+  }catch(e){
+    if(logEl) logEl.innerHTML+=`<br>❌ GAGAL: ${e.message||e}`;
+    alert("GAGAL: "+e);
+  }
+}
+function renderBonusHistory(){
+  const tbody=document.getElementById("bonusHistoryTable"); if(!tbody) return;
+  if(bonusHistory.length===0){ tbody.innerHTML=`<tr><td colspan="5">Belum ada bonus</td></tr>`; return; }
+  let html="";
+  bonusHistory.forEach(b=>{
+    const tgl=b.createdAt?b.createdAt.toDate().toLocaleString("id-ID"):"-";
+    html+=`<tr><td>${tgl}</td><td style="text-align:left"><b>${b.nickname||"-"}</b></td><td style="color:#00ff88;">Rp${Number(b.nominal||0).toLocaleString("id-ID")}</td><td>${b.type||"-"}</td><td>Rp${Number(b.sisaPool||0).toLocaleString("id-ID")}</td></tr>`;
+  });
+  tbody.innerHTML=html;
+}
+</script>
+
+<div id="playerDetailModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:99999;align-items:center;justify-content:center;padding:15px;">
+  <div style="background:#182235;border-radius:15px;padding:20px;max-width:520px;width:100%;border:2px solid #ffd54a;position:relative;max-height:90vh;overflow-y:auto;">
+    <button onclick="closePlayerModal()" style="position:absolute;top:10px;right:15px;background:#ff4444;color:white;border:none;border-radius:50%;width:32px;height:32px;font-weight:bold;cursor:pointer;">X</button>
+    <h2 style="color:#ffd54a;margin-bottom:5px;" id="mNick">-</h2>
+    <p style="color:#8aa0c7;font-size:12px;margin-bottom:15px;" id="mEmail"></p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+      <div style="background:#22314f;padding:12px;border-radius:10px;text-align:center;"><small style="color:#bbb;">Saldo Coin</small><h2 style="color:#ffd54a;" id="mCoin">0</h2></div>
+      <div style="background:#22314f;padding:12px;border-radius:10px;text-align:center;"><small style="color:#bbb;">Diamond / Ticket</small><h3 style="color:#00b894;" id="mDia">0 / 0</h3></div>
+    </div>
+  </div>
+</div>
+<script>
+
+// ===== AUTO SUCCESS - SHOPEE NOTIF MASUK + NOMINAL SAMA = PENDING JADI SUKSES =====
+let autoProcessing = false;
+
+function parseAmountForMatch(text){
+  if(!text) return 0;
+  const m = text.match(/Rp\.?\s?([\d\.\,]+)/i);
+  if(!m) return 0;
+  let num = m[1].replace(/\./g,'').replace(/,/g,'');
+  return parseInt(num)||0;
+}
+
+async function autoApproveByNominal(){
+  if(autoProcessing) return;
+  if(allShopeepayData.length===0 || allDepositData.length===0) return;
+  
+  const pendingNotifs = allShopeepayData.filter(s=>!s.used);
+  const pendingDeposits = allDepositData.filter(d=>d.data.status==="Pending").sort((a,b)=>{
+    const ta = a.data.createdAt?.seconds||0;
+    const tb = b.data.createdAt?.seconds||0;
+    return ta - tb; // yang paling lama dulu
+  });
+
+  if(pendingNotifs.length===0 || pendingDeposits.length===0) return;
+
+  for(let notif of pendingNotifs){
+    let notifAmount = notif.amount && notif.amount>0 ? notif.amount : parseAmountForMatch(notif.raw||"");
+    if(notifAmount<=0) continue;
+    
+    // PRIORITAS 1: Cari berdasarkan totalTransfer (nominal + kodeUnik) - PALING AKURAT
+    let matchedDep = pendingDeposits.find(dep=>{
+      const total = Number(dep.data.totalTransfer||0);
+      return total>0 && total===notifAmount;
+    });
+    
+    // PRIORITAS 2: Cari berdasarkan nominal + kodeUnik
+    if(!matchedDep){
+      matchedDep = pendingDeposits.find(dep=>{
+        const nom = Number(dep.data.nominal||0);
+        const kode = Number(dep.data.kodeUnik||0);
+        return (nom + kode)===notifAmount;
+      });
+    }
+    
+    // PRIORITAS 3: Cari deposit pending dengan nominal SAMA PERSIS (legacy)
+    if(!matchedDep){
+      matchedDep = pendingDeposits.find(dep=>{
+        const depNominal = Number(dep.data.nominal||0);
+        return depNominal===notifAmount;
+      });
+    }
+    
+    // PRIORITAS 4: Toleransi (jika masih ada yang lama)
+    if(!matchedDep){
+      matchedDep = pendingDeposits.find(dep=>{
+        const depNominal = Number(dep.data.nominal||0);
+        return Math.abs(depNominal-notifAmount)<=1000 && depNominal>=10000;
+      });
+    }
+    
+    if(matchedDep){
+      console.log(`🤖 AUTO MATCH: Notif Rp${notifAmount} => Deposit ${matchedDep.id} Rp${matchedDep.data.nominal} (${matchedDep.data.nickname})`);
+      await executeAutoSuccess(matchedDep, notif);
+      break; // proses satu per satu biar tidak double
+    }
+  }
+}
+
+async function executeAutoSuccess(depItem, notifItem){
+  if(autoProcessing) return;
+  autoProcessing=true;
+  try{
+    const depId = depItem.id;
+    const depData = depItem.data;
+    const notifId = notifItem.id;
+    const notifAmount = notifItem.amount && notifItem.amount>0 ? notifItem.amount : parseAmountForMatch(notifItem.raw||"");
+    
+    const playerRef = db.collection("players").doc(depData.uid);
+    const depositRef = db.collection("deposit").doc(depId);
+    const shopeeRef = db.collection("shopee_notifs").doc(notifId);
+    
+    await db.runTransaction(async(tx)=>{
+      const pSnap = await tx.get(playerRef);
+      const dSnap = await tx.get(depositRef);
+      const sSnap = await tx.get(shopeeRef);
+      
+      if(!pSnap.exists) throw "Player tidak ada";
+      if(!dSnap.exists) throw "Deposit tidak ada";
+      if(sSnap.exists && sSnap.data().used) throw "Notif sudah dipakai";
+      if(dSnap.data().status!=="Pending") throw "Deposit sudah diproses";
+      
+      const currentCoin = Number(pSnap.data().wallet?.coin||0);
+      const nominal = Number(dSnap.data().nominal||0);
+      
+      // 1. Tambah coin player
+      tx.update(playerRef, {"wallet.coin": currentCoin + nominal});
+      // 2. Ubah deposit jadi Success
+      tx.update(depositRef, {
+        status:"Success",
+        credited:true,
+        approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        autoApproved:true,
+        autoMatched:true,
+        shopeeNotifId:notifId,
+        shopeeRaw:notifItem.raw||"",
+        matchedAmount:notifAmount
+      });
+      // 3. Tandai notif sudah dipakai
+      tx.update(shopeeRef, {
+        used:true,
+        usedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        creditedTo: depData.uid,
+        creditedToName: depData.nickname||"",
+        approvedAmount: nominal,
+        matchedDepositId: depId
+      });
+    });
+    
+    console.log(`✅ AUTO SUCCESS: ${depData.nickname} Rp${depData.nominal} -> Sukses via ShopeePay Rp${notifAmount}`);
+    
+    // Mainkan suara
+    const audio = document.getElementById('shopeeSound');
+    if(audio) audio.play().catch(()=>{});
+    
+    // Notifikasi visual di admin
+    if(Notification && Notification.permission==="granted"){
+      new Notification(`✅ Auto Success: ${depData.nickname} Rp${depData.nominal}`);
+    }
+    
+  }catch(e){
+    console.log("Auto success gagal:", e);
+  }finally{
+    autoProcessing=false;
+  }
+}
+
+// Jalankan auto-match setiap ada perubahan data
+let lastShopeeCount = 0;
+let lastDepositPendingCount = 0;
+
+function checkAndAutoMatch(){
+  const pendingNotifCount = allShopeepayData.filter(s=>!s.used).length;
+  const pendingDepCount = allDepositData.filter(d=>d.data.status==="Pending").length;
+  
+  // Hanya jalankan jika ada perubahan
+  if(pendingNotifCount!==lastShopeeCount || pendingDepCount!==lastDepositPendingCount){
+    console.log(`🔍 Cek Auto-Match: ${pendingNotifCount} notif pending, ${pendingDepCount} deposit pending`);
+    lastShopeeCount=pendingNotifCount;
+    lastDepositPendingCount=pendingDepCount;
+    autoApproveByNominal();
+  }
+}
+
+// Observer untuk auto-match
+setInterval(checkAndAutoMatch, 2000); // cek tiap 2 detik
+
+// Juga trigger saat shopee_notifs berubah (real-time)
+const originalRenderShopeepayTable = renderShopeepayTable;
+renderShopeepayTable = function(){
+  originalRenderShopeepayTable();
+  setTimeout(checkAndAutoMatch, 500);
+};
+
+console.log("🤖 AUTO SUCCESS BOT AKTIF - Nominal ShopeePay = Nominal Pending => Otomatis Sukses");
+// Minta izin notifikasi browser
+if(Notification && Notification.permission!=="granted"){
+  Notification.requestPermission();
+}
+
+
+function closePlayerModal(){ document.getElementById("playerDetailModal").style.display="none"; }
+async function detailPlayer(uid){
+    const snap=await db.collection("players").doc(uid).get();
+    if(!snap.exists){ alert("Player tidak ditemukan"); return; }
+    const p=snap.data();
+    const nickname = (p.profile && p.profile.nickname) || "-";
+    const email = (p.profile && p.profile.email) || "-";
+    const coin = Number((p.wallet && p.wallet.coin) || 0);
+    document.getElementById("mNick").innerText = nickname;
+    document.getElementById("mEmail").innerText = email + " | UID: " + uid.substring(0,12) + "...";
+    document.getElementById("mCoin").innerText = coin.toLocaleString("id-ID");
+    document.getElementById("playerDetailModal").style.display = "flex";
+}
+</script>
+</body>
+</html>
