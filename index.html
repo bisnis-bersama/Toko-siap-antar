@@ -3513,3 +3513,20 @@ function bukaLink(url){
 </script>
 </body>
 </html>
+
+<style id="fix-logo-tengah-mobile">
+/* Logo tengah diperkecil agar tidak menutupi teks Pesanan OTW */
+@media (max-width:768px){
+  .logo-tengah{
+    width:82px!important;
+    height:82px!important;
+    bottom:-41px!important;
+    border-width:4px!important;
+    box-shadow:0 6px 18px rgba(0,0,0,.18)!important;
+  }
+  .logo-tengah img{
+    width:72%!important;
+    margin-top:-22px!important;
+  }
+}
+</style>
