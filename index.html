@@ -3511,6 +3511,298 @@ function bukaLink(url){
     }
 }
 </script>
+
+<style id="ui-modern-katalog-final">
+/* =========================================================
+   MODERN KATALOG — tampilan saja, fungsi lama tetap dipakai
+   ========================================================= */
+:root{
+  --ui-green:#08b879;
+  --ui-green-dark:#07945f;
+  --ui-orange:#ff6508;
+  --ui-navy:#101b2d;
+  --ui-soft:#f5f7fa;
+  --ui-text:#182230;
+}
+
+/* Area utama lebih bersih */
+.content-scroll{background:#fff!important;}
+.hero{background:#fff!important;}
+
+/* Logo tengah: proporsional, seluruh gambar tetap terlihat */
+.logo-tengah{
+  width:104px!important;
+  height:104px!important;
+  bottom:-52px!important;
+  border:5px solid #fff!important;
+  background:#fff!important;
+  box-shadow:0 4px 16px rgba(16,24,40,.18)!important;
+  z-index:20!important;
+  overflow:hidden!important;
+}
+.logo-tengah img{
+  width:92%!important;
+  height:92%!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  margin:0!important;
+  transform:none!important;
+}
+
+/* Bar info motor */
+.motor-jalan{
+  height:58px!important;
+  background:#fff!important;
+  border-top:4px solid var(--ui-green)!important;
+  border-bottom:1px solid #e6eaf0!important;
+}
+.motor-kirim{height:100%!important;}
+.teks-kirim{
+  color:var(--ui-green-dark)!important;
+  font-weight:800!important;
+  font-size:15px!important;
+}
+
+/* Running text */
+.running-text{
+  background:linear-gradient(90deg,#078c59,#08a968)!important;
+  color:#fff!important;
+  border-bottom:3px solid #ffb000!important;
+  font-weight:800!important;
+}
+
+/* Kategori: seperti chip katalog modern */
+.kategori-scroll{
+  margin:18px 0 12px!important;
+  padding:2px 0 7px!important;
+}
+.kategori-track{
+  justify-content:flex-start!important;
+  gap:8px!important;
+  padding:0 14px!important;
+}
+.kategori-btn,.kategori-cart{
+  height:46px!important;
+  padding:0 18px!important;
+  border:1px solid #e1e6ec!important;
+  border-radius:24px!important;
+  background:#fff!important;
+  color:#344054!important;
+  font-size:14px!important;
+  font-weight:800!important;
+  box-shadow:0 3px 10px rgba(16,24,40,.08)!important;
+}
+.kategori-btn.active{
+  background:linear-gradient(135deg,#08b879,#079f68)!important;
+  border-color:#08b879!important;
+  color:#fff!important;
+  box-shadow:0 5px 14px rgba(8,184,121,.22)!important;
+}
+.kategori-cart{
+  width:58px!important;
+  padding:0!important;
+  background:var(--ui-navy)!important;
+  color:#fff!important;
+  border-color:var(--ui-navy)!important;
+  font-size:21px!important;
+}
+.kategori-cart b{
+  min-width:21px!important;
+  height:21px!important;
+  background:#ff5b12!important;
+  font-size:11px!important;
+}
+
+/* Search bar */
+.search-box{
+  margin:0 14px 22px!important;
+  position:relative!important;
+}
+.search-box input{
+  width:100%!important;
+  height:68px!important;
+  box-sizing:border-box!important;
+  border:1px solid #d8dee7!important;
+  border-radius:18px!important;
+  background:#fff!important;
+  color:#344054!important;
+  padding:0 22px!important;
+  font-size:20px!important;
+  box-shadow:0 4px 16px rgba(16,24,40,.07)!important;
+  outline:none!important;
+}
+.search-box input:focus{
+  border-color:#08b879!important;
+  box-shadow:0 0 0 4px rgba(8,184,121,.10)!important;
+}
+
+/* Grid produk */
+.produk-scroll{
+  background:#f5f7fa!important;
+  padding:12px 12px 30px!important;
+}
+.produk-container{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:16px!important;
+  align-items:start!important;
+}
+.produk-card{
+  min-width:0!important;
+  width:auto!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  background:#fff!important;
+  border:1px solid #e5e9ef!important;
+  border-radius:16px!important;
+  box-shadow:0 3px 12px rgba(16,24,40,.08)!important;
+  transition:transform .18s ease,box-shadow .18s ease!important;
+}
+.produk-card:hover{
+  transform:translateY(-2px)!important;
+  box-shadow:0 8px 20px rgba(16,24,40,.12)!important;
+}
+.produk-img-box{
+  width:100%!important;
+  aspect-ratio:1/1!important;
+  padding:0!important;
+  margin:0!important;
+  background:#fff!important;
+  overflow:hidden!important;
+}
+.produk-img{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+  object-fit:cover!important;
+  margin:0!important;
+  border-radius:0!important;
+}
+.produk-info{
+  padding:11px 12px 12px!important;
+  background:#fff!important;
+}
+.produk-nama{
+  min-height:40px!important;
+  margin:0 0 4px!important;
+  color:#172033!important;
+  font-size:17px!important;
+  font-weight:800!important;
+  line-height:1.2!important;
+}
+/* Deskripsi disembunyikan agar katalog ringkas seperti contoh */
+.produk-deskripsi{display:none!important;}
+.produk-harga{
+  display:inline-block!important;
+  margin:0!important;
+  color:var(--ui-orange)!important;
+  font-size:20px!important;
+  font-weight:900!important;
+}
+.produk-info > div[style*="color:#ffb400"]{
+  display:inline-block!important;
+  margin-left:8px!important;
+  color:#ffc400!important;
+  font-size:15px!important;
+  vertical-align:middle!important;
+}
+.produk-actions{
+  display:grid!important;
+  grid-template-columns:1fr 1.15fr 1fr!important;
+  gap:7px!important;
+  margin-top:10px!important;
+}
+.btn-produk{
+  min-width:0!important;
+  height:48px!important;
+  padding:0 5px!important;
+  border:0!important;
+  border-radius:12px!important;
+  font-size:13px!important;
+  font-weight:800!important;
+  white-space:nowrap!important;
+  box-shadow:none!important;
+}
+.btn-chat{background:#08b879!important;color:#fff!important;}
+.btn-cart{background:#dff9ee!important;color:#078b5b!important;border:1px solid #b8ecd7!important;}
+.btn-buy{background:var(--ui-orange)!important;color:#fff!important;}
+
+/* Floating cart: dibuat bulat agar tidak menutup produk */
+#cartFloat{
+  right:14px!important;
+  bottom:62px!important;
+  width:58px!important;
+  height:58px!important;
+  padding:0!important;
+  border-radius:50%!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  background:var(--ui-navy)!important;
+  color:#fff!important;
+  box-shadow:0 8px 22px rgba(16,24,40,.25)!important;
+  font-size:0!important;
+  z-index:1000!important;
+}
+#cartFloat::before{
+  content:'🛒';
+  font-size:25px;
+}
+#cartFloat span{
+  position:absolute!important;
+  top:-3px!important;
+  right:-3px!important;
+  min-width:21px!important;
+  height:21px!important;
+  padding:0 5px!important;
+  border-radius:12px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  background:#ff5b12!important;
+  color:#fff!important;
+  font-size:11px!important;
+  font-weight:900!important;
+}
+
+@media(max-width:768px){
+  .logo-tengah{
+    width:94px!important;
+    height:94px!important;
+    bottom:-47px!important;
+    border-width:4px!important;
+  }
+  .logo-tengah img{width:92%!important;height:92%!important;}
+  .motor-jalan{height:56px!important;}
+  .teks-kirim{font-size:14px!important;}
+  .kategori-scroll{margin:18px 0 10px!important;}
+  .kategori-track{gap:7px!important;padding:0 18px!important;}
+  .kategori-btn,.kategori-cart{height:44px!important;padding:0 16px!important;font-size:13px!important;}
+  .kategori-cart{width:54px!important;padding:0!important;}
+  .search-box{margin:0 14px 18px!important;}
+  .search-box input{height:64px!important;font-size:18px!important;padding:0 18px!important;}
+  .produk-scroll{padding:10px 9px 28px!important;}
+  .produk-container{gap:10px!important;}
+  .produk-card{border-radius:14px!important;}
+  .produk-info{padding:10px!important;}
+  .produk-nama{font-size:16px!important;min-height:38px!important;}
+  .produk-harga{font-size:18px!important;}
+  .produk-info > div[style*="color:#ffb400"]{font-size:13px!important;margin-left:4px!important;}
+  .produk-actions{gap:5px!important;margin-top:9px!important;}
+  .btn-produk{height:44px!important;border-radius:10px!important;font-size:11px!important;}
+}
+
+@media(max-width:380px){
+  .produk-container{gap:7px!important;}
+  .produk-info{padding:8px!important;}
+  .produk-nama{font-size:14px!important;}
+  .produk-harga{font-size:16px!important;}
+  .btn-produk{font-size:10px!important;padding:0 2px!important;}
+}
+</style>
+
 </body>
 </html>
 
