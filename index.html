@@ -2052,6 +2052,110 @@ body{
 }
 </style>
 
+
+<style id="produk-grid-rapi">
+/* ===== GRID PRODUK RAPI / TANPA PANEL ===== */
+.produk-container{
+  display:grid!important;
+  grid-template-columns:repeat(auto-fill,minmax(190px,1fr))!important;
+  gap:12px!important;
+  padding:10px 12px 30px!important;
+  max-width:1500px!important;
+}
+.produk-card{
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  overflow:hidden;
+  transform:none!important;
+}
+.produk-card:hover{
+  transform:none!important;
+  box-shadow:none!important;
+  border:0!important;
+}
+.produk-img-box{
+  width:100%!important;
+  height:auto!important;
+  aspect-ratio:1/1!important;
+  background:#fff!important;
+  border:0!important;
+  border-radius:0!important;
+  overflow:hidden;
+}
+.produk-img{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  padding:0!important;
+  object-fit:cover!important;
+  background:#fff!important;
+  transition:none!important;
+}
+.produk-card:hover .produk-img{transform:none!important}
+.produk-info{
+  padding:7px 2px 2px!important;
+  background:transparent!important;
+}
+.produk-nama{
+  font-size:12px!important;
+  line-height:1.3!important;
+  min-height:31px!important;
+  color:#111827!important;
+}
+.produk-deskripsi{
+  font-size:10px!important;
+  line-height:1.35!important;
+  margin:3px 0!important;
+  color:#667085!important;
+}
+.produk-harga{
+  font-size:13px!important;
+  margin:4px 0!important;
+  height:auto!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:#f04438!important;
+}
+.produk-actions{
+  display:grid!important;
+  grid-template-columns:repeat(3,1fr)!important;
+  gap:4px!important;
+  margin-top:6px!important;
+}
+.btn-produk{
+  width:100%!important;
+  min-width:0!important;
+  height:32px!important;
+  padding:0 3px!important;
+  border:1px solid transparent!important;
+  border-radius:7px!important;
+  font-size:9px!important;
+  font-weight:700!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+  cursor:pointer!important;
+}
+.btn-chat{background:#10b981!important;color:#fff!important}
+.btn-cart{background:#ecfdf3!important;color:#087443!important;border-color:#a7e8c7!important}
+.btn-buy{background:#ff6a00!important;color:#fff!important}
+@media(max-width:768px){
+  .produk-container{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:13px 10px!important;
+    padding:8px 10px 30px!important;
+  }
+  .produk-nama{font-size:12px!important}
+  .produk-deskripsi{font-size:10px!important}
+  .btn-produk{height:31px!important;font-size:8.5px!important}
+}
+@media(min-width:769px){
+  .produk-container{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))!important}
+}
+</style>
 </head>
 
 <body>
@@ -2574,15 +2678,15 @@ Rp ${Number(harga).toLocaleString()}
 
 <div style="color:#ffb400;font-size:14px;">⭐⭐⭐⭐⭐</div>
 
-<div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;">
-<button style="background:#10b981;color:#fff;border:none;padding:8px;border-radius:6px;cursor:pointer"
+<div class="produk-actions">
+<button class="btn-produk btn-chat"
 onclick="window.open('https://wa.me/6282319264646?text='+encodeURIComponent('Halo Admin, saya ingin bertanya tentang ${nama}'),'_blank')">💬 Chat</button>
 
-<button class="btn-cart"
+<button class="btn-produk btn-cart"
 onclick="tambahKeranjang('${nama}','${harga}','${foto}')">🛒 Keranjang</button>
 
-<button style="background:#ff6a00;color:#fff;border:none;padding:8px;border-radius:6px;cursor:pointer"
-onclick="beliSekarang('${nama}','${harga}','${foto}')">🟧 Beli Sekarang</button>
+<button class="btn-produk btn-buy"
+onclick="beliSekarang('${nama}','${harga}','${foto}')">🛍️ Beli</button>
 </div>
 
 </div>
