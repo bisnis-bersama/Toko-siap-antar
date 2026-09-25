@@ -1,0 +1,3529 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A YUDI THEA | Servis Handphone</title>
+
+<style>
+   /* =========================
+   HP LANDSCAPE
+========================= */
+
+@media screen and (max-width:1024px) and (orientation:landscape){
+
+#list{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+gap:10px;
+padding:10px;
+}
+
+.card img{
+height:120px;
+}
+
+.info{
+padding:6px;
+}
+
+.info h3{
+font-size:12px;
+}
+
+.info p{
+font-size:10px;
+}
+
+.harga{
+font-size:14px;
+}
+
+.chat{
+width:100%;
+height:30px;
+font-size:10px;
+}
+/* Slider lebih kecil */
+.slider{
+height:110px !important;
+}
+
+.slide img{
+height:110px !important;
+object-fit:cover;
+}
+
+/* Logo tengah */
+.logo-tengah,
+.logo-center,
+#logoCenter{
+width:75px !important;
+height:75px !important;
+bottom:-38px !important;
+}
+
+/* Running text */
+.running-text,
+.marquee,
+#runningText{
+height:20px !important;
+line-height:20px !important;
+font-size:10px !important;
+}
+}
+/* ===========================
+   MENU V15
+=========================== */
+
+#menuBtn{
+position:fixed;
+left:15px;
+top:15px;
+width:55px;
+height:55px;
+border:none;
+border-radius:14px;
+background:linear-gradient(135deg,#16a34a,#ff9800);
+color:#fff;
+font-size:28px;
+font-weight:bold;
+cursor:pointer;
+z-index:999999;
+box-shadow:0 6px 20px rgba(0,0,0,.3);
+}
+
+#menuOverlay{
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.45);
+z-index:999998;
+}
+
+#sideMenu{
+position:fixed;
+top:0;
+left:-320px;
+width:290px;
+height:100%;
+background:#fff;
+overflow:auto;
+transition:.35s;
+z-index:999999;
+box-shadow:6px 0 25px rgba(0,0,0,.25);
+}
+
+#sideMenu.open{
+left:0;
+}
+
+.menuHeader{
+padding:20px;
+background:linear-gradient(135deg,#16a34a,#ff9800);
+color:#fff;
+font-size:22px;
+font-weight:bold;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.menuClose{
+cursor:pointer;
+font-size:28px;
+}
+
+.menuItem{
+padding:15px 20px;
+border-bottom:1px solid #eee;
+font-weight:bold;
+cursor:pointer;
+background:#fff;
+transition:.2s;
+}
+
+.menuItem:hover{
+background:#16a34a;
+color:#fff;
+}
+
+.subMenu{
+display:none;
+background:#f8f8f8;
+}
+
+.subMenu a{
+display:block;
+padding:12px 30px;
+text-decoration:none;
+color:#444;
+border-bottom:1px solid #eee;
+}
+
+.subMenu a:hover{
+background:#16a34a;
+color:#fff;
+}
+
+@media(max-width:768px){
+
+#menuBtn{
+left:10px;
+top:10px;
+width:48px;
+height:48px;
+font-size:24px;
+}
+
+#sideMenu{
+width:260px;
+}
+
+}
+/* ===== RESET ===== */
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Segoe UI',sans-serif;
+}
+
+body{
+background:#f4f6f9;
+color:#333;
+
+overflow-x:hidden;
+}
+/* ===== COLOR ROOT ===== */
+:root{
+--primary:#1faa59;
+--primary-dark:#178a47;
+--accent:#ff9800;
+--accent-dark:#e68900;
+}
+
+/* ===== HEADER ===== */
+.header{
+background:white;
+display:flex;
+align-items:center;
+justify-content:center;
+height:460px;
+position:relative;
+overflow:hidden;
+
+}
+
+.header::after{
+content:"";
+position:absolute;
+bottom:0;
+left:0;
+width:100%;
+height:4px;
+background:linear-gradient(90deg,var(--primary),var(--accent));
+}
+
+/* ===== SLIDER BERJALAN ===== */
+.logo-tengah{
+position:absolute;
+bottom:-20px;
+width:100px;
+}
+
+.slider{
+width:100%;
+overflow:hidden;
+}
+
+.slider-track{
+display:flex;
+width:max-content;
+animation:slidejalan 25s linear infinite;
+}
+
+.slider-track img{
+width:300px;
+margin:0 10px;
+border-radius:10px;
+}
+
+@keyframes slidejalan{
+0%{
+transform:translateX(0);
+}
+
+100%{
+transform:translateX(-100%);
+}
+}
+
+
+/* ===== PROMO KIRI KANAN ===== */
+.promo-wrap{
+position:relative;
+display:flex;
+align-items:center;
+justify-content:center;
+margin:10px;
+}
+
+.promo-slide{
+position:absolute;
+top:40px;
+}
+
+.promo-slide.kiri{
+left:10px;
+}
+
+.promo-slide.kanan{
+right:10px;
+}
+
+.promo-slide img{
+width:60px;
+border-radius:8px;
+box-shadow:0 3px 8px rgba(0,0,0,0.3);
+}
+
+/* ===== RUNNING TEXT ===== */
+.running-text{
+background:#16a34a;
+color:white;
+font-weight:bold;
+font-size:14px;
+padding:6px;
+}
+
+.garis{
+height:3px;
+background:linear-gradient(90deg,#16a34a,#f97316);
+}
+
+/* ===== HERO ===== */
+.hero{
+padding:35px 20px;
+text-align:center;
+background:white;
+}
+
+.hero h2{
+color:var(--primary);
+font-size:26px;
+font-weight:700;
+margin-bottom:15px;
+}
+
+.hero p{
+color:#666;
+margin-bottom:20px;
+}
+
+/* ===== BUTTON ===== */
+.btn-modern{
+display:inline-block;
+padding:12px 20px;
+border-radius:40px;
+color:white;
+text-decoration:none;
+font-weight:600;
+box-shadow:0 6px 15px rgba(0,0,0,0.25);
+margin:5px;
+}
+
+.btn-green{
+background:linear-gradient(145deg,#16a34a,#15803d);
+}
+
+.btn-orange{
+background:linear-gradient(145deg,#f59e0b,#ea580c);
+}
+
+.btn-cart{
+width:100%;
+border:none;
+background:#1faa59;
+color:white;
+padding:8px;
+border-radius:6px;
+margin-top:auto;
+}
+
+/* ===== SEARCH ===== */
+.search-box{
+width:100%;
+max-width:500px;
+margin:15px auto;
+text-align:center;
+}
+
+.search-box input{
+width:90%;
+padding:10px 15px;
+border-radius:25px;
+border:2px solid #16a34a;
+outline:none;
+font-size:14px;
+box-shadow:0 3px 8px rgba(0,0,0,0.1);
+}
+
+/* ===== MENU ===== */
+.menu-pro{
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+gap:10px;
+margin:15px;
+}
+
+.menu-pro a{
+
+padding:10px 18px;
+
+background:linear-gradient(145deg,#16a34a,#15803d);
+
+color:white;
+
+border-radius:50px;
+
+text-decoration:none;
+
+font-size:13px;
+
+border:3px solid #ff9800; /* lingkaran orange */
+
+box-shadow:0 6px 15px rgba(0,0,0,0.25);
+
+transition:0.2s;
+
+}
+
+.menu-pro a:hover{
+
+transform:scale(1.05);
+
+}
+
+.produk-scroll{
+height:100vh;
+overflow-y:auto;
+padding-bottom:1300px;
+scroll-behavior:smooth;
+}
+/* ===== PRODUK ===== */
+.produk-container{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+gap:10px;
+padding:10px;
+max-width:1400px;
+margin:auto;
+}
+
+.produk-card{
+background:white;
+border-radius:12px;
+overflow:hidden;
+box-shadow:0 6px 18px rgba(0,0,0,0.12);
+display:flex;
+flex-direction:column;
+}
+
+.produk-img-box{
+height:180px;
+background:linear-gradient(135deg,#16a34a,#f97316);
+overflow:hidden;
+border-radius:12px 12px 0 0;
+}
+
+.produk-img{
+width:100%;
+height:100%;
+object-fit:cover;
+}
+.produk-card:hover .produk-img{
+transform:scale(1.05);
+}
+
+.produk-info{
+padding:10px;
+display:flex;
+flex-direction:column;
+flex:1;
+}
+
+.produk-nama{
+font-size:12px;
+font-weight:600;
+}
+.produk-deskripsi{
+font-size:11px;
+color:#666;
+margin:4px 0;
+}
+.produk-harga{
+color:#ff6a00;
+font-size:13px;
+font-weight:bold;
+margin:6px 0;
+}
+
+/* ===== CART FLOAT ===== */
+#cartFloat{
+position:fixed;
+right:20px;
+bottom:20px;
+top:auto;
+left:auto;
+background:linear-gradient(135deg,#f97316,#16a34a);
+color:#fff;
+padding:12px 18px;
+border-radius:50px;
+font-weight:600;
+border:3px solid #facc15;
+box-shadow:0 8px 20px rgba(0,0,0,.25);
+cursor:pointer;
+z-index:99999;
+transition:.3s;
+}
+#cartFloat:hover{
+transform:scale(1.08);
+}
+
+#cartCount{
+background:#ff9800;
+padding:3px 8px;
+border-radius:50px;
+font-size:12px;
+}
+
+/* ===== ZOOM FOTO ===== */
+#zoomPopup{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.85);
+align-items:center;
+justify-content:center;
+z-index:9999;
+padding:20px;
+}
+
+#zoomPopup img{
+width:100%;
+height:auto;
+}
+/* LOGO BULAT TENGAH */
+
+.logo-tengah{
+position:absolute;
+left:50%;
+transform:translateX(-50%);
+bottom:-160px;
+
+width:350px;
+height:350px;
+border-radius:50%;
+
+background:white;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+overflow:hidden;
+
+z-index:5;
+
+border:16px solid transparent;
+
+background-image:
+linear-gradient(white,white),
+linear-gradient(135deg,#16a34a,#f97316);
+
+background-origin:border-box;
+background-clip:content-box,border-box;
+}
+
+.logo-tengah img{
+width:60%;
+height:auto;
+margin-top:-130px;
+}
+
+.member-box{
+text-align:center;
+margin-top:10px;
+}
+
+.member-text{
+font-size:14px;
+font-weight:bold;
+color:#555;
+margin-bottom:6px;
+}
+
+.btn-member{
+display:inline-block;
+text-decoration:none;
+background:linear-gradient(90deg,#22c55e,#f97316);
+color:white;
+border:3px solid #facc15;
+padding:12px 20px;
+border-radius:30px;
+font-size:14px;
+font-weight:bold;
+cursor:pointer;
+box-shadow:0 4px 10px rgba(0,0,0,0.2);
+}
+.motor-jalan{
+position:relative;
+height:40px;
+margin-bottom:-10px;
+overflow:hidden;
+z-index:5;
+}
+
+.motor-kirim{
+position:absolute;
+left:-120px;
+top:0;
+animation:jalanmotor 12s linear infinite;
+}
+
+.motor-kirim img{
+height:36px;
+}
+
+.teks-kirim{
+position:absolute;
+left:-110px;
+top:6px;
+font-size:12px;
+color:#15803d;
+font-weight:bold;
+white-space:nowrap;
+}
+
+.asap{
+position:absolute;
+left:-10px;
+top:18px;
+font-size:14px;
+opacity:0.7;
+transform:scaleX(-1);
+animation:asapgerak 1s linear infinite;
+}
+
+@keyframes jalanmotor{
+0%{left:-120px;}
+100%{left:100%;}
+}
+
+@keyframes asapgerak{
+0%{
+transform:translateX(0) scaleX(-1);
+opacity:0.8;
+}
+
+100%{
+transform:translateX(-15px) scaleX(-1);
+opacity:0;
+}
+}
+#paketTerbang{
+position:fixed;
+font-size:26px;
+pointer-events:none;
+display:none;
+z-index:9999;
+}
+
+@keyframes keranjangBlink{
+0%{transform:scale(1);}
+50%{transform:scale(1.2);}
+100%{transform:scale(1);}
+}
+
+.keranjang-animasi{
+animation:keranjangBlink 0.5s ease 3;
+}
+/* SLIDER GOOGLE SHEET */
+
+.slider-sheet{
+position:absolute;
+top:35px;
+left:0;
+width:100%;
+overflow:hidden;
+z-index:1;
+}
+
+.slides{
+display:flex;
+gap:20px;
+animation:slidejalan 40s linear infinite;
+}
+
+.slide-manual{
+flex-shrink:0;
+}
+
+.slide-manual img{
+width:220px;
+height:380px;
+object-fit:cover;
+border-radius:10px;
+}
+
+@keyframes slidejalan{
+0%{
+transform:translateX(0);
+}
+100%{
+transform:translateX(-50%);
+}
+}
+/* ===== TOMBOL BAWAH POPUP ===== */
+
+.popup-bottom{
+display:flex;
+align-items:center;
+width:100%;
+margin-top:20px;
+gap:10px;
+}
+
+.popup-icon{
+width:70px;
+height:60px;
+border:1px solid #ddd;
+background:#fff;
+border-radius:10px;
+font-size:24px;
+cursor:pointer;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+flex-shrink:0;
+}
+
+.popup-icon span{
+font-size:12px;
+margin-top:3px;
+}
+
+.popup-checkout{
+flex:1;
+height:60px;
+border:none;
+border-radius:10px;
+background:#ff6a00;
+color:#fff;
+font-size:18px;
+font-weight:bold;
+cursor:pointer;
+box-shadow:0 4px 10px rgba(255,106,0,.4);
+}
+
+.popup-checkout:hover{
+background:#ff4500;
+}
+
+@media (max-width:768px){
+.produk-container{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:10px;}
+.produk-img-box{height:150px;}
+.produk-nama{font-size:13px;}
+.produk-deskripsi{font-size:11px;}
+.produk-harga{font-size:15px;}
+.popup-bottom{flex-direction:column;}
+.popup-icon,.popup-checkout{width:100%;height:48px;font-size:16px;}
+.zoomBox{width:95%!important;max-width:95%!important;min-height:auto!important;}
+}
+@media (min-width:769px){
+.zoomBox{width:900px!important;max-width:95vw!important;}
+}
+
+
+/* ==== V7 MOBILE ==== */
+@media (max-width:768px){
+
+.header{height:150px!important;}
+.slider-sheet{
+    top:5px!important;
+}
+.logo-tengah{width:110px!important;height:125px!important;bottom:-50px!important;border-width:6px!important;}
+.logo-tengah img{
+    width:75%!important;
+    max-width:none!important;
+    height:auto!important;
+    margin-top:-30px!important;
+}
+.slides{
+    animation-duration: 20s !important;
+   }
+.slide-manual img{width:90px!important;height:140px!important;}
+.running-text{font-size:12px!important;padding:2px!important;}
+.hero{padding:20px 12px!important;}
+.hero h2{font-size:20px!important;line-height:1.3;}
+.hero p{font-size:13px!important;}
+
+.btn-modern,.btn-member{
+display:block!important;
+width:100%;
+margin:8px 0!important;
+}
+
+.menu-pro{
+display:flex!important;
+flex-wrap:nowrap!important;
+overflow-x:auto!important;
+justify-content:flex-start!important;
+padding:0 8px 8px;
+}
+
+.menu-pro a{
+flex:0 0 auto!important;
+}
+
+.search-box input{
+width:100%!important;
+}
+
+
+/* ===== PRODUK MODE HP V14 ===== */
+@media (max-width:768px){
+
+.produk-container{
+    display:grid;
+    grid-template-columns:repeat(3,1fr)!important;
+    gap:6px!important;
+    padding:6px!important;
+}
+
+.produk-card{
+    display:flex;
+    flex-direction:column;
+    border-radius:10px!important;
+    overflow:hidden;
+    box-shadow:0 3px 8px rgba(0,0,0,.12);
+}
+
+.produk-img-box{
+    height:100px!important;
+}
+
+.produk-img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.produk-info{
+    display:flex;
+    flex-direction:column;
+    flex:1;
+    padding:5px!important;
+}
+
+.produk-nama{
+    font-size:10px!important;
+    font-weight:bold;
+    line-height:1.2;
+    min-height:24px;
+}
+
+.produk-deskripsi{
+    font-size:8px!important;
+    color:#666;
+    line-height:1.2;
+    min-height:30px;
+    margin:2px 0;
+}
+
+.produk-harga{
+    font-size:11px!important;
+    color:#ff6a00;
+    font-weight:bold;
+    margin:3px 0;
+}
+
+.produk-info button{
+    width:100%;
+    height:28px;
+    padding:0;
+    font-size:9px;
+    border-radius:6px;
+    margin-top:4px;
+}
+
+#cartFloat{
+    right:10px!important;
+    bottom:70px!important;
+    transform:scale(.85);
+}
+
+}
+
+.popup-bottom{
+flex-direction:column!important;
+}
+
+.popup-icon,
+.popup-checkout{
+width:100%!important;
+height:50px!important;
+}
+
+.zoomBox{
+width:96%!important;
+max-width:96%!important;
+max-height:95vh!important;
+}
+
+}
+
+/* .search-box input{
+    width:80% !important;
+}
+/* HEADER STICKY */  
+.sticky-header{  
+    position:sticky;  
+    top:0;  
+    z-index:9999;  
+    background:#fff;  
+}  
+  
+/* Supaya produk tidak tertutup */  
+.hero{  
+    margin-top:10px;  
+}  
+}  
+
+/* ===== APK CARD V2 ===== */
+
+.apk-card{
+display:flex;
+align-items:center;
+gap:20px;
+background:#fff;
+max-width:900px;
+margin:30px auto;
+padding:25px;
+border-radius:20px;
+box-shadow:0 8px 25px rgba(0,0,0,.12);
+}
+
+.apk-card img{
+width:120px;
+height:120px;
+border-radius:25px;
+object-fit:cover;
+box-shadow:0 5px 15px rgba(0,0,0,.15);
+}
+
+.apk-info{
+flex:1;
+}
+
+.apk-title{
+font-size:36px;
+font-weight:bold;
+color:#16a34a;
+margin-bottom:8px;
+}
+
+.apk-rating{
+font-size:18px;
+margin-bottom:12px;
+}
+
+.apk-meta{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+margin-bottom:15px;
+}
+
+.apk-badge{
+background:#f5f5f5;
+padding:8px 14px;
+border-radius:10px;
+font-size:14px;
+font-weight:bold;
+}
+
+.apk-desc{
+font-size:16px;
+line-height:1.6;
+color:#555;
+margin-bottom:18px;
+}
+
+.apk-install{
+display:block;
+width:100%;
+text-align:center;
+padding:16px;
+background:#16a34a;
+color:#fff;
+text-decoration:none;
+font-size:20px;
+font-weight:bold;
+border-radius:35px;
+box-shadow:0 6px 18px rgba(22,163,74,.35);
+transition:.3s;
+}
+
+.apk-install:hover{
+transform:translateY(-2px);
+background:#12813c;
+}
+
+.apk-footer{
+margin-top:20px;
+padding-top:15px;
+border-top:1px solid #eee;
+display:flex;
+justify-content:space-around;
+font-size:15px;
+color:#555;
+font-weight:bold;
+}
+/* ===== APK CARD MODE HP ===== */
+
+@media (max-width:768px){
+
+.apk-card{
+display:block;
+padding:18px;
+margin:18px 10px;
+text-align:center;
+}
+
+.apk-card img{
+width:90px;
+height:90px;
+margin:auto auto 15px;
+display:block;
+}
+
+.apk-title{
+font-size:24px;
+}
+
+.apk-rating{
+font-size:14px;
+}
+
+.apk-meta{
+justify-content:center;
+gap:8px;
+}
+
+.apk-badge{
+font-size:12px;
+padding:6px 10px;
+}
+
+.apk-desc{
+font-size:13px;
+}
+
+.apk-install{
+font-size:17px;
+padding:14px;
+}
+
+.apk-footer{
+font-size:13px;
+margin-top:15px;
+}
+}
+@media (max-width:768px){
+
+#promoPopup{
+    padding:10px!important;
+}
+
+.promo-box{
+    width:82%!important;
+    max-width:290px!important;
+    max-height:68vh!important;
+    padding:10px!important;
+    border-radius:10px!important;
+}
+
+.logo{
+    width:90px!important;
+}
+
+.promo-box h2{
+    font-size:14px!important;
+    margin:6px 0!important;
+}
+
+.promo-text{
+    font-size:11px!important;
+    line-height:1.35!important;
+}
+
+.promo-highlight{
+    font-size:11px!important;
+    padding:8px!important;
+}
+
+.btn-belanja,
+.btn-close{
+    font-size:13px!important;
+    padding:9px!important;
+    border-radius:20px!important;
+}
+
+}
+
+
+/* KATEGORI PRODUK - tambahan saja, layout asli tetap */
+.kategori-scroll{
+  width:100%;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+  margin:4px 0 10px;
+  padding:2px 0 5px;
+}
+.kategori-scroll::-webkit-scrollbar{display:none}
+.kategori-track{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  width:max-content;
+  min-width:100%;
+  padding:0 4px;
+}
+.kategori-btn{
+  flex:0 0 auto;
+  height:34px;
+  padding:0 12px;
+  border:1px solid #dfe5e9;
+  border-radius:18px;
+  background:#fff;
+  color:#344054;
+  font-size:11px;
+  font-weight:700;
+  cursor:pointer;
+  white-space:nowrap;
+  box-shadow:0 2px 7px rgba(16,24,40,.08);
+  transition:.18s;
+}
+.kategori-btn.active{
+  background:linear-gradient(135deg,#0b8f4d,#16b364);
+  color:#fff;
+  border-color:#0b8f4d;
+}
+@media(max-width:768px){
+  .kategori-scroll{margin:2px -2px 8px;padding:1px 0 4px}
+  .kategori-track{justify-content:flex-start;min-width:max-content;gap:5px;padding:0 2px}
+  .kategori-btn{height:32px;padding:0 10px;font-size:10px;border-radius:16px}
+}
+</style>
+
+<style id="toko-siap-antar-modern-ui">
+/* =========================================================
+   TOKO SIAP ANTAR — MODERN MARKETPLACE UI
+   VISUAL ONLY: tidak mengubah fungsi / JavaScript / data.
+   ========================================================= */
+
+:root{
+  --tsa-green:#16a34a;
+  --tsa-green-dark:#0f7a36;
+  --tsa-orange:#f97316;
+  --tsa-orange-dark:#ea580c;
+  --tsa-yellow:#facc15;
+  --tsa-bg:#f5f7fa;
+  --tsa-card:#ffffff;
+  --tsa-text:#172033;
+  --tsa-muted:#6b7280;
+  --tsa-border:#e5e7eb;
+  --tsa-shadow:0 8px 24px rgba(15,23,42,.08);
+  --tsa-shadow-hover:0 14px 32px rgba(15,23,42,.14);
+}
+
+html{scroll-behavior:smooth}
+
+body{
+  background:
+    radial-gradient(circle at 10% 0%,rgba(22,163,74,.07),transparent 28%),
+    radial-gradient(circle at 90% 10%,rgba(249,115,22,.07),transparent 25%),
+    var(--tsa-bg);
+  color:var(--tsa-text);
+}
+
+/* ---------- FLOATING MENU ---------- */
+#menuBtn{
+  width:52px!important;
+  height:52px!important;
+  left:14px!important;
+  top:14px!important;
+  border-radius:16px!important;
+  background:linear-gradient(135deg,var(--tsa-green),var(--tsa-orange))!important;
+  box-shadow:0 8px 22px rgba(0,0,0,.22)!important;
+  border:2px solid rgba(255,255,255,.85)!important;
+  font-size:25px!important;
+  backdrop-filter:blur(8px);
+  transition:.2s ease;
+}
+#menuBtn:hover{transform:translateY(-2px) scale(1.03)}
+
+#sideMenu{
+  width:310px!important;
+  background:#fff!important;
+  box-shadow:12px 0 40px rgba(0,0,0,.20)!important;
+}
+.menuHeader{
+  min-height:72px;
+  padding:18px 20px!important;
+  background:linear-gradient(135deg,#111827,#166534 65%,#f97316)!important;
+  letter-spacing:.4px;
+}
+.menuItem{
+  padding:15px 19px!important;
+  color:#263142;
+  border-bottom:1px solid #f0f1f3!important;
+  transition:.18s ease;
+}
+.menuItem:hover{
+  background:#f0fdf4!important;
+  color:var(--tsa-green)!important;
+  padding-left:24px!important;
+}
+.subMenu{background:#fafafa!important}
+.subMenu a{
+  padding:13px 28px!important;
+  color:#4b5563!important;
+}
+.subMenu a:hover{
+  background:#ecfdf5!important;
+  color:var(--tsa-green)!important;
+}
+
+/* ---------- HEADER / PROMO HERO ---------- */
+.sticky-header{
+  background:rgba(255,255,255,.92)!important;
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+
+.header{
+  height:330px!important;
+  background:#0b1220!important;
+  border-radius:0 0 26px 26px;
+  box-shadow:0 10px 30px rgba(15,23,42,.12);
+}
+
+.slider-sheet{
+  top:18px!important;
+  padding:0 14px;
+}
+
+.slides{
+  gap:14px!important;
+  align-items:center;
+}
+
+.slide-manual{
+  padding:4px;
+}
+
+.slide-manual img{
+  width:190px!important;
+  height:285px!important;
+  border-radius:16px!important;
+  border:1px solid rgba(255,255,255,.15);
+  box-shadow:0 10px 25px rgba(0,0,0,.28);
+  transition:transform .25s ease,filter .25s ease;
+}
+.slide-manual img:hover{
+  transform:scale(1.025);
+  filter:brightness(1.05);
+}
+
+.logo-tengah{
+  width:170px!important;
+  height:170px!important;
+  bottom:-84px!important;
+  border-width:8px!important;
+  background-image:
+    linear-gradient(#fff,#fff),
+    linear-gradient(135deg,var(--tsa-green),var(--tsa-orange))!important;
+  box-shadow:0 10px 30px rgba(0,0,0,.22);
+}
+.logo-tengah img{
+  width:67%!important;
+  margin-top:-60px!important;
+}
+
+.motor-jalan{
+  height:38px!important;
+  margin-bottom:0!important;
+  background:#fff;
+}
+.running-text{
+  background:linear-gradient(90deg,#0f7a36,var(--tsa-green),#e96a12)!important;
+  font-size:13px!important;
+  padding:7px 0!important;
+  letter-spacing:.1px;
+}
+.garis{
+  height:3px!important;
+  background:linear-gradient(90deg,var(--tsa-green),var(--tsa-yellow),var(--tsa-orange))!important;
+}
+
+/* ---------- MAIN HERO ---------- */
+.content-scroll{
+  background:transparent;
+}
+
+.hero{
+  padding:55px 18px 24px!important;
+  background:transparent!important;
+}
+
+.hero h2{
+  color:#111827!important;
+  font-size:28px!important;
+  line-height:1.2!important;
+  margin-bottom:9px!important;
+}
+.hero h2 b{
+  color:var(--tsa-green);
+}
+.hero p{
+  color:var(--tsa-muted)!important;
+  margin-bottom:12px!important;
+}
+
+/* Jam operasional box */
+.hero p[style*="background:#fff3cd"]{
+  background:linear-gradient(135deg,#fffdf2,#fff8dc)!important;
+  color:#6b4f00!important;
+  border:1px solid #f5d76e!important;
+  border-left:5px solid var(--tsa-orange)!important;
+  border-radius:14px!important;
+  box-shadow:0 5px 18px rgba(120,80,0,.07);
+}
+
+/* Tombol jalur belanja */
+.hero a[href="index2.html"],
+.hero a[href*="tokopedia.com"]{
+  min-height:58px;
+  padding:10px 16px!important;
+  font-size:12px!important;
+  border-radius:15px!important;
+  border:1px solid rgba(255,255,255,.7)!important;
+  box-shadow:0 8px 20px rgba(15,23,42,.12)!important;
+  text-align:center;
+  line-height:1.35;
+  transition:.2s ease;
+}
+.hero a[href="index2.html"]{
+  background:linear-gradient(135deg,#ff9800,#ea580c)!important;
+}
+.hero a[href*="tokopedia.com"]{
+  background:linear-gradient(135deg,#16a34a,#0f7a36)!important;
+}
+.hero a:hover{
+  transform:translateY(-2px);
+  box-shadow:0 12px 25px rgba(15,23,42,.16)!important;
+}
+
+/* ---------- SEARCH ---------- */
+.search-box{
+  max-width:760px!important;
+  margin:18px auto 14px!important;
+  padding:0 12px;
+}
+.search-box input{
+  width:100%!important;
+  height:52px;
+  padding:0 20px!important;
+  border:1px solid #d8dee8!important;
+  border-radius:16px!important;
+  background:#fff!important;
+  color:#111827;
+  font-size:15px!important;
+  box-shadow:0 6px 18px rgba(15,23,42,.07)!important;
+  transition:.2s ease;
+}
+.search-box input:focus{
+  border-color:var(--tsa-green)!important;
+  box-shadow:0 0 0 4px rgba(22,163,74,.11),0 8px 22px rgba(15,23,42,.08)!important;
+}
+
+/* ---------- PRODUCT AREA ---------- */
+.produk-scroll{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  padding-bottom:110px!important;
+}
+.produk-container{
+  grid-template-columns:repeat(auto-fill,minmax(210px,1fr))!important;
+  gap:14px!important;
+  padding:12px 14px 24px!important;
+  max-width:1450px!important;
+}
+
+.produk-card{
+  position:relative;
+  background:#fff!important;
+  border:1px solid #edf0f3;
+  border-radius:17px!important;
+  box-shadow:var(--tsa-shadow)!important;
+  overflow:hidden;
+  transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;
+}
+.produk-card:hover{
+  transform:translateY(-4px);
+  box-shadow:var(--tsa-shadow-hover)!important;
+  border-color:#d8eadf;
+}
+
+.produk-img-box{
+  height:205px!important;
+  background:linear-gradient(135deg,#eef8f1,#fff3eb)!important;
+  position:relative;
+}
+.produk-img{
+  object-fit:contain!important;
+  padding:8px;
+  transition:transform .3s ease;
+}
+.produk-card:hover .produk-img{
+  transform:scale(1.045)!important;
+}
+
+.produk-info{
+  padding:11px 12px 13px!important;
+}
+
+.produk-nama{
+  color:#172033!important;
+  font-size:13px!important;
+  font-weight:700!important;
+  line-height:1.35!important;
+  min-height:35px;
+}
+.produk-deskripsi{
+  color:#7b8492!important;
+  font-size:11px!important;
+  line-height:1.35!important;
+  min-height:31px;
+}
+.produk-harga{
+  color:var(--tsa-orange)!important;
+  font-size:15px!important;
+  font-weight:800!important;
+  margin:7px 0 5px!important;
+}
+
+/* rating */
+.produk-info > div[style*="color:#ffb400"]{
+  letter-spacing:-1px;
+  font-size:12px!important;
+}
+
+/* tombol produk */
+.produk-info button{
+  min-height:36px;
+  border-radius:10px!important;
+  font-size:11px!important;
+  font-weight:700;
+  box-shadow:none!important;
+  transition:.18s ease;
+}
+.produk-info button:hover{
+  transform:translateY(-1px);
+  filter:brightness(.98);
+}
+.produk-info .btn-cart{
+  background:linear-gradient(135deg,#16a34a,#0f7a36)!important;
+}
+.produk-info button[onclick*="beliSekarang"]{
+  background:linear-gradient(135deg,#ff8a00,#ea580c)!important;
+}
+
+/* ---------- FLOAT CART ---------- */
+#cartFloat{
+  right:18px!important;
+  bottom:18px!important;
+  padding:11px 16px!important;
+  border:2px solid rgba(255,255,255,.85)!important;
+  border-radius:16px!important;
+  background:linear-gradient(135deg,#111827,#16a34a)!important;
+  box-shadow:0 10px 28px rgba(15,23,42,.25)!important;
+  font-size:14px;
+  font-weight:800;
+  transition:.2s ease;
+}
+#cartFloat:hover{transform:translateY(-3px)!important}
+#cartCount{
+  background:var(--tsa-orange)!important;
+  color:#fff!important;
+  min-width:24px;
+  display:inline-flex;
+  justify-content:center;
+  padding:3px 7px!important;
+  margin-left:4px;
+}
+
+/* ---------- ZOOM PRODUCT ---------- */
+#zoomPopup{
+  background:rgba(5,10,18,.78)!important;
+  backdrop-filter:blur(5px);
+}
+.zoomBox{
+  border-radius:20px!important;
+  padding:18px!important;
+  box-shadow:0 25px 70px rgba(0,0,0,.35)!important;
+}
+#zoomImg{
+  background:#f7f8fa;
+  border-radius:14px!important;
+}
+#zoomNama{
+  color:#111827!important;
+}
+#zoomHarga{
+  color:var(--tsa-orange)!important;
+}
+.zoomClose{
+  top:8px!important;
+  right:8px!important;
+  width:38px!important;
+  height:38px!important;
+  font-size:19px!important;
+  border:2px solid #fff;
+}
+
+/* ---------- APK / FOOTER ---------- */
+.apk-card{
+  background:linear-gradient(145deg,#fff,#f8fafc)!important;
+  border:1px solid #e8edf2;
+  border-radius:22px!important;
+  box-shadow:var(--tsa-shadow)!important;
+}
+.apk-title{color:var(--tsa-green)!important}
+.apk-install{
+  background:linear-gradient(135deg,var(--tsa-green),#0f7a36)!important;
+}
+.apk-badge{
+  border:1px solid #e5e7eb;
+  background:#fff!important;
+}
+
+body > div[style*="background:#fff"][style*="text-align:center"]{
+  border-top:1px solid #edf0f3;
+}
+
+/* ---------- PROMO POPUP ---------- */
+#promoPopup{
+  background:rgba(5,10,18,.72)!important;
+  backdrop-filter:blur(5px);
+}
+.promo-box{
+  border:1px solid rgba(255,255,255,.7);
+  box-shadow:0 25px 70px rgba(0,0,0,.32)!important;
+  border-radius:20px!important;
+}
+.promo-highlight{
+  background:linear-gradient(135deg,var(--tsa-green),#0f7a36)!important;
+}
+.btn-belanja{
+  background:linear-gradient(135deg,var(--tsa-green),#0f7a36)!important;
+}
+
+/* ---------- RESPONSIVE HP ---------- */
+@media (max-width:768px){
+  #menuBtn{
+    width:47px!important;
+    height:47px!important;
+    left:10px!important;
+    top:10px!important;
+    border-radius:14px!important;
+    font-size:22px!important;
+  }
+
+  .header{
+    height:205px!important;
+    border-radius:0 0 20px 20px;
+  }
+
+  .slider-sheet{
+    top:7px!important;
+    padding:0 7px!important;
+  }
+  .slides{gap:8px!important}
+  .slide-manual img{
+    width:100px!important;
+    height:165px!important;
+    border-radius:12px!important;
+  }
+
+  .logo-tengah{
+    width:112px!important;
+    height:112px!important;
+    bottom:-55px!important;
+    border-width:6px!important;
+  }
+  .logo-tengah img{
+    width:74%!important;
+    margin-top:-34px!important;
+  }
+
+  .motor-jalan{height:31px!important}
+  .motor-kirim img{height:29px!important}
+  .teks-kirim{
+    top:4px!important;
+    font-size:9px!important;
+  }
+  .running-text{
+    font-size:10px!important;
+    padding:5px 0!important;
+  }
+
+  .hero{
+    padding:45px 12px 16px!important;
+  }
+  .hero h2{
+    font-size:21px!important;
+    line-height:1.25!important;
+  }
+  .hero p{
+    font-size:12px!important;
+  }
+
+  .hero p[style*="background:#fff3cd"]{
+    font-size:11px!important;
+    padding:10px!important;
+    line-height:1.45;
+  }
+
+  .hero a[href="index2.html"],
+  .hero a[href*="tokopedia.com"]{
+    min-height:52px!important;
+    font-size:10px!important;
+    padding:8px 10px!important;
+    border-radius:13px!important;
+  }
+
+  .search-box{
+    margin:12px auto!important;
+    padding:0 8px!important;
+  }
+  .search-box input{
+    height:46px!important;
+    font-size:13px!important;
+    border-radius:14px!important;
+  }
+
+  /* 2 kolom marketplace di HP: lebih besar dan tetap hemat ruang */
+  .produk-container{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:9px!important;
+    padding:8px!important;
+  }
+  .produk-card{
+    border-radius:13px!important;
+  }
+  .produk-img-box{
+    height:132px!important;
+  }
+  .produk-info{
+    padding:7px 8px 9px!important;
+  }
+  .produk-nama{
+    font-size:11px!important;
+    min-height:30px;
+  }
+  .produk-deskripsi{
+    font-size:9px!important;
+    min-height:25px;
+  }
+  .produk-harga{
+    font-size:12px!important;
+    margin:5px 0 3px!important;
+  }
+  .produk-info button{
+    min-height:30px!important;
+    font-size:9px!important;
+    border-radius:8px!important;
+  }
+  .produk-info > div[style*="color:#ffb400"]{
+    font-size:10px!important;
+  }
+
+  #cartFloat{
+    right:9px!important;
+    bottom:12px!important;
+    padding:9px 12px!important;
+    border-radius:14px!important;
+    font-size:12px!important;
+  }
+
+  .apk-card{
+    margin:15px 9px!important;
+    border-radius:17px!important;
+  }
+
+  .zoomBox{
+    width:92%!important;
+    max-width:360px!important;
+    padding:10px!important;
+  }
+}
+
+/* HP sangat kecil */
+@media (max-width:380px){
+  .produk-img-box{height:118px!important}
+  .produk-nama{font-size:10px!important}
+  .produk-deskripsi{font-size:8px!important}
+  .produk-harga{font-size:11px!important}
+  .produk-info button{font-size:8px!important}
+}
+
+/* TABLET / DESKTOP */
+@media (min-width:769px){
+  .hero{
+    max-width:1100px;
+    margin:auto;
+  }
+  .produk-container{
+    grid-template-columns:repeat(auto-fill,minmax(220px,1fr))!important;
+  }
+}
+
+/* Kurangi animasi bila pengguna meminta reduced motion */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    scroll-behavior:auto!important;
+    transition-duration:.01ms!important;
+  }
+}
+</style>
+
+
+<style id="toko-siap-antar-pro-ui">
+/* =========================================================
+   TOKO SIAP ANTAR — PRO MARKETPLACE STYLE
+   VISUAL ONLY — fungsi & logika existing tidak diubah
+   ========================================================= */
+
+:root{
+  --pro-green:#0b8f4d;
+  --pro-green2:#16b364;
+  --pro-orange:#ff6b00;
+  --pro-dark:#101828;
+  --pro-text:#1d2939;
+  --pro-muted:#667085;
+  --pro-bg:#f2f4f7;
+  --pro-white:#fff;
+  --pro-line:#eaecf0;
+}
+
+body{
+  background:#f2f4f7!important;
+  color:var(--pro-text)!important;
+  font-family:Inter,"Segoe UI",Arial,sans-serif!important;
+}
+
+/* HEADER: premium marketplace */
+.header{
+  height:350px!important;
+  background:
+    linear-gradient(180deg,rgba(16,24,40,.15),rgba(16,24,40,.72)),
+    #111827!important;
+  border-radius:0!important;
+  box-shadow:0 8px 28px rgba(16,24,40,.16)!important;
+}
+
+.slider-sheet{
+  top:15px!important;
+  padding:0 16px!important;
+}
+
+.slide-manual img{
+  width:200px!important;
+  height:300px!important;
+  border-radius:12px!important;
+  border:0!important;
+  box-shadow:0 12px 30px rgba(0,0,0,.30)!important;
+}
+
+.logo-tengah{
+  width:154px!important;
+  height:154px!important;
+  bottom:-77px!important;
+  border:7px solid transparent!important;
+  box-shadow:0 10px 35px rgba(0,0,0,.25)!important;
+}
+
+.logo-tengah img{
+  width:68%!important;
+  margin-top:-55px!important;
+}
+
+/* menu */
+#menuBtn{
+  width:48px!important;
+  height:48px!important;
+  border-radius:12px!important;
+  background:#fff!important;
+  color:#111827!important;
+  border:0!important;
+  box-shadow:0 5px 18px rgba(0,0,0,.20)!important;
+  font-size:22px!important;
+}
+#sideMenu{
+  width:300px!important;
+}
+.menuHeader{
+  background:linear-gradient(135deg,#087f45,#13a45b)!important;
+  min-height:68px!important;
+}
+.menuItem{
+  font-size:14px!important;
+}
+.menuItem:hover{
+  background:#ecfdf3!important;
+  color:var(--pro-green)!important;
+}
+
+/* running bar */
+.running-text{
+  background:#087f45!important;
+  font-size:12px!important;
+  padding:7px!important;
+}
+.garis{
+  height:2px!important;
+  background:linear-gradient(90deg,#087f45,#ff6b00)!important;
+}
+
+/* hero */
+.hero{
+  background:#fff!important;
+  padding:62px 18px 20px!important;
+  border-bottom:1px solid var(--pro-line);
+}
+
+.hero h2{
+  color:#101828!important;
+  font-size:27px!important;
+  letter-spacing:-.5px;
+}
+
+.hero h2 b{
+  color:var(--pro-green)!important;
+}
+
+.hero > p:first-of-type{
+  color:var(--pro-muted)!important;
+}
+
+/* operational notice */
+.hero p[style*="background:#fff3cd"]{
+  background:#fffaeb!important;
+  color:#7a4e00!important;
+  border:1px solid #fedf89!important;
+  border-left:4px solid #f79009!important;
+  border-radius:10px!important;
+  box-shadow:none!important;
+}
+
+/* delivery buttons */
+.hero a[href="index2.html"],
+.hero a[href*="tokopedia.com"]{
+  border:0!important;
+  border-radius:10px!important;
+  min-height:56px!important;
+  font-size:11px!important;
+  box-shadow:0 5px 14px rgba(16,24,40,.12)!important;
+}
+.hero a[href="index2.html"]{
+  background:linear-gradient(135deg,#ff7900,#ff4d00)!important;
+}
+.hero a[href*="tokopedia.com"]{
+  background:linear-gradient(135deg,#0b9f53,#087f45)!important;
+}
+
+/* search */
+.search-box{
+  max-width:900px!important;
+  margin:18px auto!important;
+}
+.search-box input{
+  width:100%!important;
+  height:50px!important;
+  background:#fff!important;
+  border:1px solid #d0d5dd!important;
+  border-radius:10px!important;
+  box-shadow:0 2px 7px rgba(16,24,40,.05)!important;
+  font-size:14px!important;
+}
+.search-box input:focus{
+  border-color:#12b76a!important;
+  box-shadow:0 0 0 4px rgba(18,183,106,.10)!important;
+}
+
+/* product section */
+.produk-scroll{
+  padding-bottom:100px!important;
+  background:#f2f4f7!important;
+}
+.produk-container{
+  max-width:1500px!important;
+  padding:14px!important;
+  gap:12px!important;
+  grid-template-columns:repeat(auto-fill,minmax(215px,1fr))!important;
+}
+
+.produk-card{
+  background:#fff!important;
+  border:1px solid #eaecf0!important;
+  border-radius:10px!important;
+  box-shadow:0 2px 8px rgba(16,24,40,.06)!important;
+  transition:.2s ease!important;
+}
+.produk-card:hover{
+  transform:translateY(-3px)!important;
+  box-shadow:0 10px 25px rgba(16,24,40,.12)!important;
+}
+
+.produk-img-box{
+  height:210px!important;
+  background:#f8fafc!important;
+  border-bottom:1px solid #f0f2f5;
+}
+.produk-img{
+  padding:10px!important;
+  object-fit:contain!important;
+}
+
+.produk-info{
+  padding:10px!important;
+}
+.produk-nama{
+  color:#101828!important;
+  font-size:13px!important;
+  font-weight:700!important;
+}
+.produk-deskripsi{
+  color:#667085!important;
+  font-size:10px!important;
+}
+.produk-harga{
+  color:#ff4d00!important;
+  font-size:15px!important;
+  font-weight:800!important;
+}
+
+.produk-info button{
+  border-radius:7px!important;
+  min-height:34px!important;
+  font-size:10px!important;
+  font-weight:700!important;
+  border:1px solid transparent!important;
+}
+.produk-info .btn-cart{
+  background:#ecfdf3!important;
+  color:#087f45!important;
+  border-color:#abefc6!important;
+}
+.produk-info button[onclick*="beliSekarang"]{
+  background:#ff6b00!important;
+}
+
+/* floating cart — compact */
+#cartFloat{
+  right:16px!important;
+  bottom:16px!important;
+  background:#101828!important;
+  border:0!important;
+  border-radius:10px!important;
+  padding:10px 14px!important;
+  box-shadow:0 8px 22px rgba(16,24,40,.25)!important;
+  font-size:13px!important;
+}
+#cartCount{
+  background:#ff6b00!important;
+  min-width:22px!important;
+}
+
+/* popup */
+#promoPopup,
+#zoomPopup{
+  backdrop-filter:blur(5px)!important;
+}
+.promo-box{
+  border-radius:16px!important;
+  border:1px solid #eaecf0!important;
+}
+.zoomBox{
+  border-radius:16px!important;
+  border:1px solid #eaecf0!important;
+}
+
+/* apk */
+.apk-card{
+  background:#fff!important;
+  border:1px solid #eaecf0!important;
+  border-radius:16px!important;
+  box-shadow:0 5px 18px rgba(16,24,40,.07)!important;
+}
+.apk-title{
+  color:#087f45!important;
+}
+.apk-install{
+  background:#087f45!important;
+}
+
+/* social footer */
+.apk-footer{
+  border-color:#eaecf0!important;
+}
+
+/* mobile */
+@media(max-width:768px){
+  .header{
+    height:205px!important;
+  }
+  .slider-sheet{
+    top:6px!important;
+    padding:0 6px!important;
+  }
+  .slide-manual img{
+    width:98px!important;
+    height:164px!important;
+    border-radius:9px!important;
+  }
+  .logo-tengah{
+    width:108px!important;
+    height:108px!important;
+    bottom:-54px!important;
+    border-width:5px!important;
+  }
+  .logo-tengah img{
+    width:75%!important;
+    margin-top:-32px!important;
+  }
+
+  .hero{
+    padding:45px 10px 14px!important;
+  }
+  .hero h2{
+    font-size:20px!important;
+  }
+
+  .hero a[href="index2.html"],
+  .hero a[href*="tokopedia.com"]{
+    min-height:50px!important;
+    font-size:9px!important;
+  }
+
+  .produk-container{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px!important;
+    padding:8px!important;
+  }
+  .produk-card{
+    border-radius:9px!important;
+  }
+  .produk-img-box{
+    height:135px!important;
+  }
+  .produk-info{
+    padding:7px!important;
+  }
+  .produk-nama{
+    font-size:10px!important;
+    min-height:28px!important;
+  }
+  .produk-deskripsi{
+    font-size:8px!important;
+    min-height:23px!important;
+  }
+  .produk-harga{
+    font-size:12px!important;
+  }
+  .produk-info button{
+    min-height:29px!important;
+    font-size:8px!important;
+    border-radius:6px!important;
+  }
+
+  #cartFloat{
+    right:8px!important;
+    bottom:10px!important;
+    padding:9px 11px!important;
+    font-size:11px!important;
+  }
+}
+
+@media(max-width:380px){
+  .produk-img-box{height:120px!important}
+  .produk-nama{font-size:9px!important}
+  .produk-harga{font-size:11px!important}
+}
+</style>
+
+</head>
+
+<body>
+<div id="fbPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999999;justify-content:center;align-items:center;">
+  <div style="background:#fff;width:90%;max-width:340px;padding:20px;border-radius:15px;text-align:center;">
+    
+    <img src="logo2.png" style="width:90px;margin-bottom:10px;">
+
+    <h3 style="color:#16a34a;">TOKO SIAP ANTAR</h3>
+
+    <p style="margin:15px 0;line-height:1.5">
+      ⚠️ Anda membuka website melalui <b>Facebook</b>.<br><br>
+      Agar semua fitur seperti <b>Keranjang, Checkout, Peta, dan Pembayaran</b> berjalan normal, silakan tekan <b>⋮</b> di kanan atas lalu pilih <b>Buka di Browser</b>.
+    </p>
+
+    <button onclick="tutupFbPopup()" style="width:100%;padding:12px;background:#16a34a;color:#fff;border:none;border-radius:8px;font-weight:bold;">
+      Saya Mengerti
+    </button>
+
+  </div>
+</div>
+<button id="menuBtn" onclick="bukaMenu()">☰</button>
+
+<div id="menuOverlay" onclick="tutupMenu()"></div>
+
+<div id="sideMenu">
+
+<div class="menuHeader">
+MENU
+<div class="menuClose" onclick="tutupMenu()">✕</div>
+</div>
+   
+<div class="menuItem" onclick="refreshHalaman()">
+🔄 Refresh Halaman
+</div>
+   
+<div class="menuItem" onclick="loginMember()">
+🆔 Harga Member
+</div>
+<div class="menuItem"
+onclick="window.location.href='jualbelihp.html'">
+📱 Jual Beli HP Second
+</div>
+<div class="menuItem" onclick="toggleSub('produk')">
+📦 Kategori Produk
+</div>
+
+<div id="produk" class="subMenu">
+
+
+<a href="#" onclick="return comingSoon();">Baterai</a>
+
+<a href="#" onclick="return comingSoon();">Accessories</a>
+
+<a href="#" onclick="return comingSoon();">Sparepart</a>
+
+<a href="#" onclick="return comingSoon();">IC</a>
+
+<a href="#" onclick="return comingSoon();">Flexible</a>
+
+<a href="#" onclick="return comingSoon();">Tool</a>
+
+<a href="#" onclick="return comingSoon();">Mesin</a>
+
+<a href="#" onclick="return comingSoon();">Promo</a>
+
+<a href="index.html">Semua Produk</a>
+
+</div>
+
+<div class="menuItem" onclick="toggleSub('mitra')">
+🤝 Mitra Usaha
+</div>
+
+<div id="mitra" class="subMenu">
+
+<a href="#" onclick="bukaLink('https://vt.tokopedia.com/t/ZS9MCfPULW2WP-yFINb/');return false;">
+1. 🛒 Tukang LCD HP
+</a>
+
+<a href="https://collshp.com/ayudithea" target="_blank">
+2. 📦 Toko Serba Ada
+</a>
+
+<a href="#" onclick="return comingSoon();">Mitra 3</a>
+<a href="#" onclick="return comingSoon();">Mitra 4</a>
+<a href="#" onclick="return comingSoon();">Mitra 5</a>
+<a href="#" onclick="return comingSoon();">Mitra 6</a>
+<a href="#" onclick="return comingSoon();">Mitra 7</a>
+<a href="#" onclick="return comingSoon();">Mitra 8</a>
+<a href="#" onclick="return comingSoon();">Mitra 9</a>
+<a href="#" onclick="return comingSoon();">Mitra 10</a>
+
+</div>
+<div class="menuItem" onclick="toggleSub('lokasi')">
+📍 Lokasi Toko
+</div>
+    
+<div id="lokasi" class="subMenu">
+
+  <a href="https://share.google/7Prz1ZIyO0VWxSAry" target="_blank">
+   Depan pasar hewan blok jumat Maja utara
+  </a>
+<a href="#">Lokasi 2</a>
+<a href="#">Lokasi 3</a>
+<a href="#">Lokasi 4</a>
+<a href="#">Lokasi 5</a>
+<a href="#">Lokasi 6</a>
+<a href="#">Lokasi 7</a>
+<a href="#">Lokasi 8</a>
+<a href="#">Lokasi 9</a>
+<a href="#">Lokasi 10</a>
+
+</div>
+<div class="menuItem"
+onclick="window.open('https://wa.me/6282319264646','_blank')">
+💬 Chat Admin
+</div>
+
+<div class="menuItem"
+onclick="window.open('https://www.facebook.com/share/1BhC4jhcGc/','_blank')">
+📘 Facebook Toko Siap Antar
+</div>
+
+<div class="menuItem" onclick="window.open('https://drive.google.com/file/d/1Akaqw9e2_YLlw8mKrtc_P8_URJYxIVRv/view?usp=drivesdk','_blank')">
+📲 Download APK
+</div>
+<div class="menuItem" onclick="aboutApp()">
+ℹ About
+</div>
+
+</div>
+<div style="width:100%;max-width:1500px;margin:auto;min-height:100vh;">
+<!-- FLOAT CART -->
+<div id="cartFloat" onclick="window.location.href='cart.html'">
+🛒Keranjang <span id="cartCount">0</span>
+</div>
+    
+<div class="sticky-header">
+
+<div class="header">
+    <div class="slider-sheet">
+        <div class="slides" id="slides"></div>
+    </div>
+
+    <div class="logo-tengah">
+        <img src="logo2.png">
+    </div>
+</div>
+
+<div class="motor-jalan">
+    <div class="motor-kirim">
+        <img src="motor.png">
+        <div class="teks-kirim">📦 Pesanan OTW</div>
+        <div class="asap">💨</div>
+    </div>
+</div>
+
+<div class="running-text">
+    <marquee scrollamount="7">
+        🏍 Jangan Khawatir Ongkir Mahal • Ongkir Mulai Rp5.000 • Belanja Sparepart HP Lebih Mudah
+    </marquee>
+</div>
+
+<div class="garis"></div>
+
+</div>
+
+<div class="content-scroll">
+
+<div class="hero">
+<h2><b>👉TOKO SIAP ANTAR👈<br>Solusi Cepat Saat Stok Darurat</h2>
+<p>Ready Stock • Harga Grosir • Bergaransi</p>
+
+<p style="
+background:#fff3cd;
+color:#856404;
+padding:10px;
+border-radius:10px;
+border:2px solid #ffc107;
+font-weight:bold;
+margin:12px auto;
+max-width:500px;
+text-align:center;
+">
+🕗 <b>Jam Operasional TOKO SIAP ANTAR</b><br>
+Melayani pengantaran setiap hari pukul <b>08.00 – 17.00 WIB</b>.<br><br>
+📦 <b>Via Ekspedisi di bawah ini </b> dan <b>Mitra usaha di Menu</b> tetap dapat dipesan <b>24 jam</b>.
+</p>
+
+<div style="text-align:center;margin:15px 10px;">
+
+<a href="https://vt.tokopedia.com/t/ZS9MSVbMu7B6U-cNIlB/"
+target="_blank"
+style="
+display:inline-flex;
+align-items:center;
+justify-content:center;
+gap:10px;
+width:100%;
+max-width:420px;
+padding:8px;
+background:linear-gradient(135deg,#42B549,#2E8B57);
+color:#fff;
+text-decoration:none;
+font-size:10px;
+border-radius:50px;
+border:3px solid #FFD54F;
+box-shadow:0 8px 20px rgba(0,0,0,.25);
+transition:.3s;
+">
+🛒 <b>VIA EKSPEDISI<br></b>
+Cocok untuk pengiriman ke seluruh Indonesia. Estimasi pengiriman ±2 hari, mengikuti layanan ekspedisi
+</a>
+<div style="text-align:center;margin:15px 10px;">
+
+<a href="index2.html"
+target="_blank"
+style="
+display:inline-flex;
+align-items:center;
+justify-content:center;
+gap:10px;
+width:100%;
+max-width:420px;
+padding:8px;
+background:linear-gradient(135deg,#ff9800,#f97316);
+color:#fff;
+text-decoration:none;
+font-size:10px;
+border-radius:50px;
+border:3px solid #16a34a;
+box-shadow:0 8px 20px rgba(0,0,0,.25);
+">
+🛒 <b>SIAP DI ANTAR<br></b>
+Cocok untuk kebutuhan mendesak. Estimasi pengiriman ±1 jam sampai ke lokasi Anda
+</a>
+
+</div>
+<div class="kategori-scroll">
+  <div class="kategori-track">
+    <button class="kategori-btn active" data-kategori="semua">Semua</button>
+    <button class="kategori-btn" data-kategori="lcd">LCD</button>
+    <button class="kategori-btn" data-kategori="batre">🔋 Batre</button>
+    <button class="kategori-btn" data-kategori="flexi">🔌 Flexi</button>
+    <button class="kategori-btn" data-kategori="ic">IC</button>
+    <button class="kategori-btn" data-kategori="charger">⚡ Charger</button>
+    <button class="kategori-btn" data-kategori="kamera">📷 Kamera</button>
+    <button class="kategori-btn" data-kategori="case">📱 Case</button>
+    <button class="kategori-btn" data-kategori="anti gores">🛡 Anti Gores</button>
+    <button class="kategori-btn" data-kategori="lainnya">Lainnya</button>
+  </div>
+</div>
+
+<div class="search-box">
+  <input type="text" id="searchInput" placeholder="🔎 Cari produk... (LCD, baterai, IC)">
+</div>
+<!-- MENU -->
+<!-- TOMBOL SHOWCASE TOKOPEDIA -->
+
+
+</div>
+<!-- PRODUK -->
+<div class="produk-scroll">
+<div id="produkList" class="produk-container"></div>
+</div>
+
+<!-- FOOTER -->
+<div style="text-align:center;margin-top:30px">
+
+📍 Lokasi Toko Kami<br>
+
+<a href="https://www.google.com/maps?q=-6.883831,108.302788"
+target="_blank"
+class="btn-modern btn-orange">
+Buka di Google Maps
+</a>
+<div class="apk-card">
+
+<img src="logo2.png">
+
+<div class="apk-info">
+
+<div class="apk-title">
+📱 Toko Siap Antar
+</div>
+
+<div class="apk-rating">
+⭐⭐⭐⭐⭐ 5.0 (1.000+ Download)
+</div>
+
+<div class="apk-meta">
+
+<div class="apk-badge">
+📦 Versi 2.0.0
+</div>
+
+<div class="apk-badge">
+📁 147 MB
+</div>
+
+<div class="apk-badge">
+🏷 Gratis
+</div>
+
+</div>
+
+<p class="apk-desc">
+Belanja sparepart HP lebih mudah, lebih cepat, dan langsung dari aplikasi Android.
+</p>
+
+<a class="apk-install"
+href="https://drive.google.com/file/d/1Akaqw9e2_YLlw8mKrtc_P8_URJYxIVRv/view?usp=drivesdk"
+target="_blank">
+⬇ INSTALL APLIKASI
+</a>
+
+<div class="apk-footer">
+
+<div>✅ Gratis</div>
+
+<div>🛡 Aman</div>
+
+<div>🔄 Update Terbaru</div>
+
+</div>
+
+</div>
+
+</div>
+<!-- SOSIAL MEDIA -->
+<div style="background:#fff;padding:25px 15px;margin-top:25px;text-align:center;">
+
+<h3 style="color:#16a34a;margin-bottom:20px;">
+🌐 Ikuti Kami
+</h3>
+
+<div style="display:flex;justify-content:center;gap:35px;flex-wrap:wrap;">
+
+<a href="https://www.facebook.com/share/1BhC4jhcGc/" target="_blank" style="text-decoration:none;color:#1877F2;">
+    <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/facebook.svg" width="45"><br>
+    Facebook Toko Siap Antar
+</a>
+
+<a href="https://www.instagram.com/servicehp_majautara?igsh=NnFtMGFxMTE3NDFk" target="_blank" style="text-decoration:none;color:#E4405F;">
+<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg" width="45"><br>
+Instagram
+</a>
+
+<a href="https://wa.me/6282319264646" target="_blank" style="text-decoration:none;color:#25D366;">
+<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/whatsapp.svg" width="45"><br>
+WhatsApp
+</a>
+
+</div>
+
+</div>
+<!-- SCRIPT CART -->
+<script>
+function updateCartCount(){
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let total=0;
+
+cart.forEach(p=>{
+total+=p.qty;
+});
+
+document.getElementById("cartCount").innerText=total;
+}
+
+updateCartCount();
+
+function tambahKeranjang(nama,harga,foto){
+
+let box=document.createElement("div");
+
+box.style.cssText=`
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.6);
+display:flex;
+justify-content:center;
+align-items:center;
+z-index:99999;
+`;
+
+box.onclick=function(){
+    document.body.removeChild(box);
+};
+
+box.innerHTML=`
+<div onclick="event.stopPropagation()"
+style="background:#fff;
+width:90%;
+max-width:340px;
+padding:20px;
+border-radius:15px;
+text-align:center">
+
+<h3 style="color:#16a34a">
+TOKO SIAP ANTAR
+</h3>
+
+<p style="margin:18px 0">
+Produk akan ditambahkan ke keranjang.
+</p>
+
+<div style="display:flex;gap:10px">
+
+<button id="batalBtn"
+style="flex:1;
+padding:12px;
+border:none;
+background:#999;
+color:white;
+border-radius:8px">
+Batal
+</button>
+
+<button id="okBtn"
+style="flex:1;
+padding:12px;
+border:none;
+background:#16a34a;
+color:white;
+border-radius:8px">
+OK
+</button>
+
+</div>
+
+</div>
+`;
+
+document.body.appendChild(box);
+
+document.getElementById("batalBtn").onclick=function(){
+
+document.body.removeChild(box);
+
+};
+
+document.getElementById("okBtn").onclick=function(){
+
+let cart=JSON.parse(localStorage.getItem("cart"))||[];
+
+let i=cart.findIndex(p=>p.nama===nama);
+
+if(i>=0){
+cart[i].qty++;
+}else{
+cart.push({
+nama:nama,
+harga:Number(harga),
+foto:foto,
+qty:1
+});
+}
+
+localStorage.setItem("cart",JSON.stringify(cart));
+
+updateCartCount();
+
+document.body.removeChild(box);
+
+};
+
+}
+
+function popup(pesan){
+ let box=document.createElement("div");
+ box.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:99999";
+ box.onclick=function(){box.remove();};
+ box.innerHTML=`
+ <div onclick="event.stopPropagation()" style="background:#fff;width:90%;max-width:340px;border-radius:15px;padding:20px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.3)">
+ <h3 style="color:#16a34a;margin:0 0 10px">TOKO SIAP ANTAR</h3>
+ <p style="margin:15px 0">${pesan}</p>
+ <button onclick="this.closest('div').parentElement.remove()" style="background:#16a34a;color:#fff;border:none;padding:10px 25px;border-radius:8px;font-weight:bold">OK</button>
+ <div style="font-size:12px;color:#777;margin-top:10px">Ketuk area gelap untuk membatalkan.</div>
+ </div>`;
+ document.body.appendChild(box);
+}
+function belumTersedia(){
+
+popup(
+`🚧 Kategori ini masih dalam proses persiapan.
+
+Silakan kembali lagi dalam waktu dekat.
+
+Terima kasih telah menggunakan
+TOKO SIAP ANTAR 😊`
+);
+
+}
+
+function beliSekarang(nama,harga,foto){
+let cart=JSON.parse(localStorage.getItem("cart"))||[];
+let i=cart.findIndex(p=>p.nama===nama);
+if(i>=0){cart[i].qty++;}else{
+cart.push({nama:nama,harga:Number(harga),foto:foto,qty:1});
+}
+localStorage.setItem("cart",JSON.stringify(cart));
+updateCartCount();
+window.location.href="cart.html";
+}
+
+function convertDrive(link){
+
+if(!link) return "";
+
+let id="";
+
+if(link.includes("id=")){
+id = link.split("id=")[1].split("&")[0];
+}
+
+else if(link.includes("/d/")){
+id = link.split("/d/")[1].split("/")[0];
+}
+
+else{
+return link;
+}
+
+return "https://drive.google.com/thumbnail?id="+id+"&sz=w1000";
+
+}
+</script>
+
+<!-- SCRIPT PRODUK GOOGLE SHEET -->
+<script>
+
+const sheetURL="https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=MEMBER";
+
+fetch(sheetURL)
+
+.then(res=>res.text())
+
+.then(data=>{
+
+const json=JSON.parse(data.substring(47).slice(0,-2));
+
+let rows = json.table.rows;
+
+// Urutkan harga dari termurah ke termahal
+rows.sort(function(a,b){
+
+    let hargaA = Number(a.c[3]?.v || 0);
+    let hargaB = Number(b.c[3]?.v || 0);
+
+    return hargaA - hargaB;
+
+});
+
+let html="";
+rows.forEach(r=>{
+
+let nama=r.c[1]?.v;
+let deskripsi = r.c[2] ? r.c[2].v : "";
+let harga=r.c[3]?.v;
+let foto=convertDrive(r.c[4]?.v);
+
+if(!nama) return;
+
+html+=`
+
+<div class="produk-card">
+
+<div class="produk-img-box">
+<img src="${foto}" class="produk-img"
+onclick="zoomFoto('${foto}','${nama}','${harga}','${deskripsi}')">
+</div>
+
+<div class="produk-info">
+
+<div class="produk-nama">${nama}</div>
+
+<div class="produk-deskripsi">
+${deskripsi}
+</div>
+<div class="produk-harga">
+Rp ${Number(harga).toLocaleString()}
+</div>
+
+<div style="color:#ffb400;font-size:14px;">⭐⭐⭐⭐⭐</div>
+
+<div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;">
+<button style="background:#10b981;color:#fff;border:none;padding:8px;border-radius:6px;cursor:pointer"
+onclick="window.open('https://wa.me/6282319264646?text='+encodeURIComponent('Halo Admin, saya ingin bertanya tentang ${nama}'),'_blank')">💬 Chat</button>
+
+<button class="btn-cart"
+onclick="tambahKeranjang('${nama}','${harga}','${foto}')">🛒 Keranjang</button>
+
+<button style="background:#ff6a00;color:#fff;border:none;padding:8px;border-radius:6px;cursor:pointer"
+onclick="beliSekarang('${nama}','${harga}','${foto}')">🟧 Beli Sekarang</button>
+</div>
+
+</div>
+
+</div>
+
+`;
+});
+
+document.getElementById("produkList").innerHTML=html;
+
+});
+
+</script>
+<script>
+(function(){
+  const buttons=document.querySelectorAll(".kategori-btn");
+  const input=document.getElementById("searchInput");
+  const aliases={
+    lcd:["lcd"],
+    batre:["batre","baterai","battery"],
+    flexi:["flexi","flex"],
+    ic:[" ic ","ic "," ic"],
+    charger:["charger","cas","carger"],
+    kamera:["kamera","camera"],
+    case:["case","casing","softcase","hardcase"],
+    "anti gores":["anti gores","antigores","tempered glass","tempered" ]
+  };
+  function cocokKategori(text,kategori){
+    if(kategori==="semua") return true;
+    if(kategori==="lainnya") return !Object.values(aliases).some(list=>list.some(k=>text.includes(k)));
+    return (aliases[kategori]||[kategori]).some(k=>text.includes(k));
+  }
+  function filterProduk(){
+    const active=document.querySelector(".kategori-btn.active");
+    const kategori=active ? active.dataset.kategori : "semua";
+    const cari=(input.value||"").toLowerCase().trim();
+    document.querySelectorAll(".produk-card").forEach(item=>{
+      const text=item.innerText.toLowerCase();
+      const okKategori=cocokKategori(text,kategori);
+      const okCari=!cari || text.includes(cari);
+      item.style.display=(okKategori && okCari) ? "block" : "none";
+    });
+  }
+  buttons.forEach(btn=>btn.addEventListener("click",function(){
+    buttons.forEach(b=>b.classList.remove("active"));
+    this.classList.add("active");
+    filterProduk();
+  }));
+  input.addEventListener("input",filterProduk);
+})();
+</script>
+<!-- POPUP PROMOSI TOKO SIAP ANTAR -->
+
+<div id="promoPopup" onclick="tutupPromo()">
+
+<div class="promo-box" onclick="event.stopPropagation()">
+
+<img src="popup.png" class="logo">
+
+<h2>Belanja Sparepart HP Lebih Mudah!</h2>
+
+<p class="promo-text">
+🛡️ <b>Garansi Produk</b> sesuai ketentuan yang berlaku.<br>
+🤝 <b>Banyak Pilihan Kebijakan Garansi</b> untuk kenyamanan pelanggan.<br>
+📦 <b>Barang Aman</b> dipastikan telah dicek sebelum dikirim.<br>
+⚡ <b>Pengiriman Cepat</b> setelah pembayaran terkonfirmasi.<br>
+🛵 <b>Pesanan Langsung Diantar</b> ke lokasi Anda setelah pembayaran selesai.<br>
+💚 <b>Harga Bersahabat</b> dengan kualitas produk yang terjamin.
+</p>
+<audio id="laguPromo" preload="auto">
+<source src="promo3.mp3" type="audio/mpeg">
+</audio>
+<button onclick="playLagu()" class="btn-belanja">
+🎵 Dengarkan Promo
+</button>
+<div class="promo-highlight">
+🚀 Pesan Sekarang – Kami Siap Antar ke Lokasi Anda!
+</div>
+
+<button onclick="tutupPromo()" class="btn-belanja">
+Mulai Belanja
+</button>
+
+<button onclick="tutupPromo()" class="btn-close">
+Tutup
+</button>
+
+</div>
+
+</div>
+
+
+
+<style>
+
+#promoPopup{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.6);
+display:flex;
+align-items:center;
+justify-content:center;
+z-index:9999;
+animation:fadeIn 0.5s;
+}
+
+.promo-box{
+background:#fff;
+width:88%;
+max-width:320px;
+max-height:80vh;
+overflow-y:auto;
+padding:12px;
+border-radius:12px;
+text-align:center;
+box-shadow:0 10px 25px rgba(0,0,0,.3);
+}
+
+.logo{
+width:130px;
+margin-bottom:10px;
+}
+
+.promo-box h2{
+font-size:17px;
+margin-bottom:15px;
+color:#0aa34f;
+}
+
+.promo-text{
+font-size:12px;
+line-height:1.4;
+color:#444;
+text-align:left;
+}
+
+.promo-highlight{
+background:#0aa34f;
+color:white;
+padding:10px;
+border-radius:8px;
+margin:15px 0;
+font-weight:bold;
+}
+
+.btn-belanja{
+background:linear-gradient(45deg,#0aa34f,#0c7f3e);
+color:white;
+border:none;
+padding:12px;
+border-radius:25px;
+font-size:16px;
+cursor:pointer;
+width:100%;
+margin-bottom:10px;
+}
+
+.btn-close{
+background:#ddd;
+border:none;
+padding:8px 20px;
+border-radius:20px;
+cursor:pointer;
+}
+
+@keyframes fadeIn{
+from{opacity:0;}
+to{opacity:1;}
+}
+.zoomBox{
+    width:90%;
+    max-width:900px;
+    background:#fff;
+    border-radius:20px;
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    height:auto;
+    max-height:95vh;
+overflow:auto;
+}
+
+#zoomImg{
+    width:100%;
+    height:auto;
+    max-height:65vh;
+    object-fit:contain;
+    border-radius:12px;
+}
+
+.zoomContent{
+    width:100%;
+    text-align:center;
+}
+#zoomNama{
+font-size:36px;      /* sebelumnya 26px */
+font-weight:bold;
+margin-top:8px;
+}
+
+#zoomDeskripsi{
+width:100%;
+font-size:48px;      /* sebelumnya 18px */
+color:#555;
+margin:10px 0;
+line-height:1.5;
+}
+
+#zoomHarga{
+font-size:38px;      /* sebelumnya 28px */
+color:#ff6a00;
+font-weight:bold;
+margin:10px 0;
+}
+
+#zoomCart{
+width:100%;
+padding:18px;
+font-size:30px;      /* sebelumnya 20px */
+border-radius:10px;
+}
+
+@keyframes zoomIn{
+from{
+transform:scale(.9);
+opacity:0;
+}
+to{
+transform:scale(1);
+opacity:1;
+}
+}
+
+.zoomClose{
+position:absolute;
+top:-15px;
+right:-15px;
+background:#ff3b3b;
+color:white;
+font-size:22px;
+width:40px;
+height:40px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+cursor:pointer;
+font-weight:bold;
+box-shadow:0 4px 10px rgba(0,0,0,0.4);
+}
+@media (max-width:768px){
+
+@media (max-width:768px){
+
+.zoomBox{
+    width:88%!important;
+    max-width:330px!important;
+    max-height:78vh!important;
+    padding:12px!important;
+    border-radius:12px!important;
+    overflow:auto;
+}
+
+#zoomImg{
+    max-height:240px!important;
+    border-radius:8px;
+}
+
+#zoomNama{
+    font-size:16px!important;
+}
+
+#zoomDeskripsi{
+    font-size:13px!important;
+    line-height:1.4!important;
+    margin:6px 0!important;
+    max-height:70px!important;
+}
+
+#zoomHarga{
+    font-size:18px!important;
+}
+
+.popup-icon,
+.popup-checkout{
+    height:42px!important;
+    font-size:14px!important;
+}
+
+.popup-icon span{
+    font-size:11px!important;
+}
+
+.popup-bottom{
+    gap:6px!important;
+    margin-top:10px!important;
+}
+
+.zoomClose{
+    width:32px!important;
+    height:32px!important;
+    font-size:18px!important;
+}
+
+}
+/* ADMIN */
+
+.admin-upload-box{
+text-align:center;
+margin-top:40px;
+margin-bottom:40px;
+}
+
+.admin-text{
+font-size:14px;
+font-weight:bold;
+color:#666;
+margin-bottom:8px;
+}
+
+.btn-upload-admin{
+display:inline-block;
+padding:14px 24px;
+background:linear-gradient(90deg,#22c55e,#f97316);
+color:white;
+text-decoration:none;
+border-radius:40px;
+font-weight:bold;
+font-size:15px;
+border:3px solid #facc15;
+box-shadow:0 6px 15px rgba(0,0,0,0.25);
+}
+.popup-bottom{
+display:flex;
+align-items:center;
+gap:10px;
+margin-top:20px;
+width:100%;
+}
+
+.popup-icon{
+width:90px;
+height:80px;
+font-size:30px;
+}
+
+.popup-icon span{
+font-size:15px;
+font-weight:bold;
+}
+
+.popup-checkout{
+height:80px;
+font-size:24px;
+font-weight:bold;
+background:linear-gradient(90deg,#ff7a00,#ff4500);
+color:#fff;
+border:none;
+border-radius:12px;
+box-shadow:0 5px 15px rgba(255,100,0,.4);
+}
+
+.popup-checkout:hover{
+background:#e65100;
+}
+@media (max-width:768px){
+
+.hero h2{
+font-size:34px;
+}
+
+.hero p{
+font-size:18px;
+}
+
+.btn-modern{
+font-size:18px;
+padding:16px 26px;
+}
+
+.btn-member{
+font-size:18px;
+padding:16px 26px;
+}
+
+.search-box input{
+font-size:18px;
+padding:14px;
+}
+
+.menu-pro a{
+font-size:16px;
+padding:14px 20px;
+}
+
+</style>
+
+
+<script>
+
+function tutupPromo(){
+document.getElementById("promoPopup").style.display="none";
+}
+function playLagu(){
+var lagu = document.getElementById("laguPromo");
+lagu.currentTime = 0;
+lagu.play();
+}
+</script>
+ 
+
+<div id="zoomPopup" onclick="tutupZoom()">
+
+<div class="zoomBox" onclick="event.stopPropagation()">
+
+<span class="zoomClose" onclick="tutupZoom()">✕</span>
+
+<img id="zoomImg">
+
+<div class="zoomContent">
+
+<div id="zoomNama" style="font-weight:bold"></div>
+<div id="zoomDeskripsi" style="font-size:28px;color:#555;margin:12px 0;max-height:220px;overflow:auto"></div>
+<div id="zoomHarga" style="color:#ff6a00;font-weight:bold;margin:6px 0"></div>
+
+<div class="popup-bottom">
+
+    <button id="btnChat" class="popup-icon">
+        💬<br><span>Chat</span>
+    </button>
+
+    <button id="btnKeranjang" class="popup-icon">
+        🛒<br><span>Keranjang</span>
+    </button>
+
+    <button id="btnCheckout" class="popup-checkout">
+        Beli Sekarang
+    </button>
+
+</div>
+
+
+</div>
+
+</div>
+<script>
+
+function zoomFoto(src,nama,harga,deskripsi){
+
+let popup=document.getElementById("zoomPopup");
+
+document.getElementById("zoomImg").src=src;
+
+document.getElementById("zoomNama").innerText=nama;
+
+document.getElementById("zoomHarga").innerText=
+"Rp "+Number(harga).toLocaleString();
+
+document.getElementById("zoomDeskripsi").innerHTML =
+deskripsi.replace(/\n/g,"<br>");
+document.getElementById("btnKeranjang").onclick=function(){
+    tambahKeranjang(nama,harga,src);
+};
+
+document.getElementById("btnChat").onclick=function(){
+
+    let pesan =
+`Halo Admin A YUDI THEA
+
+Saya ingin bertanya mengenai:
+
+${nama}
+
+Harga : Rp ${Number(harga).toLocaleString()}`;
+
+    window.open(
+        "https://wa.me/6282319264646?text="+encodeURIComponent(pesan),
+        "_blank"
+    );
+};
+
+document.getElementById("btnCheckout").onclick=function(){
+    beliSekarang(nama,harga,src);
+};
+
+popup.style.display="flex";
+}
+function tutupZoom(){
+document.getElementById("zoomPopup").style.display="none";
+}
+function animasiPaket(x,y){
+
+let paket = document.getElementById("paketTerbang");
+let cart = document.getElementById("cartFloat");
+
+paket.style.display="block";
+paket.style.left=x+"px";
+paket.style.top=y+"px";
+
+let target = cart.getBoundingClientRect();
+
+paket.animate([
+{ transform:"translate(0,0)" },
+{ transform:`translate(${target.left-x}px,${target.top-y}px)` }
+],{
+duration:700,
+easing:"ease-out"
+});
+
+setTimeout(()=>{
+paket.style.display="none";
+cart.classList.add("keranjang-animasi");
+
+setTimeout(()=>{
+cart.classList.remove("keranjang-animasi");
+},600);
+
+},700);
+
+}
+</script>
+
+<script>
+
+const sheetSlider="https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=PROMO";
+
+fetch(sheetSlider)
+.then(res=>res.text())
+.then(data=>{
+
+const json=JSON.parse(data.substring(47).slice(0,-2));
+
+let rows=json.table.rows;
+
+let html="";
+
+rows.forEach(r=>{
+
+let foto=convertDrive(r.c[1]?.v);
+
+if(!foto) return;
+
+html += `
+<div class="slide-manual">
+    <img src="${foto}" ondblclick="popupSlider('${foto}')">
+</div>
+`;
+});
+
+/* DUPLIKASI supaya loop halus */
+
+document.getElementById("slides").innerHTML=html+html;
+
+});
+
+</script>
+
+
+
+<script>
+function getViewCount(nama){
+ const key='view_'+nama;
+ const seen='seen_'+nama;
+ let n=parseInt(localStorage.getItem(key)||'1245',10);
+ if(!sessionStorage.getItem(seen)){
+   n++;
+   localStorage.setItem(key,n);
+   sessionStorage.setItem(seen,'1');
+ }
+ return n.toLocaleString('id-ID');
+}
+</script>
+<script>
+const slider = document.querySelector(".slider-sheet");
+
+let isDown = false;
+let startX;
+let scrollLeft;
+
+slider.addEventListener("touchstart", function(e){
+    isDown = true;
+    startX = e.touches[0].pageX;
+    scrollLeft = slider.scrollLeft;
+
+    document.querySelector(".slides").style.animationPlayState = "paused";
+});
+
+slider.addEventListener("touchmove", function(e){
+    if(!isDown) return;
+
+    const x = e.touches[0].pageX;
+    const walk = (x - startX) * 1.5;
+
+    slider.scrollLeft = scrollLeft - walk;
+});
+
+slider.addEventListener("touchend", function(){
+    isDown = false;
+
+    setTimeout(()=>{
+        document.querySelector(".slides").style.animationPlayState = "running";
+    },2000);
+});
+    </script>
+
+
+    <div id="popupSlider"
+onclick="this.style.display='none'"
+style="
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.9);
+justify-content:center;
+align-items:center;
+z-index:999999;
+">
+
+<img id="popupSliderImg"
+style="
+max-width:95%;
+max-height:95%;
+object-fit:contain;
+">
+
+</div>
+
+<script>
+function popupSlider(src){
+    document.getElementById("popupSliderImg").src = src;
+    document.getElementById("popupSlider").style.display = "flex";
+}
+</script>
+<script>
+
+function bukaMenu(){
+
+document.getElementById("sideMenu").classList.add("open");
+
+document.getElementById("menuOverlay").style.display="block";
+
+}
+
+function tutupMenu(){
+
+document.getElementById("sideMenu").classList.remove("open");
+
+document.getElementById("menuOverlay").style.display="none";
+
+}
+   
+function refreshHalaman(){
+    tutupMenu();
+    setTimeout(function(){
+        location.reload();
+    },200);
+} 
+
+
+function loginMember(){
+
+tutupMenu();
+
+let box=document.createElement("div");
+
+box.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:99999";
+
+box.innerHTML=`
+<div style="background:#fff;width:90%;max-width:340px;border-radius:15px;padding:20px;text-align:center">
+
+<h3 style="color:#16a34a">TOKO SIAP ANTAR</h3>
+
+<p style="margin:10px 0;">Masukkan ID Member</p>
+
+<input id="idMemberInput"
+placeholder="Masukan ID member terdaftar"
+style="width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;">
+
+<div style="display:flex;gap:10px;margin-top:15px">
+
+<button id="batalMember"
+style="flex:1;padding:12px;border:none;background:#999;color:#fff;border-radius:8px">
+Batal
+</button>
+
+<button id="loginMemberBtn"
+style="flex:1;padding:12px;border:none;background:#16a34a;color:#fff;border-radius:8px">
+Login
+</button>
+
+</div>
+
+<div id="pesanMember" style="margin-top:12px;color:red;font-size:13px"></div>
+
+</div>
+`;
+
+document.body.appendChild(box);
+
+document.getElementById("batalMember").onclick=function(){
+box.remove();
+};
+
+document.getElementById("loginMemberBtn").onclick=function(){
+
+let id=document.getElementById("idMemberInput").value.trim();
+
+if(id==""){
+document.getElementById("pesanMember").innerHTML="Masukkan ID Member.";
+return;
+}
+
+const sheet="https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=MEMBER ID";
+
+fetch(sheet)
+.then(res=>res.text())
+.then(data=>{
+
+const json=JSON.parse(data.substring(47).slice(0,-2));
+
+const rows=json.table.rows;
+
+let ketemu=false;
+
+rows.forEach(r=>{
+
+let idMember=r.c[1]?.v;
+
+if(String(idMember).trim()==id){
+ketemu=true;
+}
+
+});
+
+if(ketemu){
+
+localStorage.setItem("memberID",id);
+
+box.remove();
+
+setTimeout(function(){
+    window.location.href="lcd.html";
+},100);
+
+}else{
+
+document.getElementById("pesanMember").innerHTML="❌ ID Member tidak ditemukan.";
+
+}
+
+});
+
+};
+
+}
+
+function aboutApp(){
+
+popup(`
+
+📱 TOKO SIAP ANTAR
+
+Versi : 2.0.0
+
+⭐⭐⭐⭐⭐ 5.0
+
+Belanja sparepart HP lebih mudah langsung dari aplikasi Android.
+
+✅ Gratis
+
+🛡 Aman
+
+🔄 Selalu Update
+
+`);
+
+tutupMenu();
+
+}
+
+function toggleSub(id){
+
+    let menu = document.getElementById(id);
+
+    if(menu.style.display==="block"){
+        menu.style.display="none";
+    }else{
+
+        document.querySelectorAll(".subMenu").forEach(function(el){
+            el.style.display="none";
+        });
+
+        menu.style.display="block";
+    }
+
+}
+</script>
+<script>
+function comingSoon(){
+    popup(`
+🚧 Menu ini masih dalam tahap pengembangan.
+
+Sedang dilakukan proses update.
+
+Silakan kunjungi kembali nanti.
+
+Terima kasih 😊
+    `);
+
+    tutupMenu();
+
+    return false;
+}
+</script>
+   <script>
+function tutupFbPopup(){
+    document.getElementById("fbPopup").style.display="none";
+}
+
+document.addEventListener("DOMContentLoaded",function(){
+    if(/FBAN|FBAV/i.test(navigator.userAgent)){
+        document.getElementById("fbPopup").style.display="flex";
+    }
+});
+</script>
+<script>
+function bukaLink(url){
+    if (window.Android && Android.openExternal) {
+        Android.openExternal(url);
+    } else {
+        window.location.href = url;
+    }
+}
+</script>
+</body>
+</html>
