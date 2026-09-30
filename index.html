@@ -204,8 +204,6 @@ color:#333;
 overflow-x:hidden;
 }
 
-overflow-x:hidden;
-}
 /* ===== COLOR ROOT ===== */
 :root{
 --primary:#1faa59;
@@ -3217,285 +3215,328 @@ function filterFixzyProduk(keyword){
 }
 
 </script>
-<!-- ================================
-     FIXZY BOTTOM NAV
-================================ -->
-
-<style id="fixzyBottomNavStyle">
-
-#fixzyBottomNav{
-    position:fixed !important;
-    left:0 !important;
-    right:0 !important;
-    bottom:0 !important;
-
-    width:100% !important;
-    height:64px !important;
-
-    background:#ffffff !important;
-
-    display:flex !important;
-    flex-direction:row !important;
-    align-items:center !important;
-    justify-content:space-around !important;
-
-    z-index:2147483647 !important;
-
-    border-top:1px solid #ddd !important;
-    box-shadow:0 -4px 15px rgba(0,0,0,.18) !important;
-
-    padding:0 !important;
-    margin:0 !important;
-}
-
-.fixzy-nav-item{
-    position:relative !important;
-
-    flex:1 !important;
-    height:64px !important;
-
-    display:flex !important;
-    flex-direction:column !important;
-    align-items:center !important;
-    justify-content:center !important;
-
-    background:#fff !important;
-    color:#777 !important;
-
-    border:0 !important;
-    outline:0 !important;
-
-    font-family:'Segoe UI',sans-serif !important;
-    font-size:11px !important;
-    font-weight:600 !important;
-
-    box-shadow:none !important;
-    cursor:pointer !important;
-}
-
-.fixzy-nav-icon{
-    display:block !important;
-    font-size:23px !important;
-    line-height:25px !important;
-    height:27px !important;
-}
-
-.fixzy-nav-text{
-    display:block !important;
-    line-height:16px !important;
-}
-
-.fixzy-nav-item.active{
-    color:#16a34a !important;
-}
-
-.fixzy-nav-item:active{
-    transform:scale(.94) !important;
-}
-
-#fixzyBottomCartCount{
-    position:absolute !important;
-
-    top:6px !important;
-    left:calc(50% + 8px) !important;
-
-    min-width:17px !important;
-    height:17px !important;
-
-    padding:0 4px !important;
-
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-
-    background:#ff6a00 !important;
-    color:#fff !important;
-
-    border-radius:20px !important;
-
-    font-size:9px !important;
-    font-weight:bold !important;
-
-    box-shadow:none !important;
-}
-
-/* beri ruang agar produk paling bawah tidak tertutup */
-body{
-    padding-bottom:70px !important;
-}
-
-</style>
-
-
-<div id="fixzyBottomNav">
-
-    <!-- HOME -->
-    <button
-        class="fixzy-nav-item active"
-        type="button"
-        onclick="fixzyHome()">
-
-        <span class="fixzy-nav-icon">⌂</span>
-        <span class="fixzy-nav-text">Home</span>
-
-    </button>
-
-
-    <!-- RIWAYAT -->
-    <button
-        class="fixzy-nav-item"
-        type="button"
-        onclick="fixzyRiwayat()">
-
-        <span class="fixzy-nav-icon">🧾</span>
-        <span class="fixzy-nav-text">Riwayat</span>
-
-    </button>
-
-
-    <!-- KERANJANG -->
-    <button
-        class="fixzy-nav-item"
-        type="button"
-        onclick="fixzyKeranjang()">
-
-        <span class="fixzy-nav-icon">🛒</span>
-
-        <span
-            id="fixzyBottomCartCount">
-            0
-        </span>
-
-        <span class="fixzy-nav-text">
-            Keranjang
-        </span>
-
-    </button>
-
-
-    <!-- PROFIL -->
-    <button
-        class="fixzy-nav-item"
-        type="button"
-        onclick="fixzyProfil()">
-
-        <span class="fixzy-nav-icon">👤</span>
-        <span class="fixzy-nav-text">Profil</span>
-
-    </button>
-
-</div>
-
+<!-- =================================================
+     FIXZY BOTTOM NAV - FINAL
+================================================= -->
 
 <script>
+(function(){
 
-/* ================================
-   HOME
-================================ */
+    function buatBottomNav(){
 
-function fixzyHome(){
+        // Hapus jika sudah pernah dibuat
+        const lama = document.getElementById("fixzyBottomNav");
 
-    window.scrollTo({
-        top:0,
-        behavior:"smooth"
-    });
+        if(lama){
+            lama.remove();
+        }
 
-}
+        const nav = document.createElement("div");
+
+        nav.id = "fixzyBottomNav";
+
+        nav.innerHTML = `
+            <button type="button" data-page="home">
+                <span class="fixzyBNIcon">⌂</span>
+                <span>Home</span>
+            </button>
+
+            <button type="button" data-page="riwayat">
+                <span class="fixzyBNIcon">🧾</span>
+                <span>Riwayat</span>
+            </button>
+
+            <button type="button" data-page="cart">
+                <span class="fixzyBNIcon">🛒</span>
+                <b id="fixzyBottomCartCount">0</b>
+                <span>Keranjang</span>
+            </button>
+
+            <button type="button" data-page="profil">
+                <span class="fixzyBNIcon">👤</span>
+                <span>Profil</span>
+            </button>
+        `;
+
+        // STYLE LANGSUNG
+        const style = document.createElement("style");
+
+        style.id = "fixzyBottomNavFinalStyle";
+
+        style.textContent = `
+
+        #fixzyBottomNav{
+            position:fixed !important;
+            left:0 !important;
+            right:0 !important;
+            bottom:0 !important;
+
+            width:100% !important;
+            height:64px !important;
+
+            display:flex !important;
+            flex-direction:row !important;
+            align-items:stretch !important;
+            justify-content:space-around !important;
+
+            background:#ffffff !important;
+
+            border-top:1px solid #dddddd !important;
+
+            box-shadow:0 -4px 15px rgba(0,0,0,.18) !important;
+
+            z-index:2147483647 !important;
+
+            padding:0 !important;
+            margin:0 !important;
+
+            visibility:visible !important;
+            opacity:1 !important;
+
+            box-sizing:border-box !important;
+        }
+
+        #fixzyBottomNav button{
+            position:relative !important;
+
+            width:25% !important;
+            height:64px !important;
+
+            flex:1 1 25% !important;
+
+            display:flex !important;
+            flex-direction:column !important;
+            align-items:center !important;
+            justify-content:center !important;
+
+            gap:2px !important;
+
+            padding:3px !important;
+            margin:0 !important;
+
+            border:0 !important;
+            outline:0 !important;
+
+            background:#ffffff !important;
+
+            color:#777777 !important;
+
+            font-family:Arial,sans-serif !important;
+
+            font-size:10px !important;
+            font-weight:600 !important;
+
+            box-shadow:none !important;
+
+            cursor:pointer !important;
+
+            transform:none !important;
+        }
+
+        #fixzyBottomNav button:hover{
+            background:#f7f7f7 !important;
+        }
+
+        #fixzyBottomNav button:active{
+            background:#eeeeee !important;
+        }
+
+        #fixzyBottomNav button:first-child{
+            color:#16a34a !important;
+        }
+
+        .fixzyBNIcon{
+            display:block !important;
+
+            height:27px !important;
+            line-height:27px !important;
+
+            font-size:23px !important;
+
+            font-weight:normal !important;
+        }
+
+        #fixzyBottomCartCount{
+            position:absolute !important;
+
+            top:7px !important;
+            left:calc(50% + 8px) !important;
+
+            min-width:17px !important;
+            height:17px !important;
+
+            padding:0 4px !important;
+
+            display:flex !important;
+            align-items:center !important;
+            justify-content:center !important;
+
+            background:#ff6a00 !important;
+            color:#ffffff !important;
+
+            border-radius:20px !important;
+
+            font-size:9px !important;
+            line-height:17px !important;
+
+            font-weight:bold !important;
+
+            box-sizing:border-box !important;
+        }
+
+        body{
+            padding-bottom:76px !important;
+        }
+
+        @media(max-width:480px){
+
+            #fixzyBottomNav{
+                height:62px !important;
+            }
+
+            #fixzyBottomNav button{
+                height:62px !important;
+                font-size:10px !important;
+            }
+
+            .fixzyBNIcon{
+                font-size:22px !important;
+            }
+
+        }
+
+        `;
+
+        document.head.appendChild(style);
+
+        // Masukkan langsung ke BODY
+        document.body.appendChild(nav);
 
 
-/* ================================
-   KERANJANG
-================================ */
+        // ============================
+        // HOME
+        // ============================
 
-function fixzyKeranjang(){
+        nav.querySelector('[data-page="home"]')
+        .onclick=function(){
 
-    window.location.href="cart.html";
+            window.scrollTo({
+                top:0,
+                behavior:"smooth"
+            });
 
-}
-
-
-/* ================================
-   RIWAYAT
-================================ */
-
-function fixzyRiwayat(){
-
-    /* nanti bisa diarahkan ke halaman riwayat */
-    window.location.href="riwayat.html";
-
-}
+        };
 
 
-/* ================================
-   PROFIL
-================================ */
+        // ============================
+        // RIWAYAT
+        // ============================
 
-function fixzyProfil(){
+        nav.querySelector('[data-page="riwayat"]')
+        .onclick=function(){
 
-    /* nanti bisa diarahkan ke halaman profil */
-    window.location.href="profil.html";
+            window.location.href="riwayat.html";
 
-}
+        };
 
 
-/* ================================
-   UPDATE JUMLAH CART
-================================ */
+        // ============================
+        // KERANJANG
+        // ============================
 
-function fixzyUpdateBottomCart(){
+        nav.querySelector('[data-page="cart"]')
+        .onclick=function(){
 
-    let cart=[];
+            window.location.href="cart.html";
 
-    try{
+        };
 
-        cart=
-            JSON.parse(
-                localStorage.getItem("cart")
-            ) || [];
 
-    }catch(e){
+        // ============================
+        // PROFIL
+        // ============================
 
-        cart=[];
+        nav.querySelector('[data-page="profil"]')
+        .onclick=function(){
+
+            window.location.href="profil.html";
+
+        };
+
+
+        updateFixzyBottomCart();
 
     }
 
-    let total=0;
 
-    cart.forEach(function(item){
+    // ==========================================
+    // UPDATE JUMLAH KERANJANG
+    // ==========================================
 
-        total += Number(item.qty || 0);
+    function updateFixzyBottomCart(){
 
-    });
+        let jumlah = 0;
 
-    let el=
-        document.getElementById(
-            "fixzyBottomCartCount"
+        try{
+
+            const cart =
+                JSON.parse(
+                    localStorage.getItem("cart")
+                ) || [];
+
+            cart.forEach(function(item){
+
+                jumlah += Number(item.qty || 0);
+
+            });
+
+        }catch(error){
+
+            jumlah = 0;
+
+        }
+
+
+        const angka =
+            document.getElementById(
+                "fixzyBottomCartCount"
+            );
+
+        if(angka){
+
+            angka.textContent = jumlah;
+
+        }
+
+    }
+
+
+    // ==========================================
+    // BUAT SETELAH HTML SELESAI
+    // ==========================================
+
+    if(document.readyState === "loading"){
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            buatBottomNav
         );
 
-    if(el){
+    }else{
 
-        el.innerText=total;
+        buatBottomNav();
 
     }
 
-}
 
+    // Update cart
+    setInterval(
+        updateFixzyBottomCart,
+        1000
+    );
 
-/* ================================
-   JALANKAN
-================================ */
-
-fixzyUpdateBottomCart();
-
-
-/*
-   Update lagi setiap ada perubahan
-*/
-setInterval(
-    fixzyUpdateBottomCart,
-    1000
-);
-
+})();
 </script>
+
 </body>
 </html>
