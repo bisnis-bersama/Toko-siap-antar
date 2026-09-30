@@ -3217,5 +3217,251 @@ function filterFixzyProduk(keyword){
 }
 
 </script>
+<!-- =====================================================
+     BOTTOM NAVIGATION
+     TAMBAHAN SAJA - TIDAK MENGUBAH YANG LAIN
+===================================================== -->
+
+<style>
+
+.fixzy-bottom-nav{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    height:66px;
+    background:#fff;
+    border-top:1px solid #ddd;
+    display:flex;
+    align-items:center;
+    justify-content:space-around;
+    z-index:99990;
+    box-shadow:0 -3px 15px rgba(0,0,0,.10);
+}
+
+.fixzy-bottom-item{
+    flex:1;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-decoration:none;
+    color:#777;
+    font-size:11px;
+    font-weight:600;
+    cursor:pointer;
+    background:none;
+    border:none;
+    box-shadow:none !important;
+}
+
+.fixzy-bottom-item .fixzy-bottom-icon{
+    font-size:23px;
+    line-height:25px;
+    margin-bottom:3px;
+}
+
+.fixzy-bottom-item.active{
+    color:#16a34a;
+}
+
+.fixzy-bottom-item:active{
+    transform:scale(.94);
+}
+
+/* Supaya menu bawah tidak menutupi isi paling bawah */
+body{
+    padding-bottom:70px !important;
+}
+
+@media(min-width:769px){
+
+    .fixzy-bottom-nav{
+        max-width:600px;
+        left:50%;
+        right:auto;
+        transform:translateX(-50%);
+        border-radius:15px 15px 0 0;
+    }
+
+}
+
+</style>
+
+
+<nav class="fixzy-bottom-nav">
+
+    <!-- HOME -->
+    <button
+        class="fixzy-bottom-item active"
+        onclick="window.scrollTo({
+            top:0,
+            behavior:'smooth'
+        })">
+
+        <span class="fixzy-bottom-icon">⌂</span>
+        <span>Home</span>
+
+    </button>
+
+
+    <!-- RIWAYAT -->
+    <button
+        class="fixzy-bottom-item"
+        onclick="bukaRiwayatFixzy()">
+
+        <span class="fixzy-bottom-icon">🧾</span>
+        <span>Riwayat</span>
+
+    </button>
+
+
+    <!-- KERANJANG -->
+    <button
+        class="fixzy-bottom-item"
+        onclick="window.location.href='cart.html'">
+
+        <span
+            class="fixzy-bottom-icon"
+            style="position:relative;">
+
+            🛒
+
+            <span
+                id="bottomCartCount"
+                style="
+                position:absolute;
+                top:-5px;
+                right:-13px;
+                min-width:16px;
+                height:16px;
+                padding:0 4px;
+                background:#ff6a00;
+                color:#fff;
+                border-radius:20px;
+                font-size:9px;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                ">
+
+                0
+
+            </span>
+
+        </span>
+
+        <span>Keranjang</span>
+
+    </button>
+
+
+    <!-- PROFIL -->
+    <button
+        class="fixzy-bottom-item"
+        onclick="bukaProfilFixzy()">
+
+        <span class="fixzy-bottom-icon">👤</span>
+        <span>Profil</span>
+
+    </button>
+
+</nav>
+
+
+<script>
+
+/* ==============================
+   JUMLAH KERANJANG
+============================== */
+
+function updateBottomCart(){
+
+    let cart =
+        JSON.parse(
+            localStorage.getItem("cart")
+        ) || [];
+
+    let total = 0;
+
+    cart.forEach(function(item){
+
+        total += Number(item.qty || 0);
+
+    });
+
+    let count =
+        document.getElementById(
+            "bottomCartCount"
+        );
+
+    if(count){
+
+        count.innerText = total;
+
+    }
+
+}
+
+
+/* Jalankan saat halaman dibuka */
+updateBottomCart();
+
+
+/* ==============================
+   RIWAYAT
+============================== */
+
+function bukaRiwayatFixzy(){
+
+    if(
+        typeof popup === "function"
+    ){
+
+        popup(`
+            🧾 <b>RIWAYAT PESANAN</b><br><br>
+            Riwayat pesanan akan ditampilkan
+            di halaman ini.
+        `);
+
+    }else{
+
+        alert(
+            "Riwayat pesanan"
+        );
+
+    }
+
+}
+
+
+/* ==============================
+   PROFIL
+============================== */
+
+function bukaProfilFixzy(){
+
+    if(
+        typeof popup === "function"
+    ){
+
+        popup(`
+            👤 <b>PROFIL</b><br><br>
+            Silakan login untuk melihat
+            profil dan data akun Anda.
+        `);
+
+    }else{
+
+        alert(
+            "Profil pengguna"
+        );
+
+    }
+
+}
+
+</script>
 </body>
 </html>
