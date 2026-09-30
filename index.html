@@ -2755,6 +2755,467 @@ localStorage.setItem('tema',d?'dark':'light');
 document.querySelector('.themeToggle').textContent=d?'☀️':'🌙';
 }
 </script>
+<!-- =====================================================
+     FIX TAMPILAN MENU + KATEGORI + PENCARIAN
+     TIDAK MENGUBAH LOGIKA PRODUK / CART / SHEET
+===================================================== -->
 
+<style>
+
+/* HAMBURGER LAMA DISEMBUNYIKAN */
+#menuBtn{
+    display:none !important;
+}
+
+/* BAR MENU CEPAT */
+.fixzy-quick-bar{
+    width:100%;
+    background:#fff;
+    border-bottom:1px solid #e5e5e5;
+    padding:8px 10px 7px;
+    display:flex;
+    gap:7px;
+    overflow-x:auto;
+    white-space:nowrap;
+    scrollbar-width:none;
+}
+
+.fixzy-quick-bar::-webkit-scrollbar{
+    display:none;
+}
+
+/* TOMBOL KECIL */
+.fixzy-quick-btn{
+    flex:0 0 auto;
+    border:none !important;
+    outline:none;
+    background:#f2f2f2;
+    color:#333;
+    padding:7px 12px;
+    border-radius:18px !important;
+    font-size:11px;
+    font-weight:600;
+    box-shadow:none !important;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.fixzy-quick-btn:hover,
+.fixzy-quick-btn.active{
+    background:#16a34a;
+    color:#fff;
+}
+
+/* TOMBOL MENU */
+.fixzy-menu-btn{
+    background:#ff9800;
+    color:#fff;
+    font-weight:bold;
+}
+
+/* PENCARIAN */
+.fixzy-search{
+    width:100%;
+    background:#fff;
+    padding:7px 10px 9px;
+}
+
+.fixzy-search input{
+    width:100%;
+    height:40px;
+    border:1px solid #ddd;
+    border-radius:22px;
+    background:#f5f5f5;
+    padding:0 15px;
+    outline:none;
+    font-size:13px;
+    box-sizing:border-box;
+}
+
+.fixzy-search input:focus{
+    background:#fff;
+    border-color:#16a34a;
+    box-shadow:0 0 0 2px rgba(22,163,74,.08);
+}
+
+/* HILANGKAN PENJELASAN PENCARIAN LAMA */
+.fixzy-old-search-info{
+    display:none !important;
+}
+
+/* HP */
+@media(max-width:768px){
+
+    .fixzy-quick-bar{
+        padding:7px 8px;
+        gap:6px;
+    }
+
+    .fixzy-quick-btn{
+        font-size:10px;
+        padding:7px 10px;
+    }
+
+    .fixzy-search{
+        padding:7px 8px 8px;
+    }
+
+}
+
+</style>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+    /*
+    =====================================================
+    1. HAMBURGER LAMA DIHILANGKAN
+    SIDE MENU TETAP ADA
+    =====================================================
+    */
+
+    const oldMenu = document.getElementById("menuBtn");
+
+    if(oldMenu){
+        oldMenu.style.display = "none";
+    }
+
+
+    /*
+    =====================================================
+    2. CARI RUNNING TEXT
+    =====================================================
+    */
+
+    const running = document.querySelector(".running-text");
+
+    if(!running){
+        return;
+    }
+
+
+    /*
+    =====================================================
+    3. BUAT MENU CEPAT
+    =====================================================
+    */
+
+    const quickBar = document.createElement("div");
+
+    quickBar.className = "fixzy-quick-bar";
+
+
+    /*
+    TOMBOL MENU
+    */
+
+    const menuButton = document.createElement("button");
+
+    menuButton.className =
+        "fixzy-quick-btn fixzy-menu-btn";
+
+    menuButton.innerHTML = "☰ MENU";
+
+    menuButton.onclick = function(){
+
+        if(typeof bukaMenu === "function"){
+            bukaMenu();
+        }
+
+    };
+
+    quickBar.appendChild(menuButton);
+
+
+    /*
+    DATA KATEGORI
+    */
+
+    const kategori = [
+
+        {
+            nama:"Semua",
+            icon:"🏠",
+            keyword:""
+        },
+
+        {
+            nama:"LCD",
+            icon:"📱",
+            keyword:"LCD"
+        },
+
+        {
+            nama:"Baterai",
+            icon:"🔋",
+            keyword:"Baterai"
+        },
+
+        {
+            nama:"Flexible",
+            icon:"🔌",
+            keyword:"Flexible"
+        },
+
+        {
+            nama:"IC",
+            icon:"🔧",
+            keyword:"IC"
+        },
+
+        {
+            nama:"Charger",
+            icon:"⚡",
+            keyword:"Charger"
+        },
+
+        {
+            nama:"Kamera",
+            icon:"📷",
+            keyword:"Kamera"
+        },
+
+        {
+            nama:"Case",
+            icon:"📱",
+            keyword:"Case"
+        }
+
+    ];
+
+
+    kategori.forEach(function(item,index){
+
+        const btn = document.createElement("button");
+
+        btn.className = "fixzy-quick-btn";
+
+        if(index === 0){
+            btn.classList.add("active");
+        }
+
+        btn.innerHTML =
+            item.icon + " " + item.nama;
+
+        btn.onclick = function(){
+
+            /*
+            AKTIFKAN TOMBOL
+            */
+
+            document
+                .querySelectorAll(".fixzy-quick-btn")
+                .forEach(function(x){
+                    x.classList.remove("active");
+                });
+
+            btn.classList.add("active");
+
+
+            /*
+            ISI SEARCH
+            */
+
+            const input =
+                document.getElementById("searchInput");
+
+            if(input){
+
+                input.value = item.keyword;
+
+                filterFixzyProduk(item.keyword);
+
+            }
+
+        };
+
+        quickBar.appendChild(btn);
+
+    });
+
+
+    /*
+    =====================================================
+    4. MASUKKAN MENU TEPAT DI BAWAH RUNNING TEXT
+    =====================================================
+    */
+
+    running.insertAdjacentElement(
+        "afterend",
+        quickBar
+    );
+
+
+    /*
+    =====================================================
+    5. PINDAHKAN SEARCH BOX
+       LANGSUNG DI BAWAH TOMBOL
+    =====================================================
+    */
+
+    const oldSearch =
+        document.querySelector(".search-box");
+
+    if(oldSearch){
+
+        const searchWrapper =
+            document.createElement("div");
+
+        searchWrapper.className =
+            "fixzy-search";
+
+        const input =
+            oldSearch.querySelector("#searchInput");
+
+        if(input){
+
+            /*
+            Ambil input lama
+            agar event pencarian lama
+            tetap bisa bekerja.
+            */
+
+            input.placeholder =
+                "🔎 Cari produk, tipe HP, LCD, baterai...";
+
+            searchWrapper.appendChild(input);
+
+        }
+
+        oldSearch.replaceWith(searchWrapper);
+
+        quickBar.insertAdjacentElement(
+            "afterend",
+            searchWrapper
+        );
+
+    }
+
+
+    /*
+    =====================================================
+    6. HILANGKAN TEKS PENJELASAN PENCARIAN LAMA
+    =====================================================
+    */
+
+    const hero = document.querySelector(".hero");
+
+    if(hero){
+
+        const info =
+            hero.querySelector(
+                'div[style*="text-align:center"]'
+            );
+
+        if(info){
+
+            info.classList.add(
+                "fixzy-old-search-info"
+            );
+
+        }
+
+    }
+
+
+    /*
+    =====================================================
+    7. EVENT PENCARIAN
+    =====================================================
+    */
+
+    const searchInput =
+        document.getElementById("searchInput");
+
+    if(searchInput){
+
+        /*
+        Hapus listener lama dengan
+        clone supaya tidak terjadi
+        pencarian ganda.
+        */
+
+        const newInput =
+            searchInput.cloneNode(true);
+
+        searchInput.replaceWith(newInput);
+
+
+        newInput.addEventListener(
+            "input",
+            function(){
+
+                /*
+                Kalau user mengetik manual,
+                tombol kategori dilepas.
+                */
+
+                document
+                    .querySelectorAll(".fixzy-quick-btn")
+                    .forEach(function(btn){
+
+                        btn.classList.remove("active");
+
+                    });
+
+
+                filterFixzyProduk(
+                    this.value
+                );
+
+            }
+        );
+
+    }
+
+});
+
+
+/*
+=====================================================
+FILTER PRODUK
+=====================================================
+*/
+
+function filterFixzyProduk(keyword){
+
+    keyword =
+        String(keyword || "")
+        .toLowerCase()
+        .trim();
+
+
+    const products =
+        document.querySelectorAll(
+            ".produk-card"
+        );
+
+
+    products.forEach(function(card){
+
+        const text =
+            card.innerText
+            .toLowerCase();
+
+
+        if(
+            keyword === "" ||
+            text.includes(keyword)
+        ){
+
+            card.style.display = "";
+
+        }else{
+
+            card.style.display = "none";
+
+        }
+
+    });
+
+}
+
+</script>
 </body>
 </html>
