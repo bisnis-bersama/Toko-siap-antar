@@ -2005,6 +2005,13 @@ Rp ${Number(harga).toLocaleString()}
 
 document.getElementById("produkList").innerHTML=html;
 
+})
+.catch(error=>{
+  console.error("Gagal memuat produk Google Sheets:", error);
+  const list=document.getElementById("produkList");
+  if(list){
+    list.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:#087f3e;background:#fff;border:1px solid #c8f0d5;border-radius:12px;margin:8px">Produk belum bisa dimuat. Periksa koneksi internet dan buka halaman dari hosting (bukan file unduhan lokal), lalu muat ulang.</div>';
+  }
 });
 
 </script>
@@ -4608,6 +4615,14 @@ body,html{
   margin-top:0!important;
   padding-top:0!important;
 }
+</style>
+
+
+<style id="tsa-restore-spreadsheet-products">
+/* Pastikan area daftar produk tetap terlihat setelah penyesuaian header */
+.produk-scroll{display:block!important;visibility:visible!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;padding:0 0 24px!important;margin:0!important}
+#produkList.produk-container{display:grid!important;visibility:visible!important;opacity:1!important;min-height:40px!important;margin:0 auto!important;padding:10px!important}
+#produkList .produk-card{display:block;visibility:visible;opacity:1}
 </style>
 
 </body>
