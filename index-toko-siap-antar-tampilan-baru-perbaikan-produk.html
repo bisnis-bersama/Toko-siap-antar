@@ -1488,6 +1488,16 @@ body.dark .search-box input{
 @media(max-width:380px){.header.tsa-header-new{padding:0 8px!important}.tsa-header-logo img{max-width:130px!important;max-height:42px!important}.tsa-header-actions{gap:6px!important}.tsa-header-btn{width:38px!important;height:38px!important;min-width:38px!important}}
 </style>
 
+
+<style id="tsa-safe-sticky-header">
+.header.tsa-header-new{position:sticky!important;top:0!important;z-index:100000!important;}
+.tsa-promo-slider{position:relative!important;}
+.search-box{display:block!important;visibility:visible!important;opacity:1!important;position:relative!important;}
+.produk-scroll{display:block!important;visibility:visible!important;height:auto!important;max-height:none!important;overflow:visible!important;}
+#produkList.produk-container{display:grid!important;visibility:visible!important;opacity:1!important;width:100%!important;height:auto!important;min-height:40px!important;max-height:none!important;overflow:visible!important;}
+#produkList .produk-card{display:flex!important;visibility:visible!important;opacity:1!important;min-width:0!important;}
+</style>
+
 </head>
 
 <body>
@@ -4741,90 +4751,11 @@ body.dark .fixzy-search{
 </style>
 
 
-<style id="tsa-fixed-top-through-search-v2">
-/* Kunci seluruh bagian atas: logo, promo, kategori dan pencarian */
-#tsa-fixed-top-shell{
-  position:fixed!important;top:0!important;left:0!important;right:0!important;
-  width:100%!important;z-index:100000!important;background:#fff!important;
-  box-shadow:0 5px 14px rgba(0,0,0,.08)!important;
-  max-height:92vh;overflow:visible!important;
-}
-#tsa-fixed-top-shell .tsa-header-new,
-#tsa-fixed-top-shell .motor-jalan,
-#tsa-fixed-top-shell .tsa-promo-slider,
-#tsa-fixed-top-shell .garis,
-#tsa-fixed-top-shell .fixzy-quick-bar,
-#tsa-fixed-top-shell .fixzy-search,
-#tsa-fixed-top-shell .search-box{position:relative!important;top:auto!important;}
-#tsa-fixed-top-spacer{display:block!important;width:100%!important;height:0;pointer-events:none!important;}
-@media(max-width:768px){#tsa-fixed-top-shell{max-height:90vh}}
-body.dark #tsa-fixed-top-shell{background:#171717!important}
-</style>
-<script id="tsa-fix-entire-top-stationary-v2">
-(function(){
-  function pinTop(){
-    if(document.getElementById('tsa-fixed-top-shell')) return true;
-    const header=document.querySelector('.tsa-header-new');
-    const promo=document.querySelector('.tsa-promo-slider');
-    const quick=document.querySelector('.fixzy-quick-bar');
-    const search=document.querySelector('.fixzy-search, .search-box');
-    if(!header || !search) return false;
-    const shell=document.createElement('div'); shell.id='tsa-fixed-top-shell';
-    const spacer=document.createElement('div'); spacer.id='tsa-fixed-top-spacer';
-    header.parentNode.insertBefore(shell,header);
-    shell.appendChild(header);
-    // Maintain the visible order of the upper section without duplicating elements.
-    const motor=document.querySelector('.motor-jalan'); if(motor) shell.appendChild(motor);
-    if(promo) shell.appendChild(promo);
-    const line=document.querySelector('.garis'); if(line) shell.appendChild(line);
-    if(quick) shell.appendChild(quick);
-    // Include the helper text above the search field if it is in the hero.
-    const hero=search.closest('.hero');
-    if(hero){
-      const intro=hero.querySelector('div[style*="text-align:center"]');
-      if(intro) shell.appendChild(intro);
-    }
-    shell.appendChild(search);
-    shell.parentNode.insertBefore(spacer,shell.nextSibling);
-    function sizeSpacer(){
-      spacer.style.height=shell.getBoundingClientRect().height+'px';
-      // Keep the pinned area compact and avoid hiding the product list on small screens.
-      shell.style.maxHeight='90vh';
-    }
-    sizeSpacer();
-    window.addEventListener('resize',sizeSpacer,{passive:true});
-    if(window.ResizeObserver){new ResizeObserver(sizeSpacer).observe(shell)}
-    return true;
-  }
-  let tries=0;
-  function start(){ if(pinTop()) return; if(++tries<40) setTimeout(start,250); }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true}); else start();
-  window.addEventListener('load',start,{once:true});
-})();
-</script>
 
 
-<style id="tsa-requested-final-fixes">
-/* Header tetap terlihat dan menempel saat halaman digulir */
-#tsa-fixed-top-shell{
-  position:fixed!important;top:0!important;left:0!important;right:0!important;
-  z-index:100000!important;width:100%!important;
-  background:#fff!important;overflow:visible!important;
-}
-#tsa-fixed-top-shell .tsa-header-new{
-  display:flex!important;visibility:visible!important;opacity:1!important;
-  position:relative!important;top:auto!important;flex-shrink:0!important;
-}
-.tsa-header-logo img{content:normal!important}
-.tsa-promo-slider{display:block!important;visibility:visible!important;opacity:1!important}
-.fixzy-quick-bar{display:flex!important;visibility:visible!important;opacity:1!important}
-.fixzy-quick-btn{visibility:visible!important;opacity:1!important}
-.search-box,.fixzy-search{display:block!important;visibility:visible!important;opacity:1!important}
-.produk-scroll{display:block!important;visibility:visible!important;height:auto!important;max-height:none!important;overflow:visible!important}
-#produkList{display:grid!important;visibility:visible!important;opacity:1!important}
-#produkList .produk-card{display:flex!important;visibility:visible!important;opacity:1!important}
-body.dark #tsa-fixed-top-shell{background:#171717!important}
-</style>
+
+
+
 
 
 <style id="tsa-reference-products-final">
