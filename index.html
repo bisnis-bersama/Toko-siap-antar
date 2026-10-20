@@ -4768,19 +4768,24 @@ body.dark .fixzy-search{
 </style>
 
 
-<style id="tsa-final-fixed-top-product-scroll">
-/* Pertahankan bagian atas; gulir hanya daftar produk. */
-html, body { height:100% !important; min-height:100% !important; overflow:hidden !important; }
-body { height:100dvh !important; max-height:100dvh !important; }
-.header.tsa-header-new { position:relative !important; top:auto !important; }
-.content-scroll { display:block !important; position:relative !important; height:calc(100dvh - 70px) !important; min-height:0 !important; max-height:calc(100dvh - 70px) !important; overflow:hidden !important; }
-.hero { display:flex !important; flex-direction:column !important; height:100% !important; min-height:0 !important; max-height:100% !important; overflow:hidden !important; }
-.fixzy-quick-bar { position:relative !important; top:auto !important; flex:0 0 auto !important; }
-.search-box, .fixzy-search { position:relative !important; top:auto !important; flex:0 0 auto !important; }
-.produk-scroll { display:block !important; flex:1 1 auto !important; min-height:0 !important; height:auto !important; max-height:none !important; overflow-y:auto !important; overflow-x:hidden !important; -webkit-overflow-scrolling:touch !important; overscroll-behavior:contain !important; padding-bottom:24px !important; }
-#produkList.produk-container { height:auto !important; min-height:0 !important; max-height:none !important; overflow:visible !important; }
-@media(max-width:768px) {
-  .content-scroll { height:calc(100dvh - 62px) !important; max-height:calc(100dvh - 62px) !important; }
+<style id="tsa-popup-paling-depan-fix">
+/* Hanya menaikkan lapisan popup detail produk; tidak mengubah aturan scroll halaman. */
+#zoomPopup {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  z-index: 2147483647 !important;
+  isolation: isolate !important;
+}
+#zoomPopup[style*="display: flex"],
+#zoomPopup[style*="display:flex"] {
+  display: flex !important;
+}
+#zoomPopup .zoomBox {
+  position: relative !important;
+  z-index: 2147483647 !important;
 }
 </style>
 </body>
