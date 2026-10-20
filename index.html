@@ -1959,7 +1959,9 @@ fetch(sheetURL)
 
 .then(data=>{
 
-const json=JSON.parse(data.substring(47).slice(0,-2));
+// Google Sheets gviz membungkus JSON dalam callback; ambil isi JSON secara aman.
+const jsonText = data.slice(data.indexOf('{'), data.lastIndexOf('}') + 1);
+const json = JSON.parse(jsonText);
 
 let rows = json.table.rows;
 
@@ -2022,14 +2024,17 @@ Rp ${Number(harga).toLocaleString()}
 });
 
 
-document.getElementById("produkList").innerHTML=html;
+const productList = document.getElementById("produkList");
+if (productList) {
+  productList.innerHTML = html || '<div style="grid-column:1/-1;text-align:center;padding:20px;background:#fff;border-radius:12px">Belum ada produk pada spreadsheet MEMBER.</div>';
+}
 
 })
 .catch(error=>{
   console.error("Gagal memuat produk Google Sheets:", error);
   const list=document.getElementById("produkList");
   if(list){
-    list.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:#087f3e;background:#fff;border:1px solid #c8f0d5;border-radius:12px;margin:8px">Produk belum bisa dimuat. Periksa koneksi internet dan buka halaman dari hosting (bukan file unduhan lokal), lalu muat ulang.</div>';
+    list.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:#087f3e;background:#fff;border:1px solid #c8f0d5;border-radius:12px;margin:8px">Produk spreadsheet belum bisa dimuat. Periksa koneksi internet dan akses publik spreadsheet, lalu tekan refresh.</div>';
   }
 });
 
@@ -2049,6 +2054,7 @@ document.getElementById("searchInput").addEventListener("keyup", function() {
   });
 });
 </script>
+
 <!-- POPUP PROMOSI TOKO SIAP ANTAR -->
 
 <div id="promoPopup" onclick="tutupPromo()">
@@ -4861,6 +4867,14 @@ body.dark #tsa-fixed-top-shell{background:#171717!important}
 #produkList{display:grid!important;visibility:visible!important;opacity:1!important}
 #produkList .produk-card{display:flex!important;visibility:visible!important;opacity:1!important}
 body.dark #tsa-fixed-top-shell{background:#171717!important}
+</style>
+
+
+<style id="tsa-reference-products-final">
+/* Daftar produk dari spreadsheet tetap terlihat di bawah pencarian */
+.content-scroll,.hero,.produk-scroll{display:block!important;position:relative!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;}
+#produkList.produk-container{display:grid!important;visibility:visible!important;opacity:1!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;}
+#produkList .produk-card{display:flex!important;visibility:visible!important;opacity:1!important;min-width:0!important;}
 </style>
 
 </body>
