@@ -1638,7 +1638,7 @@ onclick="window.open('https://www.facebook.com/share/1BhC4jhcGc/','_blank')">
    
 
 <div class="header tsa-header-new">
-  <div class="tsa-header-logo"><img src="logo.png" alt="Toko Siap Antar"></div>
+  <div class="tsa-header-logo"><img src="logo2.png" alt="Toko Siap Antar"></div>
   <div class="tsa-header-actions">
     <button type="button" class="tsa-header-btn" aria-label="Refresh halaman" onclick="refreshHalaman()" title="Refresh">↻</button>
     <button type="button" class="tsa-header-btn tsa-dark-btn" aria-label="Mode gelap" onclick="toggleTheme()" title="Mode gelap">🌙</button>
@@ -1666,20 +1666,6 @@ onclick="window.open('https://www.facebook.com/share/1BhC4jhcGc/','_blank')">
 <div class="content-scroll">
 
 <div class="hero">
-<div style="text-align:center;margin-bottom:12px;line-height:1.5;">
-  <div style="font-size:22px;font-weight:bold;color:#16a34a;">
-    🔎 Cari Produk dengan Mudah
-  </div>
-
-  <div style="font-size:15px;color:#555;margin-top:4px;">
-    Ketik
-    <span style="color:#ff6a00;font-weight:bold;">nama produk</span>,
-    <span style="color:#16a34a;font-weight:bold;">merek HP</span>,
-    atau
-    <span style="color:#2196f3;font-weight:bold;">jenis sparepart</span>
-    pada kolom pencarian di bawah.
-  </div>
-</div>
 <div class="search-box">
   <input type="text" id="searchInput" placeholder="🔎 Cari produk... (LCD, baterai, IC)">
 </div>
@@ -4619,38 +4605,7 @@ body,html{
 </style>
 
 
-<style id="tsa-start-from-running-text">
-/* Tampilkan mulai dari running text; sembunyikan header dan slider di atasnya */
-.header,
-.tsa-promo-slider,
-.slider-sheet{
-  display:none!important;
-  height:0!important;
-  min-height:0!important;
-  max-height:0!important;
-  margin:0!important;
-  padding:0!important;
-  border:0!important;
-  overflow:hidden!important;
-  animation:none!important;
-}
-/* Running text menjadi bagian paling atas yang terlihat */
-.running-text{
-  display:block!important;
-  visibility:visible!important;
-  height:auto!important;
-  min-height:34px!important;
-  max-height:none!important;
-  margin:0!important;
-  padding:8px 0!important;
-  overflow:hidden!important;
-}
-/* Jangan sisakan ruang kosong dari header/slider yang dihilangkan */
-.content-scroll{
-  margin-top:0!important;
-  padding-top:0!important;
-}
-</style>
+
 
 
 <style id="tsa-restore-spreadsheet-products">
@@ -4884,6 +4839,29 @@ body.dark #tsa-fixed-top-shell{background:#171717!important}
   window.addEventListener('load',start,{once:true});
 })();
 </script>
+
+
+<style id="tsa-requested-final-fixes">
+/* Header tetap terlihat dan menempel saat halaman digulir */
+#tsa-fixed-top-shell{
+  position:fixed!important;top:0!important;left:0!important;right:0!important;
+  z-index:100000!important;width:100%!important;
+  background:#fff!important;overflow:visible!important;
+}
+#tsa-fixed-top-shell .tsa-header-new{
+  display:flex!important;visibility:visible!important;opacity:1!important;
+  position:relative!important;top:auto!important;flex-shrink:0!important;
+}
+.tsa-header-logo img{content:normal!important}
+.tsa-promo-slider{display:block!important;visibility:visible!important;opacity:1!important}
+.fixzy-quick-bar{display:flex!important;visibility:visible!important;opacity:1!important}
+.fixzy-quick-btn{visibility:visible!important;opacity:1!important}
+.search-box,.fixzy-search{display:block!important;visibility:visible!important;opacity:1!important}
+.produk-scroll{display:block!important;visibility:visible!important;height:auto!important;max-height:none!important;overflow:visible!important}
+#produkList{display:grid!important;visibility:visible!important;opacity:1!important}
+#produkList .produk-card{display:flex!important;visibility:visible!important;opacity:1!important}
+body.dark #tsa-fixed-top-shell{background:#171717!important}
+</style>
 
 </body>
 </html>
