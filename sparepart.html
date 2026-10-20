@@ -1,306 +1,297 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Daftar Sparepart Member</title>
+<title>Toko Sparepart HP</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
-body{margin:0;font-family:Arial;background:#f5f5f5}
-header{position:sticky;top:0;background:#16a34a;color:#fff;padding:14px;text-align:center;font-weight:bold;font-size:20px}
-#search{width:94%;margin:10px auto;display:block;padding:12px;border:2px solid #16a34a;border-radius:8px}
-.az{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;padding:6px}
-.az a{text-decoration:none;background:#fff;padding:5px 8px;border-radius:4px;color:#333;font-size:12px}
-.item{background:#fff;margin:8px;padding:10px;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,.12)}
-.name{font-weight:bold}
-.price{color:#f97316;font-weight:bold;margin:6px 0}
-.qty{display:flex;align-items:center;gap:8px;margin:8px 0}
-.qty button{width:34px;height:34px}
-.qty input{width:45px;text-align:center}
-.btns{display:flex;gap:5px;flex-wrap:wrap}
-.btn{flex:1;padding:9px;border:none;border-radius:6px;color:#fff;font-weight:bold;cursor:pointer}
-.cart{background:#16a34a}.buy{background:#ff9800}.wa{background:#25d366;text-decoration:none;text-align:center;line-height:36px}
-#cartFloat{
-position:fixed;
-right:15px;
-bottom:20px;
-background:linear-gradient(135deg,#f97316,#16a34a);
-color:#fff;
-padding:12px 18px;
-border-radius:50px;
+
+body{
+font-family:Arial;
+margin:0;
+background:#f1f5f9;
+padding-bottom:80px;
+}
+
+header{
+background:#15803d;
+color:white;
+padding:16px;
+text-align:center;
+font-size:18px;
 font-weight:bold;
-border:3px solid #facc15;
-box-shadow:0 8px 20px rgba(0,0,0,.25);
-cursor:pointer;
-z-index:99999;
-transition:.3s;
 }
 
-#cartFloat:hover{
-transform:scale(1.08);
+.searchBox{
+padding:10px;
+background:white;
 }
 
-#cartCount{
-background:#ff9800;
-padding:3px 8px;
-border-radius:20px;
+.searchBox input{
+width:100%;
+padding:10px;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+.section{
+margin:10px;
+font-weight:bold;
+color:#15803d;
+}
+
+.card{
+background:white;
+margin:10px;
+padding:12px;
+border-radius:10px;
+box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+.nama{
+font-weight:bold;
+font-size:14px;
+}
+
+.kode{
 font-size:12px;
-margin-left:5px;
+color:#666;
 }
+
+.harga{
+color:#15803d;
+font-weight:bold;
+margin-top:6px;
+}
+
+button{
+background:#15803d;
+color:white;
+border:none;
+padding:6px 12px;
+border-radius:6px;
+margin-top:8px;
+}
+
+.qtyBox{
+margin-top:8px;
+}
+
+.qtyBox button{
+padding:4px 10px;
+}
+
+.cartBtn{
+position:fixed;
+bottom:0;
+width:100%;
+background:#15803d;
+color:white;
+text-align:center;
+padding:15px;
+font-weight:bold;
+text-decoration:none;
+}
+
 </style>
 </head>
+
 <body>
-<div id="cartFloat" onclick="window.location.href='cart.html'">
-🛒 Keranjang <span id="cartCount">0</span>
+
+<header>Tools & Saprepart</header>
+
+<div class="searchBox">
+<input type="text" id="search" placeholder="🔍 Cari produk...">
 </div>
-<header>DAFTAR SPAREPART MEMBER</header>
-<input id="search" placeholder="Cari Sparepart..." onkeyup="filterProduk()">
-<div class="az" id="az"></div>
-<div id="list">Memuat data...</div>
+
+<div id="produkList"></div>
+
+<a href="cart.html" class="cartBtn">🛒 Lihat Keranjang</a>
 
 <script>
-const url="https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=SPAREPART";
-let data=[];
 
-fetch(url).then(r=>r.text()).then(t=>{
+const sheetId="1iPbtRGldW5yz6tuUZ5oHzMGsnNb4cHyCbAEMkq51qK4";
 
- const j=JSON.parse(t.substring(47).slice(0,-2));
+let semuaProduk=[];
+let cart=JSON.parse(localStorage.getItem("cart"))||[];
 
- data=[];
+function rupiah(x){
+return Math.round(x).toLocaleString("id-ID");
+}
 
- j.table.rows.forEach(r=>{
-   if(!r.c)return;
 
-   data.push({
-     nama:r.c[1]?.v||"",
-     harga:r.c[5]?.v||0
-   });
+// ================= LOAD SHEET =================
 
- });
+loadSheet("SPAREPART","SPAREPART");
 
- // Urutkan dari harga termurah ke termahal
- data.sort(function(a,b){
-     return Number(a.harga||0) - Number(b.harga||0);
- });
 
- tampil(data);
+function loadSheet(sheetName,kategori){
 
-}).catch(()=>{
+fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}`)
+.then(res=>res.text())
+.then(data=>{
 
- document.getElementById("list").innerHTML=
- "<center>Data tidak dapat dimuat.<br>Pastikan sheet SPAREPART dapat diakses.</center>";
+let json=JSON.parse(data.substr(47).slice(0,-2));
+
+let rows=json.table.rows
+.filter(r=>r.c && r.c[1])
+.map((r,i)=>({
+
+id:kategori+i,
+
+nama:r.c[1]?.v || "",
+
+harga:Number(r.c[4]?.v || 0),
+
+kode:r.c[7]?.v || "",
+
+kategori:kategori
+
+}));
+
+semuaProduk=[...semuaProduk,...rows];
+
+render();
 
 });
 
-function tampil(arr){
- let h="",ab={};
- arr.forEach((p,i)=>{
-  if(!p.nama)return;
-  let a=p.nama[0].toUpperCase();
-  if(ab[a]==null)ab[a]=i;
-  h+=`<div class="item" id="p${i}">
-<div class="name">${p.nama}</div>
-<div class="price">Rp ${Math.round(Number(p.harga)).toLocaleString("id-ID")}</div>
-<div class="qty">
-<button onclick="qty(this,-1)">-</button>
-<input value="1" class="q" readonly>
-<button onclick="qty(this,1)">+</button>
-</div>
-<div class="btns">
-<button class="btn cart"
-onclick="simpanKeKeranjang('${p.nama}',${p.harga},this)">
-🛒 Keranjang
-</button>
-
-<button class="btn buy"
-onclick="beliSekarang('${p.nama}',${p.harga},this)">
-🛍️ Beli
-</button>
-<a class="btn wa" target="_blank" href="https://wa.me/6282319264646?text=${encodeURIComponent('Halo Admin, saya ingin bertanya tentang Sparepart '+p.nama)}">💬 WA</a>
-</div></div>`;
- });
- document.getElementById("list").innerHTML=h;
- let s="";
- Object.keys(ab).sort().forEach(k=>s+=`<a href="#p${ab[k]}">${k}</a>`);
- document.getElementById("az").innerHTML=s;
-}
-function qty(b,n){let q=b.parentNode.querySelector(".q");let v=parseInt(q.value)+n;if(v<1)v=1;q.value=v;}
-function filterProduk(){
- const k=document.getElementById("search").value.toLowerCase();
- tampil(data.filter(x=>x.nama.toLowerCase().includes(k)));
 }
 
-function simpanKeKeranjang(nama,harga,btn){
 
-let qty=parseInt(
-btn.parentElement.parentElement.querySelector(".q").value
+// ================= RENDER =================
+
+function render(){
+
+let list=document.getElementById("produkList");
+let keyword=document.getElementById("search").value.toLowerCase();
+
+list.innerHTML="";
+
+["LCD","SPAREPART"].forEach(kat=>{
+
+let produkKategori=semuaProduk.filter(p=>
+p.kategori===kat &&
+p.nama.toLowerCase().includes(keyword)
 );
 
-let popup=document.createElement("div");
+if(produkKategori.length==0)return;
 
-popup.style.cssText=`
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,.6);
-display:flex;
-justify-content:center;
-align-items:center;
-z-index:99999;
+let title=document.createElement("div");
+title.className="section";
+title.innerText=kat;
+list.appendChild(title);
+
+produkKategori.forEach(p=>{
+
+let item=cart.find(c=>c.id===p.id);
+let qty=item?item.qty:0;
+
+let card=document.createElement("div");
+card.className="card";
+
+card.innerHTML=`
+<div class="nama">${p.nama}</div>
+<div class="kode">${p.kode}</div>
+<div class="harga">Rp ${rupiah(p.harga)}</div>
 `;
 
-popup.innerHTML=`
-<div style="
-background:#fff;
-width:90%;
-max-width:340px;
-padding:20px;
-border-radius:15px;
-text-align:center">
+if(qty==0){
 
-<h3 style="color:#16a34a">
-TOKO SIAP ANTAR
-</h3>
+let btn=document.createElement("button");
+btn.innerText="+ Tambah";
 
-<p style="margin:18px 0">
-Produk akan ditambahkan ke keranjang.
-</p>
+btn.onclick=()=>tambah(p);
 
-<div style="display:flex;gap:10px">
-
-<button id="btnBatal"
-style="
-flex:1;
-padding:12px;
-border:none;
-background:#999;
-color:#fff;
-border-radius:8px;">
-Batal
-</button>
-
-<button id="btnOk"
-style="
-flex:1;
-padding:12px;
-border:none;
-background:#16a34a;
-color:#fff;
-border-radius:8px;">
-OK
-</button>
-
-</div>
-
-</div>
-`;
-
-document.body.appendChild(popup);
-
-document.getElementById("btnBatal").onclick=function(){
-popup.remove();
-};
-
-document.getElementById("btnOk").onclick=function(){
-
-let cart=JSON.parse(localStorage.getItem("cart"))||[];
-
-let i=cart.findIndex(x=>x.nama===nama);
-
-if(i>=0){
-
-cart[i].qty+=qty;
+card.appendChild(btn);
 
 }else{
 
-cart.push({
-nama:nama,
-harga:Number(harga),
-qty:qty,
-foto:""
+let box=document.createElement("div");
+box.className="qtyBox";
+
+box.innerHTML=`
+<button onclick="kurang('${p.id}')">-</button>
+ ${qty}
+<button onclick="tambahQty('${p.id}')">+</button>
+`;
+
+card.appendChild(box);
+
+}
+
+list.appendChild(card);
+
+});
+
 });
 
 }
+
+
+// ================= CART =================
+
+function tambah(p){
+
+let item=cart.find(x=>x.id===p.id);
+
+if(item){
+
+item.qty++;
+
+}else{
+
+cart.push({...p,qty:1});
+
+}
+
+simpan();
+
+}
+
+function tambahQty(id){
+
+let item=cart.find(p=>p.id===id);
+
+if(item)item.qty++;
+
+simpan();
+
+}
+
+function kurang(id){
+
+let item=cart.find(p=>p.id===id);
+
+if(item){
+
+item.qty--;
+
+if(item.qty<=0){
+
+cart=cart.filter(p=>p.id!==id);
+
+}
+
+}
+
+simpan();
+
+}
+
+function simpan(){
 
 localStorage.setItem("cart",JSON.stringify(cart));
-
-popup.innerHTML=`
-<div style="
-background:#fff;
-width:90%;
-max-width:340px;
-padding:20px;
-border-radius:15px;
-text-align:center">
-
-<h3 style="color:#16a34a">
-TOKO SIAP ANTAR
-</h3>
-
-<p style="margin:18px 0">
-✅ Produk berhasil ditambahkan ke Keranjang.
-</p>
-
-<button onclick="this.closest('div').parentElement.remove()"
-style="
-width:100%;
-padding:12px;
-border:none;
-background:#16a34a;
-color:#fff;
-border-radius:8px;
-font-weight:bold;">
-OK
-</button>
-
-</div>
-`;
-};
-
-}
-function beliSekarang(nama,harga,btn){
-
-    let qty=parseInt(
-        btn.parentElement.parentElement.querySelector(".q").value
-    );
-
-    let cart=JSON.parse(localStorage.getItem("cart")) || [];
-
-    let i=cart.findIndex(x=>x.nama===nama);
-
-    if(i>=0){
-        cart[i].qty+=qty;
-    }else{
-        cart.push({
-            nama:nama,
-            harga:Number(harga),
-            qty:qty,
-            foto:""
-        });
-    }
-
-    localStorage.setItem("cart",JSON.stringify(cart));
-
-    window.location.href="cart.html";
-
-}
-function updateCartCount(){
-
-let cart=JSON.parse(localStorage.getItem("cart"))||[];
-
-let total=0;
-
-cart.forEach(item=>{
-total+=item.qty;
-});
-
-document.getElementById("cartCount").innerText=total;
+render();
 
 }
 
-updateCartCount();
+
+// ================= SEARCH =================
+
+document.getElementById("search").addEventListener("keyup",render);
+
 </script>
-</body>
 
+</body>
 </html>
