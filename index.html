@@ -1466,32 +1466,10 @@ body.dark .search-box input{
 }
 </style>
 
-
-<style id="tsa-header-final-fix">
-/* Header ringkas: logo kiri, refresh dan mode gelap kanan; tanpa running text */
-.header.tsa-header-new{
-  height:60px!important; min-height:60px!important; max-height:60px!important;
-  padding:0 12px!important; margin:0!important; box-sizing:border-box!important;
-  display:flex!important; align-items:center!important; justify-content:space-between!important;
-  position:relative!important; overflow:hidden!important;
-  background:linear-gradient(100deg,#00883d 0%,#00c6b8 65%,#ffd400 100%)!important;
-  box-shadow:0 2px 6px rgba(0,0,0,.12)!important;
-}
-.header.tsa-header-new::after{height:2px!important;background:rgba(255,255,255,.45)!important}
-.tsa-header-logo{display:flex!important;align-items:center!important;justify-content:flex-start!important;min-width:0!important;z-index:2}
-.tsa-header-logo img{display:block!important;width:auto!important;height:auto!important;max-width:155px!important;max-height:48px!important;object-fit:contain!important;border-radius:0!important;box-shadow:none!important}
-.tsa-header-actions{display:flex!important;align-items:center!important;gap:8px!important;z-index:3}
-.tsa-header-btn{width:42px!important;height:42px!important;min-width:42px!important;border:1px solid rgba(255,255,255,.55)!important;border-radius:12px!important;background:rgba(0,0,0,.28)!important;color:#fff!important;font-size:28px!important;line-height:1!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:0!important;box-shadow:0 2px 5px rgba(0,0,0,.14)!important;cursor:pointer!important}
-.tsa-dark-btn{font-size:22px!important}
-.logo-tengah{display:none!important}
-.running-text{display:none!important}
-@media(max-width:380px){.header.tsa-header-new{padding:0 8px!important}.tsa-header-logo img{max-width:130px!important;max-height:42px!important}.tsa-header-actions{gap:6px!important}.tsa-header-btn{width:38px!important;height:38px!important;min-width:38px!important}}
-</style>
-
 </head>
 
 <body>
-
+<button class="themeToggle" onclick="toggleTheme()"></button>
 
 <div id="fbPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:999999;justify-content:center;align-items:center;">
 <div style="background:#fff;width:90%;max-width:360px;padding:22px;border-radius:18px;text-align:center;">
@@ -1637,12 +1615,12 @@ onclick="window.open('https://www.facebook.com/share/1BhC4jhcGc/','_blank')">
 </div>
    
 
-<div class="header tsa-header-new">
-  <div class="tsa-header-logo"><img src="logo2.png" alt="Toko Siap Antar"></div>
-  <div class="tsa-header-actions">
-    <button type="button" class="tsa-header-btn" aria-label="Refresh halaman" onclick="refreshHalaman()" title="Refresh">↻</button>
-    <button type="button" class="tsa-header-btn tsa-dark-btn" aria-label="Mode gelap" onclick="toggleTheme()" title="Mode gelap">🌙</button>
-  </div>
+<div class="header">
+
+
+    <div class="logo-tengah">
+        <img src="logo2.png">
+    </div>
 </div>
 
 <div class="motor-jalan">
@@ -1653,22 +1631,41 @@ onclick="window.open('https://www.facebook.com/share/1BhC4jhcGc/','_blank')">
     </div>
 </div>
 
-
-<!-- SLIDER PROMO: dipindahkan tepat di bawah running text -->
-<section class="tsa-promo-slider" aria-label="Promo Toko Siap Antar">
-  <div class="slider-sheet">
-    <div class="slides" id="slides"></div>
-  </div>
-</section>
+<div class="running-text">
+    <marquee scrollamount="7">
+        🏍 Jangan Khawatir Ongkir Mahal • Ongkir Mulai Rp5.000 • Belanja Sparepart HP Lebih Mudah
+    </marquee>
+</div>
 
 <div class="garis"></div>
 </div>
 <div class="content-scroll">
 
 <div class="hero">
+<div style="text-align:center;margin-bottom:12px;line-height:1.5;">
+  <div style="font-size:22px;font-weight:bold;color:#16a34a;">
+    🔎 Cari Produk dengan Mudah
+  </div>
+
+  <div style="font-size:15px;color:#555;margin-top:4px;">
+    Ketik
+    <span style="color:#ff6a00;font-weight:bold;">nama produk</span>,
+    <span style="color:#16a34a;font-weight:bold;">merek HP</span>,
+    atau
+    <span style="color:#2196f3;font-weight:bold;">jenis sparepart</span>
+    pada kolom pencarian di bawah.
+  </div>
+</div>
 <div class="search-box">
   <input type="text" id="searchInput" placeholder="🔎 Cari produk... (LCD, baterai, IC)">
 </div>
+
+<!-- SLIDER PROMO LANDSCAPE: tepat di bawah kolom pencarian -->
+<section class="tsa-promo-slider" aria-label="Promo Toko Siap Antar">
+  <div class="slider-sheet">
+    <div class="slides" id="slides"></div>
+  </div>
+</section>
 
 <!-- PRODUK -->
 <div class="produk-scroll">
@@ -1910,15 +1907,6 @@ updateCartCount();
 window.location.href="cart.html";
 }
 
-function chatProduk(nama,harga){
-  const pesan = `Halo Admin A YUDI THEA, saya ingin bertanya tentang produk:
-${nama}
-Harga: Rp ${Number(harga).toLocaleString("id-ID")}
-
-Apakah produk ini masih tersedia?`;
-  window.open("https://wa.me/6282232323361?text="+encodeURIComponent(pesan),"_blank");
-}
-
 function convertDrive(link){
 
 if(!link) return "";
@@ -1959,9 +1947,7 @@ fetch(sheetURL)
 
 .then(data=>{
 
-// Google Sheets gviz membungkus JSON dalam callback; ambil isi JSON secara aman.
-const jsonText = data.slice(data.indexOf('{'), data.lastIndexOf('}') + 1);
-const json = JSON.parse(jsonText);
+const json=JSON.parse(data.substring(47).slice(0,-2));
 
 let rows = json.table.rows;
 
@@ -2005,15 +1991,8 @@ ${deskripsi}
 Rp ${Number(harga).toLocaleString()}
 </div>
 
-<div class="product-actions">
-  <button type="button" class="product-action product-chat"
-    onclick="chatProduk(decodeURIComponent('${encodeURIComponent(nama)}'),decodeURIComponent('${encodeURIComponent(harga)}'))"
-    aria-label="Chat admin tentang produk ini" title="Chat admin">💬</button>
-  <button type="button" class="product-action product-cart"
-    onclick="tambahKeranjang(decodeURIComponent('${encodeURIComponent(nama)}'),decodeURIComponent('${encodeURIComponent(harga)}'),decodeURIComponent('${encodeURIComponent(foto)}'))"
-    aria-label="Tambah produk ke keranjang" title="Tambah ke keranjang">🛒</button>
-  <button type="button" class="product-action product-buy"
-    onclick="beliSekarang(decodeURIComponent('${encodeURIComponent(nama)}'),decodeURIComponent('${encodeURIComponent(harga)}'),decodeURIComponent('${encodeURIComponent(foto)}'))">Beli</button>
+<div class="popup-bottom">
+
 </div>
 
 </div>
@@ -2024,17 +2003,14 @@ Rp ${Number(harga).toLocaleString()}
 });
 
 
-const productList = document.getElementById("produkList");
-if (productList) {
-  productList.innerHTML = html || '<div style="grid-column:1/-1;text-align:center;padding:20px;background:#fff;border-radius:12px">Belum ada produk pada spreadsheet MEMBER.</div>';
-}
+document.getElementById("produkList").innerHTML=html;
 
 })
 .catch(error=>{
   console.error("Gagal memuat produk Google Sheets:", error);
   const list=document.getElementById("produkList");
   if(list){
-    list.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:#087f3e;background:#fff;border:1px solid #c8f0d5;border-radius:12px;margin:8px">Produk spreadsheet belum bisa dimuat. Periksa koneksi internet dan akses publik spreadsheet, lalu tekan refresh.</div>';
+    list.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:#087f3e;background:#fff;border:1px solid #c8f0d5;border-radius:12px;margin:8px">Produk belum bisa dimuat. Periksa koneksi internet dan buka halaman dari hosting (bukan file unduhan lokal), lalu muat ulang.</div>';
   }
 });
 
@@ -2054,7 +2030,6 @@ document.getElementById("searchInput").addEventListener("keyup", function() {
   });
 });
 </script>
-
 <!-- POPUP PROMOSI TOKO SIAP ANTAR -->
 
 <div id="promoPopup" onclick="tutupPromo()">
@@ -3020,14 +2995,14 @@ font-weight:bold;
 (function(){
 if(localStorage.getItem('tema')==='dark'){
 document.body.classList.add('dark');
-document.querySelectorAll('.tsa-dark-btn').forEach(b=>b.textContent='☀️');
+document.querySelector('.themeToggle').textContent='☀️';
 }
 })();
 function toggleTheme(){
 document.body.classList.toggle('dark');
 const d=document.body.classList.contains('dark');
 localStorage.setItem('tema',d?'dark':'light');
-document.querySelectorAll('.tsa-dark-btn').forEach(b=>b.textContent=d?'☀️':'🌙');
+document.querySelector('.themeToggle').textContent=d?'☀️':'🌙';
 }
 </script>
 <!-- =====================================================
@@ -4479,16 +4454,15 @@ body,html{
 .tsa-promo-slider{
   display:block!important;
   position:relative!important;
-  width:calc(100% - 32px)!important;
-  max-width:1200px!important;
+  width:100%!important;
   height:clamp(125px, 31vw, 210px)!important;
-  margin:10px auto 12px!important;
-  border-radius:16px!important;
+  margin:0 auto 12px!important;
   padding:8px 0!important;
   overflow:hidden!important;
   box-sizing:border-box!important;
   background:linear-gradient(100deg,#eaffef 0%,#effcff 48%,#fff9c9 100%)!important;
-  border:3px solid transparent!important;
+  border-top:3px solid transparent!important;
+  border-bottom:3px solid transparent!important;
   border-image:linear-gradient(90deg,#078b45,#00cfff,#ffdf00) 1!important;
 }
 .tsa-promo-slider .slider-sheet{
@@ -4533,9 +4507,8 @@ body,html{
 .tsa-promo-slider:hover .slides{animation-play-state:paused!important}
 @media(max-width:480px){
   .tsa-promo-slider{
-    width:calc(100% - 32px)!important;
     height:clamp(118px,34vw,165px)!important;
-    margin:10px auto!important;
+    margin-bottom:10px!important;
   }
   .tsa-promo-slider .slide-manual{
     width:88vw!important;
@@ -4611,7 +4584,38 @@ body,html{
 </style>
 
 
-
+<style id="tsa-start-from-running-text">
+/* Tampilkan mulai dari running text; sembunyikan header dan slider di atasnya */
+.header,
+.tsa-promo-slider,
+.slider-sheet{
+  display:none!important;
+  height:0!important;
+  min-height:0!important;
+  max-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  overflow:hidden!important;
+  animation:none!important;
+}
+/* Running text menjadi bagian paling atas yang terlihat */
+.running-text{
+  display:block!important;
+  visibility:visible!important;
+  height:auto!important;
+  min-height:34px!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:8px 0!important;
+  overflow:hidden!important;
+}
+/* Jangan sisakan ruang kosong dari header/slider yang dihilangkan */
+.content-scroll{
+  margin-top:0!important;
+  padding-top:0!important;
+}
+</style>
 
 
 <style id="tsa-restore-spreadsheet-products">
@@ -4619,262 +4623,6 @@ body,html{
 .produk-scroll{display:block!important;visibility:visible!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;padding:0 0 24px!important;margin:0!important}
 #produkList.produk-container{display:grid!important;visibility:visible!important;opacity:1!important;min-height:40px!important;margin:0 auto!important;padding:10px!important}
 #produkList .produk-card{display:block;visibility:visible;opacity:1}
-</style>
-
-
-<style id="tsa-final-promo-and-product-actions">
-/* Promo slider: tampil tepat di bawah kolom pencarian */
-.tsa-promo-slider{
-  display:block!important;
-  visibility:visible!important;
-  position:relative!important;
-  width:100%!important;
-  height:clamp(125px,31vw,220px)!important;
-  min-height:125px!important;
-  max-height:220px!important;
-  margin:12px auto 16px!important;
-  padding:8px 0!important;
-  overflow:hidden!important;
-  background:linear-gradient(100deg,#fff8d7,#fff,#e8fff0)!important;
-  border-top:2px solid #ffc107!important;
-  border-bottom:2px solid #ffc107!important;
-}
-.tsa-promo-slider .slider-sheet{
-  display:block!important;
-  visibility:visible!important;
-  position:absolute!important;
-  inset:8px 0!important;
-  width:100%!important;
-  height:calc(100% - 16px)!important;
-  max-height:none!important;
-  overflow:hidden!important;
-}
-.tsa-promo-slider .slides{
-  display:flex!important;
-  width:max-content!important;
-  height:100%!important;
-  animation:tsaPromoMove 38s linear infinite!important;
-}
-.tsa-promo-slider .slide-manual{
-  flex:0 0 auto!important;
-  height:100%!important;
-  width:min(82vw,560px)!important;
-}
-.tsa-promo-slider .slide-manual img{
-  width:100%!important;height:100%!important;object-fit:cover!important;
-}
-@media(min-width:769px){
-  .tsa-promo-slider .slide-manual{width:min(46vw,560px)!important}
-}
-
-/* Tombol tindakan ringkas dan konsisten pada setiap kartu produk */
-.product-actions{
-  display:grid!important;
-  grid-template-columns:42px 42px minmax(0,1fr)!important;
-  gap:6px!important;
-  align-items:center!important;
-  margin-top:9px!important;
-}
-.product-action{
-  min-width:0!important;
-  height:38px!important;
-  padding:0 8px!important;
-  border:1px solid #e5e7eb!important;
-  border-radius:10px!important;
-  font-size:16px!important;
-  font-weight:800!important;
-  line-height:1!important;
-  cursor:pointer!important;
-  box-shadow:none!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-}
-.product-chat{background:#e8fff0!important;color:#087f3e!important;border-color:#b9edcc!important}
-.product-cart{background:#fff8d7!important;color:#171717!important;border-color:#f5d45a!important}
-.product-buy{background:#ffc107!important;color:#171717!important;font-size:12px!important}
-.product-action:active{transform:scale(.96)!important}
-@media(max-width:480px){
-  .product-actions{grid-template-columns:34px 34px minmax(0,1fr)!important;gap:4px!important;margin-top:7px!important}
-  .product-action{height:34px!important;border-radius:8px!important;font-size:14px!important;padding:0 4px!important}
-  .product-buy{font-size:11px!important}
-}
-</style>
-
-
-<style id="tsa-clean-layout-rebuild-v1">
-/* Layout baru: memakai komponen, warna, produk dan fungsi dari file lama */
-html,body{margin:0!important;min-height:100%!important;height:auto!important;overflow-x:hidden!important;}
-body{padding:0!important;}
-body > div[style*="max-width:1500px"]{width:100%!important;min-height:0!important;height:auto!important;}
-.content-scroll{display:block!important;position:relative!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;margin:0!important;padding:0!important;overflow:visible!important;}
-.hero{display:block!important;position:relative!important;height:auto!important;min-height:0!important;max-height:none!important;margin:0!important;padding:8px 10px 6px!important;border-radius:0!important;overflow:visible!important;}
-.hero > div:first-child{display:none!important;height:0!important;margin:0!important;padding:0!important;}
-.search-box{display:block!important;position:relative!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;}
-.search-box input{display:block!important;width:100%!important;height:46px!important;min-height:46px!important;box-sizing:border-box!important;margin:0!important;}
-.tsa-promo-slider{display:block!important;visibility:visible!important;position:relative!important;inset:auto!important;float:none!important;clear:both!important;width:100%!important;height:clamp(125px,31vw,210px)!important;min-height:125px!important;max-height:210px!important;margin:8px auto 10px!important;padding:6px 0!important;box-sizing:border-box!important;overflow:hidden!important;}
-.tsa-promo-slider .slider-sheet{display:block!important;visibility:visible!important;position:absolute!important;inset:6px 0!important;top:6px!important;left:0!important;right:0!important;width:100%!important;height:calc(100% - 12px)!important;min-height:0!important;max-height:none!important;margin:0!important;padding:0!important;overflow:hidden!important;}
-.tsa-promo-slider .slides{display:flex!important;visibility:visible!important;width:max-content!important;height:100%!important;min-height:0!important;margin:0!important;padding:0!important;align-items:stretch!important;}
-.produk-scroll{display:block!important;position:relative!important;height:auto!important;min-height:0!important;max-height:none!important;margin:0!important;padding:0 0 24px!important;overflow:visible!important;}
-#produkList.produk-container{display:grid!important;position:relative!important;min-height:0!important;height:auto!important;max-height:none!important;margin:0 auto!important;padding:8px!important;visibility:visible!important;opacity:1!important;}
-#produkList:empty{display:none!important;min-height:0!important;padding:0!important;margin:0!important;}
-#produkList .produk-card{visibility:visible!important;opacity:1!important;}
-/* Jangan biarkan area scroll internal mendorong konten ke bawah */
-@media(max-width:768px){.hero{padding:8px 10px 5px!important}.tsa-promo-slider{height:clamp(125px,31vw,190px)!important;margin:6px auto 8px!important}.produk-scroll{padding-bottom:20px!important}}
-
-/* BAYANGAN 3D HALUS — tipis di setiap tepi panel */
-:root { --panel-shadow-soft: 0 2px 5px rgba(0,0,0,.075), 0 0 1px rgba(0,0,0,.10); }
-.produk-card, .tsa-promo-slider, .search-box, .fixzy-search, .card, .apk-card, .slider-sheet {
-  box-shadow: var(--panel-shadow-soft) !important;
-}
-/* Jangan beri bayangan pada elemen pembungkus besar atau navigasi */
-.produk-card:hover, .tsa-promo-slider:hover, .search-box:hover, .fixzy-search:hover, .card:hover, .apk-card:hover, .slider-sheet:hover {
-  box-shadow: var(--panel-shadow-soft) !important;
-}
-</style>
-
-<!-- FIX POSISI PROMO: letakkan tepat setelah running text, sebelum menu kategori/pencarian -->
-<script id="tsa-force-promo-after-running">
-(function(){
-  function placePromo(){
-    const running = document.querySelector('.running-text');
-    const promo = document.querySelector('.tsa-promo-slider');
-    if(!running || !promo) return;
-    // Pindahkan keluar dari header agar urutan DOM tetap benar walau menu/pencarian dibuat oleh script lain.
-    running.insertAdjacentElement('afterend', promo);
-    promo.style.setProperty('display','block','important');
-    promo.style.setProperty('position','relative','important');
-    promo.style.setProperty('width','calc(100% - 32px)','important');
-    promo.style.setProperty('max-width','1200px','important');
-    promo.style.setProperty('margin','10px auto 12px','important');
-    promo.style.setProperty('box-sizing','border-box','important');
-    promo.style.setProperty('flex','none','important');
-    promo.style.setProperty('align-self','center','important');
-  }
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', placePromo, {once:true});
-  } else { placePromo(); }
-  window.addEventListener('load', placePromo, {once:true});
-})();
-</script>
-
-
-<style id="tsa-sticky-category-search-v1">
-/* Saat halaman digulir, kategori dan pencarian menempel di bagian atas */
-.fixzy-quick-bar{
-  position:sticky !important;
-  top:0 !important;
-  z-index:99990 !important;
-  box-shadow:0 3px 8px rgba(0,0,0,.07) !important;
-}
-.fixzy-search{
-  position:sticky !important;
-  top:48px !important;
-  z-index:99989 !important;
-  box-shadow:0 3px 8px rgba(0,0,0,.06) !important;
-}
-body.dark .fixzy-quick-bar,
-body.dark .fixzy-search{
-  background:#171717 !important;
-}
-@media(max-width:768px){
-  .fixzy-quick-bar{top:0 !important;}
-  .fixzy-search{top:45px !important;}
-}
-</style>
-
-
-<style id="tsa-fixed-top-through-search-v2">
-/* Kunci seluruh bagian atas: logo, promo, kategori dan pencarian */
-#tsa-fixed-top-shell{
-  position:fixed!important;top:0!important;left:0!important;right:0!important;
-  width:100%!important;z-index:100000!important;background:#fff!important;
-  box-shadow:0 5px 14px rgba(0,0,0,.08)!important;
-  max-height:92vh;overflow:visible!important;
-}
-#tsa-fixed-top-shell .tsa-header-new,
-#tsa-fixed-top-shell .motor-jalan,
-#tsa-fixed-top-shell .tsa-promo-slider,
-#tsa-fixed-top-shell .garis,
-#tsa-fixed-top-shell .fixzy-quick-bar,
-#tsa-fixed-top-shell .fixzy-search,
-#tsa-fixed-top-shell .search-box{position:relative!important;top:auto!important;}
-#tsa-fixed-top-spacer{display:block!important;width:100%!important;height:0;pointer-events:none!important;}
-@media(max-width:768px){#tsa-fixed-top-shell{max-height:90vh}}
-body.dark #tsa-fixed-top-shell{background:#171717!important}
-</style>
-<script id="tsa-fix-entire-top-stationary-v2">
-(function(){
-  function pinTop(){
-    if(document.getElementById('tsa-fixed-top-shell')) return true;
-    const header=document.querySelector('.tsa-header-new');
-    const promo=document.querySelector('.tsa-promo-slider');
-    const quick=document.querySelector('.fixzy-quick-bar');
-    const search=document.querySelector('.fixzy-search, .search-box');
-    if(!header || !search) return false;
-    const shell=document.createElement('div'); shell.id='tsa-fixed-top-shell';
-    const spacer=document.createElement('div'); spacer.id='tsa-fixed-top-spacer';
-    header.parentNode.insertBefore(shell,header);
-    shell.appendChild(header);
-    // Maintain the visible order of the upper section without duplicating elements.
-    const motor=document.querySelector('.motor-jalan'); if(motor) shell.appendChild(motor);
-    if(promo) shell.appendChild(promo);
-    const line=document.querySelector('.garis'); if(line) shell.appendChild(line);
-    if(quick) shell.appendChild(quick);
-    // Include the helper text above the search field if it is in the hero.
-    const hero=search.closest('.hero');
-    if(hero){
-      const intro=hero.querySelector('div[style*="text-align:center"]');
-      if(intro) shell.appendChild(intro);
-    }
-    shell.appendChild(search);
-    shell.parentNode.insertBefore(spacer,shell.nextSibling);
-    function sizeSpacer(){
-      spacer.style.height=shell.getBoundingClientRect().height+'px';
-      // Keep the pinned area compact and avoid hiding the product list on small screens.
-      shell.style.maxHeight='90vh';
-    }
-    sizeSpacer();
-    window.addEventListener('resize',sizeSpacer,{passive:true});
-    if(window.ResizeObserver){new ResizeObserver(sizeSpacer).observe(shell)}
-    return true;
-  }
-  let tries=0;
-  function start(){ if(pinTop()) return; if(++tries<40) setTimeout(start,250); }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true}); else start();
-  window.addEventListener('load',start,{once:true});
-})();
-</script>
-
-
-<style id="tsa-requested-final-fixes">
-/* Header tetap terlihat dan menempel saat halaman digulir */
-#tsa-fixed-top-shell{
-  position:fixed!important;top:0!important;left:0!important;right:0!important;
-  z-index:100000!important;width:100%!important;
-  background:#fff!important;overflow:visible!important;
-}
-#tsa-fixed-top-shell .tsa-header-new{
-  display:flex!important;visibility:visible!important;opacity:1!important;
-  position:relative!important;top:auto!important;flex-shrink:0!important;
-}
-.tsa-header-logo img{content:normal!important}
-.tsa-promo-slider{display:block!important;visibility:visible!important;opacity:1!important}
-.fixzy-quick-bar{display:flex!important;visibility:visible!important;opacity:1!important}
-.fixzy-quick-btn{visibility:visible!important;opacity:1!important}
-.search-box,.fixzy-search{display:block!important;visibility:visible!important;opacity:1!important}
-.produk-scroll{display:block!important;visibility:visible!important;height:auto!important;max-height:none!important;overflow:visible!important}
-#produkList{display:grid!important;visibility:visible!important;opacity:1!important}
-#produkList .produk-card{display:flex!important;visibility:visible!important;opacity:1!important}
-body.dark #tsa-fixed-top-shell{background:#171717!important}
-</style>
-
-
-<style id="tsa-reference-products-final">
-/* Daftar produk dari spreadsheet tetap terlihat di bawah pencarian */
-.content-scroll,.hero,.produk-scroll{display:block!important;position:relative!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;}
-#produkList.produk-container{display:grid!important;visibility:visible!important;opacity:1!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;}
-#produkList .produk-card{display:flex!important;visibility:visible!important;opacity:1!important;min-width:0!important;}
 </style>
 
 </body>
