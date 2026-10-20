@@ -1950,36 +1950,94 @@ function bukaChrome(){
 
 <!-- SCRIPT PRODUK GOOGLE SHEET -->
 <script>
-const sheetURL="https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=MEMBER";
-const produkListEl = document.getElementById("produkList");
-if (produkListEl) produkListEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:18px">Memuat produk dari Spreadsheet...</div>';
+
+const sheetURL="https://docs.google.com/spreadsheets/d/19AfachAS9ZyNuut61RB1wqyI_AI6BsmNT1SIWhmSIn8/gviz/tq?sheet=MEMBER";
+
 fetch(sheetURL)
-  .then(res => { if (!res.ok) throw new Error('HTTP '+res.status); return res.text(); })
-  .then(data => {
-    const json = JSON.parse(data.substring(47).slice(0, -2));
-    const rows = json?.table?.rows;
-    if (!Array.isArray(rows)) throw new Error('Data baris Spreadsheet tidak ditemukan');
-    rows.sort((a,b) => Number(a.c?.[3]?.v || 0) - Number(b.c?.[3]?.v || 0));
-    let html = '';
-    rows.forEach(r => {
-      const nama = r.c?.[1]?.v;
-      const deskripsi = r.c?.[2]?.v || '';
-      const harga = r.c?.[3]?.v ?? 0;
-      const foto = convertDrive(r.c?.[4]?.v || '');
-      if (!nama) return;
-      const n = encodeURIComponent(String(nama));
-      const h = encodeURIComponent(String(harga));
-      const f = encodeURIComponent(String(foto));
-      html += `<div class="produk-card"><div class="produk-img-box"><img src="${foto}" class="produk-img" loading="lazy" onerror="this.style.visibility='hidden'" onclick="zoomFoto(decodeURIComponent('${n}'),decodeURIComponent('${h}'),decodeURIComponent('${encodeURIComponent(String(deskripsi))}'))"></div><div class="produk-info"><div class="produk-nama">${nama}</div><div class="produk-deskripsi">${deskripsi}</div><div class="produk-harga">Rp ${Number(harga).toLocaleString('id-ID')}</div><div class="product-actions"><button type="button" class="product-action product-chat" onclick="chatProduk(decodeURIComponent('${n}'),decodeURIComponent('${h}'))" aria-label="Chat admin">💬</button><button type="button" class="product-action product-cart" onclick="tambahKeranjang(decodeURIComponent('${n}'),decodeURIComponent('${h}'),decodeURIComponent('${f}'))" aria-label="Tambah ke keranjang">🛒</button><button type="button" class="product-action product-buy" onclick="beliSekarang(decodeURIComponent('${n}'),decodeURIComponent('${h}'),decodeURIComponent('${f}'))" aria-label="Beli sekarang">Beli</button></div></div></div>`;
-    });
-    if (!html) throw new Error('Spreadsheet berhasil dibaca, tetapi tidak ada nama produk pada kolom B');
-    if (produkListEl) produkListEl.innerHTML = html;
-  })
-  .catch(error => {
-    console.error('Gagal memuat produk Spreadsheet:', error);
-    const pesanError = 'Produk gagal dimuat dari Spreadsheet. Periksa koneksi internet dan akses sheet MEMBER, lalu tekan refresh.';
-    if (produkListEl) produkListEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:18px;color:#b91c1c;background:#fff;border:1px solid #fecaca;border-radius:12px">${pesanError}</div>`;
-  });
+
+.then(res=>res.text())
+
+.then(data=>{
+
+// Google Sheets gviz membungkus JSON dalam callback; ambil isi JSON secara aman.
+const jsonText = data.slice(data.indexOf('{'), data.lastIndexOf('}') + 1);
+const json = JSON.parse(jsonText);
+
+let rows = json.table.rows;
+
+// Urutkan harga dari termurah ke termahal
+rows.sort(function(a,b){
+
+    let hargaA = Number(a.c[3]?.v || 0);
+    let hargaB = Number(b.c[3]?.v || 0);
+
+    return hargaA - hargaB;
+
+});
+
+let html="";
+rows.forEach(r=>{
+
+let nama=r.c[1]?.v;
+let deskripsi = r.c[2] ? r.c[2].v : "";
+let harga=r.c[3]?.v;
+let foto=convertDrive(r.c[4]?.v);
+
+if(!nama) return;
+
+html+=`
+
+<div class="produk-card">
+
+<div class="produk-img-box">
+<img src="${foto}" class="produk-img"
+onclick="zoomFoto('${foto}','${nama}','${harga}','${deskripsi}')">
+</div>
+
+<div class="produk-info">
+
+<div class="produk-nama">${nama}</div>
+
+<div class="produk-deskripsi">
+${deskripsi}
+</div>
+<div class="produk-harga">
+Rp ${Number(harga).toLocaleString()}
+</div>
+
+<div class="product-actions">
+  <button type="button" class="product-action product-chat"
+    onclick="chatProduk(decodeURIComponent('${encodeURIComponent(nama)}'),decodeURIComponent('${encodeURIComponent(harga)}'))"
+    aria-label="Chat admin tentang produk ini" title="Chat admin">💬</button>
+  <button type="button" class="product-action product-cart"
+    onclick="tambahKeranjang(decodeURIComponent('${encodeURIComponent(nama)}'),decodeURIComponent('${encodeURIComponent(harga)}'),decodeURIComponent('${encodeURIComponent(foto)}'))"
+    aria-label="Tambah produk ke keranjang" title="Tambah ke keranjang">🛒</button>
+  <button type="button" class="product-action product-buy"
+    onclick="beliSekarang(decodeURIComponent('${encodeURIComponent(nama)}'),decodeURIComponent('${encodeURIComponent(harga)}'),decodeURIComponent('${encodeURIComponent(foto)}'))">Beli</button>
+</div>
+
+</div>
+
+</div>
+
+`;
+});
+
+
+const productList = document.getElementById("produkList");
+if (productList) {
+  productList.innerHTML = html || '<div style="grid-column:1/-1;text-align:center;padding:20px;background:#fff;border-radius:12px">Belum ada produk pada spreadsheet MEMBER.</div>';
+}
+
+})
+.catch(error=>{
+  console.error("Gagal memuat produk Google Sheets:", error);
+  const list=document.getElementById("produkList");
+  if(list){
+    list.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:#087f3e;background:#fff;border:1px solid #c8f0d5;border-radius:12px;margin:8px">Produk spreadsheet belum bisa dimuat. Periksa koneksi internet dan akses publik spreadsheet, lalu tekan refresh.</div>';
+  }
+});
+
 </script>
 <script>
 document.getElementById("searchInput").addEventListener("keyup", function() {
@@ -2529,7 +2587,7 @@ cart.classList.remove("keranjang-animasi");
 
 <script>
 
-const sheetSlider="https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=PROMO";
+const sheetSlider="https://docs.google.com/spreadsheets/d/19AfachAS9ZyNuut61RB1wqyI_AI6BsmNT1SIWhmSIn8/gviz/tq?sheet=PROMO";
 
 fetch(sheetSlider)
 .then(res=>res.text())
@@ -2717,7 +2775,7 @@ document.getElementById("pesanMember").innerHTML="Masukkan ID Member.";
 return;
 }
 
-const sheet="https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=MEMBER ID";
+const sheet="https://docs.google.com/spreadsheets/d/19AfachAS9ZyNuut61RB1wqyI_AI6BsmNT1SIWhmSIn8/gviz/tq?sheet=MEMBER ID";
 
 fetch(sheet)
 .then(res=>res.text())
