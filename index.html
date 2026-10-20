@@ -4771,7 +4771,8 @@ body.dark .fixzy-search{
 </style>
 
 
-<!-- FIX KATEGORI CADANGAN: pastikan bar kategori tampil tepat di atas pencarian -->
+<!-- FIX DUPLIKASI KATEGORI: gunakan bar kategori utama yang dibuat di atas.
+     Bar cadangan hanya membuat kategori jika bar utama memang belum ada. -->
 <script id="fix-kategori-paksa-tampil">
 (function(){
   function pasangKategori(){
@@ -4779,19 +4780,22 @@ body.dark .fixzy-search{
     const hero = document.querySelector('.hero');
     if(!hero) return;
     let bar = document.querySelector('.fixzy-quick-bar');
-    if(!bar){ bar = document.createElement('div'); bar.className = 'fixzy-quick-bar'; }
-    const items = [
-      ['🏠','Semua',''],['📱','LCD','LCD'],['🔋','Baterai','Baterai'],
-      ['🔌','Flexible','Flexible'],['🔧','IC','IC'],['⚡','Charger','Charger'],
-      ['📷','Kamera','Kamera'],['📱','Case','Case']
-    ];
-    if(!bar.querySelector('.fixzy-category-btn')){
+    if(!bar){
+      bar = document.createElement('div');
+      bar.className = 'fixzy-quick-bar';
+      const items = [
+        ['🏠','Semua',''],['📱','LCD','LCD'],['🔋','Baterai','Baterai'],
+        ['🔌','Flexible','Flexible'],['🔧','IC','IC'],['⚡','Charger','Charger'],
+        ['📷','Kamera','Kamera'],['📱','Case','Case']
+      ];
       items.forEach(function(item,i){
         const b=document.createElement('button');
-        b.type='button'; b.className='fixzy-quick-btn fixzy-category-btn'+(i===0?' active':'');
+        b.type='button';
+        b.className='fixzy-quick-btn fixzy-category-btn'+(i===0?' active':'');
         b.textContent=item[0]+' '+item[1];
         b.addEventListener('click',function(){
-          bar.querySelectorAll('.fixzy-quick-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+          bar.querySelectorAll('.fixzy-quick-btn').forEach(x=>x.classList.remove('active'));
+          b.classList.add('active');
           const input=document.getElementById('searchInput');
           if(input){input.value=item[2]; input.dispatchEvent(new Event('input',{bubbles:true}));}
           else if(typeof filterFixzyProduk==='function') filterFixzyProduk(item[2]);
@@ -4802,8 +4806,11 @@ body.dark .fixzy-search{
     bar.style.setProperty('display','flex','important');
     bar.style.setProperty('visibility','visible','important');
     bar.style.setProperty('opacity','1','important');
-    if(searchBox && searchBox.parentNode) searchBox.parentNode.insertBefore(bar,searchBox);
-    else hero.insertBefore(bar,hero.firstChild);
+    if(searchBox && searchBox.parentNode && bar.nextElementSibling !== searchBox){
+      searchBox.parentNode.insertBefore(bar,searchBox);
+    } else if(!searchBox && bar.parentNode !== hero){
+      hero.insertBefore(bar,hero.firstChild);
+    }
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',pasangKategori);
   else pasangKategori();
