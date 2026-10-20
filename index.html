@@ -1637,6 +1637,13 @@ onclick="window.open('https://www.facebook.com/share/1BhC4jhcGc/','_blank')">
     </marquee>
 </div>
 
+<!-- SLIDER PROMO: dipindahkan tepat di bawah running text -->
+<section class="tsa-promo-slider" aria-label="Promo Toko Siap Antar">
+  <div class="slider-sheet">
+    <div class="slides" id="slides"></div>
+  </div>
+</section>
+
 <div class="garis"></div>
 </div>
 <div class="content-scroll">
@@ -1659,13 +1666,6 @@ onclick="window.open('https://www.facebook.com/share/1BhC4jhcGc/','_blank')">
 <div class="search-box">
   <input type="text" id="searchInput" placeholder="🔎 Cari produk... (LCD, baterai, IC)">
 </div>
-
-<!-- SLIDER PROMO LANDSCAPE: tepat di bawah kolom pencarian -->
-<section class="tsa-promo-slider" aria-label="Promo Toko Siap Antar">
-  <div class="slider-sheet">
-    <div class="slides" id="slides"></div>
-  </div>
-</section>
 
 <!-- PRODUK -->
 <div class="produk-scroll">
@@ -4470,15 +4470,16 @@ body,html{
 .tsa-promo-slider{
   display:block!important;
   position:relative!important;
-  width:100%!important;
+  width:calc(100% - 32px)!important;
+  max-width:1200px!important;
   height:clamp(125px, 31vw, 210px)!important;
-  margin:0 auto 12px!important;
+  margin:10px auto 12px!important;
+  border-radius:16px!important;
   padding:8px 0!important;
   overflow:hidden!important;
   box-sizing:border-box!important;
   background:linear-gradient(100deg,#eaffef 0%,#effcff 48%,#fff9c9 100%)!important;
-  border-top:3px solid transparent!important;
-  border-bottom:3px solid transparent!important;
+  border:3px solid transparent!important;
   border-image:linear-gradient(90deg,#078b45,#00cfff,#ffdf00) 1!important;
 }
 .tsa-promo-slider .slider-sheet{
@@ -4523,8 +4524,9 @@ body,html{
 .tsa-promo-slider:hover .slides{animation-play-state:paused!important}
 @media(max-width:480px){
   .tsa-promo-slider{
+    width:calc(100% - 32px)!important;
     height:clamp(118px,34vw,165px)!important;
-    margin-bottom:10px!important;
+    margin:10px auto!important;
   }
   .tsa-promo-slider .slide-manual{
     width:88vw!important;
@@ -4742,5 +4744,30 @@ body > div[style*="max-width:1500px"]{width:100%!important;min-height:0!importan
 /* Jangan biarkan area scroll internal mendorong konten ke bawah */
 @media(max-width:768px){.hero{padding:8px 10px 5px!important}.tsa-promo-slider{height:clamp(125px,31vw,190px)!important;margin:6px auto 8px!important}.produk-scroll{padding-bottom:20px!important}}
 </style>
+
+<!-- FIX POSISI PROMO: letakkan tepat setelah running text, sebelum menu kategori/pencarian -->
+<script id="tsa-force-promo-after-running">
+(function(){
+  function placePromo(){
+    const running = document.querySelector('.running-text');
+    const promo = document.querySelector('.tsa-promo-slider');
+    if(!running || !promo) return;
+    // Pindahkan keluar dari header agar urutan DOM tetap benar walau menu/pencarian dibuat oleh script lain.
+    running.insertAdjacentElement('afterend', promo);
+    promo.style.setProperty('display','block','important');
+    promo.style.setProperty('position','relative','important');
+    promo.style.setProperty('width','calc(100% - 32px)','important');
+    promo.style.setProperty('max-width','1200px','important');
+    promo.style.setProperty('margin','10px auto 12px','important');
+    promo.style.setProperty('box-sizing','border-box','important');
+    promo.style.setProperty('flex','none','important');
+    promo.style.setProperty('align-self','center','important');
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', placePromo, {once:true});
+  } else { placePromo(); }
+  window.addEventListener('load', placePromo, {once:true});
+})();
+</script>
 </body>
 </html>
