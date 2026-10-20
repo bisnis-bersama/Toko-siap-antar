@@ -4743,6 +4743,16 @@ body > div[style*="max-width:1500px"]{width:100%!important;min-height:0!importan
 #produkList .produk-card{visibility:visible!important;opacity:1!important;}
 /* Jangan biarkan area scroll internal mendorong konten ke bawah */
 @media(max-width:768px){.hero{padding:8px 10px 5px!important}.tsa-promo-slider{height:clamp(125px,31vw,190px)!important;margin:6px auto 8px!important}.produk-scroll{padding-bottom:20px!important}}
+
+/* BAYANGAN 3D HALUS — tipis di setiap tepi panel */
+:root { --panel-shadow-soft: 0 2px 5px rgba(0,0,0,.075), 0 0 1px rgba(0,0,0,.10); }
+.produk-card, .tsa-promo-slider, .search-box, .fixzy-search, .card, .apk-card, .slider-sheet {
+  box-shadow: var(--panel-shadow-soft) !important;
+}
+/* Jangan beri bayangan pada elemen pembungkus besar atau navigasi */
+.produk-card:hover, .tsa-promo-slider:hover, .search-box:hover, .fixzy-search:hover, .card:hover, .apk-card:hover, .slider-sheet:hover {
+  box-shadow: var(--panel-shadow-soft) !important;
+}
 </style>
 
 <!-- FIX POSISI PROMO: letakkan tepat setelah running text, sebelum menu kategori/pencarian -->
