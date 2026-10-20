@@ -3906,5 +3906,260 @@ try { document.body.classList.remove('dark'); localStorage.setItem('tema','light
 }
 </style>
 
+
+<style id="fix-mobile-product-gap">
+/* Responsif: rapatkan hasil produk ke area pencarian di HP */
+.produk-scroll{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  padding-bottom:24px!important;
+  overflow-y:visible!important;
+  scroll-behavior:smooth;
+}
+.produk-container{
+  margin-top:0!important;
+  padding-top:10px!important;
+}
+.content-scroll{
+  min-height:0!important;
+}
+@media (max-width:768px){
+  .hero{
+    padding-top:8px!important;
+    padding-bottom:8px!important;
+    margin-bottom:0!important;
+  }
+  .fixzy-search{
+    margin-bottom:0!important;
+    padding-bottom:6px!important;
+  }
+  .produk-scroll{
+    height:auto!important;
+    min-height:0!important;
+    padding-top:0!important;
+    padding-bottom:18px!important;
+    overflow:visible!important;
+  }
+  .produk-container{
+    margin-top:0!important;
+    padding-top:8px!important;
+  }
+}
+</style>
+
+
+<style id="toko-siap-antar-special-theme">
+/* TOKO SIAP ANTAR — warna spesial hijau zamrud + jingga keemasan */
+:root{
+  --primary:#078b55!important;
+  --primary-dark:#056b43!important;
+  --accent:#ff9f1c!important;
+  --accent-dark:#e8790a!important;
+}
+html,body{
+  background:linear-gradient(145deg,#f4fff9 0%,#fffaf1 52%,#f4f8ff 100%)!important;
+  color:#26352f!important;
+}
+body.dark{
+  background:linear-gradient(145deg,#f4fff9 0%,#fffaf1 52%,#f4f8ff 100%)!important;
+  color:#26352f!important;
+}
+.header{
+  background:linear-gradient(125deg,#047857 0%,#10b981 45%,#fbbf24 100%)!important;
+  box-shadow:0 8px 28px rgba(4,120,87,.18)!important;
+}
+.header::after,.garis{
+  background:linear-gradient(90deg,#047857 0%,#10b981 35%,#fbbf24 70%,#ff8a00 100%)!important;
+}
+.logo-tengah{
+  box-shadow:0 8px 24px rgba(4,120,87,.18)!important;
+}
+.running-text{
+  background:linear-gradient(90deg,#047857 0%,#059669 38%,#f59e0b 100%)!important;
+  color:#fff!important;
+}
+.motor-jalan{background:#fff!important}
+.teks-kirim{color:#078b55!important}
+.hero{background:transparent!important;color:#26352f!important}
+.hero h2{color:#047857!important}
+.search-box input,.fixzy-search input{
+  border:1.5px solid #b7e4ce!important;
+  background:rgba(255,255,255,.97)!important;
+  color:#26352f!important;
+  box-shadow:0 5px 18px rgba(4,120,87,.07)!important;
+}
+.search-box input:focus,.fixzy-search input:focus{
+  outline:3px solid rgba(16,185,129,.16)!important;
+  border-color:#059669!important;
+}
+.menu-pro a{
+  background:linear-gradient(135deg,#078b55,#10b981)!important;
+  color:#fff!important;border:1px solid #b7e4ce!important;
+  box-shadow:0 4px 14px rgba(4,120,87,.13)!important;
+}
+.menu-pro a:hover{background:linear-gradient(135deg,#056b43,#059669)!important}
+#menuBtn,.fixzy-menu-btn{
+  background:linear-gradient(135deg,#f59e0b,#ff7a18)!important;
+  color:#fff!important;border-color:#fff!important;
+  box-shadow:0 5px 16px rgba(245,158,11,.2)!important;
+}
+.fixzy-quick-bar{background:#fff!important}
+.fixzy-quick-btn{background:#f3f7f5!important;color:#3e5148!important}
+.fixzy-quick-btn:hover,.fixzy-quick-btn.active{
+  background:linear-gradient(120deg,#078b55,#10b981)!important;color:#fff!important;
+}
+#sideMenu{background:#fff!important;color:#26352f!important;box-shadow:0 0 30px rgba(4,120,87,.12)!important}
+.menuHeader{background:linear-gradient(120deg,#047857,#10b981,#f59e0b)!important;color:#fff!important;border-bottom:2px solid #d1fae5!important}
+.menuItem{background:#fff!important;color:#056b43!important;text-shadow:none!important;border-bottom:1px solid #e6f4ec!important}
+.menuItem:hover{background:#ecfdf5!important;color:#047857!important}
+.subMenu{background:#f5fff9!important;border-left:3px solid #10b981!important}
+.subMenu a{background:#f5fff9!important;color:#056b43!important;border-bottom:1px solid #e6f4ec!important}
+.subMenu a::before{color:#f59e0b!important}
+.subMenu a:hover{background:#ecfdf5!important;color:#047857!important}
+.produk-card{
+  background:rgba(255,255,255,.97)!important;border:1px solid #e0f1e7!important;
+  border-radius:18px!important;box-shadow:0 7px 22px rgba(4,120,87,.075)!important;
+}
+.produk-card:hover{box-shadow:0 12px 28px rgba(4,120,87,.13)!important}
+.produk-img-box{background:linear-gradient(145deg,#f0fdf4,#fffbeb)!important}
+.produk-nama{color:#26352f!important}
+.produk-deskripsi{color:#68786f!important}
+.produk-harga{color:#078b55!important}
+.btn-cart,.popup-checkout,.btn-belanja-mulai,.apk-install{
+  background:linear-gradient(120deg,#078b55,#10b981 65%,#f59e0b)!important;
+  color:#fff!important;font-weight:800!important;border:0!important;
+  border-radius:12px!important;box-shadow:0 4px 12px rgba(4,120,87,.16)!important;
+}
+.popup-icon{background:#fff!important;color:#078b55!important;border:1px solid #d1fae5!important;box-shadow:none!important}
+#cartFloat{background:linear-gradient(135deg,#078b55,#10b981)!important;color:#fff!important;border:2px solid #fff!important}
+#cartCount{background:#ff9f1c!important;color:#fff!important}
+.apk-card{background:linear-gradient(135deg,#f0fdf4,#fffbeb)!important;color:#26352f!important;border:1px solid #d1fae5!important}
+.apk-title{color:#047857!important}
+.apk-desc,.apk-footer{color:#68786f!important}
+.apk-badge{background:#dcfce7!important;color:#056b43!important}
+.apk-footer{border-color:#d1fae5!important}
+#zoomPopup .zoomBox,.zoomBox{background:#fff!important;color:#26352f!important;border:1px solid #b7e4ce!important}
+#zoomNama{color:#056b43!important}
+#zoomDeskripsi{color:#68786f!important}
+#zoomHarga{color:#078b55!important}
+body.dark .header,body.dark .hero,body.dark .apk-card,body.dark .produk-card,
+body.dark #sideMenu,body.dark .promo-box,body.dark .zoomBox{
+  background-color:#fff!important;color:#26352f!important;
+}
+body.dark .produk-deskripsi,body.dark .apk-desc,body.dark .menuItem,body.dark .subMenu a{color:#68786f!important}
+body.dark .search-box input,body.dark .fixzy-search input{background:#fff!important;color:#26352f!important;border-color:#b7e4ce!important}
+.themeToggle{display:none!important}
+</style>
+<script>
+/* Pastikan tema tetap terang, tanpa mengubah fungsi toko. */
+try { document.body.classList.remove('dark'); localStorage.setItem('tema','light'); } catch(e) {}
+</script>
+
+
+<style id="fixzy-complete-black-yellow-theme">
+/* FIXZY BUSINESS style: premium black + electric yellow */
+:root{
+  --primary:#ffd400!important;
+  --primary-dark:#e6b800!important;
+  --accent:#ffd400!important;
+  --accent-dark:#e6b800!important;
+}
+html,body{
+  background:#08090c!important;
+  color:#f5f5f5!important;
+}
+body.dark{background:#08090c!important;color:#f5f5f5!important}
+.header{
+  background:linear-gradient(135deg,#08090c 0%,#17191f 60%,#29230a 100%)!important;
+  box-shadow:0 8px 28px rgba(0,0,0,.38)!important;
+}
+.header::after,.garis{
+  background:linear-gradient(90deg,#ffd400 0%,#fff176 45%,#ffb800 100%)!important;
+}
+.logo-tengah{
+  border-color:#ffd400!important;
+  box-shadow:0 0 22px rgba(255,212,0,.18)!important;
+}
+.motor-jalan{background:#0d0e12!important}
+.teks-kirim{color:#ffd400!important}
+.running-text{
+  background:linear-gradient(90deg,#101115,#242424 55%,#3a3000)!important;
+  color:#ffd400!important;
+}
+.hero{background:transparent!important;color:#f5f5f5!important}
+.hero h2{color:#ffd400!important}
+.search-box input,.fixzy-search input{
+  background:#15161b!important;color:#fff!important;
+  border:1px solid #4b4520!important;
+  box-shadow:0 5px 18px rgba(0,0,0,.24)!important;
+}
+.search-box input:focus,.fixzy-search input:focus{
+  border-color:#ffd400!important;outline:2px solid rgba(255,212,0,.16)!important;
+}
+.fixzy-quick-bar{background:#0d0e12!important;border-bottom:1px solid #292929!important}
+.fixzy-quick-btn{background:#202126!important;color:#eee!important}
+.fixzy-quick-btn:hover,.fixzy-quick-btn.active{
+  background:linear-gradient(135deg,#ffd400,#ffb800)!important;color:#111!important;
+}
+.fixzy-menu-btn,#menuBtn{
+  background:linear-gradient(135deg,#ffd400,#ffb800)!important;
+  color:#111!important;border-color:#fff!important;
+  box-shadow:0 5px 16px rgba(255,212,0,.16)!important;
+}
+.menu-pro a{
+  background:linear-gradient(135deg,#ffd400,#ffb800)!important;
+  color:#111!important;border:1px solid #ffe45c!important;
+  box-shadow:0 4px 14px rgba(255,212,0,.12)!important;
+}
+#sideMenu{background:#101115!important;color:#f5f5f5!important;box-shadow:0 0 30px rgba(0,0,0,.5)!important}
+.menuHeader{background:linear-gradient(120deg,#111216,#2a250c)!important;color:#ffd400!important;border-bottom:2px solid #ffd400!important}
+.menuItem{background:#15161b!important;color:#f5f5f5!important;text-shadow:none!important;border-bottom:1px solid #292929!important}
+.menuItem:hover{background:#28240d!important;color:#ffd400!important}
+.subMenu{background:#0d0e12!important;border-left:3px solid #ffd400!important}
+.subMenu a{background:#0d0e12!important;color:#e8e8e8!important;border-bottom:1px solid #252525!important}
+.subMenu a::before{color:#ffd400!important}
+.subMenu a:hover{background:#24200a!important;color:#ffd400!important}
+.produk-card{
+  background:linear-gradient(160deg,#17181d,#101115)!important;
+  border:1px solid #2b2b2b!important;border-radius:16px!important;
+  box-shadow:0 7px 22px rgba(0,0,0,.26)!important;color:#f5f5f5!important;
+}
+.produk-card:hover{border-color:#766600!important;box-shadow:0 12px 28px rgba(0,0,0,.36)!important}
+.produk-img-box{background:linear-gradient(145deg,#202126,#111216)!important}
+.produk-nama{color:#f5f5f5!important}
+.produk-deskripsi{color:#b8b8bd!important}
+.produk-harga{color:#ffd400!important}
+.btn-cart,.popup-checkout,.btn-belanja-mulai,.apk-install{
+  background:linear-gradient(120deg,#ffd400,#ffb800)!important;
+  color:#111!important;font-weight:800!important;border:0!important;
+  border-radius:10px!important;box-shadow:0 4px 12px rgba(255,212,0,.12)!important;
+}
+.popup-icon{background:#202126!important;color:#ffd400!important;border:1px solid #3c3c3c!important;box-shadow:none!important}
+#cartFloat{background:linear-gradient(135deg,#ffd400,#ffb800)!important;color:#111!important;border:2px solid #fff!important}
+#cartCount{background:#111!important;color:#ffd400!important}
+.apk-card{background:linear-gradient(135deg,#15161b,#24200b)!important;color:#f5f5f5!important;border:1px solid #38321a!important}
+.apk-title{color:#ffd400!important}
+.apk-desc,.apk-footer{color:#c4c4c8!important}
+.apk-badge{background:#29250f!important;color:#ffe45c!important}
+.apk-footer{border-color:#38321a!important}
+#zoomPopup .zoomBox,.zoomBox{background:#15161b!important;color:#f5f5f5!important;border:1px solid #5a4d00!important}
+#zoomNama{color:#ffd400!important}
+#zoomDeskripsi{color:#c4c4c8!important}
+#zoomHarga{color:#ffd400!important}
+body.dark .header,body.dark .hero,body.dark .apk-card,body.dark .produk-card,
+body.dark #sideMenu,body.dark .promo-box,body.dark .zoomBox{
+  background-color:#15161b!important;color:#f5f5f5!important;
+}
+body.dark .produk-deskripsi,body.dark .apk-desc,body.dark .menuItem,body.dark .subMenu a{color:#c4c4c8!important}
+body.dark .search-box input,body.dark .fixzy-search input{background:#15161b!important;color:#fff!important;border-color:#4b4520!important}
+.themeToggle{display:none!important}
+#promoPopup{display:none!important;visibility:hidden!important;pointer-events:none!important}
+</style>
+<script>
+/* Pakai tema FIXZY terang/gelap visual secara konsisten; tidak menyentuh logika toko. */
+try { document.body.classList.add('dark'); localStorage.setItem('tema','dark'); } catch(e) {}
+</script>
+
 </body>
 </html>
