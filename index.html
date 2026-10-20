@@ -1616,9 +1616,7 @@ onclick="window.open('https://www.facebook.com/share/1BhC4jhcGc/','_blank')">
    
 
 <div class="header">
-    <div class="slider-sheet">
-        <div class="slides" id="slides"></div>
-    </div>
+
 
     <div class="logo-tengah">
         <img src="logo2.png">
@@ -1661,6 +1659,14 @@ onclick="window.open('https://www.facebook.com/share/1BhC4jhcGc/','_blank')">
 <div class="search-box">
   <input type="text" id="searchInput" placeholder="🔎 Cari produk... (LCD, baterai, IC)">
 </div>
+
+<!-- SLIDER PROMO LANDSCAPE: tepat di bawah kolom pencarian -->
+<section class="tsa-promo-slider" aria-label="Promo Toko Siap Antar">
+  <div class="slider-sheet">
+    <div class="slides" id="slides"></div>
+  </div>
+</section>
+
 <!-- PRODUK -->
 <div class="produk-scroll">
 <div id="produkList" class="produk-container"></div>
@@ -4160,6 +4166,449 @@ body.dark .search-box input,body.dark .fixzy-search input{background:#15161b!imp
 /* Pakai tema FIXZY terang/gelap visual secara konsisten; tidak menyentuh logika toko. */
 try { document.body.classList.add('dark'); localStorage.setItem('tema','dark'); } catch(e) {}
 </script>
+
+
+<style id="toko-siap-antar-bright-theme">
+/* Tema cerah premium: putih, biru elektrik, cyan, kuning */
+:root{
+  --primary:#0878f9!important;
+  --primary-dark:#0757c9!important;
+  --accent:#ffd400!important;
+  --accent-dark:#ff9f00!important;
+}
+html,body{
+  background:linear-gradient(160deg,#f4fbff 0%,#ffffff 55%,#fffbea 100%)!important;
+  color:#172b4d!important;
+}
+body.dark{
+  background:linear-gradient(160deg,#f4fbff 0%,#ffffff 55%,#fffbea 100%)!important;
+  color:#172b4d!important;
+}
+.header{
+  background:linear-gradient(115deg,#0878f9 0%,#00b8d9 58%,#ffd400 100%)!important;
+  color:#fff!important;
+  box-shadow:0 8px 25px rgba(8,120,249,.16)!important;
+}
+.header::after,.garis{
+  background:linear-gradient(90deg,#0878f9 0%,#00c2ff 40%,#ffe500 100%)!important;
+}
+.logo-tengah{
+  border-color:#ffd400!important;
+  box-shadow:0 7px 24px rgba(8,120,249,.18)!important;
+}
+.motor-jalan{background:#fff!important}
+.teks-kirim{color:#0878f9!important}
+.running-text{
+  background:linear-gradient(90deg,#0878f9 0%,#00b8d9 55%,#ffd400 100%)!important;
+  color:#fff!important;
+}
+.hero{background:transparent!important;color:#172b4d!important}
+.hero h2{color:#0757c9!important}
+.search-box input,.fixzy-search input{
+  background:#fff!important;color:#172b4d!important;
+  border:2px solid #a9dcff!important;
+  box-shadow:0 5px 18px rgba(8,120,249,.08)!important;
+}
+.search-box input:focus,.fixzy-search input:focus{
+  border-color:#0878f9!important;outline:3px solid rgba(0,184,217,.15)!important;
+}
+.fixzy-quick-bar{background:#fff!important;border-bottom:1px solid #e2f1ff!important}
+.fixzy-quick-btn{background:#eef7ff!important;color:#23415d!important}
+.fixzy-quick-btn:hover,.fixzy-quick-btn.active{
+  background:linear-gradient(120deg,#0878f9,#00b8d9)!important;color:#fff!important;
+}
+.fixzy-menu-btn,#menuBtn{
+  background:linear-gradient(135deg,#ffd400,#ffab00)!important;
+  color:#243247!important;border-color:#fff!important;
+  box-shadow:0 5px 16px rgba(255,171,0,.2)!important;
+}
+.menu-pro a{
+  background:linear-gradient(135deg,#0878f9,#00b8d9)!important;
+  color:#fff!important;border:1px solid #a9dcff!important;
+  box-shadow:0 4px 14px rgba(8,120,249,.12)!important;
+}
+#sideMenu{background:#fff!important;color:#172b4d!important;box-shadow:0 0 30px rgba(8,120,249,.12)!important}
+.menuHeader{background:linear-gradient(120deg,#0878f9,#00b8d9,#ffd400)!important;color:#fff!important;border-bottom:2px solid #bdeaff!important}
+.menuItem{background:#fff!important;color:#0757c9!important;text-shadow:none!important;border-bottom:1px solid #e7f4ff!important}
+.menuItem:hover{background:#edf8ff!important;color:#0878f9!important}
+.subMenu{background:#f5fbff!important;border-left:3px solid #00b8d9!important}
+.subMenu a{background:#f5fbff!important;color:#0757c9!important;border-bottom:1px solid #e7f4ff!important}
+.subMenu a::before{color:#ffab00!important}
+.subMenu a:hover{background:#eaf7ff!important;color:#0878f9!important}
+.produk-card{
+  background:rgba(255,255,255,.99)!important;
+  border:1px solid #dceeff!important;border-radius:18px!important;
+  box-shadow:0 7px 22px rgba(8,120,249,.08)!important;color:#172b4d!important;
+}
+.produk-card:hover{border-color:#8ddcff!important;box-shadow:0 12px 28px rgba(8,120,249,.14)!important}
+.produk-img-box{background:linear-gradient(145deg,#eef8ff,#fffbea)!important}
+.produk-nama{color:#172b4d!important}
+.produk-deskripsi{color:#64748b!important}
+.produk-harga{color:#0878f9!important}
+.btn-cart,.popup-checkout,.btn-belanja-mulai,.apk-install{
+  background:linear-gradient(120deg,#0878f9,#00b8d9 68%,#ffd400)!important;
+  color:#fff!important;font-weight:800!important;border:0!important;
+  border-radius:12px!important;box-shadow:0 4px 12px rgba(8,120,249,.15)!important;
+}
+.popup-icon{background:#eef8ff!important;color:#0878f9!important;border:1px solid #cceaff!important;box-shadow:none!important}
+#cartFloat{background:linear-gradient(135deg,#0878f9,#00b8d9)!important;color:#fff!important;border:2px solid #fff!important}
+#cartCount{background:#ffd400!important;color:#172b4d!important}
+.apk-card{background:linear-gradient(135deg,#eef8ff,#fffbea)!important;color:#172b4d!important;border:1px solid #cceaff!important}
+.apk-title{color:#0757c9!important}
+.apk-desc,.apk-footer{color:#52657b!important}
+.apk-badge{background:#dff5ff!important;color:#0757c9!important}
+.apk-footer{border-color:#cceaff!important}
+#zoomPopup .zoomBox,.zoomBox{background:#fff!important;color:#172b4d!important;border:1px solid #a9dcff!important}
+#zoomNama{color:#0757c9!important}
+#zoomDeskripsi{color:#52657b!important}
+#zoomHarga{color:#0878f9!important}
+body.dark .header,body.dark .hero,body.dark .apk-card,body.dark .produk-card,
+body.dark #sideMenu,body.dark .promo-box,body.dark .zoomBox{
+  background-color:#fff!important;color:#172b4d!important;
+}
+body.dark .produk-deskripsi,body.dark .apk-desc,body.dark .menuItem,body.dark .subMenu a{color:#52657b!important}
+body.dark .search-box input,body.dark .fixzy-search input{background:#fff!important;color:#172b4d!important;border-color:#a9dcff!important}
+.themeToggle{display:none!important}
+#promoPopup{display:none!important;visibility:hidden!important;pointer-events:none!important}
+</style>
+<script>
+/* Pastikan tampilan cerah; fungsi aplikasi tetap menggunakan skrip asal. */
+try { document.body.classList.remove('dark'); localStorage.setItem('tema','light'); } catch(e) {}
+</script>
+
+
+<style id="toko-siap-antar-ultra-bright">
+/* Tema ultra cerah: putih bersih, biru langit, turquoise, kuning lemon */
+:root{
+  --primary:#006dff!important;
+  --primary-dark:#004dcc!important;
+  --accent:#ffea00!important;
+  --accent-dark:#ffb300!important;
+}
+html,body{
+  background:linear-gradient(145deg,#ffffff 0%,#f0fbff 48%,#fffde7 100%)!important;
+  color:#142d4e!important;
+}
+body.dark{
+  background:linear-gradient(145deg,#ffffff 0%,#f0fbff 48%,#fffde7 100%)!important;
+  color:#142d4e!important;
+}
+.header{
+  background:linear-gradient(110deg,#006dff 0%,#00cfff 48%,#ffea00 100%)!important;
+  color:#fff!important;
+  box-shadow:0 8px 28px rgba(0,109,255,.18)!important;
+}
+.header::after,.garis{
+  background:linear-gradient(90deg,#006dff 0%,#00e5ff 38%,#a5ff00 70%,#ffea00 100%)!important;
+}
+.logo-tengah{
+  border-color:#ffea00!important;
+  box-shadow:0 0 26px rgba(0,207,255,.28)!important;
+}
+.motor-jalan{background:#fff!important}
+.teks-kirim{color:#006dff!important}
+.running-text{
+  background:linear-gradient(90deg,#005eff 0%,#00bfff 48%,#00e6b8 76%,#ffca00 100%)!important;
+  color:#fff!important;
+}
+.hero{background:transparent!important;color:#142d4e!important}
+.hero h2{color:#0054d6!important}
+.search-box input,.fixzy-search input{
+  background:#fff!important;color:#142d4e!important;
+  border:2px solid #70dcff!important;
+  box-shadow:0 6px 22px rgba(0,109,255,.10)!important;
+}
+.search-box input:focus,.fixzy-search input:focus{
+  border-color:#006dff!important;outline:4px solid rgba(0,207,255,.16)!important;
+}
+.fixzy-quick-bar{background:#fff!important;border-bottom:1px solid #d9f5ff!important}
+.fixzy-quick-btn{background:linear-gradient(135deg,#f1fbff,#e4f7ff)!important;color:#17446d!important}
+.fixzy-quick-btn:hover,.fixzy-quick-btn.active{
+  background:linear-gradient(120deg,#006dff,#00cfff)!important;color:#fff!important;
+}
+.fixzy-menu-btn,#menuBtn{
+  background:linear-gradient(135deg,#ffea00,#ffb300)!important;
+  color:#18324e!important;border-color:#fff!important;
+  box-shadow:0 5px 18px rgba(255,179,0,.25)!important;
+}
+.menu-pro a{
+  background:linear-gradient(135deg,#006dff,#00cfff)!important;
+  color:#fff!important;border:1px solid #70dcff!important;
+  box-shadow:0 4px 16px rgba(0,109,255,.16)!important;
+}
+#sideMenu{background:#fff!important;color:#142d4e!important;box-shadow:0 0 30px rgba(0,109,255,.14)!important}
+.menuHeader{background:linear-gradient(120deg,#006dff,#00cfff,#ffea00)!important;color:#fff!important;border-bottom:2px solid #bcefff!important}
+.menuItem{background:#fff!important;color:#0054d6!important;text-shadow:none!important;border-bottom:1px solid #e1f6ff!important}
+.menuItem:hover{background:#eafaff!important;color:#006dff!important}
+.subMenu{background:#f3fcff!important;border-left:3px solid #00cfff!important}
+.subMenu a{background:#f3fcff!important;color:#0054d6!important;border-bottom:1px solid #e1f6ff!important}
+.subMenu a::before{color:#ffb300!important}
+.subMenu a:hover{background:#e5f9ff!important;color:#006dff!important}
+.produk-card{
+  background:#fff!important;border:1px solid #d7f3ff!important;
+  border-radius:18px!important;box-shadow:0 8px 24px rgba(0,109,255,.09)!important;color:#142d4e!important;
+}
+.produk-card:hover{border-color:#55d8ff!important;box-shadow:0 14px 30px rgba(0,109,255,.16)!important}
+.produk-img-box{background:linear-gradient(145deg,#e7faff,#fffde7)!important}
+.produk-nama{color:#142d4e!important}
+.produk-deskripsi{color:#526b85!important}
+.produk-harga{color:#005eff!important}
+.btn-cart,.popup-checkout,.btn-belanja-mulai,.apk-install{
+  background:linear-gradient(110deg,#006dff 0%,#00cfff 60%,#00e6b8 100%)!important;
+  color:#fff!important;font-weight:800!important;border:0!important;
+  border-radius:12px!important;box-shadow:0 5px 16px rgba(0,109,255,.18)!important;
+}
+.popup-icon{background:#e8faff!important;color:#006dff!important;border:1px solid #bcefff!important;box-shadow:none!important}
+#cartFloat{background:linear-gradient(135deg,#006dff,#00cfff)!important;color:#fff!important;border:2px solid #fff!important}
+#cartCount{background:#ffea00!important;color:#142d4e!important}
+.apk-card{background:linear-gradient(135deg,#eafaff,#fffde7)!important;color:#142d4e!important;border:1px solid #bcefff!important}
+.apk-title{color:#0054d6!important}
+.apk-desc,.apk-footer{color:#526b85!important}
+.apk-badge{background:#d5f7ff!important;color:#0054d6!important}
+.apk-footer{border-color:#bcefff!important}
+#zoomPopup .zoomBox,.zoomBox{background:#fff!important;color:#142d4e!important;border:1px solid #70dcff!important}
+#zoomNama{color:#0054d6!important}
+#zoomDeskripsi{color:#526b85!important}
+#zoomHarga{color:#006dff!important}
+body.dark .header,body.dark .hero,body.dark .apk-card,body.dark .produk-card,
+body.dark #sideMenu,body.dark .promo-box,body.dark .zoomBox{
+  background-color:#fff!important;color:#142d4e!important;
+}
+body.dark .produk-deskripsi,body.dark .apk-desc,body.dark .menuItem,body.dark .subMenu a{color:#526b85!important}
+body.dark .search-box input,body.dark .fixzy-search input{background:#fff!important;color:#142d4e!important;border-color:#70dcff!important}
+.themeToggle{display:none!important}
+#promoPopup{display:none!important;visibility:hidden!important;pointer-events:none!important}
+</style>
+<script>
+try { document.body.classList.remove('dark'); localStorage.setItem('tema','light'); } catch(e) {}
+</script>
+
+
+<style id="toko-siap-antar-green-brand">
+/* Identitas TOKO SIAP ANTAR: hijau segar + biru cerah + kuning */
+:root{
+  --primary:#078b45!important;
+  --primary-dark:#056b35!important;
+  --accent:#ffdf00!important;
+  --accent-dark:#ffad00!important;
+}
+.header{
+  background:linear-gradient(115deg,#087f3e 0%,#00b85a 38%,#00cfff 72%,#ffdf00 100%)!important;
+}
+.header::after,.garis{
+  background:linear-gradient(90deg,#087f3e 0%,#00b85a 32%,#00cfff 65%,#ffdf00 100%)!important;
+}
+.running-text{
+  background:linear-gradient(90deg,#087f3e 0%,#00b85a 35%,#00bfe8 70%,#ffbd00 100%)!important;
+  color:#fff!important;
+}
+.teks-kirim,.hero h2,.produk-harga,.apk-title,#zoomHarga{
+  color:#078b45!important;
+}
+.fixzy-quick-btn:hover,.fixzy-quick-btn.active,.menu-pro a{
+  background:linear-gradient(120deg,#078b45,#00b85a 55%,#00bfe8)!important;
+  color:#fff!important;
+}
+.btn-cart,.popup-checkout,.btn-belanja-mulai,.apk-install,#cartFloat{
+  background:linear-gradient(115deg,#078b45 0%,#00b85a 42%,#00bfe8 78%,#ffdf00 100%)!important;
+  color:#fff!important;
+}
+#menuBtn,.fixzy-menu-btn{
+  background:linear-gradient(135deg,#ffdf00,#ffad00)!important;
+  color:#17412a!important;
+}
+.produk-img-box,.apk-card{
+  background:linear-gradient(145deg,#edfff3 0%,#effbff 62%,#fffde7 100%)!important;
+}
+.menuHeader{
+  background:linear-gradient(120deg,#087f3e,#00b85a,#00bfe8,#ffdf00)!important;
+}
+.menuItem:hover,.subMenu a:hover{
+  background:#eafff0!important;color:#087f3e!important;
+}
+.produk-card{border-color:#c8f0d5!important}
+.search-box input,.fixzy-search input{border-color:#a9e8bd!important}
+.search-box input:focus,.fixzy-search input:focus{border-color:#078b45!important}
+#cartCount{background:#ffdf00!important;color:#17412a!important}
+.apk-badge{background:#d9ffe6!important;color:#087f3e!important}
+body,html{
+  background:linear-gradient(145deg,#ffffff 0%,#f0fff5 44%,#effbff 76%,#fffde7 100%)!important;
+}
+</style>
+
+
+<style id="tsa-promo-slider-landscape">
+/* Header tidak lagi menampung slider promo */
+.header{
+  position:relative!important;
+  overflow:visible!important;
+}
+/* Promo dipindahkan ke bawah pencarian, dengan format landscape memanjang */
+.tsa-promo-slider{
+  display:block!important;
+  position:relative!important;
+  width:100%!important;
+  height:clamp(125px, 31vw, 210px)!important;
+  margin:0 auto 12px!important;
+  padding:8px 0!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+  background:linear-gradient(100deg,#eaffef 0%,#effcff 48%,#fff9c9 100%)!important;
+  border-top:3px solid transparent!important;
+  border-bottom:3px solid transparent!important;
+  border-image:linear-gradient(90deg,#078b45,#00cfff,#ffdf00) 1!important;
+}
+.tsa-promo-slider .slider-sheet{
+  position:absolute!important;
+  inset:8px 0!important;
+  width:100%!important;
+  height:calc(100% - 16px)!important;
+  overflow:hidden!important;
+  z-index:2!important;
+}
+.tsa-promo-slider .slides{
+  display:flex!important;
+  align-items:stretch!important;
+  gap:12px!important;
+  width:max-content!important;
+  height:100%!important;
+  animation:tsaPromoMove 38s linear infinite!important;
+  will-change:transform;
+}
+.tsa-promo-slider .slide-manual{
+  flex:0 0 auto!important;
+  width:min(82vw, 560px)!important;
+  height:100%!important;
+  overflow:hidden!important;
+  border-radius:14px!important;
+  border:1px solid rgba(7,139,69,.22)!important;
+  box-shadow:0 4px 14px rgba(7,139,69,.12)!important;
+  background:#fff!important;
+}
+.tsa-promo-slider .slide-manual img{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  border-radius:13px!important;
+}
+@keyframes tsaPromoMove{
+  from{transform:translateX(0)}
+  to{transform:translateX(-50%)}
+}
+.tsa-promo-slider:hover .slides{animation-play-state:paused!important}
+@media(max-width:480px){
+  .tsa-promo-slider{
+    height:clamp(118px,34vw,165px)!important;
+    margin-bottom:10px!important;
+  }
+  .tsa-promo-slider .slide-manual{
+    width:88vw!important;
+  }
+}
+@media(min-width:769px){
+  .tsa-promo-slider .slide-manual{width:min(46vw,560px)!important}
+}
+</style>
+
+
+<style id="tsa-hide-motor-running">
+/* Hilangkan animasi motor dan baris Pesanan OTW di bagian atas */
+.motor-jalan,
+.motor-kirim,
+.motor-kirim img,
+.motor-kirim .teks-kirim,
+.motor-kirim .asap{
+  display:none!important;
+  visibility:hidden!important;
+  animation:none!important;
+}
+/* Pastikan ruang bekas motor tidak tertinggal */
+.motor-jalan{
+  height:0!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+}
+/* Slider promo tetap berada di bawah kolom pencarian */
+.tsa-promo-slider{
+  position:relative!important;
+  z-index:1!important;
+  margin-top:8px!important;
+}
+.tsa-promo-slider .slider-sheet{
+  position:absolute!important;
+  top:8px!important;
+  left:0!important;
+  right:0!important;
+}
+</style>
+
+
+<style id="tsa-remove-header-and-slides">
+/* Hilangkan seluruh area header/banner atas dan slider promo */
+.header,
+.motor-jalan,
+.running-text,
+.garis,
+.tsa-promo-slider,
+.slider-sheet{
+  display:none!important;
+  height:0!important;
+  min-height:0!important;
+  max-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  overflow:hidden!important;
+  animation:none!important;
+}
+/* Pastikan konten utama naik tanpa ruang kosong bekas header/slider */
+.content-scroll{
+  margin-top:0!important;
+  padding-top:0!important;
+}
+.hero{
+  margin-top:0!important;
+  padding-top:8px!important;
+}
+</style>
+
+
+<style id="tsa-start-from-running-text">
+/* Tampilkan mulai dari running text; sembunyikan header dan slider di atasnya */
+.header,
+.tsa-promo-slider,
+.slider-sheet{
+  display:none!important;
+  height:0!important;
+  min-height:0!important;
+  max-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  overflow:hidden!important;
+  animation:none!important;
+}
+/* Running text menjadi bagian paling atas yang terlihat */
+.running-text{
+  display:block!important;
+  visibility:visible!important;
+  height:auto!important;
+  min-height:34px!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:8px 0!important;
+  overflow:hidden!important;
+}
+/* Jangan sisakan ruang kosong dari header/slider yang dihilangkan */
+.content-scroll{
+  margin-top:0!important;
+  padding-top:0!important;
+}
+</style>
 
 </body>
 </html>
