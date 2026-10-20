@@ -3130,9 +3130,14 @@ document.addEventListener("DOMContentLoaded", function(){
     =====================================================
     */
 
-    const running = document.querySelector(".running-text");
+    /* Running text disembunyikan pada desain baru, jadi gunakan slider promo
+       sebagai titik acuan agar kategori dan pencarian tetap dibuat. */
+    const running = document.querySelector(".running-text")
+        || document.querySelector(".tsa-promo-slider")
+        || document.querySelector(".header.tsa-header-new");
 
     if(!running){
+        console.warn("Menu kategori: elemen acuan tidak ditemukan.");
         return;
     }
 
