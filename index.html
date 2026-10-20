@@ -1956,10 +1956,7 @@ if (produkListEl) produkListEl.innerHTML = '<div style="grid-column:1/-1;text-al
 fetch(sheetURL)
   .then(res => { if (!res.ok) throw new Error('HTTP '+res.status); return res.text(); })
   .then(data => {
-    const first = data.indexOf('{');
-    const last = data.lastIndexOf('}');
-    if (first < 0 || last <= first) throw new Error('Format respons Spreadsheet tidak valid');
-    const json = JSON.parse(data.slice(first, last + 1));
+    const json = JSON.parse(data.substring(47).slice(0, -2));
     const rows = json?.table?.rows;
     if (!Array.isArray(rows)) throw new Error('Data baris Spreadsheet tidak ditemukan');
     rows.sort((a,b) => Number(a.c?.[3]?.v || 0) - Number(b.c?.[3]?.v || 0));
@@ -1980,7 +1977,8 @@ fetch(sheetURL)
   })
   .catch(error => {
     console.error('Gagal memuat produk Spreadsheet:', error);
-    if (produkListEl) produkListEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:18px;color:#b91c1c;background:#fff;border:1px solid #fecaca;border-radius:12px">Produk gagal dimuat dari Spreadsheet. Periksa akses publik sheet MEMBER dan koneksi internet, lalu tekan tombol muat ulang.</div>';
+    const pesanError = 'Produk gagal dimuat dari Spreadsheet. Periksa koneksi internet dan akses sheet MEMBER, lalu tekan refresh.';
+    if (produkListEl) produkListEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:18px;color:#b91c1c;background:#fff;border:1px solid #fecaca;border-radius:12px">${pesanError}</div>`;
   });
 </script>
 <script>
