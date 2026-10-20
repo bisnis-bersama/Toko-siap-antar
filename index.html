@@ -1488,6 +1488,16 @@ body.dark .search-box input{
 @media(max-width:380px){.header.tsa-header-new{padding:0 8px!important}.tsa-header-logo img{max-width:130px!important;max-height:42px!important}.tsa-header-actions{gap:6px!important}.tsa-header-btn{width:38px!important;height:38px!important;min-width:38px!important}}
 </style>
 
+
+<style id="tsa-safe-sticky-header">
+.header.tsa-header-new{position:sticky!important;top:0!important;z-index:100000!important;}
+.tsa-promo-slider{position:relative!important;}
+.search-box{display:block!important;visibility:visible!important;opacity:1!important;position:relative!important;}
+.produk-scroll{display:block!important;visibility:visible!important;height:auto!important;max-height:none!important;overflow:visible!important;}
+#produkList.produk-container{display:grid!important;visibility:visible!important;opacity:1!important;width:100%!important;height:auto!important;min-height:40px!important;max-height:none!important;overflow:visible!important;}
+#produkList .produk-card{display:flex!important;visibility:visible!important;opacity:1!important;min-width:0!important;}
+</style>
+
 </head>
 
 <body>
@@ -1948,96 +1958,53 @@ function bukaChrome(){
 }
 </script>
 
-<!-- SCRIPT PRODUK GOOGLE SHEET -->
+<!-- SCRIPT PRODUK GOOGLE SHEET: alur data mengikuti indexnua.html -->
 <script>
-
-const sheetURL="https://docs.google.com/spreadsheets/d/19AfachAS9ZyNuut61RB1wqyI_AI6BsmNT1SIWhmSIn8/gviz/tq?sheet=MEMBER";
-
-fetch(sheetURL)
-
-.then(res=>res.text())
-
-.then(data=>{
-
-// Google Sheets gviz membungkus JSON dalam callback; ambil isi JSON secara aman.
-const jsonText = data.slice(data.indexOf('{'), data.lastIndexOf('}') + 1);
-const json = JSON.parse(jsonText);
-
-let rows = json.table.rows;
-
-// Urutkan harga dari termurah ke termahal
-rows.sort(function(a,b){
-
-    let hargaA = Number(a.c[3]?.v || 0);
-    let hargaB = Number(b.c[3]?.v || 0);
-
-    return hargaA - hargaB;
-
-});
-
-let html="";
-rows.forEach(r=>{
-
-let nama=r.c[1]?.v;
-let deskripsi = r.c[2] ? r.c[2].v : "";
-let harga=r.c[3]?.v;
-let foto=convertDrive(r.c[4]?.v);
-
-if(!nama) return;
-
-html+=`
-
-<div class="produk-card">
-
-<div class="produk-img-box">
-<img src="${foto}" class="produk-img"
-onclick="zoomFoto('${foto}','${nama}','${harga}','${deskripsi}')">
-</div>
-
-<div class="produk-info">
-
-<div class="produk-nama">${nama}</div>
-
-<div class="produk-deskripsi">
-${deskripsi}
-</div>
-<div class="produk-harga">
-Rp ${Number(harga).toLocaleString()}
-</div>
-
-<div class="product-actions">
-  <button type="button" class="product-action product-chat"
-    onclick="chatProduk(decodeURIComponent('${encodeURIComponent(nama)}'),decodeURIComponent('${encodeURIComponent(harga)}'))"
-    aria-label="Chat admin tentang produk ini" title="Chat admin">💬</button>
-  <button type="button" class="product-action product-cart"
-    onclick="tambahKeranjang(decodeURIComponent('${encodeURIComponent(nama)}'),decodeURIComponent('${encodeURIComponent(harga)}'),decodeURIComponent('${encodeURIComponent(foto)}'))"
-    aria-label="Tambah produk ke keranjang" title="Tambah ke keranjang">🛒</button>
-  <button type="button" class="product-action product-buy"
-    onclick="beliSekarang(decodeURIComponent('${encodeURIComponent(nama)}'),decodeURIComponent('${encodeURIComponent(harga)}'),decodeURIComponent('${encodeURIComponent(foto)}'))">Beli</button>
-</div>
-
-</div>
-
-</div>
-
-`;
-});
-
-
-const productList = document.getElementById("produkList");
-if (productList) {
-  productList.innerHTML = html || '<div style="grid-column:1/-1;text-align:center;padding:20px;background:#fff;border-radius:12px">Belum ada produk pada spreadsheet MEMBER.</div>';
-}
-
+const sheetURL="https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=MEMBER";
+const produkListEl = document.getElementById("produkList");
+let produkSelesai = false;
+if (produkListEl) produkListEl.innerHTML = '<div id="statusProduk" style="grid-column:1/-1;text-align:center;padding:18px">Memuat produk dari Spreadsheet...</div>';
+const produkController = new AbortController();
+const produkTimer = setTimeout(() => produkController.abort(), 15000);
+fetch(sheetURL, {signal: produkController.signal, cache: "no-store"})
+.then(res => {
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  return res.text();
 })
-.catch(error=>{
-  console.error("Gagal memuat produk Google Sheets:", error);
-  const list=document.getElementById("produkList");
-  if(list){
-    list.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:#087f3e;background:#fff;border:1px solid #c8f0d5;border-radius:12px;margin:8px">Produk spreadsheet belum bisa dimuat. Periksa koneksi internet dan akses publik spreadsheet, lalu tekan refresh.</div>';
-  }
+.then(data => {
+  // Pertahankan format parsing yang digunakan file acuan.
+  const json = JSON.parse(data.substring(47).slice(0,-2));
+  const rows = json.table.rows;
+  rows.sort((a,b) => Number(a.c[3]?.v || 0) - Number(b.c[3]?.v || 0));
+  let html = "";
+  rows.forEach(r => {
+    const nama = r.c[1]?.v;
+    const deskripsi = r.c[2] ? r.c[2].v : "";
+    const harga = r.c[3]?.v;
+    const foto = convertDrive(r.c[4]?.v);
+    if (!nama) return;
+    const n = encodeURIComponent(String(nama));
+    const h = encodeURIComponent(String(harga ?? 0));
+    const d = encodeURIComponent(String(deskripsi ?? ""));
+    const f = encodeURIComponent(String(foto ?? ""));
+    html += `<div class="produk-card">
+      <div class="produk-img-box"><img src="${foto}" class="produk-img" loading="lazy" onerror="this.style.visibility='hidden'" onclick="zoomFoto(decodeURIComponent('${f}'),decodeURIComponent('${n}'),decodeURIComponent('${h}'),decodeURIComponent('${d}'))"></div>
+      <div class="produk-info"><div class="produk-nama">${nama}</div><div class="produk-deskripsi">${deskripsi}</div><div class="produk-harga">Rp ${Number(harga || 0).toLocaleString('id-ID')}</div>
+      <div class="product-actions"><button type="button" class="product-action product-chat" onclick="chatProduk(decodeURIComponent('${n}'),decodeURIComponent('${h}'))" aria-label="Chat admin">💬</button><button type="button" class="product-action product-cart" onclick="tambahKeranjang(decodeURIComponent('${n}'),Number(decodeURIComponent('${h}')),decodeURIComponent('${f}'))" aria-label="Tambah ke keranjang">🛒</button><button type="button" class="product-action product-buy" onclick="beliSekarang(decodeURIComponent('${n}'),Number(decodeURIComponent('${h}')),decodeURIComponent('${f}'))" aria-label="Beli sekarang">Beli</button></div></div></div>`;
+  });
+  if (!html) throw new Error("Spreadsheet terbaca, tetapi tidak ada nama produk di kolom B.");
+  produkSelesai = true;
+  clearTimeout(produkTimer);
+  if (produkListEl) produkListEl.innerHTML = html;
+})
+.catch(error => {
+  clearTimeout(produkTimer);
+  console.error("Gagal memuat produk Spreadsheet:", error);
+  const pesan = error.name === "AbortError"
+    ? "Koneksi ke Spreadsheet terlalu lama (lebih dari 15 detik). Tekan Refresh dan periksa koneksi."
+    : "Produk gagal dimuat: " + (error.message || "akses Spreadsheet bermasalah");
+  if (produkListEl) produkListEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:18px;color:#b91c1c;background:#fff;border:1px solid #fecaca;border-radius:12px">${pesan}</div>`;
 });
-
 </script>
 <script>
 document.getElementById("searchInput").addEventListener("keyup", function() {
@@ -2587,7 +2554,7 @@ cart.classList.remove("keranjang-animasi");
 
 <script>
 
-const sheetSlider="https://docs.google.com/spreadsheets/d/19AfachAS9ZyNuut61RB1wqyI_AI6BsmNT1SIWhmSIn8/gviz/tq?sheet=PROMO";
+const sheetSlider="https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=PROMO";
 
 fetch(sheetSlider)
 .then(res=>res.text())
@@ -2775,7 +2742,7 @@ document.getElementById("pesanMember").innerHTML="Masukkan ID Member.";
 return;
 }
 
-const sheet="https://docs.google.com/spreadsheets/d/19AfachAS9ZyNuut61RB1wqyI_AI6BsmNT1SIWhmSIn8/gviz/tq?sheet=MEMBER ID";
+const sheet="https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=MEMBER ID";
 
 fetch(sheet)
 .then(res=>res.text())
@@ -4784,90 +4751,11 @@ body.dark .fixzy-search{
 </style>
 
 
-<style id="tsa-fixed-top-through-search-v2">
-/* Kunci seluruh bagian atas: logo, promo, kategori dan pencarian */
-#tsa-fixed-top-shell{
-  position:fixed!important;top:0!important;left:0!important;right:0!important;
-  width:100%!important;z-index:100000!important;background:#fff!important;
-  box-shadow:0 5px 14px rgba(0,0,0,.08)!important;
-  max-height:92vh;overflow:visible!important;
-}
-#tsa-fixed-top-shell .tsa-header-new,
-#tsa-fixed-top-shell .motor-jalan,
-#tsa-fixed-top-shell .tsa-promo-slider,
-#tsa-fixed-top-shell .garis,
-#tsa-fixed-top-shell .fixzy-quick-bar,
-#tsa-fixed-top-shell .fixzy-search,
-#tsa-fixed-top-shell .search-box{position:relative!important;top:auto!important;}
-#tsa-fixed-top-spacer{display:block!important;width:100%!important;height:0;pointer-events:none!important;}
-@media(max-width:768px){#tsa-fixed-top-shell{max-height:90vh}}
-body.dark #tsa-fixed-top-shell{background:#171717!important}
-</style>
-<script id="tsa-fix-entire-top-stationary-v2">
-(function(){
-  function pinTop(){
-    if(document.getElementById('tsa-fixed-top-shell')) return true;
-    const header=document.querySelector('.tsa-header-new');
-    const promo=document.querySelector('.tsa-promo-slider');
-    const quick=document.querySelector('.fixzy-quick-bar');
-    const search=document.querySelector('.fixzy-search, .search-box');
-    if(!header || !search) return false;
-    const shell=document.createElement('div'); shell.id='tsa-fixed-top-shell';
-    const spacer=document.createElement('div'); spacer.id='tsa-fixed-top-spacer';
-    header.parentNode.insertBefore(shell,header);
-    shell.appendChild(header);
-    // Maintain the visible order of the upper section without duplicating elements.
-    const motor=document.querySelector('.motor-jalan'); if(motor) shell.appendChild(motor);
-    if(promo) shell.appendChild(promo);
-    const line=document.querySelector('.garis'); if(line) shell.appendChild(line);
-    if(quick) shell.appendChild(quick);
-    // Include the helper text above the search field if it is in the hero.
-    const hero=search.closest('.hero');
-    if(hero){
-      const intro=hero.querySelector('div[style*="text-align:center"]');
-      if(intro) shell.appendChild(intro);
-    }
-    shell.appendChild(search);
-    shell.parentNode.insertBefore(spacer,shell.nextSibling);
-    function sizeSpacer(){
-      spacer.style.height=shell.getBoundingClientRect().height+'px';
-      // Keep the pinned area compact and avoid hiding the product list on small screens.
-      shell.style.maxHeight='90vh';
-    }
-    sizeSpacer();
-    window.addEventListener('resize',sizeSpacer,{passive:true});
-    if(window.ResizeObserver){new ResizeObserver(sizeSpacer).observe(shell)}
-    return true;
-  }
-  let tries=0;
-  function start(){ if(pinTop()) return; if(++tries<40) setTimeout(start,250); }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true}); else start();
-  window.addEventListener('load',start,{once:true});
-})();
-</script>
 
 
-<style id="tsa-requested-final-fixes">
-/* Header tetap terlihat dan menempel saat halaman digulir */
-#tsa-fixed-top-shell{
-  position:fixed!important;top:0!important;left:0!important;right:0!important;
-  z-index:100000!important;width:100%!important;
-  background:#fff!important;overflow:visible!important;
-}
-#tsa-fixed-top-shell .tsa-header-new{
-  display:flex!important;visibility:visible!important;opacity:1!important;
-  position:relative!important;top:auto!important;flex-shrink:0!important;
-}
-.tsa-header-logo img{content:normal!important}
-.tsa-promo-slider{display:block!important;visibility:visible!important;opacity:1!important}
-.fixzy-quick-bar{display:flex!important;visibility:visible!important;opacity:1!important}
-.fixzy-quick-btn{visibility:visible!important;opacity:1!important}
-.search-box,.fixzy-search{display:block!important;visibility:visible!important;opacity:1!important}
-.produk-scroll{display:block!important;visibility:visible!important;height:auto!important;max-height:none!important;overflow:visible!important}
-#produkList{display:grid!important;visibility:visible!important;opacity:1!important}
-#produkList .produk-card{display:flex!important;visibility:visible!important;opacity:1!important}
-body.dark #tsa-fixed-top-shell{background:#171717!important}
-</style>
+
+
+
 
 
 <style id="tsa-reference-products-final">
