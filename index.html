@@ -1907,6 +1907,15 @@ updateCartCount();
 window.location.href="cart.html";
 }
 
+function chatProduk(nama,harga){
+  const pesan = `Halo Admin A YUDI THEA, saya ingin bertanya tentang produk:
+${nama}
+Harga: Rp ${Number(harga).toLocaleString("id-ID")}
+
+Apakah produk ini masih tersedia?`;
+  window.open("https://wa.me/6282232323361?text="+encodeURIComponent(pesan),"_blank");
+}
+
 function convertDrive(link){
 
 if(!link) return "";
@@ -1991,8 +2000,15 @@ ${deskripsi}
 Rp ${Number(harga).toLocaleString()}
 </div>
 
-<div class="popup-bottom">
-
+<div class="product-actions">
+  <button type="button" class="product-action product-chat"
+    onclick="chatProduk(decodeURIComponent('${encodeURIComponent(nama)}'),decodeURIComponent('${encodeURIComponent(harga)}'))"
+    aria-label="Chat admin tentang produk ini" title="Chat admin">💬</button>
+  <button type="button" class="product-action product-cart"
+    onclick="tambahKeranjang(decodeURIComponent('${encodeURIComponent(nama)}'),decodeURIComponent('${encodeURIComponent(harga)}'),decodeURIComponent('${encodeURIComponent(foto)}'))"
+    aria-label="Tambah produk ke keranjang" title="Tambah ke keranjang">🛒</button>
+  <button type="button" class="product-action product-buy"
+    onclick="beliSekarang(decodeURIComponent('${encodeURIComponent(nama)}'),decodeURIComponent('${encodeURIComponent(harga)}'),decodeURIComponent('${encodeURIComponent(foto)}'))">Beli</button>
 </div>
 
 </div>
@@ -4623,6 +4639,86 @@ body,html{
 .produk-scroll{display:block!important;visibility:visible!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;padding:0 0 24px!important;margin:0!important}
 #produkList.produk-container{display:grid!important;visibility:visible!important;opacity:1!important;min-height:40px!important;margin:0 auto!important;padding:10px!important}
 #produkList .produk-card{display:block;visibility:visible;opacity:1}
+</style>
+
+
+<style id="tsa-final-promo-and-product-actions">
+/* Promo slider: tampil tepat di bawah kolom pencarian */
+.tsa-promo-slider{
+  display:block!important;
+  visibility:visible!important;
+  position:relative!important;
+  width:100%!important;
+  height:clamp(125px,31vw,220px)!important;
+  min-height:125px!important;
+  max-height:220px!important;
+  margin:12px auto 16px!important;
+  padding:8px 0!important;
+  overflow:hidden!important;
+  background:linear-gradient(100deg,#fff8d7,#fff,#e8fff0)!important;
+  border-top:2px solid #ffc107!important;
+  border-bottom:2px solid #ffc107!important;
+}
+.tsa-promo-slider .slider-sheet{
+  display:block!important;
+  visibility:visible!important;
+  position:absolute!important;
+  inset:8px 0!important;
+  width:100%!important;
+  height:calc(100% - 16px)!important;
+  max-height:none!important;
+  overflow:hidden!important;
+}
+.tsa-promo-slider .slides{
+  display:flex!important;
+  width:max-content!important;
+  height:100%!important;
+  animation:tsaPromoMove 38s linear infinite!important;
+}
+.tsa-promo-slider .slide-manual{
+  flex:0 0 auto!important;
+  height:100%!important;
+  width:min(82vw,560px)!important;
+}
+.tsa-promo-slider .slide-manual img{
+  width:100%!important;height:100%!important;object-fit:cover!important;
+}
+@media(min-width:769px){
+  .tsa-promo-slider .slide-manual{width:min(46vw,560px)!important}
+}
+
+/* Tombol tindakan ringkas dan konsisten pada setiap kartu produk */
+.product-actions{
+  display:grid!important;
+  grid-template-columns:42px 42px minmax(0,1fr)!important;
+  gap:6px!important;
+  align-items:center!important;
+  margin-top:9px!important;
+}
+.product-action{
+  min-width:0!important;
+  height:38px!important;
+  padding:0 8px!important;
+  border:1px solid #e5e7eb!important;
+  border-radius:10px!important;
+  font-size:16px!important;
+  font-weight:800!important;
+  line-height:1!important;
+  cursor:pointer!important;
+  box-shadow:none!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+.product-chat{background:#e8fff0!important;color:#087f3e!important;border-color:#b9edcc!important}
+.product-cart{background:#fff8d7!important;color:#171717!important;border-color:#f5d45a!important}
+.product-buy{background:#ffc107!important;color:#171717!important;font-size:12px!important}
+.product-action:active{transform:scale(.96)!important}
+@media(max-width:480px){
+  .product-actions{grid-template-columns:34px 34px minmax(0,1fr)!important;gap:4px!important;margin-top:7px!important}
+  .product-action{height:34px!important;border-radius:8px!important;font-size:14px!important;padding:0 4px!important}
+  .product-buy{font-size:11px!important}
+}
 </style>
 
 </body>
