@@ -2007,7 +2007,8 @@ fetch(sheetURL, {signal: produkController.signal, cache: "no-store"})
 });
 </script>
 <script>
-document.getElementById("searchInput").addEventListener("keyup", function() {
+const searchInputAwal = document.getElementById("searchInput");
+if (searchInputAwal) searchInputAwal.addEventListener("keyup", function() {
   let filter = this.value.toLowerCase();
   let products = document.querySelectorAll(".produk-card");
 
@@ -3132,7 +3133,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
     /* Running text disembunyikan pada desain baru, jadi gunakan slider promo
        sebagai titik acuan agar kategori dan pencarian tetap dibuat. */
-    const running = document.querySelector(".running-text")
+    const running = document.querySelector(".hero")
         || document.querySelector(".tsa-promo-slider")
         || document.querySelector(".header.tsa-header-new");
 
@@ -3288,10 +3289,9 @@ document.addEventListener("DOMContentLoaded", function(){
     =====================================================
     */
 
-    running.insertAdjacentElement(
-        "afterend",
-        quickBar
-    );
+    // Bar kategori ditempatkan bersama pencarian di dalam hero,
+    // bukan setelah running-text yang disembunyikan oleh desain baru.
+    // Penempatan final dilakukan tepat sebelum searchWrapper di bawah.
 
 
     /*
@@ -3332,9 +3332,9 @@ document.addEventListener("DOMContentLoaded", function(){
 
         oldSearch.replaceWith(searchWrapper);
 
-        quickBar.insertAdjacentElement(
-            "afterend",
-            searchWrapper
+        searchWrapper.insertAdjacentElement(
+            "beforebegin",
+            quickBar
         );
 
     }
@@ -4768,6 +4768,51 @@ body.dark .fixzy-search{
 .content-scroll,.hero,.produk-scroll{display:block!important;position:relative!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;}
 #produkList.produk-container{display:grid!important;visibility:visible!important;opacity:1!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;}
 #produkList .produk-card{display:flex!important;visibility:visible!important;opacity:1!important;min-width:0!important;}
+</style>
+
+
+<!-- FIX KATEGORI CADANGAN: pastikan bar kategori tampil tepat di atas pencarian -->
+<script id="fix-kategori-paksa-tampil">
+(function(){
+  function pasangKategori(){
+    const searchBox = document.querySelector('.fixzy-search') || document.querySelector('.search-box');
+    const hero = document.querySelector('.hero');
+    if(!hero) return;
+    let bar = document.querySelector('.fixzy-quick-bar');
+    if(!bar){ bar = document.createElement('div'); bar.className = 'fixzy-quick-bar'; }
+    const items = [
+      ['🏠','Semua',''],['📱','LCD','LCD'],['🔋','Baterai','Baterai'],
+      ['🔌','Flexible','Flexible'],['🔧','IC','IC'],['⚡','Charger','Charger'],
+      ['📷','Kamera','Kamera'],['📱','Case','Case']
+    ];
+    if(!bar.querySelector('.fixzy-category-btn')){
+      items.forEach(function(item,i){
+        const b=document.createElement('button');
+        b.type='button'; b.className='fixzy-quick-btn fixzy-category-btn'+(i===0?' active':'');
+        b.textContent=item[0]+' '+item[1];
+        b.addEventListener('click',function(){
+          bar.querySelectorAll('.fixzy-quick-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+          const input=document.getElementById('searchInput');
+          if(input){input.value=item[2]; input.dispatchEvent(new Event('input',{bubbles:true}));}
+          else if(typeof filterFixzyProduk==='function') filterFixzyProduk(item[2]);
+        });
+        bar.appendChild(b);
+      });
+    }
+    bar.style.setProperty('display','flex','important');
+    bar.style.setProperty('visibility','visible','important');
+    bar.style.setProperty('opacity','1','important');
+    if(searchBox && searchBox.parentNode) searchBox.parentNode.insertBefore(bar,searchBox);
+    else hero.insertBefore(bar,hero.firstChild);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',pasangKategori);
+  else pasangKategori();
+  window.addEventListener('load',pasangKategori);
+})();
+</script>
+<style id="fix-kategori-paksa-tampil-css">
+.fixzy-quick-bar{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;position:sticky!important;top:0!important;z-index:99990!important;min-height:42px!important;background:#fff!important}
+.fixzy-quick-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;visibility:visible!important;opacity:1!important}
 </style>
 
 </body>
