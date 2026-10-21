@@ -1516,6 +1516,32 @@ body.dark .search-box input{
   overflow:hidden!important;
 }
 </style>
+
+<style id="tsa-final-promo-tambah-tinggi">
+/* Perbaikan akhir: tambah tinggi bingkai supaya banner landscape tampil utuh */
+.tsa-promo-slider{
+  height:clamp(190px,42vw,300px)!important;
+  min-height:190px!important;
+  max-height:300px!important;
+  box-sizing:border-box!important;
+}
+.tsa-promo-slider .slider-sheet{
+  top:6px!important;
+  bottom:6px!important;
+  height:auto!important;
+  inset:6px 0!important;
+}
+.tsa-promo-slider .slides{height:100%!important;align-items:stretch!important}
+.tsa-promo-slider .slide-manual{height:100%!important;overflow:hidden!important}
+.tsa-promo-slider .slide-manual img{
+  display:block!important;width:100%!important;height:100%!important;
+  object-fit:contain!important;object-position:center!important;
+}
+@media(max-width:480px){
+  .tsa-promo-slider{height:clamp(190px,44vw,260px)!important;min-height:190px!important;max-height:260px!important}
+  .tsa-promo-slider .slide-manual{width:88vw!important}
+}
+</style>
 </head>
 
 <body>
