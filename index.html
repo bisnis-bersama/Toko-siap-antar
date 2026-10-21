@@ -2499,38 +2499,34 @@ cart.classList.remove("keranjang-animasi");
 </script>
 
 <script>
+/* SLIDER PROMO TOKO SIAP ANTAR
+   Menggunakan gambar lokal yang disediakan: silde1.png sampai silde6.png.
+   Bagian lain dari website tidak diubah.
+*/
+(function(){
+  const daftarPromo = [
+    "silde1.png",  // Layanan antar cepat
+    "silde2.png",  // Aksesoris
+    "silde3.png",  // Flexible
+    "silde4.png",  // Charger
+    "silde5.png",  // Baterai
+    "silde6.png"   // LCD
+  ];
 
-const sheetSlider="https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=PROMO";
+  const wadah = document.getElementById("slides");
+  if (!wadah) return;
 
-fetch(sheetSlider)
-.then(res=>res.text())
-.then(data=>{
+  const buatSlide = (foto) => `
+    <div class="slide-manual">
+      <img src="${foto}" alt="Promo Toko Siap Antar" loading="eager"
+           onerror="this.closest('.slide-manual').style.display='none'"
+           ondblclick="if(typeof popupSlider==='function') popupSlider('${foto}')">
+    </div>`;
 
-const json=JSON.parse(data.substring(47).slice(0,-2));
-
-let rows=json.table.rows;
-
-let html="";
-
-rows.forEach(r=>{
-
-let foto=convertDrive(r.c[1]?.v);
-
-if(!foto) return;
-
-html += `
-<div class="slide-manual">
-    <img src="${foto}" ondblclick="popupSlider('${foto}')">
-</div>
-`;
-});
-
-/* DUPLIKASI supaya loop halus */
-
-document.getElementById("slides").innerHTML=html+html;
-
-});
-
+  const html = daftarPromo.map(buatSlide).join("");
+  // Duplikasi untuk menjaga animasi berjalan mulus.
+  wadah.innerHTML = html + html;
+})();
 </script>
 
 
