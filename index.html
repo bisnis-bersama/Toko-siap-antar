@@ -3411,41 +3411,18 @@ FILTER PRODUK
 */
 
 function filterFixzyProduk(keyword){
-
-    keyword =
-        String(keyword || "")
-        .toLowerCase()
-        .trim();
-
-
-    const products =
-        document.querySelectorAll(
-            ".produk-card"
-        );
-
-
+    const term = String(keyword || "").toLocaleLowerCase("id-ID").trim();
+    const products = document.querySelectorAll("#produkList .produk-card, .produk-container .produk-card");
     products.forEach(function(card){
-
-        const text =
-            card.innerText
-            .toLowerCase();
-
-
-        if(
-            keyword === "" ||
-            text.includes(keyword)
-        ){
-
-            card.style.display = "";
-
-        }else{
-
-            card.style.display = "none";
-
+        // Simpan teks produk sekali saja supaya tidak membaca innerText berulang saat mengetik.
+        let cached = card.getAttribute("data-search-cache");
+        if (cached === null) {
+            cached = (card.textContent || "").toLocaleLowerCase("id-ID").replace(/\s+/g, " ").trim();
+            card.setAttribute("data-search-cache", cached);
         }
-
+        const match = !term || cached.includes(term);
+        card.style.setProperty("display", match ? "flex" : "none", "important");
     });
-
 }
 
 </script>
@@ -4837,30 +4814,6 @@ body.dark .fixzy-search{
 }
 </style>
 
-<script id="tsa-final-search-fix">
-(function(){
-  function applySearch(value){
-    const keyword = String(value || '').toLocaleLowerCase('id-ID').trim();
-    document.querySelectorAll('#produkList .produk-card, .produk-container .produk-card').forEach(function(card){
-      const text = (card.innerText || card.textContent || '').toLocaleLowerCase('id-ID');
-      card.style.setProperty('display', (!keyword || text.includes(keyword)) ? 'flex' : 'none', 'important');
-    });
-  }
-  document.addEventListener('input', function(event){
-    if(event.target && event.target.id === 'searchInput') applySearch(event.target.value);
-  }, true);
-  document.addEventListener('keyup', function(event){
-    if(event.target && event.target.id === 'searchInput') applySearch(event.target.value);
-  }, true);
-  document.addEventListener('click', function(event){
-    const button = event.target.closest('.fixzy-quick-btn');
-    if(!button) return;
-    setTimeout(function(){
-      const input = document.getElementById('searchInput');
-      if(input) applySearch(input.value);
-    }, 0);
-  }, true);
-})();
-</script>
+<!-- Pencarian memakai satu handler utama; tidak ada filter input/keyup ganda. -->
 </body>
 </html>
