@@ -4678,7 +4678,14 @@ body > div[style*="max-width:1500px"]{width:100%!important;min-height:0!importan
 #produkList:empty{display:none!important;min-height:0!important;padding:0!important;margin:0!important;}
 #produkList .produk-card{visibility:visible!important;opacity:1!important;}
 /* Jangan biarkan area scroll internal mendorong konten ke bawah */
-@media(max-width:768px){.hero{padding:8px 10px 5px!important}.tsa-promo-slider{height:350px!important;min-height:350px!important;max-height:350px!important;margin:6px auto 8px!important}.produk-scroll{padding-bottom:20px!important}}
+@media(max-width:768px){
+  .hero{padding:8px 10px 5px!important}
+  .tsa-promo-slider{height:190px!important;min-height:190px!important;max-height:190px!important;margin:6px auto 8px!important;padding:4px 0!important}
+  .tsa-promo-slider .slider-sheet{inset:4px 0!important;height:calc(100% - 8px)!important}
+  .tsa-promo-slider .slide-manual{height:100%!important}
+  .tsa-promo-slider .slide-manual img{object-fit:contain!important;object-position:center!important}
+  .produk-scroll{padding-bottom:20px!important}
+}
 
 /* BAYANGAN 3D HALUS — tipis di setiap tepi panel */
 :root { --panel-shadow-soft: 0 2px 5px rgba(0,0,0,.075), 0 0 1px rgba(0,0,0,.10); }
@@ -4829,5 +4836,31 @@ body.dark .fixzy-search{
   z-index: 2147483647 !important;
 }
 </style>
+
+<script id="tsa-final-search-fix">
+(function(){
+  function applySearch(value){
+    const keyword = String(value || '').toLocaleLowerCase('id-ID').trim();
+    document.querySelectorAll('#produkList .produk-card, .produk-container .produk-card').forEach(function(card){
+      const text = (card.innerText || card.textContent || '').toLocaleLowerCase('id-ID');
+      card.style.setProperty('display', (!keyword || text.includes(keyword)) ? 'flex' : 'none', 'important');
+    });
+  }
+  document.addEventListener('input', function(event){
+    if(event.target && event.target.id === 'searchInput') applySearch(event.target.value);
+  }, true);
+  document.addEventListener('keyup', function(event){
+    if(event.target && event.target.id === 'searchInput') applySearch(event.target.value);
+  }, true);
+  document.addEventListener('click', function(event){
+    const button = event.target.closest('.fixzy-quick-btn');
+    if(!button) return;
+    setTimeout(function(){
+      const input = document.getElementById('searchInput');
+      if(input) applySearch(input.value);
+    }, 0);
+  }, true);
+})();
+</script>
 </body>
 </html>
