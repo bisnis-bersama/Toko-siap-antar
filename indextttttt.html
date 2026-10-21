@@ -1648,7 +1648,7 @@ onclick="window.open('https://www.facebook.com/share/1BhC4jhcGc/','_blank')">
    
 
 <div class="header tsa-header-new">
-  <div class="tsa-header-logo"><img src="logo2.png" alt="Toko Siap Antar"></div>
+  <div class="tsa-header-logo"><img src="logo3.png" alt="Toko Siap Antar"></div>
   <div class="tsa-header-actions">
     <button type="button" class="tsa-header-btn" aria-label="Refresh halaman" onclick="refreshHalaman()" title="Refresh">↻</button>
     <button type="button" class="tsa-header-btn tsa-dark-btn" aria-label="Mode gelap" onclick="toggleTheme()" title="Mode gelap">🌙</button>
@@ -1685,62 +1685,7 @@ onclick="window.open('https://www.facebook.com/share/1BhC4jhcGc/','_blank')">
 <div id="produkList" class="produk-container"></div>
 </div>
 
-<!-- FOOTER -->
-<div style="text-align:center;margin-top:30px">
 
-<div class="apk-card">
-
-<img src="logo2.png">
-
-<div class="apk-info">
-
-<div class="apk-title">
-📱 Toko Siap Antar
-</div>
-
-<div class="apk-rating">
-⭐⭐⭐⭐⭐ 5.0 (1.000+ Download)
-</div>
-
-<div class="apk-meta">
-
-<div class="apk-badge">
-📦 Versi 2.0.0
-</div>
-
-<div class="apk-badge">
-📁 15 MB
-</div>
-
-<div class="apk-badge">
-🏷 Gratis
-</div>
-
-</div>
-
-<p class="apk-desc">
-Belanja sparepart HP lebih mudah, lebih cepat, dan langsung dari aplikasi Android.
-</p>
-
-<a class="apk-install"
-href="https://drive.google.com/file/d/1Akaqw9e2_YLlw8mKrtc_P8_URJYxIVRv/view?usp=drivesdk"
-target="_blank">
-⬇ INSTALL APLIKASI
-</a>
-
-<div class="apk-footer">
-
-<div>✅ Gratis</div>
-
-<div>🛡 Aman</div>
-
-<div>🔄 Update Terbaru</div>
-
-</div>
-
-</div>
-
-</div>
 <!-- SOSIAL MEDIA -->
 <div style="background:#fff;padding:25px 15px;margin-top:25px;text-align:center;">
 
@@ -4771,7 +4716,8 @@ body.dark .fixzy-search{
 </style>
 
 
-<!-- FIX KATEGORI CADANGAN: pastikan bar kategori tampil tepat di atas pencarian -->
+<!-- FIX DUPLIKASI KATEGORI: gunakan bar kategori utama yang dibuat di atas.
+     Bar cadangan hanya membuat kategori jika bar utama memang belum ada. -->
 <script id="fix-kategori-paksa-tampil">
 (function(){
   function pasangKategori(){
@@ -4779,19 +4725,22 @@ body.dark .fixzy-search{
     const hero = document.querySelector('.hero');
     if(!hero) return;
     let bar = document.querySelector('.fixzy-quick-bar');
-    if(!bar){ bar = document.createElement('div'); bar.className = 'fixzy-quick-bar'; }
-    const items = [
-      ['🏠','Semua',''],['📱','LCD','LCD'],['🔋','Baterai','Baterai'],
-      ['🔌','Flexible','Flexible'],['🔧','IC','IC'],['⚡','Charger','Charger'],
-      ['📷','Kamera','Kamera'],['📱','Case','Case']
-    ];
-    if(!bar.querySelector('.fixzy-category-btn')){
+    if(!bar){
+      bar = document.createElement('div');
+      bar.className = 'fixzy-quick-bar';
+      const items = [
+        ['🏠','Semua',''],['📱','LCD','LCD'],['🔋','Baterai','Baterai'],
+        ['🔌','Flexible','Flexible'],['🔧','IC','IC'],['⚡','Charger','Charger'],
+        ['📷','Kamera','Kamera'],['📱','Case','Case']
+      ];
       items.forEach(function(item,i){
         const b=document.createElement('button');
-        b.type='button'; b.className='fixzy-quick-btn fixzy-category-btn'+(i===0?' active':'');
+        b.type='button';
+        b.className='fixzy-quick-btn fixzy-category-btn'+(i===0?' active':'');
         b.textContent=item[0]+' '+item[1];
         b.addEventListener('click',function(){
-          bar.querySelectorAll('.fixzy-quick-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+          bar.querySelectorAll('.fixzy-quick-btn').forEach(x=>x.classList.remove('active'));
+          b.classList.add('active');
           const input=document.getElementById('searchInput');
           if(input){input.value=item[2]; input.dispatchEvent(new Event('input',{bubbles:true}));}
           else if(typeof filterFixzyProduk==='function') filterFixzyProduk(item[2]);
@@ -4802,8 +4751,11 @@ body.dark .fixzy-search{
     bar.style.setProperty('display','flex','important');
     bar.style.setProperty('visibility','visible','important');
     bar.style.setProperty('opacity','1','important');
-    if(searchBox && searchBox.parentNode) searchBox.parentNode.insertBefore(bar,searchBox);
-    else hero.insertBefore(bar,hero.firstChild);
+    if(searchBox && searchBox.parentNode && bar.nextElementSibling !== searchBox){
+      searchBox.parentNode.insertBefore(bar,searchBox);
+    } else if(!searchBox && bar.parentNode !== hero){
+      hero.insertBefore(bar,hero.firstChild);
+    }
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',pasangKategori);
   else pasangKategori();
@@ -4815,5 +4767,26 @@ body.dark .fixzy-search{
 .fixzy-quick-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;visibility:visible!important;opacity:1!important}
 </style>
 
+
+<style id="tsa-popup-paling-depan-fix">
+/* Hanya menaikkan lapisan popup detail produk; tidak mengubah aturan scroll halaman. */
+#zoomPopup {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  z-index: 2147483647 !important;
+  isolation: isolate !important;
+}
+#zoomPopup[style*="display: flex"],
+#zoomPopup[style*="display:flex"] {
+  display: flex !important;
+}
+#zoomPopup .zoomBox {
+  position: relative !important;
+  z-index: 2147483647 !important;
+}
+</style>
 </body>
 </html>
