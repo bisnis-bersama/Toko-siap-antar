@@ -1498,6 +1498,24 @@ body.dark .search-box input{
 #produkList .produk-card{display:flex!important;visibility:visible!important;opacity:1!important;min-width:0!important;}
 </style>
 
+
+<style id="tsa-fix-promo-image-not-cropped">
+/* Tampilkan seluruh desain banner promo tanpa memotong sisi atau bagian atas/bawah gambar */
+.tsa-promo-slider .slide-manual{
+  background:transparent!important;
+}
+.tsa-promo-slider .slide-manual img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+  background:transparent!important;
+}
+/* Pastikan bingkai slider tidak memangkas isi banner selain area luar slide */
+.tsa-promo-slider .slider-sheet{
+  overflow:hidden!important;
+}
+</style>
 </head>
 
 <body>
