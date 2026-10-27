@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="id">
+<head><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Profil Mitra Usaha | Toko Siap Antar</title>
+<style>
+:root{--yellow:#ffcc00;--muted:#64756f;--bg:#f1f2f4;--line:#e6e7e8;--green:#087443;--ink:#171717;--red:#b42318}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+button,input,select,textarea{font:inherit}
+.top{background:#111;color:#fff;padding:20px 16px 60px;border-radius:0 0 38px 38px}
+.topline{display:flex;justify-content:space-between;align-items:center;max-width:900px;margin:auto}
+.brand{font-weight:850;font-size:20px;color:var(--yellow);letter-spacing:.2px}
+.sub{font-size:13px;color:#c7cbd0;margin-top:2px}
+.logout{background:#202020;border:1px solid #444;color:white;border-radius:14px;padding:10px 14px;cursor:pointer;font-weight:750}
+main{max-width:760px;margin:-28px auto 0;padding:0 14px 120px;position:relative}
+.panel{background:white;border-radius:28px;padding:19px;margin-bottom:14px;box-shadow:0 8px 24px #00000008}
+.eyebrow{color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase}
+.title{font-size:clamp(24px,6vw,32px);margin:7px 0 12px;font-weight:850;line-height:1.2}
+.wallet{border:1px solid #e8e8e8;border-radius:24px;padding:18px;background:linear-gradient(135deg,#fffef0,#fff)}
+.wallet-label{font-size:13px;color:#737d8b;font-weight:700}
+.balance{font-size:20px;font-weight:850;margin:4px 0 0;overflow-wrap:anywhere}
+.notice{background:#fff8d8;border:1px solid #f4df80;border-radius:12px;padding:11px 13px;font-size:13px;color:#5c4b00;margin-top:12px;line-height:1.5}
+.notice.green{background:#e8f6ef;border-color:#b9e5cb;color:#114a2f}
+.notice.blue{background:#eef6ff;border-color:#c2d6f0;color:#12345f}
+.section-title{display:flex;justify-content:space-between;gap:12px;margin:2px 2px 14px;align-items:center}
+.section-title h2{font-size:18px;margin:0}
+.section-title span{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.3px}
+.hidden{display:none!important}
+.err{color:var(--red);font-size:13px;margin-top:10px;overflow-wrap:anywhere;line-height:1.4;background:#fff0ed;border:1px solid #f5c6c1;border-radius:10px;padding:10px 12px}
+.ok{color:var(--green);font-size:13px;margin-top:10px;overflow-wrap:anywhere;line-height:1.4;background:#e8f6ef;border:1px solid #b9e5cb;border-radius:10px;padding:10px 12px}
+label{display:block;font-size:13px;font-weight:750;margin:14px 0 6px;color:#222}
+input,select,textarea{width:100%;border:1px solid #cbd1d6;border-radius:12px;padding:12px;background:white;outline:none;transition:.15s}
+input:focus,select:focus,textarea:focus{border-color:#111;box-shadow:0 0 0 3px #ffcc0030}
+textarea{resize:vertical;min-height:84px}
+.btn{border:0;border-radius:12px;padding:13px 16px;font-weight:850;cursor:pointer;background:var(--yellow);color:#111;transition:.15s}
+.btn:active{transform:scale(.98)}
+.btn.dark{background:#111;color:var(--yellow)}
+.btn.alt{background:#eef7f1;color:var(--green);border:1px solid #bfe6ce}
+.btn.ghost{background:#f2f4f3;border:1px solid #e0e4e2;color:#111}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.submit{width:100%;margin-top:14px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.actions button{flex:1;min-width:120px}
+.meta{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.4;overflow-wrap:anywhere}
+.status{font-size:11px;font-weight:800;border-radius:999px;padding:6px 12px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.status.wait{background:#fff4c2;color:#6d5700;border:1px solid #f4df80}
+.status.okbg{background:#d1fae5;color:#065f46;border:1px solid #a7f3d0}
+.status.bad{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+.bottom{position:fixed;bottom:0;left:0;right:0;background:#111;border-top:3px solid #ffcc00;display:flex;justify-content:space-around;padding:9px 5px calc(9px + env(safe-area-inset-bottom));z-index:50}
+.bottom a{color:#ffcc00;text-decoration:none;text-align:center;font-size:11px;font-weight:750;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:54px}
+.bottom .ico{display:block;font-size:22px;line-height:1}
+#roleNavigation{margin:14px 0}
+.role-menu{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.role-menu .menu{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;padding:12px 5px;border:1px solid #e5e7eb;border-radius:16px;min-width:0;text-decoration:none;color:inherit;background:#fff;transition:.15s}
+.role-menu .menu:hover{border-color:#111}
+.role-menu .menu.active{border-color:#111;background:#111;color:#ffcc00;box-shadow:0 6px 14px #00000014}
+.role-menu .menu.active .menu-icon{background:#222}
+.role-menu .menu b{font-size:11.5px;line-height:1.3}
+.role-menu .menu-icon{width:48px;height:48px;border-radius:14px;background:#111;color:#ffcc00;display:grid;place-items:center;font-size:23px;line-height:1}
+@media(min-width:600px){.role-menu{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.role-navigation-flat{background:transparent!important;box-shadow:none!important;border:0!important;padding:0!important;margin:14px 0!important}
+
+/* Profil specific */
+.profile-header{display:flex;gap:14px;align-items:center}
+.avatar-wrap{width:78px;height:78px;border-radius:20px;overflow:hidden;background:#f5f5f0;border:2px solid #ffcc00;flex:0 0 78px;display:grid;place-items:center;position:relative}
+.avatar-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+.avatar-wrap .ph{font-size:28px}
+.info-mini b{display:block;font-size:16px;line-height:1.2}
+.info-mini span{font-size:12px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:560px){.grid2{grid-template-columns:1fr}}
+.preview-box{margin-top:10px;border:1px dashed #d1d5db;border-radius:14px;padding:10px;background:#fcfcfc;text-align:center}
+.preview-box img{max-width:100%;max-height:260px;border-radius:12px;object-fit:cover;display:block;margin:auto}
+.verif-card{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.verif-card h3{margin:0 0 4px;font-size:16px}
+.link-list{display:grid;gap:8px;margin-top:12px}
+.link-item{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border:1px solid #ececec;border-radius:12px;text-decoration:none;color:inherit;background:#fff}
+.link-item b{font-size:13px}
+.link-item small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.link-item .arrow{font-size:18px;color:#999}
+.password-box{border:1px solid #e5e7eb;border-radius:16px;padding:14px;background:#fafbfa;margin-top:12px}
+</style>
+</head>
+<body>
+<header class="top">
+<div class="topline">
+<div>
+<div class="brand" id="welcomeTop">Toko Siap Antar</div>
+<div class="sub" id="welcomeSub">Profil Mitra Usaha · Edit toko Anda</div>
+</div>
+<button id="logoutBtn" class="logout hidden">Keluar</button>
+</div>
+</header>
+<main>
+<section id="loginPanel" class="panel">
+<div class="eyebrow">AKSES MITRA USAHA</div>
+<h1 class="title">Masuk Profil Mitra</h1>
+<p class="meta">Halaman ini khusus role <b>mitra_usaha</b>. Silakan login untuk mengelola profil toko Anda.</p>
+<form id="loginForm">
+<label>Email</label>
+<input id="email" type="email" autocomplete="username" required placeholder="email@contoh.com">
+<label>Password</label>
+<input id="password" type="password" autocomplete="current-password" required placeholder="••••••••">
+<button class="btn submit">Masuk</button>
+</form>
+<div id="loginMsg" class="err hidden"></div>
+<div class="notice" style="margin-top:16px">Belum punya akun? Daftar lewat <a href="./daftar-mitra-usaha.html">Daftar Mitra Usaha</a> atau hubungi admin jika role belum aktif.</div>
+</section>
+
+<section id="dashboard" class="hidden">
+<div class="panel" id="roleNavigation">
+<div class="section-title"><h2>Navigasi Halaman</h2><span>MENU SESUAI AKUN</span></div>
+<div class="menu-grid role-menu">
+<a class="menu" href="./index.html"><span class="menu-icon">🏡</span><b>Halaman Utama</b></a>
+<a class="menu" href="./dashboard-mitra-usaha.html"><span class="menu-icon">🏠</span><b>Dashboard Mitra</b></a>
+<a class="menu" href="./pesanan-masuk-mitra-usaha.html"><span class="menu-icon">📥</span><b>Pesanan Masuk</b></a>
+<a class="menu" href="./stok-produk-mitra-usaha.html"><span class="menu-icon">📦</span><b>Stok Produk</b></a>
+<a class="menu" href="./harga-modal-mitra-usaha.html"><span class="menu-icon">💵</span><b>Harga Modal</b></a>
+<a class="menu" href="./riwayat-pesanan-mitra-usaha.html"><span class="menu-icon">🧾</span><b>Riwayat Pesanan</b></a>
+<a class="menu active" href="./profil-mitra-usaha.html"><span class="menu-icon">👤</span><b>Profil Mitra</b></a>
+<a class="menu" href="./ewallet-mitra-usaha.html"><span class="menu-icon">💰</span><b>E-Wallet</b></a>
+</div>
+<div class="meta">Anda berada di halaman profil. Pilih menu lain untuk operasional toko.</div>
+</div>
+
+<div class="panel" id="profileSummaryPanel">
+<div class="section-title"><h2>Profil Toko</h2><span id="verifBadge" class="status wait">⏳ Menunggu Verifikasi</span></div>
+<div class="profile-header">
+<div class="avatar-wrap" id="avatarWrap"><span class="ph">🏪</span></div>
+<div class="info-mini"><b id="summaryNama">Mitra Usaha</b><span id="summaryEmail">email@contoh.com</span><span id="summaryAlamat" style="display:block;margin-top:4px"></span></div>
+</div>
+<div class="notice green" id="privateNotice">🔒 Mode Private Pricing: Mitra hanya melihat <b>nama produk & qty</b>, tidak melihat harga jual ke pelanggan. Harga jual tetap rahasia sistem.</div>
+</div>
+
+<div class="panel" id="verifPanel">
+<div class="verif-card">
+<div><h3>Status Verifikasi Toko</h3><div class="meta" id="verifDesc">Menunggu admin memeriksa profil toko Anda. Lengkapi data agar cepat disetujui.</div></div>
+<div><span id="verifBigBadge" class="status wait">Menunggu</span></div>
+</div>
+<div class="notice blue" style="margin-top:12px">💡 Setelah terverifikasi, Anda bisa menerima pesanan masuk, mengatur stok & harga modal, dan mencairkan saldo E-Wallet.</div>
+<div id="verifReasonBox" class="err hidden" style="margin-top:10px"></div>
+</div>
+
+<div class="panel">
+<div class="section-title"><h2>Edit Profil Toko Mitra</h2><span>FORM MITRA USAHA</span></div>
+<form id="profileForm">
+<div class="grid2">
+<div><label>Nama Usaha / Toko *</label><input id="namaUsaha" required placeholder="Contoh: Toko Sumber Rejeki"></div>
+<div><label>Nama Pemilik *</label><input id="namaPemilik" required placeholder="Nama lengkap pemilik"></div>
+</div>
+<div class="grid2">
+<div><label>Nomor Telepon / WA *</label><input id="telepon" inputmode="tel" required placeholder="08xxxxxxxxxx"></div>
+<div><label>Email (readonly)</label><input id="emailField" readonly></div>
+</div>
+<label>Alamat Toko Lengkap *</label><textarea id="alamatToko" required placeholder="Jl. ..., Desa/Kec, Kab/Kota Cirebon, patokan ..."></textarea>
+<label>Deskripsi Usaha</label><textarea id="deskripsiUsaha" placeholder="Ceritakan usaha Anda: produk unggulan, lama buka, layanan, dll. Maks 500 huruf." maxlength="500"></textarea>
+<div class="grid2">
+<div><label>Jam Buka</label><input id="jamBuka" type="time" value="08:00"></div>
+<div><label>Jam Tutup</label><input id="jamTutup" type="time" value="20:00"></div>
+</div>
+<label>Jam Operasional Teks (otomatis)</label><input id="jamOperasional" readonly placeholder="08:00 - 20:00">
+<label>Foto Toko (URL)</label><input id="fotoToko" type="url" placeholder="https://.../foto-toko.jpg (opsional)">
+<label>Upload Foto Toko (dari galeri - akan disimpan sebagai base64)</label><input id="fotoFile" type="file" accept="image/*">
+<div class="preview-box" id="fotoPreviewBox"><div class="meta">Preview foto toko akan tampil di sini.</div></div>
+<div id="formMsg"></div>
+<button class="btn submit" id="saveBtn" type="submit">💾 Simpan Profil Toko</button>
+<div class="meta">Data disimpan ke <code>users/{uid}</code> dengan <code>setDoc merge</code>. Foto base64 jika diupload ≤1.2MB ideal.</div>
+</form>
+<div class="actions">
+<a href="./ewallet-mitra-usaha.html" class="btn dark" style="text-decoration:none;text-align:center">💰 Buka E-Wallet</a>
+<button id="resetBtn" type="button" class="btn ghost">↺ Muat Ulang</button>
+</div>
+</div>
+
+<div class="panel">
+<div class="section-title"><h2>Aksi Akun</h2><span>KEAMANAN & KELUAR</span></div>
+<div class="link-list">
+<a class="link-item" href="./ewallet-mitra-usaha.html"><div><b>💰 E-Wallet Mitra Usaha</b><small>Cek saldo, top-up, pencairan ke rekening</small></div><span class="arrow">›</span></a>
+<a class="link-item" href="./dashboard-mitra-usaha.html"><div><b>🏠 Dashboard Mitra Usaha</b><small>Ringkasan pesanan & operasional hari ini</small></div><span class="arrow">›</span></a>
+<a class="link-item" href="./pesanan-masuk-mitra-usaha.html"><div><b>📥 Pesanan Masuk</b><small>Lihat nama & qty saja (private pricing)</small></div><span class="arrow">›</span></a>
+</div>
+
+<div class="password-box">
+<h3 style="margin:0 0 8px;font-size:15px">🔑 Ganti Password</h3>
+<div class="meta">Untuk keamanan akun mitra. Password minimal 6 karakter.</div>
+<form id="passwordForm" style="margin-top:10px">
+<label>Password Baru</label><input id="newPass" type="password" minlength="6" required placeholder="Minimal 6 karakter">
+<label>Konfirmasi Password Baru</label><input id="confirmPass" type="password" minlength="6" required placeholder="Ulangi password baru">
+<div id="passMsg"></div>
+<button class="btn alt" type="submit" style="width:100%;margin-top:10px">Ganti Password</button>
+</form>
+</div>
+
+<div style="margin-top:14px">
+<button id="logoutBtn2" class="btn ghost" style="width:100%">🚪 Logout Akun</button>
+<div class="meta" style="text-align:center;margin-top:8px">Logout akan mengarahkan ke halaman utama.</div>
+</div>
+</div>
+
+<div class="panel">
+<div class="section-title"><h2>Bantuan & Info</h2><span>MITRA USAHA</span></div>
+<div class="notice">Jika data toko berubah, segera perbarui agar kurir tidak salah alamat. Foto toko membantu admin verifikasi lebih cepat.</div>
+<div class="meta" style="margin-top:10px">Role Anda: <code id="roleShow">mitra_usaha</code> · UID: <span id="uidShow">-</span></div>
+</div>
+
+</section>
+</main>
+
+<nav id="bottomNav" class="bottom hidden">
+<a href="./index.html"><span class="ico">⌂</span>Beranda</a>
+<a href="./pesanan-masuk-mitra-usaha.html"><span class="ico">📥</span>Pesanan</a>
+<a href="./ewallet-mitra-usaha.html"><span class="ico">💰</span>E-Wallet</a>
+<a href="./profil-mitra-usaha.html"><span class="ico">👤</span>Profil</a>
+</nav>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut,updatePassword} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+import {getFirestore,doc,getDoc,setDoc,collection,query,where,getDocs,limit,serverTimestamp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBxqZhl6t3RwrXMwVdJeIkg0NzGfwvlweM",
+  authDomain: "toko-siap-antar-9a7bb.firebaseapp.com",
+  projectId: "toko-siap-antar-9a7bb",
+  storageBucket: "toko-siap-antar-9a7bb.firebasestorage.app",
+  messagingSenderId: "351335838712",
+  appId: "1:351335838712:web:14cc2c7b91bb0c9e1b5c0d"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ROLE = 'mitra_usaha';
+
+let user = null, profile = {};
+let fotoBase64 = null;
+
+function roleOf(p){
+  let r = String(p.role ?? p.peran ?? p.jenisAkun ?? p.tipeAkun ?? '').toLowerCase().trim().replace(/[\s-]+/g,'_');
+  const map = {customer:'pelanggan',user:'pelanggan',pembeli:'pelanggan',mitra:'mitra_usaha',merchant:'mitra_usaha',seller:'mitra_usaha',courier:'kurir',driver:'kurir',administrator:'admin',super_admin:'superadmin'};
+  return map[r] || r;
+}
+
+async function getProfile(u){
+  try{
+    let s = await getDoc(doc(db,'users',u.uid));
+    if(s.exists()) return s.data();
+  }catch{}
+  try{
+    let q = await getDocs(query(collection(db,'users'), where('email','==',u.email||''), limit(1)));
+    if(!q.empty) return q.docs[0].data();
+  }catch{}
+  throw Error('Profil akun tidak ditemukan pada koleksi users/'+u.uid);
+}
+
+function showMsg(el,msg,ok=false){
+  if(!el) return;
+  el.className = ok ? 'ok' : 'err';
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+function clearMsg(el){
+  if(!el) return;
+  el.className='hidden';
+  el.textContent='';
+}
+
+function updateJamOperasional(){
+  const b = $('jamBuka').value || '08:00';
+  const t = $('jamTutup').value || '20:00';
+  $('jamOperasional').value = b + ' - ' + t;
+}
+
+function renderFotoPreview(url){
+  const box = $('fotoPreviewBox');
+  if(!url){ box.innerHTML='<div class="meta">Preview foto toko akan tampil di sini.</div>'; $('avatarWrap').innerHTML='<span class="ph">🏪</span>'; return; }
+  box.innerHTML = `<img src="${esc(url)}" alt="Foto Toko" onerror="this.parentElement.innerHTML='<div class=\'meta\'>Gagal memuat gambar</div>'">`;
+  $('avatarWrap').innerHTML = `<img src="${esc(url)}" alt="Foto Toko" onerror="this.innerHTML='<span class=\'ph\'>🏪</span>'">`;
+}
+
+function determineVerification(p){
+  const rawStatus = String(p.statusVerifikasi || p.status || p.verificationStatus || '').toLowerCase();
+  const isVerified = p.isVerified || p.verified || p.isTerverifikasi || rawStatus.includes('terverifikasi') || rawStatus.includes('disetujui') || rawStatus.includes('approved') || rawStatus.includes('verified');
+  const isRejected = rawStatus.includes('ditolak') || rawStatus.includes('reject') || rawStatus.includes('tolak');
+  const pending = !isVerified && !isRejected;
+  let label = 'Menunggu', cls='wait', desc='Menunggu admin memeriksa profil toko Anda. Lengkapi data agar cepat disetujui.';
+  if(isVerified){ label='Terverifikasi'; cls='okbg'; desc='✅ Toko Anda sudah terverifikasi. Anda dapat menerima pesanan masuk.'; }
+  else if(isRejected){ label='Ditolak'; cls='bad'; desc='❌ Pengajuan toko ditolak. Periksa alasan di bawah dan perbarui profil.'; }
+  return {isVerified, isRejected, pending, label, cls, desc, rawStatus};
+}
+
+function fillForm(p){
+  $('namaUsaha').value = p.namaUsaha || p.namaToko || p.nama || '';
+  $('namaPemilik').value = p.namaPemilik || p.nama || p.name || p.ownerName || '';
+  $('telepon').value = p.telepon || p.noWA || p.noTelp || p.phone || '';
+  $('alamatToko').value = p.alamatToko || p.alamat || p.alamatUsaha || '';
+  $('deskripsiUsaha').value = p.deskripsiUsaha || p.deskripsi || p.deskripsiToko || '';
+  $('jamBuka').value = p.jamBuka || p.jamBukaToko || '08:00';
+  $('jamTutup').value = p.jamTutup || p.jamTutupToko || '20:00';
+  $('jamOperasional').value = p.jamOperasional || ((p.jamBuka||'08:00') + ' - ' + (p.jamTutup||'20:00'));
+  $('fotoToko').value = p.fotoToko || p.fotoUsaha || p.foto || '';
+  $('emailField').value = p.email || user?.email || '';
+  const fotoUrl = p.fotoToko || p.fotoUsaha || p.foto || p.fotoTokoBase64 || '';
+  if(fotoUrl) renderFotoPreview(fotoUrl);
+  if(p.fotoTokoBase64) fotoBase64 = p.fotoTokoBase64;
+
+  // summary
+  $('summaryNama').textContent = p.namaUsaha || p.nama || 'Mitra Usaha';
+  $('summaryEmail').textContent = p.email || user.email;
+  $('summaryAlamat').textContent = (p.alamatToko || p.alamat || '').slice(0,90);
+  $('roleShow').textContent = p.role || ROLE;
+  $('uidShow').textContent = user.uid;
+
+  // verif
+  const v = determineVerification(p);
+  $('verifBadge').textContent = (v.isVerified?'✅ ':'⏳ ') + v.label;
+  $('verifBadge').className = 'status ' + v.cls;
+  $('verifBigBadge').textContent = v.label;
+  $('verifBigBadge').className = 'status ' + v.cls;
+  $('verifDesc').textContent = v.desc;
+  const reasonBox = $('verifReasonBox');
+  if(v.isRejected){
+    const reason = p.alasanPenolakan || p.catatanAdmin || p.rejectReason || p.pesanVerifikasi || 'Hubungi admin untuk detail penolakan.';
+    reasonBox.textContent = 'Alasan: ' + reason;
+    reasonBox.classList.remove('hidden');
+  }else{
+    reasonBox.classList.add('hidden');
+  }
+}
+
+// Events login
+$('loginForm')?.addEventListener('submit', async e=>{
+  e.preventDefault();
+  const em = $('email').value.trim();
+  const pw = $('password').value;
+  $('loginMsg').classList.add('hidden');
+  $('loginMsg').textContent = 'Memeriksa...';
+  try{
+    await signInWithEmailAndPassword(auth, em, pw);
+  }catch(x){
+    showMsg($('loginMsg'), 'Login gagal: ' + x.message, false);
+  }
+});
+
+$('fotoToko')?.addEventListener('input', e=>{
+  const url = e.target.value.trim();
+  if(url) renderFotoPreview(url);
+});
+
+$('fotoFile')?.addEventListener('change', e=>{
+  const file = e.target.files && e.target.files[0];
+  if(!file) return;
+  if(file.size > 2_200_000){
+    showMsg($('formMsg'), 'Ukuran file terlalu besar (>2.2MB). Kompres dulu atau gunakan URL.', false);
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    fotoBase64 = ev.target.result;
+    renderFotoPreview(fotoBase64);
+    showMsg($('formMsg'), 'Foto berhasil dimuat dari galeri. Klik Simpan untuk menyimpan.', true);
+  };
+  reader.onerror = ()=> showMsg($('formMsg'), 'Gagal membaca file gambar.', false);
+  reader.readAsDataURL(file);
+});
+
+$('jamBuka')?.addEventListener('change', updateJamOperasional);
+$('jamTutup')?.addEventListener('change', updateJamOperasional);
+
+$('profileForm')?.addEventListener('submit', async e=>{
+  e.preventDefault();
+  const btn = $('saveBtn');
+  btn.disabled = true; btn.textContent = 'Menyimpan...';
+  clearMsg($('formMsg'));
+  try{
+    const payload = {
+      namaUsaha: $('namaUsaha').value.trim(),
+      nama: $('namaPemilik').value.trim(),
+      namaPemilik: $('namaPemilik').value.trim(),
+      telepon: $('telepon').value.trim(),
+      noWA: $('telepon').value.trim(),
+      noTelp: $('telepon').value.trim(),
+      alamat: $('alamatToko').value.trim(),
+      alamatToko: $('alamatToko').value.trim(),
+      alamatUsaha: $('alamatToko').value.trim(),
+      deskripsi: $('deskripsiUsaha').value.trim(),
+      deskripsiUsaha: $('deskripsiUsaha').value.trim(),
+      deskripsiToko: $('deskripsiUsaha').value.trim(),
+      jamBuka: $('jamBuka').value,
+      jamTutup: $('jamTutup').value,
+      jamOperasional: $('jamOperasional').value,
+      fotoToko: $('fotoToko').value.trim() || (fotoBase64 ? fotoBase64 : (profile.fotoToko||'')),
+      fotoUsaha: $('fotoToko').value.trim() || (fotoBase64 ? fotoBase64 : (profile.fotoUsaha||'')),
+      foto: $('fotoToko').value.trim() || (fotoBase64 ? fotoBase64 : (profile.foto||'')),
+      email: user.email || profile.email || '',
+      role: ROLE,
+      updatedAt: serverTimestamp()
+    };
+    if(fotoBase64){
+      payload.fotoTokoBase64 = fotoBase64;
+      payload.fotoBase64 = fotoBase64;
+    }
+    if(!payload.namaUsaha) throw Error('Nama usaha wajib diisi.');
+    if(!payload.nama) throw Error('Nama pemilik wajib diisi.');
+    if(!payload.telepon) throw Error('Telepon wajib diisi.');
+    if(!payload.alamat) throw Error('Alamat toko wajib diisi.');
+
+    await setDoc(doc(db,'users',user.uid), payload, {merge:true});
+    profile = {...profile, ...payload};
+    showMsg($('formMsg'), '✅ Profil toko berhasil disimpan ke Firestore.', true);
+    fillForm({...profile, ...payload});
+  }catch(err){
+    showMsg($('formMsg'), 'Gagal menyimpan: ' + err.message, false);
+  }finally{
+    btn.disabled=false; btn.textContent='💾 Simpan Profil Toko';
+  }
+});
+
+$('resetBtn')?.addEventListener('click', ()=>{ if(profile) fillForm(profile); clearMsg($('formMsg')); renderFotoPreview(profile.fotoToko||profile.fotoUsaha||''); });
+
+$('passwordForm')?.addEventListener('submit', async e=>{
+  e.preventDefault();
+  const np = $('newPass').value;
+  const cp = $('confirmPass').value;
+  clearMsg($('passMsg'));
+  if(np.length < 6){ showMsg($('passMsg'), 'Password minimal 6 karakter.', false); return; }
+  if(np !== cp){ showMsg($('passMsg'), 'Konfirmasi password tidak cocok.', false); return; }
+  const btn = e.target.querySelector('button'); btn.disabled=true; btn.textContent='Memproses...';
+  try{
+    await updatePassword(user, np);
+    showMsg($('passMsg'), '✅ Password berhasil diganti.', true);
+    e.target.reset();
+  }catch(err){
+    // Firebase requires recent login
+    if(String(err.message).includes('requires-recent-login') || String(err.code).includes('requires-recent-login')){
+      showMsg($('passMsg'), 'Gagal: sesi login sudah lama. Silakan logout lalu login ulang, kemudian coba lagi.', false);
+    }else{
+      showMsg($('passMsg'), 'Gagal ganti password: ' + err.message, false);
+    }
+  }finally{
+    btn.disabled=false; btn.textContent='Ganti Password';
+  }
+});
+
+async function doLogout(){
+  try{ await signOut(auth); }catch{}
+  location.href = './index.html';
+}
+$('logoutBtn').onclick = doLogout;
+$('logoutBtn2').onclick = doLogout;
+
+onAuthStateChanged(auth, async u=>{
+  if(!u){
+    $('loginPanel').classList.remove('hidden');
+    $('dashboard').classList.add('hidden');
+    $('logoutBtn').classList.add('hidden');
+    $('bottomNav').classList.add('hidden');
+    return;
+  }
+  try{
+    user = u;
+    profile = await getProfile(u);
+    const actual = roleOf(profile);
+    if(actual !== ROLE){
+      const msg = `Halaman ini khusus role Mitra Usaha; role akun Anda ${actual||'belum disetel'}.`;
+      try{ localStorage.setItem('authMsg', msg); localStorage.setItem('redirectMsg', msg); localStorage.setItem('profilMsg', msg); }catch{}
+      $('loginMsg').textContent = msg + ' Mengalihkan ke profil.html...';
+      $('loginMsg').classList.remove('hidden');
+      $('loginPanel').classList.remove('hidden');
+      $('dashboard').classList.add('hidden');
+      setTimeout(()=>{ window.location.assign('./profil.html'); }, 1500);
+      throw Error(msg);
+    }
+    // success
+    $('welcomeTop').textContent = 'Halo, Kak, ' + (profile.namaUsaha || profile.nama || profile.name || 'Mitra Usaha');
+    $('welcomeSub').textContent = (profile.namaUsaha || 'Mitra Usaha') + ' · ' + (profile.alamatToko? 'Profil siap' : 'Lengkapi profil');
+    $('loginPanel').classList.add('hidden');
+    $('dashboard').classList.remove('hidden');
+    $('logoutBtn').classList.remove('hidden');
+    $('bottomNav').classList.remove('hidden');
+    fillForm(profile);
+    updateJamOperasional();
+  }catch(x){
+    console.error(x);
+    $('loginPanel').classList.remove('hidden');
+    $('dashboard').classList.add('hidden');
+    const em = $('loginMsg');
+    if(em){
+      em.textContent = 'Dashboard gagal dibuka: ' + x.message;
+      em.classList.remove('hidden');
+    }
+  }
+});
+</script>
+<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
+</html>

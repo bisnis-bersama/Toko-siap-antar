@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="id">
+<head><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>E-Wallet Admin - Verifikasi Pencairan | Toko Siap Antar</title>
+<style>
+:root{--yellow:#ffcc00;--muted:#64756f;--bg:#f1f2f4;--ok:#087443;--err:#b42318}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#171717;font:15px/1.5 system-ui,sans-serif;padding-bottom:80px}
+.top{background:#111;color:#fff;padding:18px 16px 38px;border-radius:0 0 28px 28px}
+.topline{max-width:900px;margin:auto;display:flex;justify-content:space-between;align-items:center}
+.brand{font-weight:850;font-size:18px;color:var(--yellow)}
+.sub{font-size:12px;color:#c7cbd0}
+.greet{color:var(--yellow);font-weight:800}
+.logout{background:#202020;border:1px solid #444;color:#fff;border-radius:12px;padding:8px 12px;cursor:pointer}
+main{max-width:800px;margin:-20px auto 0;padding:0 14px 100px}
+.panel{background:#fff;border-radius:24px;padding:18px;margin-bottom:14px;box-shadow:0 8px 24px #0000000d}
+.title{font-size:clamp(26px,6vw,34px);margin:4px 0 8px;font-weight:850}
+.muted{color:var(--muted);font-size:12px}
+.list{display:grid;gap:12px}
+.item{border:1px solid #e6e7e8;border-radius:16px;padding:14px;background:#fff}
+.itemtop{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.badge{font-size:11px;font-weight:800;border-radius:999px;padding:5px 10px;background:#fff4c2;color:#6d5700}
+.detail{display:grid;grid-template-columns:110px 1fr;gap:6px;font-size:13px;margin:10px 0;padding:10px;background:#f7f8f8;border-radius:12px;border:1px solid #eee}
+.detail b{color:#333}
+.detail span{overflow-wrap:anywhere}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.btn{border:0;border-radius:12px;padding:11px 16px;font-weight:850;cursor:pointer;flex:1;min-width:120px}
+.btn-yellow{background:var(--yellow);color:#111}
+.btn-black{background:#111;color:var(--yellow)}
+.btn:disabled{opacity:.5}
+.hidden{display:none!important}
+.err{color:var(--err);background:#fff0ed;border:1px solid #f5c6c1;border-radius:10px;padding:10px;font-size:13px;margin-top:10px}
+.ok{color:var(--ok);background:#e6f7ef;border:1px solid #c3ead7;border-radius:10px;padding:10px;font-size:13px;margin-top:10px}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="topline">
+    <div style="display:flex;gap:10px;align-items:center">
+      <img src="logo3.png" alt="logo" style="width:48px;height:48px;border-radius:12px;background:#fff;padding:4px">
+      <div>
+        <div class="brand">TOKO SIAP ANTAR</div>
+        <div class="greet" id="welcomeTop">Halo, Kak, Admin</div>
+        <div class="sub">Top-up & Withdraw menunggu - Auto Saldo (saldo masuk otomatis, pencairan butuh verifikasi)</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <a href="./dashboard-admin.html" style="color:var(--yellow);text-decoration:none;font-weight:800;font-size:13px">← Menu Admin</a>
+      <button id="logoutBtn" class="logout">Keluar</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section id="loginPanel" class="panel">
+    <div style="font-size:11px;color:var(--muted);font-weight:700">AKSES ADMIN</div>
+    <h1 class="title">Verifikasi Pencairan</h1>
+    <p class="muted">Top-up & Withdraw menunggu - Auto Saldo (saldo masuk otomatis, pencairan butuh verifikasi). Saldo mitra akan terpotong otomatis saat disetujui.</p>
+    <form id="loginForm">
+      <label>Email Admin</label><input id="email" type="email" required style="width:100%;border:1px solid #cbd1d6;border-radius:12px;padding:12px">
+      <label>Password</label><input id="password" type="password" required style="width:100%;border:1px solid #cbd1d6;border-radius:12px;padding:12px">
+      <button class="btn btn-yellow" style="width:100%;margin-top:12px">Masuk Admin</button>
+    </form>
+    <div id="loginMsg" class="err hidden"></div>
+  </section>
+
+  <section id="dashboard" class="hidden">
+    <div class="panel">
+      <h1 class="title">Verifikasi Pencairan</h1>
+      <p class="muted">Top-up & Withdraw menunggu - Auto Saldo (saldo masuk otomatis, pencairan butuh verifikasi)</p>
+      <div id="actionMsg"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+        <div style="border:1px solid #e8e8e8;border-radius:14px;padding:12px;background:#f7f8f8"><span style="font-size:11px;color:var(--muted)">Top-up Menunggu</span><strong id="countTopup" style="display:block;font-size:22px;margin-top:4px">0</strong></div>
+        <div style="border:1px solid #e8e8e8;border-radius:14px;padding:12px;background:#fff8d8"><span style="font-size:11px;color:#6d5700">Pencairan Menunggu</span><strong id="countWithdraw" style="display:block;font-size:22px;margin-top:4px">0</strong></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><h2 style="margin:0;font-size:18px">Top-up Menunggu</h2><span class="muted">AUTO SALDO</span></div>
+      <div id="topupQueue" class="list">Memuat...</div>
+    </div>
+
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><h2 style="margin:0;font-size:18px">Withdraw / Pencairan Menunggu</h2><span class="muted">PERLU POTONG SALDO</span></div>
+      <p class="muted" style="font-size:11px">Tampilkan: nama mitra, nama rekening, nominal, rekening tujuan. Saat disetujui, saldo mitra otomatis terpotong.</p>
+      <div id="withdrawQueue" class="list">Memuat...</div>
+    </div>
+  </section>
+</main>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+import {getFirestore,doc,getDoc,collection,query,where,getDocs,updateDoc,addDoc,serverTimestamp,runTransaction,limit} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBxqZhl6t3RwrXMwVdJeIkg0NzGfwvlweM",
+  authDomain: "toko-siap-antar-9a7bb.firebaseapp.com",
+  projectId: "toko-siap-antar-9a7bb",
+  storageBucket: "toko-siap-antar-9a7bb.firebasestorage.app",
+  messagingSenderId: "351335838712",
+  appId: "1:351335838712:web:14cc2c7b91bb0c9e1b5c0d"
+};
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ROLE='admin';
+let user=null, profile={};
+
+function money(n){ return 'Rp '+(Number(n)||0).toLocaleString('id-ID'); }
+function msg(t,ok=false){ const el=$('actionMsg'); el.className=ok?'ok':'err'; el.innerHTML=t; setTimeout(()=>el.innerHTML='',8000); }
+function roleOf(p){ return String(p.role||'').toLowerCase(); }
+
+async function getProfile(u){
+  // coba UID dulu, fallback by email
+  let snap=await getDoc(doc(db,'users',u.uid));
+  if(snap.exists()) return snap.data();
+  const q=query(collection(db,'users'),where('email','==',u.email||''),limit(1));
+  const qs=await getDocs(q);
+  if(!qs.empty) return qs.docs[0].data();
+  throw Error('Profil admin tidak ditemukan di users. Buat users/'+u.uid+' role=admin');
+}
+
+async function fetchUserByUid(uid){
+  try{
+    const s=await getDoc(doc(db,'users',uid));
+    if(s.exists()) return {id:s.id, ...s.data()};
+  }catch(e){}
+  // fallback query by uid field jika ada
+  try{
+    const q=query(collection(db,'users'),where('uid','==',uid),limit(1));
+    const qs=await getDocs(q);
+    if(!qs.empty) return {id:qs.docs[0].id, ...qs.docs[0].data()};
+  }catch(e){}
+  return null;
+}
+
+async function loadQueues(){
+  $('topupQueue').innerHTML='Memuat...';
+  $('withdrawQueue').innerHTML='Memuat...';
+  try{
+    // Topup
+    const topSnap=await getDocs(query(collection(db,'ewallet_topups'),where('status','==','menunggu'),limit(50)));
+    $('countTopup').textContent=topSnap.size;
+    if(topSnap.empty){
+      $('topupQueue').innerHTML='<div class="muted">Tidak ada</div>';
+    }else{
+      const rows=[];
+      for(const d of topSnap.docs){
+        const x={id:d.id,...d.data()};
+        const u=await fetchUserByUid(x.uid);
+        rows.push({x,u});
+      }
+      $('topupQueue').innerHTML=rows.map(({x,u})=>{
+        const namaMitra = u ? (u.nama||u.namaUsaha||u.name||'-') : (x.email||'-');
+        const date = x.createdAt?.toDate ? x.createdAt.toDate().toLocaleString('id-ID') : '-';
+        return `<div class="item">
+          <div class="itemtop"><strong>Top-up · ${money(x.amount)}</strong><span class="badge">menunggu</span></div>
+          <div class="detail">
+            <b>Nama Mitra</b><span>${esc(namaMitra)} (${esc(x.email||'')})</span>
+            <b>Email</b><span>${esc(x.email||'')}</span>
+            <b>Nominal</b><span>${money(x.amount)}</span>
+            <b>Metode</b><span>${esc(x.method||x.metode||'-')}</span>
+            <b>Tanggal</b><span>${esc(date)}</span>
+            <b>UID</b><span style="font-size:11px">${esc(x.uid)}</span>
+          </div>
+          <div class="actions">
+            <button class="btn btn-yellow" data-action="approve-topup" data-id="${x.id}" data-uid="${x.uid}" data-amount="${x.amount}">Setujui Masuk</button>
+            <button class="btn btn-black" data-action="reject" data-col="ewallet_topups" data-id="${x.id}">Tolak</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // Withdraw / Pencairan - LENGKAP
+    const wdSnap=await getDocs(query(collection(db,'ewallet_withdrawals'),where('status','==','menunggu'),limit(50)));
+    $('countWithdraw').textContent=wdSnap.size;
+    if(wdSnap.empty){
+      $('withdrawQueue').innerHTML='<div class="muted">Tidak ada</div>';
+    }else{
+      const rows=[];
+      for(const d of wdSnap.docs){
+        const x={id:d.id,...d.data()};
+        const u=await fetchUserByUid(x.uid);
+        rows.push({x,u});
+      }
+      $('withdrawQueue').innerHTML=rows.map(({x,u})=>{
+        const namaMitra = u ? (u.nama||u.namaUsaha||u.name||u.namaPemilik||'-') : '-';
+        const namaPemilikUsaha = u?.namaPemilik || u?.nama || '-';
+        const saldoMitra = u ? Number(u.saldoEwallet??u.saldoWallet??u.saldo??0) : 0;
+        const bankName = x.bankName||u?.bankName||'-';
+        const accNumber = x.accountNumber||u?.bankAccountNumber||x.accountNumber||'-';
+        const accName = x.accountName||u?.bankAccountName||'-';
+        const email = x.email||u?.email||'-';
+        const date = x.createdAt?.toDate ? x.createdAt.toDate().toLocaleString('id-ID') : '-';
+        const nominal = Number(x.amount||0);
+        const cukup = saldoMitra >= nominal;
+        return `<div class="item" style="border:${cukup?'1px solid #e6e7e8':'2px solid #f5c6c1'}">
+          <div class="itemtop"><strong>Pencairan · ${money(nominal)}</strong><span class="badge" style="background:${cukup?'#fff4c2':'#fdecea'};color:${cukup?'#6d5700':'#b42318'}">${cukup?'saldo cukup':'SALDO KURANG!'}</span></div>
+          <div class="detail">
+            <b>Nama Mitra</b><span><strong>${esc(namaMitra)}</strong> (${esc(email)})<br><span style="font-size:11px">Pemilik: ${esc(namaPemilikUsaha)}</span></span>
+            <b>Nominal Cair</b><span style="font-weight:800;font-size:16px;color:#111">${money(nominal)}</span>
+            <b>Nama Rekening</b><span style="font-weight:700">${esc(accName)}</span>
+            <b>Bank</b><span>${esc(bankName)}</span>
+            <b>No Rekening Tujuan</b><span style="font-family:monospace;font-weight:800;background:#fff8d8;padding:2px 6px;border-radius:6px">${esc(accNumber)}</span>
+            <b>Rekening Tujuan Lengkap</b><span>${esc(bankName)} ${esc(accNumber)} a.n ${esc(accName)}</span>
+            <b>Saldo Mitra Saat Ini</b><span style="font-weight:800;color:${cukup?'#087443':'#b42318'}">${money(saldoMitra)} ${cukup?'✅':'❌ kurang'}</span>
+            <b>UID Mitra</b><span style="font-size:11px">${esc(x.uid)}</span>
+            <b>Tanggal Request</b><span>${esc(date)}</span>
+          </div>
+          <div class="actions">
+            <button class="btn btn-yellow" data-action="approve-withdraw" data-id="${x.id}" data-uid="${x.uid}" data-amount="${nominal}" ${!cukup?'disabled title="Saldo kurang"':''}>Setujui Cair & Potong Saldo</button>
+            <button class="btn btn-black" data-action="reject" data-col="ewallet_withdrawals" data-id="${x.id}">Tolak</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }catch(e){
+    $('topupQueue').innerHTML='<div class="err">Gagal load: '+esc(e.message)+'</div>';
+    $('withdrawQueue').innerHTML='<div class="err">Gagal load: '+esc(e.message)+'</div>';
+    console.error(e);
+  }
+}
+
+// Auth
+$('loginForm').onsubmit=async e=>{
+  e.preventDefault();
+  $('loginMsg').classList.add('hidden');
+  try{
+    await signInWithEmailAndPassword(auth,$('email').value.trim(),$('password').value);
+  }catch(x){
+    $('loginMsg').textContent='Login gagal: '+x.message;
+    $('loginMsg').classList.remove('hidden');
+  }
+};
+$('logoutBtn').onclick=async()=>{ await signOut(auth); location.reload(); };
+
+onAuthStateChanged(auth, async u=>{
+  if(!u){
+    $('loginPanel').classList.remove('hidden');
+    $('dashboard').classList.add('hidden');
+    return;
+  }
+  try{
+    user=u;
+    profile=await getProfile(u);
+    if(roleOf(profile)!==ROLE) throw Error('Bukan admin. Role='+roleOf(profile));
+    $('loginPanel').classList.add('hidden');
+    $('dashboard').classList.remove('hidden');
+    $('welcomeTop').textContent='Halo, Kak, '+(profile.nama||profile.namaUsaha||'Admin');
+    await loadQueues();
+  }catch(x){
+    $('loginPanel').classList.remove('hidden');
+    $('dashboard').classList.add('hidden');
+    $('loginMsg').textContent='Gagal buka admin: '+x.message;
+    $('loginMsg').classList.remove('hidden');
+  }
+});
+
+// Handle approve/reject with saldo deduction
+document.addEventListener('click', async e=>{
+  const b=e.target.closest('[data-action]');
+  if(!b) return;
+  const action=b.dataset.action;
+  const col=b.dataset.col;
+  const id=b.dataset.id;
+  const uid=b.dataset.uid;
+  const amount=Number(b.dataset.amount||0);
+
+  if(action==='reject'){
+    if(!confirm('Tolak pengajuan '+id+'?')) return;
+    b.disabled=true;
+    try{
+      await updateDoc(doc(db,col,id),{status:'ditolak',reviewedBy:user.uid,reviewedAt:serverTimestamp()});
+      msg('Pengajuan ditolak.',true);
+      await loadQueues();
+    }catch(x){ msg('Gagal tolak: '+x.message); b.disabled=false; }
+    return;
+  }
+
+  if(action==='approve-topup'){
+    if(!confirm('Setujui top-up Rp '+amount.toLocaleString('id-ID')+'? Saldo mitra akan ditambah.')) return;
+    b.disabled=true;
+    try{
+      await runTransaction(db, async (tx)=>{
+        const userRef=doc(db,'users',uid);
+        const userSnap=await tx.get(userRef);
+        if(!userSnap.exists()) throw Error('User mitra tidak ditemukan users/'+uid);
+        const data=userSnap.data();
+        const oldSaldo=Number(data.saldoEwallet??data.saldoWallet??data.saldo??0);
+        const newSaldo=oldSaldo+amount;
+        tx.update(userRef,{
+          saldoEwallet:newSaldo,
+          saldoWallet:newSaldo,
+          saldo:newSaldo,
+          totalTopup: (Number(data.totalTopup||data.totalPendapatan||0)+amount),
+          totalPendapatan: (Number(data.totalPendapatan||data.totalTopup||0)+amount),
+          updatedAt: serverTimestamp()
+        });
+        const topupRef=doc(db,'ewallet_topups',id);
+        tx.update(topupRef,{status:'disetujui',reviewedBy:user.uid,reviewedAt:serverTimestamp(),saldoAfter:newSaldo});
+        const trRef=doc(collection(db,'ewallet_transactions'));
+        tx.set(trRef,{
+          uid: uid,
+          type: 'topup',
+          amount: amount,
+          saldoAfter: newSaldo,
+          status: 'disetujui',
+          relatedId: id,
+          createdAt: serverTimestamp()
+        });
+      });
+      msg('Top-up disetujui, saldo mitra +'+money(amount),true);
+      await loadQueues();
+    }catch(x){ msg('Gagal approve topup: '+x.message); b.disabled=false; }
+    return;
+  }
+
+  if(action==='approve-withdraw'){
+    if(!confirm('SETUJUI PENCAIRAN Rp '+amount.toLocaleString('id-ID')+'?\n\nSaldo mitra akan DIPOTONG otomatis sebesar nominal. Pastikan sudah transfer ke rekening tujuan!\n\nLanjut?')) return;
+    b.disabled=true;
+    try{
+      await runTransaction(db, async (tx)=>{
+        const userRef=doc(db,'users',uid);
+        const userSnap=await tx.get(userRef);
+        if(!userSnap.exists()) throw Error('User mitra tidak ditemukan users/'+uid);
+        const data=userSnap.data();
+        const oldSaldo=Number(data.saldoEwallet??data.saldoWallet??data.saldo??0);
+        if(oldSaldo < amount) throw Error('Saldo mitra tidak cukup. Saldo='+oldSaldo+' butuh='+amount);
+        const newSaldo=oldSaldo-amount;
+        tx.update(userRef,{
+          saldoEwallet:newSaldo,
+          saldoWallet:newSaldo,
+          saldo:newSaldo,
+          totalDicairkan: (Number(data.totalDicairkan||data.totalPenarikanBerhasil||0)+amount),
+          totalPenarikanBerhasil: (Number(data.totalPenarikanBerhasil||data.totalDicairkan||0)+amount),
+          updatedAt: serverTimestamp()
+        });
+        const wdRef=doc(db,'ewallet_withdrawals',id);
+        tx.update(wdRef,{
+          status:'disetujui',
+          reviewedBy:user.uid,
+          reviewedAt:serverTimestamp(),
+          saldoBefore: oldSaldo,
+          saldoAfter: newSaldo,
+          saldoDipotong: amount
+        });
+        const trRef=doc(collection(db,'ewallet_transactions'));
+        tx.set(trRef,{
+          uid: uid,
+          type: 'withdrawal',
+          amount: -amount,
+          nominal: amount,
+          saldoBefore: oldSaldo,
+          saldoAfter: newSaldo,
+          status: 'disetujui',
+          relatedId: id,
+          createdAt: serverTimestamp()
+        });
+      });
+      msg('Pencairan disetujui ✅ Saldo mitra dipotong '+money(amount)+' dan wajib transfer ke rekening tujuan.',true);
+      await loadQueues();
+    }catch(x){
+      console.error(x);
+      msg('Gagal cair: '+x.message);
+      b.disabled=false;
+    }
+    return;
+  }
+});
+</script>
+<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
+</html>

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Migrasi Produk Lama - Tambah MitraUid</title>
+<style>
+:root{--y:#ffc107;--bg:#f5f7f5;--line:#e2e8e4}*{box-sizing:border-box}body{margin:0;background:var(--bg);font:13px Arial,sans-serif;padding-bottom:80px}
+.top{background:#111;color:#fff;padding:14px;border-radius:0 0 18px 18px;display:flex;justify-content:space-between;align-items:center}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px;box-shadow:0 2px 6px #0001}
+.prod{border:1px dashed #ddd;border-radius:10px;padding:10px;margin:8px 0;display:grid;grid-template-columns:60px 1fr;gap:10px}
+.thumb{width:60px;height:60px;background:#f0f0f0;border-radius:8px;display:grid;place-items:center;overflow:hidden} .thumb img{width:100%;height:100%;object-fit:cover}
+select,input{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;margin:4px 0;font:12px Arial} .btn{border:0;background:var(--y);padding:8px 12px;border-radius:8px;font-weight:800;cursor:pointer} .btn-dark{background:#111;color:var(--y)}
+.badge{background:#111;color:var(--y);padding:3px 8px;border-radius:999px;font-size:10px}
+</style></head><body>
+<div class="top"><div><b style="color:#ffc107">🔧 Migrasi Produk Lama</b><div style="font-size:11px;color:#aaa">Akun lama ga perlu daftar ulang - cukup tambahkan mitraUid ke produk lama di Sheet</div></div><button class="btn-dark" onclick="location.href='index.html'">Beranda</button></div>
+
+<div class="card" style="background:#111;color:#fff">
+  <div style="color:#ffc107;font-weight:900">Kenapa perlu migrasi?</div>
+  <div style="font-size:11px;color:#aaa;margin-top:4px">
+  Akun lama (A Yudi Thea dll) sudah ada di users collection dengan GPS.<br>
+  Tapi produk lama di Spreadsheet kolom MitraUid masih kosong → ongkir ga bisa hitung per mitra pemilik.<br>
+  Halaman ini buat isi MitraUid produk lama tanpa daftar ulang.
+  </div>
+</div>
+
+<div class="card"><div style="font-weight:900">📋 Produk di Sheet yang belum ada MitraUid (<span id="count">0</span>)</div><div id="list">Memuat...</div></div>
+<div class="card"><div style="font-weight:900">🏪 Daftar Mitra (dari users)</div><div id="mitraList">Memuat...</div></div>
+
+<script type="module">
+import {db} from "./firebase-config.js";
+import {collection, getDocs} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxtjGln5huyGFVGz7muW4SQGOsAOroDLj0seCnd41pOXFF39Iee0EmjA09KljV4Ahk/exec';
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=MEMBER';
+
+let allProducts=[];
+let allMitra=[];
+
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+async function loadMitra(){
+  try{
+    const snap=await getDocs(collection(db,'users'));
+    allMitra=[];
+    snap.forEach(d=>{
+      const data=d.data();
+      if((data.role||'').toLowerCase().includes('mitra') || data.namaUsaha || data.kategori){
+        allMitra.push({uid:d.id, nama:data.nama||data.namaUsaha||data.namaToko||d.id, alamat:data.alamat||'-', lat:data.lat, lng:data.lng});
+      }
+    });
+    const el=document.getElementById('mitraList');
+    el.innerHTML=allMitra.map(m=>`<div style="padding:6px 0;border-bottom:1px solid #eee"><b>${esc(m.nama)}</b><br><span style="font-size:10px;color:#666">${m.uid.slice(0,12)}... • ${esc(m.alamat.slice(0,40))} • GPS: ${m.lat? m.lat.toFixed(4)+','+m.lng.toFixed(4) : 'belum ada'}</span></div>`).join('') || 'Belum ada mitra';
+  }catch(e){document.getElementById('mitraList').textContent='Error: '+e.message;}
+}
+
+async function loadProducts(){
+  try{
+    const res=await fetch(SHEET_URL);
+    const raw=await res.text();
+    const start=raw.indexOf('{'), end=raw.lastIndexOf('}');
+    const json=JSON.parse(raw.slice(start,end+1));
+    const rows=json.table.rows||[];
+    allProducts=rows.map((r,i)=>{
+      const c=r.c||[];
+      const getVal=idx=>c[idx]?.v??'';
+      let id=getVal(1), name=getVal(2), price=getVal(4), image=getVal(5), mUid=getVal(6), mNama=getVal(7);
+      if(c.length<9){ // format lama
+        name=getVal(1)||getVal(0); price=getVal(3); image=getVal(4); mUid=''; mNama='';
+      }
+      return {rowId:id||String(i), name:String(name).trim(), price, image:String(image).trim(), mitraUid:String(mUid).trim(), mitraNama:String(mNama).trim(), rawIndex:i};
+    }).filter(p=>p.name);
+    
+    const tanpaMitra=allProducts.filter(p=>!p.mitraUid);
+    document.getElementById('count').textContent=tanpaMitra.length+' dari '+allProducts.length;
+    const el=document.getElementById('list');
+    if(!tanpaMitra.length){el.innerHTML='<div style="text-align:center;padding:20px;color:#087b45">✅ Semua produk sudah ada MitraUid - akun lama tidak perlu daftar ulang!</div>'; return;}
+    
+    el.innerHTML=tanpaMitra.map(p=>`
+      <div class="prod">
+        <div class="thumb">${p.image? `<img src="${esc(p.image.slice(0,200))}">` : '📦'}</div>
+        <div>
+          <div style="font-weight:800">${esc(p.name)} - Rp ${p.price}</div>
+          <div style="font-size:10px;color:#888">ID: ${esc(p.rowId)} • Mitra lama: ${esc(p.mitraNama||'kosong')}</div>
+          <select id="sel-${esc(p.rowId)}">
+            <option value="">Pilih Mitra Pemilik...</option>
+            ${allMitra.map(m=>`<option value="${m.uid}|${esc(m.nama)}">${esc(m.nama)} - ${m.uid.slice(0,8)}...</option>`).join('')}
+          </select>
+          <button class="btn" onclick="assignMitra('${esc(p.rowId)}')">💾 Simpan MitraUid ke Sheet</button>
+          <div id="msg-${esc(p.rowId)}" style="font-size:11px;margin-top:4px"></div>
+        </div>
+      </div>
+    `).join('');
+    // fix images
+    el.querySelectorAll('.prod').forEach((card, idx)=>{
+      const p=tanpaMitra[idx];
+      const img=card.querySelector('img');
+      if(img && p.image) img.src=p.image;
+    });
+  }catch(e){document.getElementById('list').textContent='Error: '+e.message;}
+}
+
+window.assignMitra=async(rowId)=>{
+  const sel=document.getElementById('sel-'+rowId);
+  if(!sel || !sel.value){alert('Pilih mitra dulu'); return;}
+  const [uid, nama]=sel.value.split('|');
+  const msg=document.getElementById('msg-'+rowId);
+  msg.textContent='⏳ Menyimpan...';
+  try{
+    const payload={action:'updateMitraUid', productId:rowId, mitraUid:uid, mitraNama:nama};
+    const res=await fetch(APPS_SCRIPT_URL, {method:'POST', body:JSON.stringify(payload)});
+    const json=await res.json();
+    if(json.success){msg.innerHTML='✅ Berhasil! MitraUid '+uid.slice(0,8)+'... disimpan. Reload untuk update.'; msg.style.color='#087b45';}
+    else {msg.textContent='❌ Gagal: '+(json.error||'unknown');}
+  }catch(e){msg.textContent='❌ Error: '+e.message;}
+};
+
+await loadMitra();
+await loadProducts();
+</script>
+</body></html>

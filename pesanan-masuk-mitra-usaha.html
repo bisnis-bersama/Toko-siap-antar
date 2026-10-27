@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="id"><head><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pesanan Masuk Mitra - Harga Mitra Manual | BERSIH</title>
+<style>
+:root{--yellow:#ffcc00;--ink:#171717;--green:#008b5a;--muted:#64756f;--bg:#f1f2f4;--line:#e6e7e8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#171717;font:14px/1.4 system-ui,sans-serif;padding-bottom:80px}
+button,input,select,textarea{font:inherit}
+
+/* MODE BERSIH ATAS - COMPACT KAYAK EWALLET-ADMIN 07.39 */
+header{background:#111;color:white;padding:10px 14px 16px;border-radius:0 0 20px 20px;position:sticky;top:0;z-index:5}
+.head{max-width:900px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.brandWrap{display:flex;align-items:center;gap:8px}
+.brandWrap img{width:36px;height:36px;border-radius:10px;background:#fff;padding:3px;object-fit:contain}
+.brand{color:var(--yellow);font-weight:900;font-size:15px;line-height:1.1}
+.sub{color:#c7cbd0;font-size:9px;font-weight:600}
+.greet{font-size:12px;color:#fff;font-weight:800;margin-top:1px}
+.greet b{color:var(--yellow)}
+.logout{background:#202020;border:1px solid #444;color:white;border-radius:10px;padding:6px 10px;font-size:11px;font-weight:750;cursor:pointer}
+
+main{max-width:900px;margin:-10px auto 0;padding:0 10px 90px;position:relative;z-index:2}
+.panel{background:white;border-radius:16px;padding:12px;margin-bottom:8px;box-shadow:0 4px 16px #00000008}
+h1{font-size:20px;line-height:1.2;margin:4px 0 8px;font-weight:900}h2{font-size:14px;margin:0;font-weight:800}
+.eyebrow{font-size:9px;letter-spacing:.5px;color:var(--muted);font-weight:800;text-transform:uppercase}.muted{color:var(--muted);font-size:12px}
+.notice{background:#fff8d8;border:1px solid #f4df80;border-radius:10px;padding:10px 12px;font-size:11px;color:#5c4b00;line-height:1.4}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px}
+.tile{display:flex;flex-direction:column;gap:5px;text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff;min-height:80px}
+.tile .ico{width:34px;height:34px;border-radius:10px;background:#111;color:var(--yellow);display:grid;place-items:center;font-size:18px}
+.btn{border:0;border-radius:10px;background:var(--yellow);padding:10px 14px;font-weight:850;cursor:pointer;font-size:13px}.btn.dark{background:#111;color:var(--yellow)}
+label{display:block;font-size:11px;font-weight:700;margin:8px 0 4px}input,select,textarea{width:100%;padding:10px 11px;border:1px solid #cbd1d6;border-radius:10px;background:white;font-size:13px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.list{display:grid;gap:8px}.item{border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff;overflow-wrap:anywhere}
+.itemtop{display:flex;justify-content:space-between;gap:8px;align-items:start}.status{display:inline-block;border-radius:999px;background:#fff1b8;color:#6d5700;font-size:10px;font-weight:800;padding:3px 8px}
+.meta{font-size:11px;color:var(--muted);margin-top:3px}.bottom{position:fixed;bottom:0;left:0;right:0;background:#111;border-top:3px solid var(--yellow);display:flex;justify-content:center;gap:20px;padding:8px 8px calc(8px + env(safe-area-inset-bottom));z-index:5}
+.bottom a{color:var(--yellow);font-size:11px;font-weight:800;text-decoration:none;white-space:nowrap}.hidden{display:none!important}.err{color:#b42318;font-size:12px;margin-top:8px}.ok{color:#087443;font-size:12px;margin-top:8px}
+.product-row{display:grid;grid-template-columns:minmax(0,1.5fr) 60px 140px;gap:8px;padding:9px 0;border-bottom:1px solid var(--line);align-items:center}
+.product-name{font-weight:700;font-size:13px;line-height:1.3}.product-qty{font-size:11px;color:var(--muted);background:#f1f5f1;padding:3px 8px;border-radius:999px;text-align:center;font-weight:700}
+.modal-input{padding:8px 10px;border:2px solid #ffcc00;border-radius:10px;background:#fffef0;font-weight:800;text-align:right;font-size:13px}
+.modal-input:focus{outline:none;border-color:#008b5a;background:#fff;box-shadow:0 0 0 3px #008b5a22}
+.modal-input.err-input{border-color:#b42318;background:#fff0ed}
+.catatanModal{height:62px !important;min-height:62px !important;max-height:90px;resize:vertical;font-size:12px !important;padding:8px 10px !important;line-height:1.3}
+.catatanModal:focus{outline:none;border-color:#008b5a;box-shadow:0 0 0 2px #008b5a22}
+.products-box{margin-top:8px;border-top:1px solid var(--line);padding-top:6px}
+.price-total{font-weight:850;text-align:right;margin-top:10px;padding-top:8px;border-top:2px dashed var(--line);font-size:12px}
+@media(max-width:640px){.product-row{grid-template-columns:1fr 60px;}.product-row > div:last-child{grid-column:1 / -1}}
+</style></head>
+<body>
+<header><div class="head"><div class="brandWrap">
+<img src="logo2.png" alt="Logo" onerror="this.src='logo3.png'">
+<div><div class="brand">🛵 TOKO SIAP ANTAR</div><div class="sub">Mitra Usaha · Harga Mitra Manual</div><div class="greet" id="greetingTop" style="display:none"></div></div>
+</div><button id="logoutBtn" class="logout hidden" type="button">Keluar</button></div></header>
+
+<main>
+<section id="loginPanel" class="panel"><div class="eyebrow">AKSES MITRA USAHA</div><h1>Masuk Mitra Usaha</h1><p class="muted">Role=mitra_usaha, status=aktif, aktif=true</p>
+<form id="loginForm"><label>Email</label><input id="email" type="email" required><label>Password</label><input id="password" type="password" required><button class="btn" style="width:100%;margin-top:12px" type="submit">Masuk</button></form><div id="loginMsg" class="err"></div></section>
+
+<section id="app" class="hidden">
+<div class="panel"><div class="eyebrow">PESANAN MASUK · HARGA MITRA</div><h1>Input Harga Mitra</h1><p class="muted" id="greeting">Hanya produk pesanan + kolom harga mitra, harga jual tidak ditampilkan.</p><div class="notice">✅ <b>Kolom Harga Produk (jual) disembunyikan</b>. Hanya tampil <b>Nama Produk + Qty + Kolom Harga Mitra</b> yang diisi mitra.</div></div>
+
+<div class="panel"><div class="itemtop"><h2>Penawaran Aktif</h2><span class="status">Isi harga mitra dulu</span></div><div id="offerRecords" class="list" style="margin-top:10px"><div class="muted">Memuat…</div></div></div>
+<div class="panel"><div class="itemtop"><h2>Daftar Pesanan Saya</h2></div><label for="filter">Cari nomor pesanan</label><input id="filter" placeholder="Cari nomor pesanan"><div class="actions"><button class="btn" id="reloadBtn" type="button">Muat Ulang</button></div><div id="records" class="list" style="margin-top:10px"><div class="muted">Memuat…</div></div></div>
+</section></main>
+<nav id="bottom" class="bottom hidden"><a href="./ewallet-mitra.html">⌂ Beranda</a></nav>
+
+<script type="module">
+import {auth,db} from "./firebase-config.js";
+import {onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+import {doc,getDoc,collection,getDocs,query,where,limit,runTransaction,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+const $=id=>document.getElementById(id), EXPECTED="mitra_usaha";
+function norm(v){let x=String(v??"").trim().toLowerCase().replace(/[\s-]+/g,"_");const a={customer:"pelanggan",mitra:"mitra_usaha",mitrausaha:"mitra_usaha"};return a[x]||x;}
+async function profileFor(u){const s=await getDoc(doc(db,"users",u.uid));if(s.exists())return s.data();const q=query(collection(db,"users"),where("email","==",u.email||""),limit(1));const r=await getDocs(q);if(!r.empty)return r.docs[0].data();throw Error("Profil tidak ditemukan");}
+$("loginForm").addEventListener("submit",async e=>{e.preventDefault();$("loginMsg").textContent="Memeriksa…";try{await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);}catch(err){$("loginMsg").textContent="Login gagal: "+err.message;}});
+$("logoutBtn").onclick=()=>signOut(auth);
+let profile=null,userNow=null;
+onAuthStateChanged(auth,async u=>{
+  if(!u){$("loginPanel").classList.remove("hidden");$("app").classList.add("hidden");$("logoutBtn").classList.add("hidden");$("bottom").classList.add("hidden");return;}
+  try{userNow=u;profile=await profileFor(u);const role=norm(profile.role);if(role!==EXPECTED)throw Error("Role harus mitra_usaha, Anda: "+role);if(profile.status!=='aktif'||profile.aktif!==true)throw Error("Akun belum aktif");$("loginPanel").classList.add("hidden");$("app").classList.remove("hidden");$("logoutBtn").classList.remove("hidden");$("bottom").classList.remove("hidden");$("greeting").textContent="Halo, "+(profile.nama||profile.namaUsaha||u.email)+" — Isi harga mitra manual, harga jual disembunyikan.";$("greetingTop").textContent="Halo, "+(profile.nama||profile.namaUsaha||"Mitra");$("greetingTop").style.display="block";await loadOffers();await loadRecords();}catch(err){$("loginPanel").classList.remove("hidden");$("app").classList.add("hidden");$("loginMsg").textContent=err.message;}
+});
+const esc=v=>String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function asDate(v){if(!v)return null;if(typeof v.toDate==="function")return v.toDate();if(v instanceof Date)return v;const d=new Date(v);return Number.isNaN(d.getTime())?null:d;}
+function firstDate(x,keys){for(const k of keys){const d=asDate(x[k]);if(d)return d;}return null;}
+function fmtLeft(ms){if(ms<=0)return "00:00";const sec=Math.floor(ms/1000);return String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0");}
+function rupiah(n){return 'Rp '+(Number(n)||0).toLocaleString('id-ID')}
+function isAssignedToMe(x){const uid=userNow?.uid;return !!uid && (x.mitraUsahaUid===uid || x.mitraUid===uid || x.acceptedByMitraUid===uid || (Array.isArray(x.mitraCandidateUids)&&x.mitraCandidateUids.includes(uid)) || x.statusPemenuhan==='pending_mitra');}
+function isAccepted(x){return !!(x.acceptedByMitraUid) || ["diterima_mitra","mitra_menerima","diproses_mitra"].includes(String(x.status||"").toLowerCase());}
+function offerStart(x){return firstDate(x,["offerSentAt","createdAt"]);}
+function orderStart(x){return firstDate(x,["createdAt"]);}
+
+function productRowsModalOnly(x){
+  const items=Array.isArray(x.items)?x.items:[];
+  if(!items.length)return '<div class="notice">Tidak ada produk.</div>';
+  const rows=items.map((it,i)=>{
+    const name=it.nama||it.namaProduk||it.name||('Produk '+(i+1));
+    const qty=Number(it.qty||it.jumlah||1)||1;
+    const savedModal = Array.isArray(x.mitraHargaItems) && x.mitraHargaItems[i] ? x.mitraHargaItems[i].hargaModal : '';
+    return `<div class="product-row">
+      <div><div class="product-name">${esc(name)}</div><div class="muted" style="font-size:10px">Kode: ${esc(it.kode||it.produkId||'-')} | ${esc(it.satuan||'pcs')}</div></div>
+      <div class="product-qty">x ${qty}</div>
+      <div><label style="font-size:10px;margin:0 0 3px;display:block;font-weight:700">Harga Mitra *</label><input class="modal-input" type="number" min="0" step="100" inputmode="numeric" data-modal-index="${i}" data-qty="${qty}" data-nama="${esc(name)}" value="${savedModal!==''?Number(savedModal):''}" placeholder="Isi harga mitra" required></div>
+    </div>`;
+  }).join('');
+  return `<div class="products-box"><strong style="font-size:12px">Produk yang dipesan (${items.length} item) - Harga jual disembunyikan, isi modal saja</strong>${rows}<div class="price-total">Total Harga Mitra: <span id="modalTotal-${x.id}" style="color:#008b5a">Rp 0 (isi dulu)</span></div><div style="margin-top:6px"><label style="font-size:10px;margin-top:6px">Catatan Harga Mitra (opsional)</label><textarea class="catatanModal" data-id="${x.id}" rows="2" placeholder="Contoh: harga mitra dari gudang A"></textarea></div></div>`;
+}
+
+function getOrderItems(x){const arr=Array.isArray(x.items)?x.items:[];return arr.map(it=>({name:it.nama||it.name||"Produk",qty:Number(it.qty||1)||1}));}
+function renderOffer(x){
+  const start=offerStart(x), orderAt=orderStart(x);
+  const offerDeadline=start?start.getTime()+15*60*1000:null;
+  const status=String(x.status||"menunggu_mitra");
+  const accepted=isAccepted(x);
+  const title=esc(x.nomorPesanan||("Pesanan "+x.id));
+  const customer=esc(x.ownerName||"Pelanggan");
+  const address=esc(x.alamat||x.alamatPengiriman?.alamat||"-");
+  const overdue=offerDeadline!==null&&Date.now()>=offerDeadline;
+  return `<article class="item" data-offer-id="${esc(x.id)}" data-order-id="${esc(x.id)}"><div class="itemtop"><strong style="font-size:13px">${title}</strong><span class="status">${esc(status.replace(/_/g," "))}</span></div><div class="meta">ID: ${esc(x.id)} | Pelanggan: ${customer} | Alamat: ${address}</div>${productRowsModalOnly(x)}${!accepted?`<div class="meta" style="margin-top:8px">Batas: <b class="offer-countdown" data-start="${start?start.getTime():""}">${!start?"-":overdue?"Terlambat":fmtLeft(offerDeadline-Date.now())}</b></div>`:''}${accepted?`<div class="ok">Sudah diterima - harga mitra tersimpan</div>`:`<div class="actions"><button class="btn" type="button" data-action="accept" data-id="${esc(x.id)}">✅ Terima + Simpan Harga Mitra</button><button class="btn dark" type="button" data-action="decline" data-id="${esc(x.id)}">Tolak</button></div>`}<div class="offer-message"></div></article>`;
+}
+async function fetchAssignedOrders(){
+  const found=new Map(), uid=userNow.uid;
+  const attempts=[query(collection(db,"orders"),where("statusPemenuhan","==","pending_mitra")),query(collection(db,"orders"),where("mitraUsahaUid","==",uid)),query(collection(db,"orders"),where("mitraUid","==",uid)),query(collection(db,"orders"),where("acceptedByMitraUid","==",uid)),query(collection(db,"orders"),where("mitraCandidateUids","array-contains",uid))];
+  for(const q of attempts){try{const snap=await getDocs(q);snap.docs.forEach(d=>found.set(d.id,{id:d.id,...d.data()}));}catch(e){}}
+  return {orders:[...found.values()].filter(isAssignedToMe)};
+}
+async function loadOffers(){
+  const box=$("offerRecords");box.innerHTML='<div class="muted">Memuat…</div>';
+  try{const {orders}=await fetchAssignedOrders();const active=orders.filter(x=>!isAccepted(x)&&!["ditolak_mitra","dibatalkan","selesai"].includes(String(x.status||"").toLowerCase()));box.innerHTML=active.length?active.map(renderOffer).join(""):'<div class="muted">Belum ada penawaran.</div>';attachModalListeners();updateTimers();}catch(err){box.innerHTML='<div class="err">'+esc(err.message)+'</div>';}
+}
+function attachModalListeners(){document.querySelectorAll('.modal-input').forEach(inp=>{inp.addEventListener('input', e=>{const card=e.target.closest('[data-order-id]');if(!card)return;calcModalTotal(card);});});}
+function calcModalTotal(card){const id=card.dataset.orderId;let total=0;card.querySelectorAll('.modal-input').forEach(inp=>{const qty=Number(inp.dataset.qty||1);const modal=Number(inp.value||0);total+=modal*qty;});const el=card.querySelector(`#modalTotal-${id}`);if(el)el.textContent=rupiah(total);return total;}
+async function handleOfferAction(id,action,card){
+  const msg=card.querySelector(".offer-message"), btns=card.querySelectorAll("button[data-action]");btns.forEach(b=>b.disabled=true);msg.className="meta";msg.textContent="Memproses…";
+  try{
+    const modalInputs=[...card.querySelectorAll('.modal-input')];
+    let mitraHargaItems=[];let modalTotal=0;let valid=true;
+    if(action==="accept"){
+      if(modalInputs.length===0)valid=false;
+      modalInputs.forEach((inp,i)=>{
+        const qty=Number(inp.dataset.qty||1);const nama=inp.dataset.nama||('Produk '+(i+1));const modal=Number(inp.value);
+        if(!Number.isFinite(modal)||modal<=0){valid=false;inp.classList.add('err-input');}else{inp.classList.remove('err-input');modalTotal+=modal*qty;mitraHargaItems.push({nama,qty,hargaModal:modal,subtotalModal:modal*qty});}
+      });
+      if(!valid)throw Error("Isi semua Harga Mitra (harus >0) sebelum terima.");
+    }
+    const catatanEl=card.querySelector('.catatanModal');const catatan=catatanEl?catatanEl.value.trim():'';
+    const ref=doc(db,"orders",id);
+    await runTransaction(db,async tx=>{
+      const snap=await tx.get(ref);if(!snap.exists())throw Error("Pesanan tidak ditemukan");const x=snap.data();if(x.mitraUsahaUid && x.mitraUsahaUid!==userNow.uid && x.acceptedByMitraUid)throw Error("Sudah diambil mitra lain");
+      if(action==="accept"){
+        tx.update(ref,{status:"diterima_mitra",statusPemenuhan:"diterima_mitra",acceptedByMitraUid:userNow.uid,mitraUsahaUid:userNow.uid,mitraUid:userNow.uid,mitraNama:profile?.namaUsaha||profile?.nama||"",mitraHargaItems,mitraModalTotal:modalTotal,modalTotal,mitraCatatanModal:catatan,mitraAcceptedAt:serverTimestamp(),updatedAt:serverTimestamp()});
+      }else{tx.update(ref,{mitraDitolakUid:userNow.uid,mitraCandidatesTried:arrayUnion(userNow.uid),updatedAt:serverTimestamp()});}
+    });
+    msg.className="ok";msg.textContent=action==="accept"?`Diterima! Total harga mitra ${rupiah(modalTotal)} tersimpan.`:"Ditolak.";await loadOffers();await loadRecords();
+  }catch(err){msg.className="err";msg.textContent=err.message;btns.forEach(b=>b.disabled=false);}
+}
+$("offerRecords")?.addEventListener("click",e=>{const b=e.target.closest("button[data-action]");if(!b)return;const card=b.closest("[data-offer-id]");if(card)handleOfferAction(b.dataset.id,b.dataset.action,card);});
+function updateTimers(){document.querySelectorAll(".offer-countdown[data-start]").forEach(el=>{const n=Number(el.dataset.start);if(n){const left=n+15*60*1000-Date.now();el.textContent=left>0?fmtLeft(left):"Terlambat";}else el.textContent="-";});}
+function renderOrderRecord(x){
+  const status=String(x.status||"").replace(/_/g," ");
+  const no=esc(x.nomorPesanan||("Pesanan "+x.id));
+  const items=getOrderItems(x);
+  const mitraTotal = x.mitraModalTotal || x.mitraHargaTotal || x.modalTotal || x.mitraTotal || 0;
+  const hargaInfo = mitraTotal ? `<div class="meta" style="color:#087443;font-weight:800;font-size:12px">Harga Mitra tersimpan: ${rupiah(mitraTotal)}</div>` : `<div class="meta" style="font-size:11px">Harga Mitra belum ada</div>`;
+  const shortId = esc(x.id).slice(0,16);
+  // Produk disembunyikan dulu - hanya tampil setelah klik
+  const products = items.length ? `<div class="products-box hidden" data-detail-box="${esc(x.id)}" style="margin-top:8px;border-top:1px dashed #e5e7eb;padding-top:8px">${items.map(it=>`<div class="product-row" style="grid-template-columns:1fr 60px"><div class="product-name">${esc(it.name)}</div><span class="product-qty">x ${it.qty}</span></div>`).join("")}<div style="margin-top:6px">${hargaInfo}</div></div>` : '';
+  return `<article class="item order-collapse" data-id="${esc(x.id)}" style="cursor:pointer">
+    <div class="itemtop"><strong style="font-size:13px">${no}</strong><span class="status">${esc(status)}</span></div>
+    <div class="meta">ID: ${shortId}...</div>
+    ${hargaInfo}
+    <div class="meta" style="margin-top:6px;font-size:10px;color:#888">👁️ Klik untuk lihat produk lengkap</div>
+    ${products}
+  </article>`;
+}
+async function loadRecords(){
+  const box=$("records");box.innerHTML='<div class="muted">Memuat…</div>';
+  const filter=($("filter")?.value||"").trim().toLowerCase();
+  try{
+    const {orders}=await fetchAssignedOrders();
+    const docs=orders.filter(x=>!filter||String(x.nomorPesanan||"").toLowerCase().includes(filter)).sort((a,b)=>(asDate(b.createdAt)?.getTime()||0)-(asDate(a.createdAt)?.getTime()||0));
+    box.innerHTML=docs.length?docs.map(renderOrderRecord).join(""):'<div class="muted">Tidak ada.</div>';
+    // Pasang klik untuk buka tutup produk - sembunyikan dulu nama produk, hanya tampil Harga Mitra tersimpan
+    box.querySelectorAll('.order-collapse').forEach(card=>{
+      card.addEventListener('click', (e)=>{
+        const detail = card.querySelector('[data-detail-box]');
+        if(detail){
+          detail.classList.toggle('hidden');
+          const hint = card.querySelector('.meta:last-of-type');
+        }
+      });
+    });
+  }catch(err){box.innerHTML='<div class="err">'+esc(err.message)+'</div>';}
+}
+$("reloadBtn")?.addEventListener("click",()=>{loadOffers();loadRecords();});$("filter")?.addEventListener("input",()=>{if(userNow)loadRecords();});setInterval(updateTimers,1000);
+
+// AUTO REFRESH pas balik
+window.addEventListener('pageshow', (e)=>{ if(e.persisted) location.reload(); });
+</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
