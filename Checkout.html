@@ -107,7 +107,11 @@ label{font-weight:700;font-size:13px}
 <label>Catatan pesanan (opsional)</label><textarea id="catatan" placeholder="Catatan untuk penjual"></textarea>
 <label>Metode pembayaran</label><select id="metode" required><option value="QRIS">QRIS</option><option value="COD">COD (Bayar di Tempat)</option></select>
 <div id="qrisBox" class="payment-box"><b>Pembayaran QRIS</b><p class="muted">Scan kode QRIS di bawah untuk melakukan pembayaran.</p><img src="qris2.jpg" alt="Kode QRIS pembayaran" onerror="this.style.display='none';document.getElementById('qrisError').hidden=false"><p id="qrisError" class="muted err" hidden>File qris2.jpg belum ditemukan.</p></div>
-<div id="codBox" class="payment-box" hidden><b>COD — Bayar di Tempat</b><p class="muted">Pembayaran dilakukan saat pesanan diterima.</p></div>
+<div id="codBox" class="payment-box" hidden>
+<b>COD — Bayar di Tempat</b>
+<p class="muted">Pembayaran dilakukan saat pesanan diterima. Kurir harus punya saldo mencukupi untuk talangin dulu.</p>
+<div id="codSaldoInfo" class="note" style="display:none;margin-top:10px;"></div>
+</div>
 <button id="submit" class="btn full" type="submit">Buat Pesanan</button>
 </form>
 </div>
@@ -190,10 +194,117 @@ function showCart(){
   }
   // FIX BUG: GrandTotal harus Total Belanja + Ongkir
   $('grandTotal').textContent=rupiah(total()+ongkir);
-  updatePaymentView();
+  // Jika COD sedang dipilih, cek ulang saldo kurir karena total berubah
+  if($('metode').value==='COD'){
+    codCheckDone = false;
+    handleMetodeChange();
+  } else {
+    updatePaymentView();
+  }
   return true
 }
-function updatePaymentView(){const qris=$('metode').value==='QRIS';$('qrisBox').hidden=!qris;$('codBox').hidden=qris;} 
+
+// ===== LOGIC COD: CEK KURIR DENGAN SALDO MENCUKUPI =====
+let kurirCODReady = [];
+let codCheckDone = false;
+let codCheckLoading = false;
+
+async function cekKurirUntukCOD(totalDibutuhkan){
+  if(codCheckLoading) return kurirCODReady;
+  codCheckLoading = true;
+  const infoEl = document.getElementById('codSaldoInfo');
+  if(infoEl){
+    infoEl.innerHTML = `🔍 Mencari kurir dengan saldo ≥ ${rupiah(totalDibutuhkan)}...`;
+    infoEl.style.display = 'block';
+  }
+  try{
+    // Query kurir aktif
+    const qKurir = query(collection(db,'users'), where('role','==','kurir'));
+    const snap = await getDocs(qKurir);
+    let list = [];
+    snap.forEach(d=>{
+      const u = d.data();
+      // cek aktif
+      const isAktif = (u.status==='aktif' || u.aktif===true);
+      if(!isAktif) return;
+      const saldo = Number(u.saldo||u.saldoEwallet||0);
+      if(saldo >= totalDibutuhkan){
+        list.push({uid:d.id, nama:u.nama||u.namaLengkap||'Kurir', saldo:saldo, telepon:u.telepon||''});
+      }
+    });
+    // Urutkan saldo terbesar dulu
+    list.sort((a,b)=> b.saldo - a.saldo);
+    kurirCODReady = list;
+    codCheckDone = true;
+    
+    if(infoEl){
+      if(list.length>0){
+        infoEl.innerHTML = `✅ Ada <b>${list.length} kurir</b> dengan saldo mencukupi (≥ ${rupiah(totalDibutuhkan)}).<br>
+        Kurir teratas: ${esc(list[0].nama)} - saldo ${rupiah(list[0].saldo)}<br>
+        <span style="font-size:10px;color:#666;">Sistem akan broadcast ke kurir saat pesanan dibuat.</span>`;
+        infoEl.className = 'note ok';
+        infoEl.style.display = 'block';
+      }else{
+        infoEl.innerHTML = `❌ <b>COD tidak tersedia</b>: Tidak ada kurir dengan saldo mencukupi ${rupiah(totalDibutuhkan)}.<br>
+        Minimal saldo kurir harus ≥ total bayar.<br>
+        Silakan pilih <b>QRIS</b> atau hubungi admin untuk top-up saldo kurir.`;
+        infoEl.className = 'note err';
+        infoEl.style.display = 'block';
+      }
+    }
+    return list;
+  }catch(e){
+    console.error('Cek kurir COD error:', e);
+    if(infoEl){
+      infoEl.innerHTML = `⚠️ Gagal cek saldo kurir: ${esc(e.message)}. Coba lagi atau pilih QRIS.`;
+      infoEl.className = 'note err';
+    }
+    return [];
+  }finally{
+    codCheckLoading = false;
+  }
+}
+
+async function handleMetodeChange(){
+  const metode = $('metode').value;
+  const isCOD = metode==='COD';
+  $('qrisBox').hidden = !($('metode').value==='QRIS');
+  $('codBox').hidden = !isCOD;
+  
+  const btnSubmit = $('submit');
+  const codInfoEl = document.getElementById('codSaldoInfo');
+  
+  if(isCOD){
+    const totalButuh = total() + shipping();
+    if(totalButuh<=0){
+      if(codInfoEl){
+        codInfoEl.innerHTML = 'Keranjang kosong, tidak bisa COD.';
+        codInfoEl.className = 'note err';
+        codInfoEl.style.display='block';
+      }
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = 'COD Tidak Tersedia';
+      return;
+    }
+    btnSubmit.disabled = true;
+    btnSubmit.textContent = 'Mengecek saldo kurir...';
+    const kurirList = await cekKurirUntukCOD(totalButuh);
+    if(kurirList.length>0){
+      btnSubmit.disabled = false;
+      btnSubmit.textContent = 'Buat Pesanan COD';
+    }else{
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = 'COD Tidak Tersedia - Tidak Ada Kurir';
+    }
+  }else{
+    // QRIS
+    if(codInfoEl) codInfoEl.style.display='none';
+    btnSubmit.disabled = false;
+    btnSubmit.textContent = 'Buat Pesanan';
+  }
+}
+
+function updatePaymentView(){ handleMetodeChange(); }
 $('metode').addEventListener('change',updatePaymentView);updatePaymentView();
 
 function showCartGPS(){
@@ -320,6 +431,20 @@ $('form').addEventListener('submit',async e=>{
     const nomor='ORD-'+Date.now().toString(36).toUpperCase();
     const items=cart.map(x=>({produkId:String(x.id??''),nama:String(x.name??''),kode:String(x.kode??''),supplier:String(x.supplier??''),qty:Math.max(1,Number(x.qty)||1),harga:parsePrice(x.price),subtotal:parsePrice(x.price)*Math.max(1,Number(x.qty)||1),sourceSpreadsheet:'MEMBER'}));
     const ongkirFinal = shipping();
+    const totalFinal = total() + ongkirFinal;
+    // VALIDASI COD: harus ada kurir dengan saldo cukup
+    if($('metode').value==='COD'){
+      if(!codCheckDone || kurirCODReady.length===0){
+        // cek ulang sekali lagi
+        const cekUlang = await cekKurirUntukCOD(totalFinal);
+        if(cekUlang.length===0){
+          note('msg',`COD tidak bisa diproses: Tidak ada kurir dengan saldo ≥ ${rupiah(totalFinal)}. Silakan pilih QRIS.`,'err');
+          button.disabled=false;button.textContent='Buat Pesanan';
+          return;
+        }
+        kurirCODReady = cekUlang;
+      }
+    }
     await addDoc(collection(db,'orders'),{
       uid:user.uid,ownerUid:user.uid,pelangganUid:user.uid,ownerName:address.nama,email:user.email||'',
       nomorPesanan:nomor,items,subtotal:total(),ongkir:ongkirFinal,ongkirDitagihkanKePelanggan:0,jarakKm:checkoutData.jarakKm??null,
@@ -330,7 +455,10 @@ $('form').addEventListener('submit',async e=>{
       alamatPengiriman:address,alamat:address.alamat,telepon:address.telepon,noWA:address.telepon,
       catatan:$('catatan').value.trim(),status:'menunggu',statusPemenuhan:'pending_mitra',statusPembayaran:'menunggu_verifikasi',
       slaStatus:'berjalan',slaDurasiMenit:60,slaDeadlineAt:new Date(Date.now()+60*60*1000),
-      kurirUid:'',mitraUsahaUid:'',mitraCandidatesTried:[],mitraCandidateUids:[],
+      kurirUid: ($('metode').value==='COD' && kurirCODReady.length>0) ? kurirCODReady[0].uid : '',
+      kurirCandidateUids: ($('metode').value==='COD') ? kurirCODReady.map(k=>k.uid) : [],
+      kurirCODSaldoRequired: ($('metode').value==='COD') ? totalFinal : 0,
+      mitraUsahaUid:'',mitraCandidatesTried:[],mitraCandidateUids:[],
       createdAt:serverTimestamp(),updatedAt:serverTimestamp()
     });
     localStorage.setItem('tsa_cart','[]');
