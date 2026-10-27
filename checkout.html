@@ -133,7 +133,7 @@ const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,
 const rupiah=n=>'Rp '+(Number(n)||0).toLocaleString('id-ID');
 function parsePrice(v){if(typeof v==='number')return v;let s=String(v??'').replace(/Rp/gi,'').replace(/\s/g,'').replace(/[^0-9,.-]/g,'');if(s.includes('.')&&s.includes(','))s=s.replace(/\./g,'').replace(',','.');else if(s.includes('.')&&(s.split('.').length>2||s.split('.')[1]?.length===3))s=s.replace(/\./g,'');else if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');const n=Number(s);return Number.isFinite(n)?n:0;}
 function note(id,msg,type='info'){const el=$(id);if(el)el.innerHTML=`<div class="note ${type}">${esc(msg)}</div>`}
-function cartRead(){try{return JSON.parse(localStorage.getItem('tsa_cart')||'[]').filter(x=>x&&x.name&&Number(x.qty)>0)}catch{return []}}
+function cartRead(){try{let raw=localStorage.getItem('tsa_cart')||localStorage.getItem('cart')||'[]'; let arr=JSON.parse(raw); return arr.filter(x=>x&&x.name&&Number(x.qty)>0)}catch{return []}}
 
 // ===== RUMUS ONGKIR FINAL v2 - 0-3 = 5.000 =====
 function hitungJarakKm(lat1,lng1,lat2,lng2){
@@ -292,53 +292,6 @@ async function hitungUlangJarakJikaPerlu(){
   }catch(e){
     console.error('Gagal hitung ulang jarak mitra:', e);
   }
-}
-
-
-function hitungJarakKm(lat1,lng1,lat2,lng2){
-  if(!lat1||!lng1||!lat2||!lng2) return null;
-  const R=6371;
-  const dLat=(lat2-lat1)*Math.PI/180;
-  const dLng=(lng2-lng1)*Math.PI/180;
-  const a=Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
-  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
-function hitungOngkirFinal(jarakKm){
-  if(jarakKm==null || jarakKm<0.05) return 0;
-  if(jarakKm <= 3) return 5000;
-  if(jarakKm <= 7) return 10000;
-  if(jarakKm <= 12) return 15000;
-  if(jarakKm <= 18) return 20000;
-  if(jarakKm <= 24) return 30000;
-  if(jarakKm <= 30) return 35000;
-  return 35000 + Math.ceil(jarakKm - 30) * 1000;
-}
-async function cariMitraTerdekat(pLat,pLng,db,collection,query,where,getDocs){
-  try{
-    const q1 = query(collection(db,'users'), where('role','in',['mitra_usaha','mitra','toko','mitra usaha']));
-    const snap1 = await getDocs(q1);
-    let allMitra=[];
-    snap1.forEach(d=>{ allMitra.push({id:d.id, ...d.data()}); });
-    if(allMitra.length===0){
-      const snapAll = await getDocs(collection(db,'users'));
-      snapAll.forEach(d=>{
-        const u=d.data();
-        if((u.role||'').toLowerCase().includes('mitra')) allMitra.push({id:d.id, ...u});
-      });
-    }
-    let terdekat=null; let jarakMin=Infinity;
-    for(let m of allMitra){
-      let mLat = m.tokoLat || m.toko_lat || m.lat || m.latitude || m.latToko || m.alamatToko?.lat || m.alamatPengiriman?.lat || m.lokasi?.lat;
-      let mLng = m.tokoLng || m.toko_lng || m.lng || m.longitude || m.lngToko || m.alamatToko?.lng || m.alamatPengiriman?.lng || m.lokasi?.lng;
-      if(!mLat || !mLng) continue;
-      let jarak = hitungJarakKm(parseFloat(mLat), parseFloat(mLng), parseFloat(pLat), parseFloat(pLng));
-      if(jarak!=null && jarak < jarakMin){
-        jarakMin=jarak;
-        terdekat={uid:m.id, nama:m.nama||m.namaToko||'Mitra', lat:parseFloat(mLat), lng:parseFloat(mLng), alamat:m.alamatToko||m.alamat||'', jarak:jarak};
-      }
-    }
-    return terdekat;
-  }catch(e){ console.error(e); return null; }
 }
 
 function shipping(){
