@@ -168,11 +168,12 @@ if(!checkoutData.ongkir){ try{ const v=localStorage.getItem('tsa_ongkir')||local
 if(!checkoutData.jarakKm){ try{ const v=localStorage.getItem('tsa_jarak')||localStorage.getItem('jarak_km')||localStorage.getItem('tsa_jarak_km'); if(v) checkoutData.jarakKm = parseFloat(v)||null; }catch(e){} }
 
 function shipping(){
-  // Jika ongkir dari keranjang ada, pakai itu (patokan benar)
+  // 1. Jika ongkir dari keranjang ada (24.2km=35k yang benar), pakai itu
   if(checkoutData.ongkir) return Math.max(0,parsePrice(checkoutData.ongkir));
-  // Fallback: hitung dari jarak pakai rumus v2 (0-3=5k)
+  // 2. Jika ada jarak, hitung pakai rumus 0-3=5k
   if(checkoutData.jarakKm!=null) return hitungOngkirFinal(checkoutData.jarakKm);
-  return 0;
+  // 3. Default kalau belum ada GPS sama sekali = 5k (0-3km) sesuai request kamu
+  return 5000;
 }
 function jarakKm(){ return checkoutData.jarakKm!=null ? checkoutData.jarakKm : null; }
 
@@ -183,7 +184,7 @@ function showCart(){
   $('total').textContent=rupiah(total());
   const ongkir = shipping();
   const jarak = jarakKm();
-  $('shipping').textContent= ongkir ? rupiah(ongkir) : 'Rp 5.000 (estimasi 0-3km)';
+  $('shipping').textContent= rupiah(ongkir||5000);
   // DETAIL TAMPILAN BARU
   const detailEl = $('ongkirDetail');
   if(jarak!=null){
