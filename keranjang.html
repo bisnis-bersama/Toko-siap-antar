@@ -1,569 +1,281 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Keranjang Belanja</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
+<!doctype html>
+<html lang="id">
+<head><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1, viewport-fit=cover">
+<title>Keranjang - Toko Siap Antar</title>
 <style>
-
-body{
-font-family:Arial;
-margin:0;
-background:#f2f2f2;
-padding-bottom:170px;
+:root{
+  --green:#00a85a;--green2:#00c8a0;--cyan:#00c8d7;--lime:#a9d900;
+  --yellow:#ffd400;--yellow2:#ffcc00;
+  --ink:#18312b;--muted:#6a7a72;--line:#e3ece6;--bg:#f4fff7;--card:#ffffff;
+  --radius:16px;--radius-sm:12px;
 }
-
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.5 system-ui,Arial,sans-serif;padding-bottom:90px}
 header{
-background:#15803d;
-color:white;
-padding:15px;
-text-align:center;
-font-weight:bold;
+  position:sticky;top:0;z-index:20;
+  background:linear-gradient(100deg,var(--green) 0%,var(--green2) 45%,var(--cyan) 75%,var(--lime) 100%);
+  color:#fff;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;
+  box-shadow:0 4px 14px rgba(0,90,45,.18)
 }
-
+header a{color:#fff;text-decoration:none;font-weight:700;background:rgba(255,255,255,.22);padding:6px 12px;border-radius:999px;font-size:12px;border:1px solid rgba(255,255,255,.3)}
+.wrap{max-width:720px;margin:0 auto;padding:10px 10px 0}
 .card{
-background:white;
-margin:10px;
-padding:12px;
-border-radius:10px;
-box-shadow:0 2px 6px rgba(0,0,0,0.1);
+  background:var(--card);border-radius:var(--radius);padding:12px 12px;
+  box-shadow:0 2px 10px rgba(24,49,43,.06);border:1px solid var(--line);margin-bottom:10px
 }
-
-.harga{
-color:#15803d;
-font-weight:bold;
+.card-sm{padding:10px 12px}
+.h{font-weight:900;font-size:14px;margin:0 0 8px;display:flex;align-items:center;gap:6px}
+.muted{color:var(--muted);font-size:11px}
+.prod{
+  display:grid;grid-template-columns:64px 1fr auto;gap:10px;align-items:start;
+  padding:10px 0;border-bottom:1px solid #eef3ef
 }
-
-button{
-padding:6px 12px;
-border:none;
-border-radius:6px;
-margin:3px;
-cursor:pointer;
+.prod:last-child{border:0}
+.thumb{width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,#eafff3,#fffbe6);display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid #e6f0e8}
+.thumb img{width:100%;height:100%;object-fit:contain}
+.pname{font-weight:800;font-size:12.5px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.price{color:var(--green);font-weight:900;font-size:12px}
+.sub{font-size:11px;color:var(--muted);margin-top:2px}
+.qty-row{display:flex;align-items:center;gap:6px;margin-top:6px}
+.qbtn{
+  width:26px;height:26px;border-radius:999px;border:1px solid #cfe8d6;background:#f3fff7;color:#0a7a45;
+  font-weight:900;font-size:14px;line-height:1;cursor:pointer
 }
-
-.green{
-background:#15803d;
-color:white;
+.qnum{font-size:12px;font-weight:800;min-width:18px;text-align:center}
+.btn-del{
+  background:#fff1f1;color:#c23;font-size:10px;padding:5px 8px;border-radius:999px;cursor:pointer;
+  border:1px solid #ffd2d2
 }
-
-.gray{
-background:#9ca3af;
-color:white;
+.tot{font-size:12px}
+.tot b{font-size:12px}
+.tot .big{font-size:15px;color:var(--green)}
+.div{height:1px;background:var(--line);margin:8px 0}
+.actions{
+  display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px
 }
-
-#map{
-height:260px;
-margin:10px;
-border-radius:10px;
+.btn{
+  border:0;border-radius:999px;padding:9px 16px;font-weight:800;font-size:12px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;white-space:nowrap;width:auto;
 }
-
-input{
-width:95%;
-margin:10px;
-padding:10px;
-border-radius:8px;
-border:1px solid #ccc;
+.btn-primary{
+  background:linear-gradient(90deg,var(--yellow),var(--yellow2));color:#222;
+  box-shadow:0 2px 8px rgba(255,212,0,.35)
 }
-
-.checkout{
-display:block;
-width:95%;
-margin:10px;
-background:linear-gradient(90deg,#16a34a,#f97316);
-color:white;
-padding:14px;
-border-radius:10px;
-border:none;
-font-weight:bold;
-font-size:16px;
-text-align:center;
-box-shadow:0 4px 10px rgba(0,0,0,0.2);
+.btn-green{
+  background:linear-gradient(100deg,var(--green),var(--cyan));color:#fff;
+  box-shadow:0 3px 10px rgba(0,168,90,.25)
 }
-
-.clearBtn{
-display:block;
-width:95%;
-margin:10px;
-background:#f97316;
-color:white;
-padding:14px;
-border-radius:10px;
-border:none;
-font-weight:bold;
-font-size:16px;
-text-align:center;
-box-shadow:0 4px 10px rgba(0,0,0,0.2);
+.btn-ghost{
+  background:#edf5f0;color:#2a4a3a;border:1px solid #cfe8d6
 }
-
+.btn-danger-ghost{
+  background:#fff;color:#c23;border:1px solid #ffd2d2
+}
+.btn-sm{padding:7px 12px;font-size:11px}
+.badge{
+  display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;
+  background:#eafff3;color:var(--green);font-size:10px;font-weight:800;border:1px solid #cfe8d6
+}
+.sticky-bar{
+  position:fixed;left:0;right:0;bottom:0;z-index:25;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(10px);
+  border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(0,0,0,.06);
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+}
+.sticky-inner{max-width:720px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sticky-left{line-height:1.2}
+.sticky-right{display:flex;gap:8px;align-items:center}
 </style>
 </head>
-
 <body>
+<header>
+  <div style="display:flex;align-items:center;gap:8px"><span style="background:#fff;color:var(--green);width:28px;height:28px;border-radius:999px;display:grid;place-items:center;font-weight:900">🛒</span><div><strong>Keranjang Belanja</strong><div style="font-size:10px;opacity:.9">Gradasi Pro • Compact Mode</div></div></div>
+  <a href="./index.html">← Belanja</a>
+</header>
 
-<header>🛒 Keranjang Belanja</header>
+<div class="wrap">
+  <div id="list" class="card">Memuat keranjang...</div>
 
-<div id="cartList"></div>
+  <div id="summary" class="card card-sm">
+    <div class="tot">
+      <div style="display:flex;justify-content:space-between"><span>Total Barang</span><b id="tb">Rp 0</b></div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px"><span>Ongkir <span class="badge" id="jarakBadge">- km</span></span><b id="ok">Rp 0</b></div>
+      <div class="div"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:900">TOTAL BAYAR</span><b class="big" id="total">Rp 0</b></div>
+    </div>
+    <div class="actions" style="margin-top:10px">
+      <button class="btn btn-ghost btn-sm" onclick="location.href='./index.html'">🛍️ Tambah Produk</button>
+      <button class="btn btn-danger-ghost btn-sm" onclick="clearCart()">🗑️ Kosongkan</button>
+      <span class="muted" style="margin-left:auto">Ongkir auto dari GPS</span>
+    </div>
+  </div>
 
-<h3 style="margin-left:10px;">📍 Pilih Lokasi Pengiriman</h3>
-
-<div id="map"></div>
-
-<button class="green" onclick="gunakanLokasi()" style="margin-left:10px;">
-📡 Gunakan Lokasi Saya
-</button>
-
-<div id="infoZona" class="card">
-Belum memilih lokasi
+  <div class="card card-sm">
+    <p class="h">📍 Lokasi Pengiriman</p>
+    <p class="muted" style="margin:0 0 8px">Ambil GPS HP untuk hitung jarak & ongkos kirim. Lokasi disimpan agar mitra bisa buka titik di Google Maps.</p>
+    <div class="actions">
+      <button id="btnLoc" class="btn btn-green btn-sm" onclick="getLoc()">📍 Gunakan Lokasi Saya</button>
+      <a id="gmapsLink" class="btn btn-ghost btn-sm" target="_blank" style="display:none">🗺️ Buka di Maps</a>
+    </div>
+    <div id="locInfo" class="muted" style="margin-top:8px;line-height:1.4"></div>
+  </div>
 </div>
 
-<input type="text" id="namaPembeli" placeholder="Nama Pembeli">
-<input type="tel" id="waPembeli" placeholder="Nomor WhatsApp Aktif">
-<input type="text" id="manualLokasi" 
-placeholder="Alamat lengkap / Link Google Maps (jika lokasi tidak akurat)"
-style="display:none;">.
+<div class="sticky-bar">
+  <div class="sticky-inner">
+    <div class="sticky-left">
+      <div class="muted" style="font-size:10px">Total Bayar</div>
+      <div style="font-weight:900;color:var(--green);font-size:15px" id="stickyTotal">Rp 0</div>
+    </div>
+    <div class="sticky-right">
+      <button class="btn btn-ghost btn-sm" onclick="location.href='./index.html'">+ Produk</button>
+      <button class="btn btn-green" onclick="goCheckout()">Checkout →</button>
+    </div>
+  </div>
+</div>
 
-<button class="checkout" onclick="lanjutBayar()">
-Checkout
-</button>
-
-<button class="clearBtn" onclick="kosongkan()">
-Kosongkan Keranjang
-</button>
 <script>
+const CART_KEY = 'tsa_cart';
+function getCart(){try{return JSON.parse(localStorage.getItem(CART_KEY)||localStorage.getItem('cart')||'[]')}catch(e){return []}}
+function saveCart(c){localStorage.setItem(CART_KEY, JSON.stringify(c)); localStorage.setItem('cart', JSON.stringify(c));}
+function parsePrice(v){if(typeof v==='number') return v; if(!v) return 0; return Number(String(v).replace(/[^0-9]/g,''))||0}
 
-/* ================= DATA ================= */
-
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-const tokoLat = -6.883831;
-const tokoLng = 108.302788;
-
-let tujuanLat = null;
-let tujuanLng = null;
-let ongkir = 0;
-let jarakFix = 0;
-let minimalBelanja = 0;
-
-let namaDesa="-";
-let namaKecamatan="-";
-
-let markerUser=null;
-let markerMotor=null;
-
-/* ================= FORMAT RUPIAH ================= */
-
-function rupiah(a){
-return Math.round(a).toLocaleString("id-ID");
+let userLoc = null;
+const TOKO_LOC = {lat:-6.7320, lng:108.5520};
+function haversine(lat1,lon1,lat2,lon2){
+  const R=6371; const dLat=(lat2-lat1)*Math.PI/180; const dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function calcOngkir(km){
+  if(km<=0) return 10000;
+  return Math.min(35000, Math.round(8000 + km*1500));
 }
 
-/* ================= RENDER CART ================= */
+function render(){
+  const cart=getCart();
+  const list=document.getElementById('list');
+  if(!cart.length){
+    list.innerHTML='<div style="text-align:center;padding:18px"><div style="font-size:32px">🛒</div><b>Keranjang kosong</b><p class="muted">Tambah bibit, buah, sparepart dulu</p><button class="btn btn-primary btn-sm" onclick="location.href=`./index.html`">Belanja Sekarang</button></div>';
+    document.getElementById('tb').textContent='Rp 0';
+    document.getElementById('ok').textContent='Rp 0';
+    document.getElementById('total').textContent='Rp 0';
+    document.getElementById('stickyTotal').textContent='Rp 0';
+    return;
+  }
+  let totalBarang=0;
+  list.innerHTML = cart.map((it,i)=>{
+    const p=parsePrice(it.price||it.harga||it.hargaJual);
+    const sub=p*(it.qty||1);
+    totalBarang+=sub;
+    const img = it.image||it.gambar||'';
+    return `<div class="prod">
+      <div class="thumb">${img?`<img src="${img}" onerror="this.style.display='none'">`:'📦'}</div>
+      <div style="min-width:0">
+        <div class="pname">${it.name||it.nama||'Produk'}</div>
+        <div class="price">Rp ${p.toLocaleString('id-ID')}</div>
+        <div class="qty-row">
+          <button class="qbtn" onclick="chgQty(${i},-1)">-</button>
+          <span class="qnum">${it.qty||1}</span>
+          <button class="qbtn" onclick="chgQty(${i},1)">+</button>
+          <button class="btn-del" onclick="remItem(${i})">Hapus</button>
+        </div>
+        <div class="sub">Subtotal: Rp ${sub.toLocaleString('id-ID')}</div>
+      </div>
+      <div style="text-align:right"><span class="badge">✓ Ready</span></div>
+    </div>`;
+  }).join('');
 
-function renderCart(){
-
-let list=document.getElementById("cartList");
-list.innerHTML="";
-
-let total=0;
-
-cart.forEach((p,i)=>{
-
-let sub=p.harga*p.qty;
-total+=sub;
-
-list.innerHTML+=`
-<div class="card">
-
-<b>${p.nama}</b><br>
-
-<span class="harga">Rp ${rupiah(p.harga)}</span><br>
-
-<button onclick="kurang(${i})">-</button>
-
-${p.qty}
-
-<button onclick="tambah(${i})">+</button>
-
-<button onclick="hapus(${i})">Hapus</button>
-
-<br>
-
-Subtotal : Rp ${rupiah(sub)}
-
-</div>
-`;
-
-});
-
-let totalBayar=total+ongkir;
-
-list.innerHTML+=`
-
-<div class="card">
-
-<b>Total Barang : Rp ${rupiah(total)}</b><br>
-
-<b>Ongkir : Rp ${rupiah(ongkir)}</b>
-
-<hr>
-
-<b style="color:#15803d;font-size:18px">
-
-TOTAL BAYAR : Rp ${rupiah(totalBayar)}
-
-</b>
-
-</div>
-`;
-
+  const ongkir = userLoc ? calcOngkir(userLoc.km) : 21000;
+  const grand = totalBarang + ongkir;
+  document.getElementById('tb').textContent='Rp '+totalBarang.toLocaleString('id-ID');
+  document.getElementById('ok').textContent='Rp '+ongkir.toLocaleString('id-ID');
+  document.getElementById('total').textContent='Rp '+grand.toLocaleString('id-ID');
+  document.getElementById('stickyTotal').textContent='Rp '+grand.toLocaleString('id-ID');
+  document.getElementById('jarakBadge').textContent = userLoc ? userLoc.km.toFixed(1)+' km' : 'estimasi';
+  localStorage.setItem('tsa_last_ongkir', String(ongkir));
+  if(userLoc) localStorage.setItem('tsa_last_km', String(userLoc.km));
 }
-
-/* ================= CART CONTROL ================= */
-
-function tambah(i){
-cart[i].qty++;
-simpan();
+function chgQty(i,d){
+  const c=getCart(); if(!c[i]) return;
+  c[i].qty = Math.max(1, (c[i].qty||1)+d);
+  saveCart(c); render();
 }
-
-function kurang(i){
-cart[i].qty--;
-if(cart[i].qty<=0) cart.splice(i,1);
-simpan();
+function remItem(i){
+  const c=getCart(); c.splice(i,1); saveCart(c); render();
 }
-
-function hapus(i){
-cart.splice(i,1);
-simpan();
+function clearCart(){
+  if(!confirm('Kosongkan keranjang?')) return;
+  saveCart([]); render();
 }
-
-function simpan(){
-localStorage.setItem("cart",JSON.stringify(cart));
-renderCart();
+function goCheckout(){
+  const c=getCart(); if(!c.length){alert('Keranjang kosong'); return;}
+  if(!userLoc){
+    if(!confirm('Lokasi belum diambil, ongkir pakai estimasi Rp 21.000. Lanjut checkout?')) return;
+  }
+  location.href='./checkout.html';
 }
-
-function kosongkan(){
-localStorage.removeItem("cart");
-location.reload();
+function getLoc(){
+  const btn=document.getElementById('btnLoc');
+  const info=document.getElementById('locInfo');
+  if(!navigator.geolocation){ info.textContent='GPS tidak didukung HP ini'; return; }
+  btn.textContent='📡 Mencari GPS...'; btn.disabled=true;
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const lat=pos.coords.latitude, lng=pos.coords.longitude;
+    const km=haversine(lat,lng,TOKO_LOC.lat,TOKO_LOC.lng);
+    const ongkir=calcOngkir(km);
+    userLoc={lat,lng,km,ongkir};
+    info.innerHTML=`Lokasi berhasil disimpan.<br>Koordinat: ${lat.toFixed(6)}, ${lng.toFixed(6)}<br>Jarak garis lurus: ${km.toFixed(1)} km<br>Ongkos kirim: Rp ${ongkir.toLocaleString('id-ID')}<br><span class="muted">Catatan: jarak ini estimasi GPS garis lurus, bukan jarak jalan.</span>`;
+    const link=document.getElementById('gmapsLink');
+    link.href=`https://www.google.com/maps?q=${lat},${lng}`;
+    link.style.display='inline-flex';
+    link.textContent='🗺️ Buka lokasi di Google Maps';
+    localStorage.setItem('tsa_user_lat', String(lat));
+    localStorage.setItem('tsa_user_lng', String(lng));
+    btn.textContent='✅ Lokasi Tersimpan';
+    btn.disabled=false;
+    render();
+  }, err=>{
+    info.textContent='Gagal ambil lokasi: '+err.message+' Aktifkan GPS & izin lokasi browser.';
+    btn.textContent='📍 Coba Lagi'; btn.disabled=false;
+  }, {enableHighAccuracy:true, timeout:15000});
 }
-
-/* ================= CHECKOUT ================= */
-function lanjutBayar(){
-if(cart.length == 0){
-popup("Keranjang masih kosong");
-return;
-}
-let totalBarang = 0;
-
-cart.forEach(p=>{
-totalBarang += p.harga * p.qty;
-});
-
-if(minimalBelanja > 0 && totalBarang < minimalBelanja){
-
-popup(
-"Minimal belanja Rp " + rupiah(minimalBelanja) +
-"<br>Tambah belanja Rp " +
-rupiah(minimalBelanja-totalBarang) + " lagi"
-);
-
-return;
-
-}
-
-let manual = document.getElementById("manualLokasi").value.trim();
-
-if(!tujuanLat && !manual){
-popup("Pilih lokasi atau isi alamat manual");
-return;
-}
-
-let namaPembeli = document.getElementById("namaPembeli").value.trim();
-let noWa = document.getElementById("waPembeli").value.trim();
-
-if(!namaPembeli){
-popup("Isi nama pembeli dulu");
-return;
-}
-
-if(!noWa){
-popup("Isi nomor WhatsApp dulu");
-return;
-}
-
-localStorage.setItem("checkoutData", JSON.stringify({
-lat: tujuanLat,
-lng: tujuanLng,
-alamatManual: manual,
-desa: namaDesa,
-kecamatan: namaKecamatan,
-ongkir: ongkir,
-minimalBelanja: minimalBelanja,
-noWa: noWa,
-namaPembeli: namaPembeli
-}));
-
-window.location.href = "bayar.html";
-
-}
-
-/* ================= MAP ================= */
-
-var map = L.map('map').setView([tokoLat,tokoLng],15);
-
-// PETA NORMAL
-var normalLayer = L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{maxZoom:19}
-).addTo(map);
-
-// SATELIT
-var satelliteLayer = L.tileLayer(
-'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-{maxZoom:19}
-);
-
-// SATELIT + NAMA TEMPAT
-var labelLayer = L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{opacity:0.5}
-);
-
-var satelliteWithLabel = L.layerGroup([
-satelliteLayer,
-labelLayer
-]);
-
-// CONTROL PILIHAN PETA
-L.control.layers({
-"Peta Normal": normalLayer,
-"Satelit": satelliteLayer,
-"Satelit + Nama": satelliteWithLabel
-}).addTo(map);
-
-map.on('click',function(e){
-
-setLokasi(e.latlng.lat,e.latlng.lng);
-
-});
-
-/* ================= GPS ================= */
-
-function gunakanLokasi(){
-
-popup("📡 Mencari lokasi Anda...");
-
-if(!navigator.geolocation){
-popup("HP tidak mendukung GPS");
-return;
-}
-
-navigator.geolocation.getCurrentPosition(
-
-function(pos){
-
-let lat = pos.coords.latitude;
-let lng = pos.coords.longitude;
-let akurasi = pos.coords.accuracy;
-
-// hapus popup loading
-document.querySelectorAll("body > div").forEach(el=>{
-if(el.style.zIndex=="9999") el.remove();
-});
-
-// 🔥 CEK AKURASI GPS
-if(akurasi > 100){
-
-document.getElementById("manualLokasi").style.display = "block";
-
-popup(
-"⚠️ Lokasi kurang akurat ("+Math.round(akurasi)+" meter)<br><br>" +
-"Silakan isi alamat manual atau klik peta"
-);
-
-}
-
-// tetap tampilkan titik biar user lihat posisi
-setLokasi(lat, lng);
-
-},
-
-function(error){
-
-// hapus popup loading
-document.querySelectorAll("body > div").forEach(el=>{
-if(el.style.zIndex=="9999") el.remove();
-});
-
-popup("❌ Tidak bisa mendapatkan lokasi. Aktifkan GPS.");
-
-},
-
-{
-enableHighAccuracy:true,
-timeout:10000,
-maximumAge:0
-}
-
-);
-
-}
-
-/* ================= SET LOKASI ================= */
-
-function setLokasi(lat,lng){
-
-tujuanLat=lat;
-tujuanLng=lng;
-
-if(markerUser) map.removeLayer(markerUser);
-
-markerUser=L.marker([lat,lng]).addTo(map);
-
-map.setView([lat,lng],17);
-
-fetch(
-`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
-)
-.then(res=>res.json())
-.then(data=>{
-
-namaDesa = data.address?.village || "-";
-
-namaKecamatan =
-data.address?.subdistrict ||
-data.address?.city_district ||
-data.address?.town ||
-"-";
-hitungOngkir();
-
-});
-
-}
-
-/* ================= HITUNG ONGKIR BARU ================= */
-
-function hitungOngkir(){
-
-jarakFix = map.distance([tokoLat,tokoLng],[tujuanLat,tujuanLng]) / 1000;
-
-/* ONGKIR MAX 20RB */
-
-if(jarakFix <= 10){
-
-ongkir = 5000;
-minimalBelanja = 150000;
-
-}
-
-else if(jarakFix <= 20){
-
-ongkir = 10000;
-minimalBelanja = 200000;
-
-}
-
-else if(jarakFix <= 30){
-
-ongkir = 15000;
-minimalBelanja = 300000;
-
-}
-
-else{
-
-ongkir = 20000;
-minimalBelanja = 400000;
-
-}
-
-let totalBarang=0;
-
-cart.forEach(p=>{
-
-totalBarang += p.harga * p.qty;
-
-});
-
-let kurang = minimalBelanja - totalBarang;
-
-let infoTambah="";
-
-if(minimalBelanja>0 && totalBarang<minimalBelanja){
-
-infoTambah =
-"<br><b style='color:red'>Tambah belanja Rp "+
-rupiah(kurang)+" lagi</b>";
-
-}
-
-let estimasi=Math.ceil(jarakFix*3);
-
-document.getElementById("infoZona").innerHTML=
-
-"Jarak : "+jarakFix.toFixed(1)+" km<br>"+
-"Ongkir : Rp "+rupiah(ongkir)+"<br>"+
-"Minimal Belanja : Rp "+rupiah(minimalBelanja)+
-infoTambah+
-"<br>Estimasi Antar : ±"+estimasi+" menit<br>"+
-"Desa : "+namaDesa+"<br>"+
-"Kecamatan : "+namaKecamatan;
-
-renderCart();
-
-}
-
-/* ================= POPUP ================= */
-
-function popup(pesan){
-
-let box=document.createElement("div");
-box.id="popupBox";
-
-box.style.position="fixed";
-box.style.top="0";
-box.style.left="0";
-box.style.width="100%";
-box.style.height="100%";
-box.style.background="rgba(0,0,0,0.5)";
-box.style.display="flex";
-box.style.alignItems="center";
-box.style.justifyContent="center";
-box.style.zIndex="9999";
-
-box.innerHTML=
-
-`<div style="background:white;padding:20px;border-radius:12px;width:80%;max-width:300px;text-align:center">
-
-<h3 style="color:#15803d;margin-top:0">
-TOKO SIAP ANTAR
-</h3>
-
-<p>${pesan}</p>
-
-<button onclick="this.parentElement.parentElement.remove()"
-style="background:#15803d;color:white;border:none;padding:10px 20px;border-radius:6px">
-OK
-</button>
-
-</div>`;
-
-document.body.appendChild(box);
-
-}
-
-renderCart();
-
-window.onload = function(){
-gunakanLokasi();
-setTimeout(()=>{
-popup("📍 Jika titik tidak tepat, klik peta untuk memilih lokasi manual");
-},2000);
-};
+try{
+  const lat=Number(localStorage.getItem('tsa_user_lat')), lng=Number(localStorage.getItem('tsa_user_lng'));
+  if(lat&&lng){
+    const km=haversine(lat,lng,TOKO_LOC.lat,TOKO_LOC.lng);
+    userLoc={lat,lng,km,ongkir:calcOngkir(km)};
+    const info=document.getElementById('locInfo');
+    info.innerHTML=`Lokasi tersimpan sebelumnya.<br>Koordinat: ${lat.toFixed(6)}, ${lng.toFixed(6)}<br>Jarak: ${km.toFixed(1)} km - Ongkir Rp ${userLoc.ongkir.toLocaleString('id-ID')}`;
+    const link=document.getElementById('gmapsLink');
+    link.href=`https://www.google.com/maps?q=${lat},${lng}`; link.style.display='inline-flex';
+    document.getElementById('btnLoc').textContent='📍 Perbarui Lokasi';
+  }
+}catch(e){}
+render();
 </script>
-
-</body>
+<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
 </html>
