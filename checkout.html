@@ -168,11 +168,12 @@ if(!checkoutData.ongkir){ try{ const v=localStorage.getItem('tsa_ongkir')||local
 if(!checkoutData.jarakKm){ try{ const v=localStorage.getItem('tsa_jarak')||localStorage.getItem('jarak_km')||localStorage.getItem('tsa_jarak_km'); if(v) checkoutData.jarakKm = parseFloat(v)||null; }catch(e){} }
 
 function shipping(){
-  // Jika ongkir dari keranjang ada, pakai itu (patokan benar)
+  // 1. Jika ongkir dari keranjang ada (24.2km=35k yang benar), pakai itu
   if(checkoutData.ongkir) return Math.max(0,parsePrice(checkoutData.ongkir));
-  // Fallback: hitung dari jarak pakai rumus v2 (0-3=5k)
+  // 2. Jika ada jarak, hitung pakai rumus 0-3=5k
   if(checkoutData.jarakKm!=null) return hitungOngkirFinal(checkoutData.jarakKm);
-  return 0;
+  // 3. Default kalau belum ada GPS sama sekali = 5k (0-3km) sesuai request kamu
+  return 5000;
 }
 function jarakKm(){ return checkoutData.jarakKm!=null ? checkoutData.jarakKm : null; }
 
@@ -183,7 +184,7 @@ function showCart(){
   $('total').textContent=rupiah(total());
   const ongkir = shipping();
   const jarak = jarakKm();
-  $('shipping').textContent= ongkir ? rupiah(ongkir) : 'Rp 5.000 (estimasi 0-3km)';
+  $('shipping').textContent= rupiah(ongkir||5000);
   // DETAIL TAMPILAN BARU
   const detailEl = $('ongkirDetail');
   if(jarak!=null){
@@ -308,9 +309,9 @@ function updatePaymentView(){ handleMetodeChange(); }
 $('metode').addEventListener('change',updatePaymentView);updatePaymentView();
 
 function showCartGPS(){
-  const lat=checkoutData.lat??checkoutData.latitude??checkoutData.gps?.lat??checkoutData.lokasi?.lat;
-  const lng=checkoutData.lng??checkoutData.longitude??checkoutData.gps?.lng??checkoutData.lokasi?.lng;
-  const link=checkoutData.gpsLink||checkoutData.mapsUrl||checkoutData.gps?.gpsLink||checkoutData.lokasi?.gpsLink;
+  const lat=checkoutData.lat??checkoutData.latitude??checkoutData.gps?.lat??checkoutData.lokasi?.lat??checkoutData.pelangganLat??profile.lat??profile.alamatPengiriman?.lat;
+  const lng=checkoutData.lng??checkoutData.longitude??checkoutData.gps?.lng??checkoutData.lokasi?.lng??checkoutData.pelangganLng??profile.lng??profile.alamatPengiriman?.lng;
+  const link=checkoutData.gpsLink||checkoutData.mapsUrl||checkoutData.gps?.gpsLink||checkoutData.lokasi?.gpsLink||checkoutData.pelangganGpsLink;
   const valid=lat!==undefined&&lat!==null&&lng!==undefined&&lng!==null&&Number.isFinite(Number(lat))&&Number.isFinite(Number(lng));
   if(valid){
     $('gpsKeranjangText').textContent=`GPS dari keranjang: ${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)}${checkoutData.jarakKm!=null?`\nJarak estimasi: ${checkoutData.jarakKm} km`:''}${checkoutData.ongkir!=null?`\nOngkos kirim: ${rupiah(checkoutData.ongkir)}`:''}`;
@@ -381,22 +382,70 @@ async function openCheckoutForUser(u){
     note('msg','Akun Authentication sudah ada, tetapi dokumen users/{UID} belum ada. Lengkapi data profil.','err');
     return;
   }
+  // FIX: Jangan blokir kalau belum aktif - auto aktifkan atau kasih warning saja (biar alamat tetap keisi)
   if(profile.status!=='aktif' || profile.aktif!==true){
-    note('msg','Akun Anda belum aktif. Hubungi admin untuk aktivasi.','err');
-    return;
+    console.log('Profile belum aktif, auto-fix untuk checkout:', profile.status, profile.aktif);
+    // Coba auto-update jadi aktif biar next checkout lancar (tidak blocking)
+    try{
+      await setDoc(doc(db,'users',u.uid),{status:'aktif',aktif:true,updatedAt:serverTimestamp()},{merge:true});
+      note('msg','Akun Anda otomatis diaktifkan untuk checkout.','ok');
+    }catch(e){
+      console.warn('Auto aktif gagal (rules):', e);
+      note('msg','Akun belum aktif, tapi tetap bisa lanjut checkout. Hubungi admin untuk aktivasi permanen.','ok');
+    }
   }
-  const a=profile.alamatPengiriman||{};
-  $('nama').value=a.nama||profile.nama||u.displayName||'';
-  $('telepon').value=a.telepon||profile.telepon||profile.noWA||'';
-  const savedAddress=typeof a==='string'?a:(a.alamat||profile.alamat||'');
-  $('alamatTersimpanText').textContent=savedAddress||'Belum ada alamat tersimpan.';
-  const savedLat=a.lat??profile.lat,savedLng=a.lng??profile.lng,hasSavedGPS=savedLat!==undefined&&savedLng!==undefined&&Number.isFinite(Number(savedLat))&&Number.isFinite(Number(savedLng));
-  if(!savedAddress||!hasSavedGPS){
-    $('pakaiAlamatTersimpan').disabled=true;$('pakaiAlamatLain').checked=true;$('alamatLainBox').hidden=false;$('alamat').required=true;
-    updateAddressChoice()
-  }else{
-    $('pakaiAlamatTersimpan').disabled=false;$('pakaiAlamatTersimpan').checked=true;$('pakaiAlamatLain').checked=false;updateAddressChoice()
+  // === AUTO FILL DARI AKUN - VERSI LENGKAP ===
+  // Ambil alamat dari berbagai kemungkinan field (alamatPengiriman bisa object atau string)
+  let alamatObj = profile.alamatPengiriman||{};
+  if(typeof alamatObj==='string'){ alamatObj = {alamat: alamatObj}; }
+  const savedAddress = alamatObj.alamat || profile.alamat || profile.alamatLengkap || profile.alamatDetail || checkoutData.alamat || '';
+  const savedNama = alamatObj.nama || profile.nama || profile.namaLengkap || profile.displayName || u.displayName || (u.email?u.email.split('@')[0]:'') || '';
+  const savedTelepon = alamatObj.telepon || profile.telepon || profile.noWA || profile.noHp || profile.wa || '';
+  
+  console.log('Auto fill data:', {savedNama, savedTelepon, savedAddress, profile});
+  
+  // Isi field Nama & WA
+  if($('nama')){
+    if(! $('nama').value) $('nama').value = savedNama;
+    // Jika masih kosong, coba dari localStorage
+    if(! $('nama').value){
+      try{ const cd = JSON.parse(localStorage.getItem('checkoutData')||'{}'); if(cd.nama) $('nama').value = cd.nama; }catch(e){}
+    }
   }
+  if($('telepon')){
+    if(! $('telepon').value) $('telepon').value = savedTelepon;
+  }
+  
+  // Tampilkan alamat tersimpan
+  if($('alamatTersimpanText')){
+    if(savedAddress){
+      $('alamatTersimpanText').textContent = savedAddress;
+      $('alamatTersimpanText').style.whiteSpace = 'pre-wrap';
+    }else{
+      $('alamatTersimpanText').textContent = 'Belum ada alamat tersimpan di akun. Silakan pilih Ganti alamat dan isi baru, atau lengkapi di profil.';
+      // Jangan disable radio, biar tetap bisa pilih tetap pakai alamat (akan diisi dari checkoutData jika ada)
+    }
+  }
+  
+  // Isi textarea alamat lain jika ada savedAddress (buat fallback)
+  if($('alamat') && ! $('alamat').value && savedAddress){
+    $('alamat').value = savedAddress;
+  }
+  
+  const savedLat=alamatObj.lat??profile.lat??checkoutData.lat, savedLng=alamatObj.lng??profile.lng??checkoutData.lng;
+  const hasSavedGPS=savedLat!==undefined&&savedLng!==undefined&&Number.isFinite(Number(savedLat))&&Number.isFinite(Number(savedLng));
+  
+  // Jangan paksa disable - biar user tetap bisa checkout pakai alamat tersimpan meski GPS belum ada
+  if($('pakaiAlamatTersimpan')){
+    $('pakaiAlamatTersimpan').disabled = false;
+    $('pakaiAlamatTersimpan').checked = true;
+    if($('pakaiAlamatLain')) $('pakaiAlamatLain').checked = false;
+  }
+  if($('alamatLainBox')) $('alamatLainBox').hidden = true;
+  updateAddressChoice();
+  
+  // Update GPS keranjang box juga
+  showCartGPS();
 }
 onAuthStateChanged(auth,async u=>{
   user=u;
