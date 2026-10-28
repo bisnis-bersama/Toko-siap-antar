@@ -209,15 +209,23 @@ function convertImage(url) {
   let s = String(url).trim();
   if(!s) return '';
   if(s.startsWith('data:image')) return s;
-  // base64 polos dari Sheet MEMBER (kompres <45KB)
-  if(s.length > 120 && !s.startsWith('http')){
-    let clean = s.replace(/\s/g,'').replace(/^data:image\/[^;]+;base64,[STRIPPED],'');
-    if(/^[A-Za-z0-9+\/=]+$/.test(clean.slice(0,200)) && clean.length>100){
-      return 'data:image/jpeg;base64,'+clean;
-    }
+  let m = s.match(/=IMAGE\s*\(\s*["']([^"']+)["']/i);
+  if(m) s = m[1];
+  s = s.replace(/^["']|["']$/g,'').trim();
+  if(s.length > 100 && !s.startsWith('http')){
+    let clean = s.replace(/\s/g,'');
+    clean = clean.replace(/^data:image\/[^;]+;base64,/, '');
+    if(clean.length>80) return 'data:image/jpeg;base64,'+clean;
   }
-  const id = s.match(/(?:id=|\/d\/)([A-Za-z0-9_-]{15,})/);
-  if (id && /drive\.google\.com/.test(s)) return 'https://drive.google.com/thumbnail?id=' + id[1] + '&sz=w600';
+  let driveId = null;
+  let mm;
+  mm = s.match(/\/d\/([A-Za-z0-9_-]{15,})/);
+  if(mm) driveId = mm[1];
+  mm = s.match(/[?&]id=([A-Za-z0-9_-]{15,})/);
+  if(!driveId && mm) driveId = mm[1];
+  if(!driveId && /^[A-Za-z0-9_-]{25,}$/.test(s)) driveId = s;
+  if(driveId) return 'https://drive.google.com/thumbnail?id=' + driveId + '&sz=w600';
+  if(s.startsWith('http')) return s;
   return s;
 }
 function escapeHtml(value) {
