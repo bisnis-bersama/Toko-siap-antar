@@ -134,6 +134,37 @@ body[data-theme="dark"] .partner-section{background:#0c1b2e!important;border-col
 body[data-theme="dark"] .partner-section h3{color:#00e5ff}
 body[data-theme="dark"] .partner-section p{color:#9eb8d0!important}
 body[data-theme="dark"] .partner-dashboard{background:#102943!important;color:#d9efff!important}
+/* Badge singkatan pemilik di pojok kiri atas grid */
+.product-photo{position:relative;overflow:hidden}
+.mitra-badge{
+  position:absolute;
+  left:6px;
+  top:6px;
+  z-index:2;
+  background:linear-gradient(135deg,#00a85a,#00c8d7);
+  color:#fff;
+  font-weight:800;
+  font-size:9px;
+  line-height:1;
+  padding:5px 7px;
+  border-radius:7px;
+  letter-spacing:.5px;
+  max-width:68%;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  border:1px solid #ffffff40;
+  box-shadow:0 1px 4px rgba(0,0,0,0.15);
+  text-transform:uppercase;
+}
+@media(max-width:520px){
+  .mitra-badge{
+    font-size:8px;
+    padding:4px 6px;
+    left:5px;
+    top:5px;
+  }
+}
 </style>
 </head>
 <body>
