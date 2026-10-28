@@ -330,9 +330,11 @@ fetch(SHEET_URL, {cache:'no-store'})
     const description=c[3]?.v ?? '';
     const price=c[9]?.v ?? '';
     const image=convertImage(c[5]?.v ?? '');
-    return {id:String(index),name:String(name).trim(),description:String(description).trim(),price,image,searchText:(String(name)+' '+String(description)).toLowerCase()};
+    const mitraNama=c[7]?.v ?? ''; // Kolom H
+    const singkatan=getSingkatan(mitraNama); // AC/FC
+    return {id:String(index),name:String(name).trim(),description:String(description).trim(),price,image,mitraNama:String(mitraNama).trim(),singkatan,searchText:(String(name)+' '+String(description)+' '+String(mitraNama)).toLowerCase()};
   }).filter(p=>p.name);
-  if(!allProducts.length)throw new Error('Tidak ada produk pada tab spreadsheet yang dipilih.');
+if(!allProducts.length)throw new Error('Tidak ada produk pada tab spreadsheet yang dipilih.');
   renderProducts();
 })
 .catch(err=>{
