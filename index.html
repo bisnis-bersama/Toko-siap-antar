@@ -276,7 +276,7 @@ function renderProducts() {
   }
   productsEl.innerHTML = filtered.map(p => `
     <article class="product" data-product-id="${escapeHtml(p.id)}">
-      <div class="product-photo">${p.image ? `<img loading="lazy" src="${p.image.startsWith('data:') ? p.image : escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" onerror="this.onerror=null;this.src='https://via.placeholder.com/300x200?text=No+Image'">` : '<span>📦</span>'}</div>
+      <div class="product-photo">${p.singkatan ? `<div class="mitra-badge" title="${escapeHtml(p.mitraNama)}">${escapeHtml(p.singkatan)}</div>` : ''}${p.image ? `<img loading="lazy" src="${p.image.startsWith('data:') ? p.image : escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" onerror="this.onerror=null;this.src='https://via.placeholder.com/300x200?text=No+Image'">` : '<span>📦</span>'}</div>
       <div class="product-info">
         <div class="product-name">${escapeHtml(p.name)}</div>
         <div class="product-desc">${escapeHtml(p.description || 'Pesanan Anda siap kami antar ke rumah dalam waktu sekitar ±1 jam setelah pembayaran dikonfirmasi.')}</div>
