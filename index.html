@@ -316,10 +316,10 @@ fetch(SHEET_URL, {cache:'no-store'})
   if(!rows)throw new Error('Tab spreadsheet tidak memiliki data yang bisa dibaca.');
   allProducts=rows.map((row,index)=>{
     const c=row.c||[];
-    const name=c[1]?.v ?? c[0]?.v ?? '';
-    const description=c[2]?.v ?? '';
-    const price=c[3]?.v ?? '';
-    const image=convertImage(c[4]?.v ?? '');
+    const name=c[2]?.v ?? c[0]?.v ?? '';
+    const description=c[3]?.v ?? '';
+    const price=c[4]?.v ?? '';
+    const image=convertImage(c[5]?.v ?? '');
     return {id:String(index),name:String(name).trim(),description:String(description).trim(),price,image,searchText:(String(name)+' '+String(description)).toLowerCase()};
   }).filter(p=>p.name);
   if(!allProducts.length)throw new Error('Tidak ada produk pada tab spreadsheet yang dipilih.');
