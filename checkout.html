@@ -147,18 +147,38 @@ main{max-width:840px;margin:auto;padding:12px}
   </div>
 
   <div id="payTransferDetail" class="dropdown">
-    <b>Rekening Admin:</b><br>
-    BCA 1234567890 a.n. Toko Siap Antar<br>
-    BRI 0987654321 a.n. Toko Siap Antar<br>
-    <div class="muted" style="margin-top:6px">Upload bukti transfer di halaman Pesanan setelah buat pesanan. Admin akan cek mutasi rekening terlebih dahulu sebelum setujui.</div>
+    <b>💳 Rekening Admin - a.n. YUDI ALIYUDIN</b><br><br>
+    <div style="background:#f0f7ff;border:1px solid #c2d8ff;border-radius:10px;padding:10px;margin:6px 0">
+      <b>🏦 Bank BCA</b><br>
+      No. Rekening: <b>4180734771</b><br>
+      Atas Nama: <b>YUDI ALIYUDIN</b><br>
+      <button onclick="navigator.clipboard.writeText('4180734771');alert('No Rek BCA disalin: 4180734771')" style="margin-top:6px;border:1px solid #0b57d0;background:#e8f0fe;color:#0b57d0;border-radius:20px;padding:4px 10px;font-size:11px;cursor:pointer">📋 Salin No Rek</button>
+    </div>
+    <div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:10px;padding:10px;margin:6px 0">
+      <b>🏦 SeaBank</b><br>
+      No. Rekening: <b>901341445605</b><br>
+      Atas Nama: <b>YUDI ALIYUDIN</b><br>
+      <button onclick="navigator.clipboard.writeText('901341445605');alert('No Rek SeaBank disalin: 901341445605')" style="margin-top:6px;border:1px solid #2e7d32;background:#e8f5e9;color:#2e7d32;border-radius:20px;padding:4px 10px;font-size:11px;cursor:pointer">📋 Salin No Rek</button>
+    </div>
+    <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:10px;margin:6px 0">
+      <b>📱 DANA / GoPay</b><br>
+      No. HP: <b>082319264646</b><br>
+      Atas Nama: <b>YUDI ALIYUDIN</b><br>
+      <button onclick="navigator.clipboard.writeText('082319264646');alert('No HP DANA/GoPay disalin: 082319264646')" style="margin-top:6px;border:1px solid #f57f17;background:#fff8e1;color:#e65100;border-radius:20px;padding:4px 10px;font-size:11px;cursor:pointer">📋 Salin No HP</button>
+    </div>
+    <div class="muted" style="margin-top:8px">Upload bukti transfer di halaman Pesanan setelah buat pesanan. Admin akan cek mutasi rekening BCA / SeaBank / DANA / GoPay terlebih dahulu sebelum setujui.</div>
   </div>
   <div id="payQrisDetail" class="dropdown" style="display:none">
-    <b>QRIS Admin:</b><br>
-    <img src="qris-admin.png" alt="QRIS" style="max-width:240px;margin:8px auto;display:block;border:1px solid #eee;border-radius:8px" onerror="this.style.display='none'">
-    <div class="muted">Scan QRIS di atas. Simpan bukti pembayaran.</div>
+    <b>📱 QRIS Admin - a.n. YUDI ALIYUDIN</b><br>
+    <div style="text-align:center;margin:10px 0">
+      <img src="qris.jpg" alt="QRIS YUDI ALIYUDIN" style="max-width:280px;width:100%;border:2px solid #00a85a;border-radius:12px;box-shadow:0 2px 8px #0002" onerror="this.onerror=null;this.src='qris-admin.png';if(this.complete && this.naturalWidth==0){this.style.display='none'; this.nextElementSibling.style.display='block';}">
+      <div style="display:none;background:#fff0ed;border:1px dashed #ff8a80;border-radius:10px;padding:12px;margin:8px 0" class="muted">File qris.jpg belum ada di folder. Upload file qris.jpg ke hosting (sejajar dengan checkout.html)</div>
+      <div class="muted" style="margin-top:8px">Scan QRIS di atas pakai GoPay / DANA / OVO / BCA Mobile / SeaBank</div>
+      <div style="margin-top:8px;font-size:12px">No HP DANA/GoPay: <b>082319264646</b> a.n. YUDI ALIYUDIN</div>
+    </div>
   </div>
   <div id="payCodDetail" class="dropdown" style="display:none">
-    <div class="muted">COD: Kurir akan menagih total bayar saat mengantar. Pastikan alamat dan no HP aktif.</div>
+    <div class="muted">COD: Kurir akan menagih total bayar saat mengantar. Jika Via Expedisi + COD, mitra akan proses COD via expedisi. Pastikan alamat dan no HP aktif.</div>
   </div>
 
   <button id="btnBuatPesanan" class="btn btn-primary" style="width:100%;margin-top:16px;padding:14px;font-size:16px">Buat Pesanan →</button>
