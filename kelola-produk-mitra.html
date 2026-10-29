@@ -21,253 +21,264 @@
   font-family: "Optimistic Mono", ui-monospace, monospace;
 }
 </style><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#00a85a">
-<title>Input Produk Mitra - Batas Pengiriman</title>
+<title>Input Produk Mitra - Spreadsheet Only</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#f4fff7;color:#18312b;font:14px/1.5 system-ui,sans-serif;padding:16px;max-width:720px;margin:auto}
-.card{background:#fff;border:1px solid #dceee5;border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 2px 10px #0001}
-h2{color:#008b4c;margin-bottom:8px}
+body{background:#f4fff7;color:#18312b;font:14px/1.5 system-ui,sans-serif;padding:12px;max-width:720px;margin:auto;padding-bottom:80px}
+.card{background:#fff;border:1px solid #dceee5;border-radius:16px;padding:16px;margin:12px 0}
+h2{color:#008b4c}
 label{font-weight:700;font-size:13px;margin-top:10px;display:block}
-input,textarea,select{width:100%;border:1px solid #cfe5d8;border-radius:10px;padding:11px;margin:6px 0 10px;background:#fff}
+input,textarea,select{width:100%;border:1px solid #cfe5d8;border-radius:10px;padding:11px;margin:6px 0 10px}
 .check-group{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
 .check-card{border:2px solid #e5e7eb;border-radius:12px;padding:10px 12px;display:flex;gap:8px;align-items:center;cursor:pointer;flex:1 1 160px;background:#fafafa}
 .check-card.active{border-color:#00a85a;background:#f0faf4}
 .check-card input{width:auto;margin:0}
-.badge{display:inline-block;font-size:10px;padding:2px 6px;border-radius:999px;background:#e6f7ef;color:#087443;border:1px solid #c3ead7;margin-left:6px}
 .btn{border:0;border-radius:10px;padding:12px 16px;font-weight:800;cursor:pointer}
 .btn-primary{background:linear-gradient(90deg,#00a85a,#00c8d7);color:#fff;width:100%}
 .btn-secondary{background:#f0f0f0;color:#333}
 .muted{color:#66756f;font-size:12px}
 .ok{background:#e5fff0;color:#087b45;border:1px solid #c3ead7;border-radius:10px;padding:10px;margin:8px 0}
 .err{background:#fff0ed;color:#b42318;border:1px solid #f5c6c1;border-radius:10px;padding:10px;margin:8px 0}
-.preview{width:100%;max-width:240px;height:180px;background:#f6f6e8;border-radius:12px;display:grid;place-items:center;overflow:hidden;margin:8px 0}
+.preview{width:100%;max-width:240px;height:180px;background:#f6f6e8;border-radius:12px;display:grid;place-items:center;overflow:hidden;margin:8px 0;position:relative}
 .preview img{width:100%;height:100%;object-fit:contain}
+.badge{position:absolute;bottom:4px;right:4px;background:#0008;color:#fff;font-size:10px;padding:2px 6px;border-radius:999px}
 </style></head><body>
-<h2>📦 Input Produk Mitra + Batas Pengiriman</h2>
-<p class="muted">Ceklis metode yang didukung produk ini. Bisa diubah kapan saja oleh pemilik. Nanti di checkout akan otomatis filter.</p>
+<h2>📦 Input Produk Mitra <span style="font-size:12px;background:#00a85a;color:#fff;padding:2px 8px;border-radius:999px">SPREADSHEET ONLY</span></h2>
+<p class="muted">Produk disimpan ke Google Sheet MEMBER saja, tidak ke Firestore (biar Firebase tidak cepat penuh). Foto auto kompres < 45KB kayak dulu.</p>
 
 <div id="msg"></div>
+<div class="card" style="background:#e8f5e9;border-color:#a5d6a7">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div><b id="mitraLabel">Memuat akun...</b><br><span class="muted" id="mitraUidLabel" style="font-size:11px"></span></div>
+<button id="btnLogout" class="btn btn-secondary" style="width:auto;padding:6px 12px;font-size:12px">Logout</button>
+</div>
+<div class="muted" style="margin-top:6px">Owner auto dari akun login → jadi badge di katalog.</div>
+</div>
 
 <div class="card">
-<label>Nama Produk *</label><input id="nama" placeholder="Contoh: Kerupuk Maja">
-<label>Harga *</label><input id="harga" type="number" inputmode="numeric" placeholder="16500">
+<label>Nama Produk *</label><input id="nama" placeholder="Ayam goreng / Headset JBL">
+<label>Harga *</label><input id="harga" type="number" placeholder="15000">
 <label>Stok</label><input id="stok" type="number" value="100">
-<label>Deskripsi</label><textarea id="deskripsi" rows="3" placeholder="Deskripsi singkat"></textarea>
-<label>Kategori</label><input id="kategori" placeholder="Makanan, Minuman, dll">
-<label>Foto Produk (otomatis kompres <400KB)</label><input id="foto" type="file" accept="image/*">
+<label>Deskripsi / Model</label><input id="deskripsi" placeholder="Jbl-02 / Roko herbal">
+<label>Kategori</label><select id="kategori"><option>Makanan</option><option>Minuman</option><option>Sparepart</option><option>Lainnya</option><option>Pakaian</option><option>Elektronik</option></select>
+<label>Foto Produk (otomatis kompres &lt;45KB biar muat di Sheet)</label><input id="foto" type="file" accept="image/*">
 <div class="preview" id="preview">📦 Preview</div>
 
-<h3 style="margin:16px 0 8px">🚚 Batas Pengiriman & Pembayaran <span class="badge">Baru</span></h3>
-<p class="muted">Centang yang DIDUKUNG produk ini:</p>
+<h3 style="margin:14px 0 6px">🚚 Batas Pengiriman</h3>
 <div class="check-group">
-  <label class="check-card active" id="card_cod"><input type="checkbox" id="bisa_cod" checked><div><b>✅ Bisa COD</b><div class="muted">Bayar di tempat</div></div></label>
-  <label class="check-card active" id="card_kurir"><input type="checkbox" id="bisa_kurir" checked><div><b>🛵 Bisa Kurir (Siap Antar)</b><div class="muted">Kurir toko antar</div></div></label>
-  <label class="check-card active" id="card_expedisi"><input type="checkbox" id="bisa_expedisi" checked><div><b>📦 Bisa Expedisi</b><div class="muted">JNE, J&T, dll</div></div></label>
+  <label class="check-card active" id="card_cod"><input type="checkbox" id="bisa_cod" checked><div><b>✅ COD</b><div class="muted" style="font-size:11px">Bayar ditempat</div></div></label>
+  <label class="check-card active" id="card_kurir"><input type="checkbox" id="bisa_kurir" checked><div><b>🛵 Kurir</b><div class="muted" style="font-size:11px">Siap Antar</div></div></label>
+  <label class="check-card active" id="card_expedisi"><input type="checkbox" id="bisa_expedisi" checked><div><b>📦 Expedisi</b><div class="muted" style="font-size:11px">JNE/J&T</div></div></label>
 </div>
 
-<div style="background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:10px;margin:10px 0;font-size:12px">
-<b>Catatan:</b> Jika produk makanan basah / mudah basi, biasanya <b>nonaktif Expedisi</b> dan hanya Kurir + COD. Jika barang mahal, nonaktif COD.
-</div>
-
-<button class="btn btn-primary" id="btnSimpan">💾 Simpan Produk</button>
+<button class="btn btn-primary" id="btnSimpan">💾 Simpan ke Spreadsheet</button>
 <button class="btn btn-secondary" id="btnReset" style="width:100%;margin-top:8px">Reset</button>
+
+<div style="margin-top:12px;background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:10px;font-size:11px">
+<b>⚙️ Setting Apps Script:</b> Ganti URL di bawah dengan URL Web App kamu (deploy as Anyone). Sheet ID: 1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0 - Tab MEMBER
+<br><input id="scriptUrl" style="font-size:11px" value="https://script.google.com/macros/s/AKfycbyvY5Cfm73A___GANTI_ID_LENGKAP___/exec" placeholder="Paste URL Apps Script /exec disini">
+</div>
 </div>
 
 <div class="card">
-<h3>📋 Produk Saya</h3>
-<div id="listProduk" class="muted">Login dulu untuk lihat produk...</div>
+<h3>📋 Produk Saya di Sheet</h3>
+<div class="muted" style="font-size:11px;margin-bottom:6px">Baca dari Sheet MEMBER filter MitraUid = akun kamu</div>
+<div id="listProduk">Login dulu...</div>
+<button class="btn btn-secondary" id="btnRefresh" style="width:100%;margin-top:8px">🔄 Refresh dari Sheet</button>
 </div>
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-import {getFirestore,doc,getDoc,setDoc,collection,addDoc,updateDoc,deleteDoc,serverTimestamp,query,where,getDocs} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import {getAuth,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+import {getFirestore,doc,getDoc} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 const firebaseConfig = {apiKey: "AIzaSyBxqZhl6t3RwrXMwVdJeIkg0NzGfwvlweM",authDomain: "toko-siap-antar-9a7bb.firebaseapp.com",projectId: "toko-siap-antar-9a7bb",storageBucket: "toko-siap-antar-9a7bb.firebasestorage.app",messagingSenderId: "351335838712",appId: "1:351335838712:web:14cc2c7b91bb0c9e1b5c0d"};
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw1I9bUQ7u2vXJ1nG2hG3yX5Z6p7Q8R9S0T1U2V3W4X5Y6Z7A8B9C0D1E2F3/exec"; // GANTI dengan URL Apps Script kamu yang asli
-let currentUser=null;
-let editingId=null;
-let fotoBase64="";
+let currentUser=null, mitraNama='', mitraUid='', fotoBase64Polos=''; // tanpa data: prefix biar kayak di Sheet kamu /9j/...
 
-let fotoFile=null;
-async function kompresGambar(file, maxW=600, quality=0.6){
+function getSingkatan(nama){
+  if(!nama) return 'MM';
+  let w=nama.trim().split(/\s+/).filter(Boolean);
+  if(w.length>=2) return (w[0][0]+w[1][0]).toUpperCase();
+  return nama.slice(0,2).toUpperCase();
+}
+
+async function kompres45KB(file){
+  // target <45KB = 46080 bytes, base64 ~ 1.33x, jadi file binary ~ 35KB max
+  // Kita resize ke max 400px dan kualitas 0.5, iterasi turun sampai <45KB
   return new Promise((resolve, reject)=>{
     let img=new Image();
     let url=URL.createObjectURL(file);
     img.onload=()=>{
+      let maxW=400;
       let w=img.width, h=img.height;
-      if(w>maxW){ h = Math.round(h*maxW/w); w=maxW; }
-      // Kalau masih tinggi, batasi juga tinggi max 600
-      if(h>600){ w = Math.round(w*600/h); h=600; }
+      if(w>maxW){ h=Math.round(h*maxW/w); w=maxW; }
+      if(h>400){ w=Math.round(w*400/h); h=400; }
       let canvas=document.createElement('canvas');
       canvas.width=w; canvas.height=h;
       let ctx=canvas.getContext('2d');
       ctx.drawImage(img,0,0,w,h);
-      // coba kualitas 0.6 dulu, kalau masih >700KB turunkan
-      let q=quality;
-      let dataUrl=canvas.toDataURL('image/jpeg', q);
-      let attempt=0;
-      while(dataUrl.length > 700000 && attempt<4 && q>0.2){
-        q-=0.15;
-        dataUrl=canvas.toDataURL('image/jpeg', q);
-        attempt++;
+      let quality=0.55;
+      let dataUrl=canvas.toDataURL('image/jpeg', quality);
+      let attempts=0;
+      while(dataUrl.length > 60000 && attempts<6){ // 60k chars ~ 45KB binary
+        quality-=0.08;
+        if(quality<0.15) break;
+        dataUrl=canvas.toDataURL('image/jpeg', quality);
+        attempts++;
+        if(quality<0.25 && (w>300)){
+          // kecilkan lagi
+          w=Math.round(w*0.8); h=Math.round(h*0.8);
+          canvas.width=w; canvas.height=h;
+          ctx.drawImage(img,0,0,w,h);
+        }
       }
       URL.revokeObjectURL(url);
-      resolve(dataUrl);
+      // Hapus prefix data:image/jpeg;base64, biar polos kayak di Sheet kamu /9j/...
+      let polos = dataUrl.replace(/^data:image\/\w+;base64,/, '');
+      resolve({dataUrl, polos, size: polos.length});
     };
-    img.onerror=()=>{ URL.revokeObjectURL(url); reject('Gagal load gambar'); };
+    img.onerror=()=>{ URL.revokeObjectURL(url); reject('Gagal load'); };
     img.src=url;
   });
 }
 
 document.getElementById('foto').addEventListener('change', async e=>{
   let file=e.target.files[0]; if(!file) return;
-  fotoFile=file;
-  document.getElementById('preview').innerHTML='⏳ Kompres gambar...';
+  document.getElementById('preview').innerHTML='⏳ Kompres ke <45KB...';
   try{
-    fotoBase64 = await kompresGambar(file, 600, 0.6);
-    let sizeKB = Math.round(fotoBase64.length/1024);
-    document.getElementById('preview').innerHTML=`<img src="${fotoBase64}"><div class="muted" style="position:absolute;bottom:4px;right:4px;background:#0008;color:#fff;font-size:10px;padding:2px 6px;border-radius:999px">${sizeKB} KB</div>`;
-    document.getElementById('preview').style.position='relative';
-    if(fotoBase64.length > 1048487){
-      document.getElementById('msg').innerHTML='<div class="err">⚠️ Gambar masih kebesaran ('+sizeKB+' KB). Coba foto lebih kecil / crop. Max Firestore 1MB.</div>';
-    } else {
-      document.getElementById('msg').innerHTML='<div class="ok">✅ Gambar terkompres jadi '+sizeKB+' KB, aman untuk Firestore</div>';
-    }
+    let r=await kompres45KB(file);
+    fotoBase64Polos=r.polos;
+    let kb=Math.round(r.polos.length/1024*0.75); // perkiraan binary KB
+    document.getElementById('preview').innerHTML=`<img src="${r.dataUrl}"><span class="badge">${kb} KB / ${r.polos.length} chars</span>`;
+    document.getElementById('msg').innerHTML=`<div class="ok">✅ Foto terkompres ${kb} KB (polos ${r.polos.length} chars) - aman untuk Sheet (limit 50k chars per cell, kita usahakan <45KB)</div>`;
   }catch(err){
-    document.getElementById('msg').innerHTML='<div class="err">❌ Gagal kompres: '+err+'</div>';
-    document.getElementById('preview').innerHTML='❌ Gagal';
+    document.getElementById('msg').innerHTML=`<div class="err">Gagal kompres: ${err}</div>`;
   }
 });
 
-function syncCheckUI(){
+function syncCheck(){
   ['cod','kurir','expedisi'].forEach(k=>{
-    let chk=document.getElementById('bisa_'+k);
+    let c=document.getElementById('bisa_'+k);
     let card=document.getElementById('card_'+k);
-    if(chk.checked) card.classList.add('active'); else card.classList.remove('active');
+    if(c.checked) card.classList.add('active'); else card.classList.remove('active');
   });
 }
-document.querySelectorAll('.check-card input').forEach(el=>el.addEventListener('change', syncCheckUI));
-syncCheckUI();
+document.querySelectorAll('.check-card input').forEach(i=>i.addEventListener('change', syncCheck));
+syncCheck();
 
-async function loadProduk(){
-  if(!currentUser) return;
-  let q = query(collection(db,'products'), where('mitraUid','==', currentUser.uid));
-  let snap = await getDocs(q);
-  let html='';
-  snap.forEach(d=>{
-    let p=d.data();
-    html+=`<div style="border:1px solid #eee;border-radius:12px;padding:10px;margin:8px 0;display:flex;gap:10px">
-      <div style="width:56px;height:56px;background:#f6f6e8;border-radius:8px;display:grid;place-items:center;overflow:hidden">${p.image?`<img src="${p.image}" style="width:100%;height:100%;object-fit:cover">`:'📦'}</div>
-      <div style="flex:1"><b>${p.nama}</b> Rp ${Number(p.harga).toLocaleString('id-ID')}<br>
-        <span class="muted" style="font-size:11px">
-          ${p.bisaCOD?'✅COD':''} ${p.bisaKurir?'✅Kurir':''} ${p.bisaExpedisi?'✅Expedisi':''}
-        </span><br>
-        <div style="margin-top:6px;display:flex;gap:6px">
-          <button onclick="editProduk('${d.id}')" style="border:1px solid #00a85a;background:#e8f5e9;color:#00a85a;border-radius:20px;padding:4px 10px;font-size:11px;cursor:pointer">✏️ Edit</button>
-          <button onclick="hapusProduk('${d.id}')" style="border:1px solid #ff8a80;background:#fff0ed;color:#b42318;border-radius:20px;padding:4px 10px;font-size:11px;cursor:pointer">🗑️ Hapus</button>
-        </div>
-      </div>
-    </div>`;
-  });
-  document.getElementById('listProduk').innerHTML = html || '<div class="muted">Belum ada produk</div>';
-  // Expose for inline onclick
-  window.editProduk = async (id)=>{
-    let d = await getDoc(doc(db,'products',id));
-    if(!d.exists()) return;
-    let p=d.data();
-    editingId=id;
-    document.getElementById('nama').value=p.nama||'';
-    document.getElementById('harga').value=p.harga||'';
-    document.getElementById('stok').value=p.stok||'';
-    document.getElementById('deskripsi').value=p.deskripsi||'';
-    document.getElementById('kategori').value=p.kategori||'';
-    document.getElementById('bisa_cod').checked = p.bisaCOD!==false;
-    document.getElementById('bisa_kurir').checked = p.bisaKurir!==false;
-    document.getElementById('bisa_expedisi').checked = p.bisaExpedisi!==false;
-    syncCheckUI();
-    if(p.image){ fotoBase64=p.image; document.getElementById('preview').innerHTML=`<img src="${p.image}">`; }
-    document.getElementById('btnSimpan').textContent='💾 Update Produk';
-    window.scrollTo({top:0,behavior:'smooth'});
-  };
-  window.hapusProduk = async (id)=>{
-    if(!confirm('Hapus produk ini?')) return;
-    await deleteDoc(doc(db,'products',id));
-    loadProduk();
-  };
+async function loadMyProductsFromSheet(){
+  let url=document.getElementById('scriptUrl').value.trim();
+  if(!url || url.includes('GANTI_ID')){ document.getElementById('listProduk').innerHTML='<div class="err">Isi URL Apps Script dulu di atas</div>'; return; }
+  if(!mitraUid){ document.getElementById('listProduk').innerHTML='Login dulu'; return; }
+  document.getElementById('listProduk').innerHTML='⏳ Load dari Sheet MEMBER...';
+  try{
+    // GET ?action=get_products&mitraUid=xxx
+    let res=await fetch(url+'?action=get_products&mitraUid='+encodeURIComponent(mitraUid));
+    let data=await res.json();
+    if(!data.products){ document.getElementById('listProduk').innerHTML='Sheet belum return products. Cek Apps Script doGet harus handle get_products'; return; }
+    let html='';
+    data.products.forEach(p=>{
+      let bisaCOD = p.BisaCOD!=0 && p.BisaCOD!='0' && p.BisaCOD!==false;
+      let bisaKurir = p.BisaKurir!=0 && p.BisaKurir!='0' && p.BisaKurir!==false;
+      let bisaExp = p.BisaExpedisi!=0 && p.BisaExpedisi!='0' && p.BisaExpedisi!==false;
+      html+=`<div style="border:1px solid #eee;border-radius:10px;padding:8px;margin:6px 0;display:flex;gap:8px">
+        <div style="width:48px;height:48px;background:#f6f6e8;border-radius:8px;display:grid;place-items:center;overflow:hidden">${p.Image?`<img src="data:image/jpeg;base64,${p.Image}" style="width:100%;height:100%;object-fit:cover">`:'📦'}</div>
+        <div style="flex:1"><b>${p.Nama||p.Column3||''}</b> Rp ${Number(p.Harga||p.Column5||0).toLocaleString('id-ID')}<br>
+        <span style="font-size:10px">${bisaCOD?'✅COD':'❌COD'} ${bisaKurir?'✅Kurir':'❌Kurir'} ${bisaExp?'✅Exp':'❌Exp'} - ID:${p.ID||p.Column2||''}</span><br>
+        <button onclick="editSheetProduct('${p.ID||p.Column2||''}')" style="font-size:11px;border:1px solid #00a85a;background:#e8f5e9;color:#00a85a;border-radius:12px;padding:2px 8px;margin-top:4px">✏️ Edit batas</button>
+        </div></div>`;
+    });
+    document.getElementById('listProduk').innerHTML=html||'Belum ada produk di Sheet untuk akun ini';
+    window.editSheetProduct=(id)=>{
+      alert('Untuk edit batas, hapus baris di Sheet lalu input ulang dengan ID sama, atau aku bisa bikinin Apps Script update. ID: '+id);
+    };
+  }catch(e){
+    document.getElementById('listProduk').innerHTML='<div class="err">Gagal load Sheet: '+e.message+'<br>Cek Apps Script harus return JSON {products:[...]} untuk action=get_products</div>';
+  }
 }
 
-document.getElementById('btnSimpan').onclick = async ()=>{
+document.getElementById('btnSimpan').onclick=async()=>{
   let nama=document.getElementById('nama').value.trim();
   let harga=Number(document.getElementById('harga').value);
   let stok=Number(document.getElementById('stok').value)||0;
   let deskripsi=document.getElementById('deskripsi').value.trim();
-  let kategori=document.getElementById('kategori').value.trim();
-  let bisaCOD=document.getElementById('bisa_cod').checked;
-  let bisaKurir=document.getElementById('bisa_kurir').checked;
-  let bisaExpedisi=document.getElementById('bisa_expedisi').checked;
+  let kategori=document.getElementById('kategori').value;
+  let bisaCOD=document.getElementById('bisa_cod').checked?1:0;
+  let bisaKurir=document.getElementById('bisa_kurir').checked?1:0;
+  let bisaExp=document.getElementById('bisa_expedisi').checked?1:0;
+  let scriptUrl=document.getElementById('scriptUrl').value.trim();
   if(!nama||!harga){ alert('Nama & Harga wajib'); return; }
-  if(!currentUser){ alert('Login dulu sebagai mitra'); return; }
-  let btn=document.getElementById('btnSimpan'); btn.disabled=true; btn.textContent='Menyimpan...';
+  if(!fotoBase64Polos){ alert('Pilih foto dulu (nanti dikompres <45KB)'); return; }
+  if(!mitraUid){ alert('Login dulu'); return; }
+  if(scriptUrl.includes('GANTI_ID')||!scriptUrl){ alert('Isi URL Apps Script /exec kamu dulu di kotak bawah'); return; }
+  let btn=document.getElementById('btnSimpan'); btn.disabled=true; btn.textContent='Menyimpan ke Sheet...';
   try{
-    let mitraDoc = await getDoc(doc(db,'users',currentUser.uid));
-    let mitraNama = mitraDoc.exists()? (mitraDoc.data().nama||mitraDoc.data().namaToko||'Mitra') : 'Mitra';
-    let data = {
-      nama:nama, harga:harga, stok:stok, deskripsi:deskripsi, kategori:kategori,
-      image: fotoBase64 || '',
-      mitraUid: currentUser.uid,
-      mitraNama: mitraNama,
-      singkatan: mitraNama.slice(0,2).toUpperCase(),
-      bisaCOD: bisaCOD,
-      bisaKurir: bisaKurir,
-      bisaExpedisi: bisaExpedisi,
-      // Simpan juga versi lama untuk kompatibilitas Sheet: simpan sebagai 1/0
-      BisaCOD: bisaCOD?1:0,
-      BisaKurir: bisaKurir?1:0,
-      BisaExpedisi: bisaExpedisi?1:0,
-      updatedAt: serverTimestamp()
+    let id='prcd_'+Date.now();
+    let payload={
+      action:'add_product',
+      Column1: new Date().toLocaleString('id-ID'),
+      Column2: id,
+      Column3: nama,
+      Column4: deskripsi, // di Sheet kamu Column4 jbl / Roko herbal
+      Column5: harga,
+      Column6: fotoBase64Polos, // polos tanpa data: biar kayak /9j/...
+      Column7: mitraUid,
+      Column8: mitraNama,
+      Column9: kategori,
+      // Kolom tambahan untuk batas
+      Column10: bisaCOD,
+      Column11: bisaKurir,
+      Column12: bisaExp,
+      Column13: stok,
+      // Kirim juga field yang lebih jelas untuk Apps Script baru
+      ID:id, Nama:nama, Harga:harga, Deskripsi:deskripsi, Kategori:kategori, Stok:stok,
+      Image: fotoBase64Polos,
+      MitraUid: mitraUid, MitraNama: mitraNama, Singkatan: getSingkatan(mitraNama),
+      BisaCOD: bisaCOD, BisaKurir: bisaKurir, BisaExpedisi: bisaExp,
+      Timestamp: new Date().toISOString()
     };
-    if(editingId){
-      await updateDoc(doc(db,'products',editingId), data);
-      document.getElementById('msg').innerHTML='<div class="ok">✅ Produk diupdate. Batas pengiriman: '+(bisaCOD?'COD ': '')+(bisaKurir?'Kurir ': '')+(bisaExpedisi?'Expedisi':'')+'</div>';
-      editingId=null;
-      btn.textContent='💾 Simpan Produk';
-    } else {
-      data.createdAt=serverTimestamp();
-      await addDoc(collection(db,'products'), data);
-      // Juga kirim ke Apps Script Sheet (opsional) - sesuaikan field di Sheet
-      try{
-        await fetch(APP_SCRIPT_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({
-          action:'add_product',
-          Nama:nama, Harga:harga, Deskripsi:deskripsi, Kategori:kategori,
-          MitraUid: currentUser.uid, MitraNama: mitraNama,
-          BisaCOD: bisaCOD?1:0, BisaKurir: bisaKurir?1:0, BisaExpedisi: bisaExpedisi?1:0,
-          Image: fotoBase64
-        })});
-      }catch(e){ console.log('Sheet sync skip', e); }
-      document.getElementById('msg').innerHTML='<div class="ok">✅ Produk disimpan. Ceklis: '+(bisaCOD?'COD ': '')+(bisaKurir?'Kurir ': '')+(bisaExpedisi?'Expedisi':'')+'</div>';
-    }
+    // Simpan URL biar tidak hilang
+    localStorage.setItem('tsa_script_url', scriptUrl);
+    await fetch(scriptUrl, {method:'POST', mode:'no-cors', body: JSON.stringify(payload)});
+    document.getElementById('msg').innerHTML=`<div class="ok">✅ Terkirim ke Spreadsheet MEMBER!<br>ID: ${id}<br>Nama: ${nama} - Rp ${harga.toLocaleString('id-ID')}<br>Batas: ${bisaCOD?'COD ':''}${bisaKurir?'Kurir ':''}${bisaExp?'Expedisi':''}<br><br>Catatan: Karena mode no-cors, cek langsung di Google Sheet kamu apakah baris baru muncul. Jika belum, cek Deploy Apps Script harus "Anyone" dan doPost harus handle action=add_product.</div>`;
     document.getElementById('nama').value=''; document.getElementById('harga').value=''; document.getElementById('deskripsi').value='';
-    document.getElementById('preview').innerHTML='📦 Preview'; fotoBase64='';
-    loadProduk();
-  }catch(e){ document.getElementById('msg').innerHTML='<div class="err">❌ Gagal: '+e.message+'</div>'; }
-  btn.disabled=false; btn.textContent='💾 Simpan Produk';
+    fotoBase64Polos=''; document.getElementById('preview').innerHTML='📦 Preview';
+    setTimeout(loadMyProductsFromSheet, 1500);
+  }catch(e){
+    document.getElementById('msg').innerHTML='<div class="err">❌ Gagal: '+e.message+'</div>';
+  }
+  btn.disabled=false; btn.textContent='💾 Simpan ke Spreadsheet';
 };
 
 document.getElementById('btnReset').onclick=()=>{
-  editingId=null;
-  document.getElementById('nama').value=''; document.getElementById('harga').value=''; document.getElementById('stok').value='100'; document.getElementById('deskripsi').value=''; document.getElementById('kategori').value='';
-  document.getElementById('bisa_cod').checked=true; document.getElementById('bisa_kurir').checked=true; document.getElementById('bisa_expedisi').checked=true;
-  syncCheckUI(); document.getElementById('preview').innerHTML='📦 Preview'; fotoBase64=''; document.getElementById('btnSimpan').textContent='💾 Simpan Produk';
+  document.getElementById('nama').value=''; document.getElementById('harga').value=''; document.getElementById('stok').value='100'; document.getElementById('deskripsi').value='';
+  fotoBase64Polos=''; document.getElementById('preview').innerHTML='📦 Preview';
 };
+
+document.getElementById('btnRefresh').onclick=loadMyProductsFromSheet;
+document.getElementById('btnLogout').onclick=async()=>{ await signOut(auth); location.href='login.html'; };
 
 onAuthStateChanged(auth, async (user)=>{
   currentUser=user;
-  if(!user){ document.getElementById('listProduk').innerHTML='<div class="err">Belum login. <a href="login.html">Login sebagai Mitra</a></div>'; return; }
-  loadProduk();
+  if(!user){ document.getElementById('mitraLabel').textContent='Belum login'; return; }
+  mitraUid=user.uid;
+  document.getElementById('mitraUidLabel').textContent=mitraUid;
+  try{
+    let snap=await getDoc(doc(db,'users', user.uid));
+    if(snap.exists()){
+      let d=snap.data();
+      mitraNama=d.nama||d.namaToko||d.namaUsaha||user.email||'Mitra';
+    } else {
+      mitraNama=user.email||'Mitra';
+    }
+  }catch{ mitraNama=user.email||'Mitra'; }
+  document.getElementById('mitraLabel').textContent='👤 '+mitraNama+' ('+getSingkatan(mitraNama)+')';
+  let savedUrl=localStorage.getItem('tsa_script_url');
+  if(savedUrl) document.getElementById('scriptUrl').value=savedUrl;
+  loadMyProductsFromSheet();
 });
 </script>
 <script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
