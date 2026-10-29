@@ -21,10 +21,10 @@
   font-family: "Optimistic Mono", ui-monospace, monospace;
 }
 </style><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#00a85a">
-<title>Input Produk Mitra - Spreadsheet Only</title>
+<title>Input Produk Mitra - Pakai AppScript Lama</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#f4fff7;color:#18312b;font:14px/1.5 system-ui,sans-serif;padding:12px;max-width:720px;margin:auto;padding-bottom:80px}
+body{background:#f4fff7;color:#18312b;font:14px/1.5 system-ui,sans-serif;padding:12px;max-width:720px;margin:auto}
 .card{background:#fff;border:1px solid #dceee5;border-radius:16px;padding:16px;margin:12px 0}
 h2{color:#008b4c}
 label{font-weight:700;font-size:13px;margin-top:10px;display:block}
@@ -35,250 +35,173 @@ input,textarea,select{width:100%;border:1px solid #cfe5d8;border-radius:10px;pad
 .check-card input{width:auto;margin:0}
 .btn{border:0;border-radius:10px;padding:12px 16px;font-weight:800;cursor:pointer}
 .btn-primary{background:linear-gradient(90deg,#00a85a,#00c8d7);color:#fff;width:100%}
-.btn-secondary{background:#f0f0f0;color:#333}
 .muted{color:#66756f;font-size:12px}
 .ok{background:#e5fff0;color:#087b45;border:1px solid #c3ead7;border-radius:10px;padding:10px;margin:8px 0}
 .err{background:#fff0ed;color:#b42318;border:1px solid #f5c6c1;border-radius:10px;padding:10px;margin:8px 0}
-.preview{width:100%;max-width:240px;height:180px;background:#f6f6e8;border-radius:12px;display:grid;place-items:center;overflow:hidden;margin:8px 0;position:relative}
+.preview{width:100%;max-width:240px;height:160px;background:#f6f6e8;border-radius:12px;display:grid;place-items:center;overflow:hidden;margin:8px 0;position:relative}
 .preview img{width:100%;height:100%;object-fit:contain}
 .badge{position:absolute;bottom:4px;right:4px;background:#0008;color:#fff;font-size:10px;padding:2px 6px;border-radius:999px}
 </style></head><body>
-<h2>📦 Input Produk Mitra <span style="font-size:12px;background:#00a85a;color:#fff;padding:2px 8px;border-radius:999px">SPREADSHEET ONLY</span></h2>
-<p class="muted">Produk disimpan ke Google Sheet MEMBER saja, tidak ke Firestore (biar Firebase tidak cepat penuh). Foto auto kompres < 45KB kayak dulu.</p>
+<h2>📦 Input Produk Mitra <span style="font-size:11px;background:#00a85a;color:#fff;padding:2px 8px;border-radius:999px">Pakai AppScript Lama</span></h2>
+<p class="muted">Simpan langsung ke Sheet MEMBER kayak dulu, tidak ke Firestore. Pakai URL /exec yang sudah ada.</p>
 
 <div id="msg"></div>
-<div class="card" style="background:#e8f5e9;border-color:#a5d6a7">
-<div style="display:flex;justify-content:space-between;align-items:center">
+
+<div class="card" style="background:#e8f5e9">
 <div><b id="mitraLabel">Memuat akun...</b><br><span class="muted" id="mitraUidLabel" style="font-size:11px"></span></div>
-<button id="btnLogout" class="btn btn-secondary" style="width:auto;padding:6px 12px;font-size:12px">Logout</button>
-</div>
-<div class="muted" style="margin-top:6px">Owner auto dari akun login → jadi badge di katalog.</div>
 </div>
 
 <div class="card">
-<label>Nama Produk *</label><input id="nama" placeholder="Ayam goreng / Headset JBL">
+<label>Nama Produk *</label><input id="nama" placeholder="Ayam goreng">
 <label>Harga *</label><input id="harga" type="number" placeholder="15000">
 <label>Stok</label><input id="stok" type="number" value="100">
-<label>Deskripsi / Model</label><input id="deskripsi" placeholder="Jbl-02 / Roko herbal">
-<label>Kategori</label><select id="kategori"><option>Makanan</option><option>Minuman</option><option>Sparepart</option><option>Lainnya</option><option>Pakaian</option><option>Elektronik</option></select>
-<label>Foto Produk (otomatis kompres &lt;45KB biar muat di Sheet)</label><input id="foto" type="file" accept="image/*">
+<label>Deskripsi / Model</label><input id="deskripsi" placeholder="jbl / Roko herbal">
+<label>Kategori</label><select id="kategori"><option>Makanan</option><option>Minuman</option><option>Sparepart</option><option>Lainnya</option></select>
+<label>Foto Produk (auto kompres &lt;45KB)</label><input id="foto" type="file" accept="image/*">
 <div class="preview" id="preview">📦 Preview</div>
 
-<h3 style="margin:14px 0 6px">🚚 Batas Pengiriman</h3>
+<h3 style="margin:12px 0 6px">🚚 Batas Pengiriman</h3>
 <div class="check-group">
   <label class="check-card active" id="card_cod"><input type="checkbox" id="bisa_cod" checked><div><b>✅ COD</b><div class="muted" style="font-size:11px">Bayar ditempat</div></div></label>
   <label class="check-card active" id="card_kurir"><input type="checkbox" id="bisa_kurir" checked><div><b>🛵 Kurir</b><div class="muted" style="font-size:11px">Siap Antar</div></div></label>
   <label class="check-card active" id="card_expedisi"><input type="checkbox" id="bisa_expedisi" checked><div><b>📦 Expedisi</b><div class="muted" style="font-size:11px">JNE/J&T</div></div></label>
 </div>
 
-<button class="btn btn-primary" id="btnSimpan">💾 Simpan ke Spreadsheet</button>
-<button class="btn btn-secondary" id="btnReset" style="width:100%;margin-top:8px">Reset</button>
+<button class="btn btn-primary" id="btnSimpan">💾 Simpan ke Spreadsheet (AppScript Lama)</button>
 
-<div style="margin-top:12px;background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:10px;font-size:11px">
-<b>⚙️ Setting Apps Script:</b> Ganti URL di bawah dengan URL Web App kamu (deploy as Anyone). Sheet ID: 1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0 - Tab MEMBER
-<br><input id="scriptUrl" style="font-size:11px" value="https://script.google.com/macros/s/AKfycbyvY5Cfm73A___GANTI_ID_LENGKAP___/exec" placeholder="Paste URL Apps Script /exec disini">
+<div style="margin-top:12px">
+<label>URL Apps Script /exec yang SUDAH ADA (jangan pakai iframe!)</label>
+<input id="scriptUrl" style="font-size:12px" placeholder="https://script.google.com/macros/s/AKfycb.../exec">
+<div class="muted" style="font-size:11px">Copy dari Deployments → Web App → URL. Contoh benar: <b>https://script.google.com/macros/s/AKfyc.../exec</b><br>Yang salah: iframe src="https://docs.google.com/spreadsheets/d/e/2f... itu buat embed, bukan API.</div>
+<button id="btnSimpanUrl" class="btn" style="background:#e8f5e9;color:#00a85a;width:100%;margin-top:6px;font-size:12px">💾 Simpan URL</button>
 </div>
-</div>
-
-<div class="card">
-<h3>📋 Produk Saya di Sheet</h3>
-<div class="muted" style="font-size:11px;margin-bottom:6px">Baca dari Sheet MEMBER filter MitraUid = akun kamu</div>
-<div id="listProduk">Login dulu...</div>
-<button class="btn btn-secondary" id="btnRefresh" style="width:100%;margin-top:8px">🔄 Refresh dari Sheet</button>
 </div>
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-import {getAuth,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import {getFirestore,doc,getDoc} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 const firebaseConfig = {apiKey: "AIzaSyBxqZhl6t3RwrXMwVdJeIkg0NzGfwvlweM",authDomain: "toko-siap-antar-9a7bb.firebaseapp.com",projectId: "toko-siap-antar-9a7bb",storageBucket: "toko-siap-antar-9a7bb.firebasestorage.app",messagingSenderId: "351335838712",appId: "1:351335838712:web:14cc2c7b91bb0c9e1b5c0d"};
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-let currentUser=null, mitraNama='', mitraUid='', fotoBase64Polos=''; // tanpa data: prefix biar kayak di Sheet kamu /9j/...
+let mitraNama='', mitraUid='', fotoPolos='', fotoDataUrl='';
 
-function getSingkatan(nama){
-  if(!nama) return 'MM';
-  let w=nama.trim().split(/\s+/).filter(Boolean);
-  if(w.length>=2) return (w[0][0]+w[1][0]).toUpperCase();
-  return nama.slice(0,2).toUpperCase();
-}
+function singkatan(n){ if(!n) return 'MM'; let w=n.trim().split(/\s+/); if(w.length>=2) return (w[0][0]+w[1][0]).toUpperCase(); return n.slice(0,2).toUpperCase(); }
 
 async function kompres45KB(file){
-  // target <45KB = 46080 bytes, base64 ~ 1.33x, jadi file binary ~ 35KB max
-  // Kita resize ke max 400px dan kualitas 0.5, iterasi turun sampai <45KB
-  return new Promise((resolve, reject)=>{
-    let img=new Image();
-    let url=URL.createObjectURL(file);
+  return new Promise((res,rej)=>{
+    let img=new Image(); let url=URL.createObjectURL(file);
     img.onload=()=>{
-      let maxW=400;
-      let w=img.width, h=img.height;
+      let maxW=400; let w=img.width, h=img.height;
       if(w>maxW){ h=Math.round(h*maxW/w); w=maxW; }
       if(h>400){ w=Math.round(w*400/h); h=400; }
-      let canvas=document.createElement('canvas');
-      canvas.width=w; canvas.height=h;
-      let ctx=canvas.getContext('2d');
-      ctx.drawImage(img,0,0,w,h);
-      let quality=0.55;
-      let dataUrl=canvas.toDataURL('image/jpeg', quality);
-      let attempts=0;
-      while(dataUrl.length > 60000 && attempts<6){ // 60k chars ~ 45KB binary
-        quality-=0.08;
-        if(quality<0.15) break;
-        dataUrl=canvas.toDataURL('image/jpeg', quality);
-        attempts++;
-        if(quality<0.25 && (w>300)){
-          // kecilkan lagi
-          w=Math.round(w*0.8); h=Math.round(h*0.8);
-          canvas.width=w; canvas.height=h;
-          ctx.drawImage(img,0,0,w,h);
-        }
-      }
+      let cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+      let ctx=cv.getContext('2d'); ctx.drawImage(img,0,0,w,h);
+      let q=0.55; let dataUrl=cv.toDataURL('image/jpeg', q); let att=0;
+      while(dataUrl.length>60000 && att<6){ q-=0.08; if(q<0.15) break; dataUrl=cv.toDataURL('image/jpeg', q); att++; }
       URL.revokeObjectURL(url);
-      // Hapus prefix data:image/jpeg;base64, biar polos kayak di Sheet kamu /9j/...
-      let polos = dataUrl.replace(/^data:image\/\w+;base64,/, '');
-      resolve({dataUrl, polos, size: polos.length});
+      let polos=dataUrl.replace(/^data:image\/\w+;base64,/, '');
+      res({dataUrl, polos});
     };
-    img.onerror=()=>{ URL.revokeObjectURL(url); reject('Gagal load'); };
+    img.onerror=()=>{ URL.revokeObjectURL(url); rej('gagal'); };
     img.src=url;
   });
 }
 
 document.getElementById('foto').addEventListener('change', async e=>{
-  let file=e.target.files[0]; if(!file) return;
-  document.getElementById('preview').innerHTML='⏳ Kompres ke <45KB...';
+  let f=e.target.files[0]; if(!f) return;
+  document.getElementById('preview').innerHTML='⏳ Kompres...';
   try{
-    let r=await kompres45KB(file);
-    fotoBase64Polos=r.polos;
-    let kb=Math.round(r.polos.length/1024*0.75); // perkiraan binary KB
-    document.getElementById('preview').innerHTML=`<img src="${r.dataUrl}"><span class="badge">${kb} KB / ${r.polos.length} chars</span>`;
-    document.getElementById('msg').innerHTML=`<div class="ok">✅ Foto terkompres ${kb} KB (polos ${r.polos.length} chars) - aman untuk Sheet (limit 50k chars per cell, kita usahakan <45KB)</div>`;
-  }catch(err){
-    document.getElementById('msg').innerHTML=`<div class="err">Gagal kompres: ${err}</div>`;
-  }
+    let r=await kompres45KB(f); fotoPolos=r.polos; fotoDataUrl=r.dataUrl;
+    let kb=Math.round(r.polos.length/1024*0.75);
+    document.getElementById('preview').innerHTML=`<img src="${r.dataUrl}"><span class="badge">${kb}KB</span>`;
+    document.getElementById('msg').innerHTML=`<div class="ok">✅ Foto ${kb}KB siap kirim ke Sheet</div>`;
+  }catch(err){ document.getElementById('msg').innerHTML=`<div class="err">Gagal: ${err}</div>`; }
 });
 
 function syncCheck(){
   ['cod','kurir','expedisi'].forEach(k=>{
-    let c=document.getElementById('bisa_'+k);
-    let card=document.getElementById('card_'+k);
+    let c=document.getElementById('bisa_'+k); let card=document.getElementById('card_'+k);
     if(c.checked) card.classList.add('active'); else card.classList.remove('active');
   });
 }
-document.querySelectorAll('.check-card input').forEach(i=>i.addEventListener('change', syncCheck));
-syncCheck();
+document.querySelectorAll('.check-card input').forEach(i=>i.addEventListener('change', syncCheck)); syncCheck();
 
-async function loadMyProductsFromSheet(){
-  let url=document.getElementById('scriptUrl').value.trim();
-  if(!url || url.includes('GANTI_ID')){ document.getElementById('listProduk').innerHTML='<div class="err">Isi URL Apps Script dulu di atas</div>'; return; }
-  if(!mitraUid){ document.getElementById('listProduk').innerHTML='Login dulu'; return; }
-  document.getElementById('listProduk').innerHTML='⏳ Load dari Sheet MEMBER...';
-  try{
-    // GET ?action=get_products&mitraUid=xxx
-    let res=await fetch(url+'?action=get_products&mitraUid='+encodeURIComponent(mitraUid));
-    let data=await res.json();
-    if(!data.products){ document.getElementById('listProduk').innerHTML='Sheet belum return products. Cek Apps Script doGet harus handle get_products'; return; }
-    let html='';
-    data.products.forEach(p=>{
-      let bisaCOD = p.BisaCOD!=0 && p.BisaCOD!='0' && p.BisaCOD!==false;
-      let bisaKurir = p.BisaKurir!=0 && p.BisaKurir!='0' && p.BisaKurir!==false;
-      let bisaExp = p.BisaExpedisi!=0 && p.BisaExpedisi!='0' && p.BisaExpedisi!==false;
-      html+=`<div style="border:1px solid #eee;border-radius:10px;padding:8px;margin:6px 0;display:flex;gap:8px">
-        <div style="width:48px;height:48px;background:#f6f6e8;border-radius:8px;display:grid;place-items:center;overflow:hidden">${p.Image?`<img src="data:image/jpeg;base64,${p.Image}" style="width:100%;height:100%;object-fit:cover">`:'📦'}</div>
-        <div style="flex:1"><b>${p.Nama||p.Column3||''}</b> Rp ${Number(p.Harga||p.Column5||0).toLocaleString('id-ID')}<br>
-        <span style="font-size:10px">${bisaCOD?'✅COD':'❌COD'} ${bisaKurir?'✅Kurir':'❌Kurir'} ${bisaExp?'✅Exp':'❌Exp'} - ID:${p.ID||p.Column2||''}</span><br>
-        <button onclick="editSheetProduct('${p.ID||p.Column2||''}')" style="font-size:11px;border:1px solid #00a85a;background:#e8f5e9;color:#00a85a;border-radius:12px;padding:2px 8px;margin-top:4px">✏️ Edit batas</button>
-        </div></div>`;
-    });
-    document.getElementById('listProduk').innerHTML=html||'Belum ada produk di Sheet untuk akun ini';
-    window.editSheetProduct=(id)=>{
-      alert('Untuk edit batas, hapus baris di Sheet lalu input ulang dengan ID sama, atau aku bisa bikinin Apps Script update. ID: '+id);
-    };
-  }catch(e){
-    document.getElementById('listProduk').innerHTML='<div class="err">Gagal load Sheet: '+e.message+'<br>Cek Apps Script harus return JSON {products:[...]} untuk action=get_products</div>';
-  }
-}
+document.getElementById('btnSimpanUrl').onclick=()=>{
+  let u=document.getElementById('scriptUrl').value.trim();
+  if(!u.includes('/exec')){ alert('URL salah! Harus yang /exec, bukan iframe'); return; }
+  localStorage.setItem('tsa_script_url_existing', u);
+  document.getElementById('msg').innerHTML='<div class="ok">✅ URL disimpan: '+u+'</div>';
+};
 
 document.getElementById('btnSimpan').onclick=async()=>{
   let nama=document.getElementById('nama').value.trim();
   let harga=Number(document.getElementById('harga').value);
-  let stok=Number(document.getElementById('stok').value)||0;
+  let stok=Number(document.getElementById('stok').value)||100;
   let deskripsi=document.getElementById('deskripsi').value.trim();
   let kategori=document.getElementById('kategori').value;
   let bisaCOD=document.getElementById('bisa_cod').checked?1:0;
   let bisaKurir=document.getElementById('bisa_kurir').checked?1:0;
   let bisaExp=document.getElementById('bisa_expedisi').checked?1:0;
-  let scriptUrl=document.getElementById('scriptUrl').value.trim();
+  let url=document.getElementById('scriptUrl').value.trim();
   if(!nama||!harga){ alert('Nama & Harga wajib'); return; }
-  if(!fotoBase64Polos){ alert('Pilih foto dulu (nanti dikompres <45KB)'); return; }
+  if(!fotoPolos){ alert('Pilih foto dulu'); return; }
   if(!mitraUid){ alert('Login dulu'); return; }
-  if(scriptUrl.includes('GANTI_ID')||!scriptUrl){ alert('Isi URL Apps Script /exec kamu dulu di kotak bawah'); return; }
-  let btn=document.getElementById('btnSimpan'); btn.disabled=true; btn.textContent='Menyimpan ke Sheet...';
+  if(!url || !url.includes('/exec')){ alert('Isi URL Apps Script /exec yang benar dulu. Jangan pakai iframe!'); return; }
+  let btn=document.getElementById('btnSimpan'); btn.disabled=true; btn.textContent='Mengirim ke Sheet...';
   try{
     let id='prcd_'+Date.now();
     let payload={
       action:'add_product',
+      // format lama yang sudah ada di Sheet kamu
       Column1: new Date().toLocaleString('id-ID'),
       Column2: id,
       Column3: nama,
-      Column4: deskripsi, // di Sheet kamu Column4 jbl / Roko herbal
+      Column4: deskripsi,
       Column5: harga,
-      Column6: fotoBase64Polos, // polos tanpa data: biar kayak /9j/...
+      Column6: fotoPolos,
       Column7: mitraUid,
       Column8: mitraNama,
       Column9: kategori,
-      // Kolom tambahan untuk batas
       Column10: bisaCOD,
       Column11: bisaKurir,
       Column12: bisaExp,
       Column13: stok,
-      // Kirim juga field yang lebih jelas untuk Apps Script baru
+      // field baru juga
       ID:id, Nama:nama, Harga:harga, Deskripsi:deskripsi, Kategori:kategori, Stok:stok,
-      Image: fotoBase64Polos,
-      MitraUid: mitraUid, MitraNama: mitraNama, Singkatan: getSingkatan(mitraNama),
-      BisaCOD: bisaCOD, BisaKurir: bisaKurir, BisaExpedisi: bisaExp,
-      Timestamp: new Date().toISOString()
+      Image:fotoPolos, MitraUid:mitraUid, MitraNama:mitraNama, Singkatan:singkatan(mitraNama),
+      BisaCOD:bisaCOD, BisaKurir:bisaKurir, BisaExpedisi:bisaExp
     };
-    // Simpan URL biar tidak hilang
-    localStorage.setItem('tsa_script_url', scriptUrl);
-    await fetch(scriptUrl, {method:'POST', mode:'no-cors', body: JSON.stringify(payload)});
-    document.getElementById('msg').innerHTML=`<div class="ok">✅ Terkirim ke Spreadsheet MEMBER!<br>ID: ${id}<br>Nama: ${nama} - Rp ${harga.toLocaleString('id-ID')}<br>Batas: ${bisaCOD?'COD ':''}${bisaKurir?'Kurir ':''}${bisaExp?'Expedisi':''}<br><br>Catatan: Karena mode no-cors, cek langsung di Google Sheet kamu apakah baris baru muncul. Jika belum, cek Deploy Apps Script harus "Anyone" dan doPost harus handle action=add_product.</div>`;
+    localStorage.setItem('tsa_script_url_existing', url);
+    // PAKAI APPSCRIPT LAMA - mode no-cors biar langsung masuk Sheet
+    await fetch(url, {method:'POST', mode:'no-cors', body: JSON.stringify(payload)});
+    document.getElementById('msg').innerHTML=`<div class="ok">✅ Terkirim ke Sheet MEMBER!<br>ID: ${id}<br>Nama: ${nama}<br>Batas: ${bisaCOD?'COD ':''}${bisaKurir?'Kurir ':''}${bisaExp?'Expedisi':''}<br><br>Buka Google Sheet kamu, cek tab MEMBER baris paling bawah sudah nambah. Karena pakai AppScript lama, tidak perlu cek JSON, langsung cek Sheet.</div>`;
     document.getElementById('nama').value=''; document.getElementById('harga').value=''; document.getElementById('deskripsi').value='';
-    fotoBase64Polos=''; document.getElementById('preview').innerHTML='📦 Preview';
-    setTimeout(loadMyProductsFromSheet, 1500);
+    fotoPolos=''; document.getElementById('preview').innerHTML='📦 Preview';
   }catch(e){
-    document.getElementById('msg').innerHTML='<div class="err">❌ Gagal: '+e.message+'</div>';
+    document.getElementById('msg').innerHTML=`<div class="err">❌ Gagal: ${e.message}</div>`;
   }
-  btn.disabled=false; btn.textContent='💾 Simpan ke Spreadsheet';
+  btn.disabled=false; btn.textContent='💾 Simpan ke Spreadsheet (AppScript Lama)';
 };
-
-document.getElementById('btnReset').onclick=()=>{
-  document.getElementById('nama').value=''; document.getElementById('harga').value=''; document.getElementById('stok').value='100'; document.getElementById('deskripsi').value='';
-  fotoBase64Polos=''; document.getElementById('preview').innerHTML='📦 Preview';
-};
-
-document.getElementById('btnRefresh').onclick=loadMyProductsFromSheet;
-document.getElementById('btnLogout').onclick=async()=>{ await signOut(auth); location.href='login.html'; };
 
 onAuthStateChanged(auth, async (user)=>{
-  currentUser=user;
   if(!user){ document.getElementById('mitraLabel').textContent='Belum login'; return; }
   mitraUid=user.uid;
   document.getElementById('mitraUidLabel').textContent=mitraUid;
   try{
     let snap=await getDoc(doc(db,'users', user.uid));
-    if(snap.exists()){
-      let d=snap.data();
-      mitraNama=d.nama||d.namaToko||d.namaUsaha||user.email||'Mitra';
-    } else {
-      mitraNama=user.email||'Mitra';
-    }
-  }catch{ mitraNama=user.email||'Mitra'; }
-  document.getElementById('mitraLabel').textContent='👤 '+mitraNama+' ('+getSingkatan(mitraNama)+')';
-  let savedUrl=localStorage.getItem('tsa_script_url');
-  if(savedUrl) document.getElementById('scriptUrl').value=savedUrl;
-  loadMyProductsFromSheet();
+    mitraNama=snap.exists()?(snap.data().nama||snap.data().namaToko||user.email):user.email;
+  }catch{ mitraNama=user.email; }
+  document.getElementById('mitraLabel').textContent='👤 '+mitraNama+' ('+singkatan(mitraNama)+')';
+  let saved=localStorage.getItem('tsa_script_url_existing');
+  if(saved) document.getElementById('scriptUrl').value=saved;
+  else {
+    // coba pakai yang kamu pakai sebelumnya di file lama kalau ada
+    let old = localStorage.getItem('tsa_script_url');
+    if(old) document.getElementById('scriptUrl').value=old;
+  }
 });
 </script>
 <script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
