@@ -21,40 +21,48 @@
   font-family: "Optimistic Mono", ui-monospace, monospace;
 }
 </style><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#00a85a">
-<title>Input Produk Mitra - Checkbox Batas</title>
+<title>Input Produk Mitra</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#f4fff7;color:#18312b;font:14px/1.5 system-ui,sans-serif;padding:12px;max-width:720px;margin:auto}
-.card{background:#fff;border:1px solid #dceee5;border-radius:16px;padding:16px;margin:12px 0}
-label{font-weight:700;font-size:13px;margin-top:10px;display:block}
-input,textarea,select{width:100%;border:1px solid #cfe5d8;border-radius:10px;padding:11px;margin:6px 0 10px}
-.check-group{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
-.check-card{border:2px solid #e5e7eb;border-radius:12px;padding:12px;display:flex;gap:10px;align-items:center;cursor:pointer;flex:1 1 160px;background:#fafafa;user-select:none}
+body{background:#f4fff7;color:#18312b;font:14px/1.5 system-ui,sans-serif;padding:12px;max-width:720px;margin:auto;padding-bottom:80px}
+.card{background:#fff;border:1px solid #dceee5;border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 2px 6px #0001}
+h2{color:#18312b;font-size:22px;display:flex;gap:8px;align-items:center}
+label{font-weight:700;font-size:13px;margin-top:12px;display:block}
+input,textarea,select{width:100%;border:1px solid #cfe5d8;border-radius:10px;padding:12px;margin:6px 0 10px;background:#fff}
+.check-group{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.check-card{border:2px solid #e5e7eb;border-radius:12px;padding:12px;display:flex;gap:10px;align-items:center;cursor:pointer;flex:1 1 160px;background:#fafafa}
 .check-card.active{border-color:#00a85a;background:#f0faf4}
-.check-card input{width:18px;height:18px;margin:0;accent-color:#00a85a}
-.btn{border:0;border-radius:10px;padding:12px 16px;font-weight:800;cursor:pointer}
-.btn-primary{background:linear-gradient(90deg,#00a85a,#00c8d7);color:#fff;width:100%}
+.check-card input{width:20px;height:20px;accent-color:#00a85a}
+.btn{border:0;border-radius:12px;padding:13px 16px;font-weight:800;cursor:pointer}
+.btn-primary{background:linear-gradient(90deg,#00a85a,#00c8d7);color:#fff;width:100%;font-size:15px}
 .muted{color:#66756f;font-size:12px}
 .ok{background:#e5fff0;color:#087b45;border:1px solid #c3ead7;border-radius:10px;padding:10px;margin:8px 0}
 .err{background:#fff0ed;color:#b42318;border:1px solid #f5c6c1;border-radius:10px;padding:10px;margin:8px 0}
-.preview{width:100%;max-width:240px;height:160px;background:#f6f6e8;border-radius:12px;display:grid;place-items:center;overflow:hidden;margin:8px 0;position:relative}
+.preview{width:100%;max-width:260px;height:180px;background:#f6f6e8;border-radius:12px;display:grid;place-items:center;overflow:hidden;margin:8px 0;position:relative}
 .preview img{width:100%;height:100%;object-fit:contain}
 .badge{position:absolute;bottom:4px;right:4px;background:#0008;color:#fff;font-size:10px;padding:2px 6px;border-radius:999px}
 </style></head><body>
 <h2>📦 Input Produk Mitra</h2>
 <div id="msg"></div>
-<div class="card" style="background:#e8f5e9"><b id="mitraLabel">Memuat...</b><br><span id="mitraUidLabel" class="muted" style="font-size:11px"></span></div>
+
+<div class="card" style="background:#e8f5e9;border-color:#a5d6a7">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div><b id="mitraLabel">Memuat...</b><br><span class="muted" id="mitraUidLabel" style="font-size:11px;word-break:break-all"></span></div>
+<a href="login.html" id="loginLink" style="display:none;background:#00a85a;color:#fff;padding:6px 12px;border-radius:20px;text-decoration:none;font-size:12px">Login</a>
+</div>
+</div>
 
 <div class="card">
 <label>Nama Produk *</label><input id="nama" placeholder="Ayam goreng">
 <label>Harga *</label><input id="harga" type="number" placeholder="15000">
 <label>Stok</label><input id="stok" type="number" value="100">
 <label>Deskripsi / Model</label><input id="deskripsi" placeholder="jbl / Roko herbal">
-<label>Kategori</label><select id="kategori"><option>Makanan</option><option>Minuman</option><option>Sparepart</option><option>Lainnya</option></select>
+<label>Kategori</label><select id="kategori"><option>Makanan</option><option>Minuman</option><option>Sparepart</option><option>Lainnya</option><option>Pakaian</option><option>Elektronik</option></select>
 <label>Foto (auto kompres &lt;45KB)</label><input id="foto" type="file" accept="image/*">
 <div class="preview" id="preview">📦 Preview</div>
 
-<h3 style="margin:14px 0 8px">🚚 Batas Pengiriman (tambahan baru)</h3>
+<h3 style="margin:16px 0 8px">🚚 Batas Pengiriman</h3>
+<p class="muted" style="margin-bottom:8px">Centang yang didukung produk ini (bisa diubah nanti oleh pemilik)</p>
 <div class="check-group">
   <label class="check-card active" id="card_cod"><input type="checkbox" id="bisa_cod" checked><div><b>✅ COD</b><div class="muted" style="font-size:11px">Bayar ditempat</div></div></label>
   <label class="check-card active" id="card_kurir"><input type="checkbox" id="bisa_kurir" checked><div><b>🛵 Kurir</b><div class="muted" style="font-size:11px">Siap Antar</div></div></label>
@@ -62,7 +70,6 @@ input,textarea,select{width:100%;border:1px solid #cfe5d8;border-radius:10px;pad
 </div>
 
 <button class="btn btn-primary" id="btnSimpan">💾 Simpan ke Spreadsheet</button>
-<div style="margin-top:10px"><label>URL Apps Script /exec (yang sudah ada)</label><input id="scriptUrl" style="font-size:11px" value="https://script.google.com/macros/s/AKfycbyvY5Cfm73AStD8Kz-_qYISexH4SBGDZyE3omXT2DnZwZbwqkxXtfcJBr1AmgFFTypN/exec"></div>
 </div>
 
 <script type="module">
@@ -74,8 +81,12 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-let mitraNama='', mitraUid='', fotoPolos='', fotoDataUrl='';
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyvY5Cfm73AStD8Kz-_qYISexH4SBGDZyE3omXT2DnZwZbwqkxXtfcJBr1AmgFFTypN/exec";
+
+let mitraNama='', mitraUid='', fotoPolos='';
+
 function singkatan(n){ if(!n) return 'MM'; let w=n.trim().split(/\s+/); if(w.length>=2) return (w[0][0]+w[1][0]).toUpperCase(); return n.slice(0,2).toUpperCase(); }
+
 async function kompres(file){
   return new Promise((res,rej)=>{
     let img=new Image(); let url=URL.createObjectURL(file);
@@ -94,13 +105,17 @@ async function kompres(file){
     img.src=url;
   });
 }
+
 document.getElementById('foto').addEventListener('change', async e=>{
   let f=e.target.files[0]; if(!f) return;
   document.getElementById('preview').innerHTML='⏳ Kompres...';
-  let r=await kompres(f); fotoPolos=r.polos; fotoDataUrl=r.dataUrl;
-  let kb=Math.round(r.polos.length/1024*0.75);
-  document.getElementById('preview').innerHTML=`<img src="${r.dataUrl}"><span class="badge">${kb}KB</span>`;
+  try{
+    let r=await kompres(f); fotoPolos=r.polos;
+    let kb=Math.round(r.polos.length/1024*0.75);
+    document.getElementById('preview').innerHTML=`<img src="${r.dataUrl}"><span class="badge">${kb}KB</span>`;
+  }catch{ document.getElementById('preview').innerHTML='Gagal'; }
 });
+
 function sync(){
   ['cod','kurir','expedisi'].forEach(k=>{
     let c=document.getElementById('bisa_'+k); let card=document.getElementById('card_'+k);
@@ -118,10 +133,9 @@ document.getElementById('btnSimpan').onclick=async()=>{
   let bisaCOD=document.getElementById('bisa_cod').checked?1:0;
   let bisaKurir=document.getElementById('bisa_kurir').checked?1:0;
   let bisaExp=document.getElementById('bisa_expedisi').checked?1:0;
-  let url=document.getElementById('scriptUrl').value.trim();
   if(!nama||!harga){ alert('Nama & Harga wajib'); return; }
   if(!fotoPolos){ alert('Pilih foto'); return; }
-  if(!mitraUid){ alert('Login dulu'); return; }
+  if(!mitraUid){ alert('Belum login / Memuat masih - login dulu'); location.href='login.html'; return; }
   let btn=document.getElementById('btnSimpan'); btn.disabled=true; btn.textContent='Menyimpan...';
   try{
     let id='prcd_'+Date.now();
@@ -142,24 +156,38 @@ document.getElementById('btnSimpan').onclick=async()=>{
       Column13: stok,
       ID:id, Nama:nama, Harga:harga, Deskripsi:deskripsi, Kategori:kategori, Stok:stok, Image:fotoPolos, MitraUid:mitraUid, MitraNama:mitraNama, Singkatan:singkatan(mitraNama), BisaCOD:bisaCOD, BisaKurir:bisaKurir, BisaExpedisi:bisaExp
     };
-    await fetch(url, {method:'POST', mode:'no-cors', body: JSON.stringify(payload)});
-    document.getElementById('msg').innerHTML=`<div class="ok">✅ Masuk Sheet MEMBER!<br>ID ${id} - ${nama}<br>Batas: ${bisaCOD?'✅COD ':''}${bisaKurir?'✅Kurir ':''}${bisaExp?'✅Expedisi':''}<br>Cek Sheet baris bawah</div>`;
+    await fetch(SCRIPT_URL, {method:'POST', mode:'no-cors', body: JSON.stringify(payload)});
+    document.getElementById('msg').innerHTML=`<div class="ok">✅ Masuk Sheet MEMBER! ID ${id} - ${nama}<br>Batas: ${bisaCOD?'COD ':''}${bisaKurir?'Kurir ':''}${bisaExp?'Expedisi':''}<br>Cek Sheet baris bawah</div>`;
     document.getElementById('nama').value=''; document.getElementById('harga').value=''; document.getElementById('deskripsi').value=''; fotoPolos=''; document.getElementById('preview').innerHTML='📦 Preview';
   }catch(e){ document.getElementById('msg').innerHTML=`<div class="err">${e.message}</div>`; }
   btn.disabled=false; btn.textContent='💾 Simpan ke Spreadsheet';
 };
 
 onAuthStateChanged(auth, async (user)=>{
-  if(!user){ document.getElementById('mitraLabel').textContent='Belum login'; return; }
+  let label=document.getElementById('mitraLabel');
+  let uidLabel=document.getElementById('mitraUidLabel');
+  let loginLink=document.getElementById('loginLink');
+  if(!user){
+    label.textContent='⚠️ Belum login - klik Login';
+    uidLabel.textContent='';
+    loginLink.style.display='inline-block';
+    mitraUid=''; mitraNama='';
+    return;
+  }
   mitraUid=user.uid;
-  document.getElementById('mitraUidLabel').textContent=mitraUid;
+  uidLabel.textContent=mitraUid;
+  loginLink.style.display='none';
+  // tampilkan email dulu biar tidak Memuat lama
+  mitraNama=user.email||'Mitra';
+  label.textContent='👤 '+mitraNama;
   try{
-    let s=await getDoc(doc(db,'users', user.uid));
-    mitraNama=s.exists()?(s.data().nama||s.data().namaToko||user.email):user.email;
-  }catch{ mitraNama=user.email; }
-  document.getElementById('mitraLabel').textContent='👤 '+mitraNama+' ('+singkatan(mitraNama)+')';
-  let saved=localStorage.getItem('tsa_script_url_existing');
-  if(saved) document.getElementById('scriptUrl').value=saved;
+    let snap=await getDoc(doc(db,'users', user.uid));
+    if(snap.exists()){
+      let d=snap.data();
+      mitraNama=d.nama||d.namaToko||d.namaUsaha||user.email||'Mitra';
+      label.textContent='👤 '+mitraNama+' ('+singkatan(mitraNama)+')';
+    }
+  }catch(e){ console.log(e); }
 });
 </script>
 <script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
