@@ -54,7 +54,7 @@ input,textarea,select{width:100%;border:1px solid #cfe5d8;border-radius:10px;pad
 <label>Stok</label><input id="stok" type="number" value="100">
 <label>Deskripsi</label><textarea id="deskripsi" rows="3" placeholder="Deskripsi singkat"></textarea>
 <label>Kategori</label><input id="kategori" placeholder="Makanan, Minuman, dll">
-<label>Foto Produk</label><input id="foto" type="file" accept="image/*">
+<label>Foto Produk (otomatis kompres <400KB)</label><input id="foto" type="file" accept="image/*">
 <div class="preview" id="preview">📦 Preview</div>
 
 <h3 style="margin:16px 0 8px">🚚 Batas Pengiriman & Pembayaran <span class="badge">Baru</span></h3>
@@ -92,14 +92,55 @@ let currentUser=null;
 let editingId=null;
 let fotoBase64="";
 
-document.getElementById('foto').addEventListener('change', e=>{
+let fotoFile=null;
+async function kompresGambar(file, maxW=600, quality=0.6){
+  return new Promise((resolve, reject)=>{
+    let img=new Image();
+    let url=URL.createObjectURL(file);
+    img.onload=()=>{
+      let w=img.width, h=img.height;
+      if(w>maxW){ h = Math.round(h*maxW/w); w=maxW; }
+      // Kalau masih tinggi, batasi juga tinggi max 600
+      if(h>600){ w = Math.round(w*600/h); h=600; }
+      let canvas=document.createElement('canvas');
+      canvas.width=w; canvas.height=h;
+      let ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,w,h);
+      // coba kualitas 0.6 dulu, kalau masih >700KB turunkan
+      let q=quality;
+      let dataUrl=canvas.toDataURL('image/jpeg', q);
+      let attempt=0;
+      while(dataUrl.length > 700000 && attempt<4 && q>0.2){
+        q-=0.15;
+        dataUrl=canvas.toDataURL('image/jpeg', q);
+        attempt++;
+      }
+      URL.revokeObjectURL(url);
+      resolve(dataUrl);
+    };
+    img.onerror=()=>{ URL.revokeObjectURL(url); reject('Gagal load gambar'); };
+    img.src=url;
+  });
+}
+
+document.getElementById('foto').addEventListener('change', async e=>{
   let file=e.target.files[0]; if(!file) return;
-  let reader=new FileReader();
-  reader.onload=ev=>{
-    fotoBase64=ev.target.result;
-    document.getElementById('preview').innerHTML=`<img src="${fotoBase64}">`;
-  };
-  reader.readAsDataURL(file);
+  fotoFile=file;
+  document.getElementById('preview').innerHTML='⏳ Kompres gambar...';
+  try{
+    fotoBase64 = await kompresGambar(file, 600, 0.6);
+    let sizeKB = Math.round(fotoBase64.length/1024);
+    document.getElementById('preview').innerHTML=`<img src="${fotoBase64}"><div class="muted" style="position:absolute;bottom:4px;right:4px;background:#0008;color:#fff;font-size:10px;padding:2px 6px;border-radius:999px">${sizeKB} KB</div>`;
+    document.getElementById('preview').style.position='relative';
+    if(fotoBase64.length > 1048487){
+      document.getElementById('msg').innerHTML='<div class="err">⚠️ Gambar masih kebesaran ('+sizeKB+' KB). Coba foto lebih kecil / crop. Max Firestore 1MB.</div>';
+    } else {
+      document.getElementById('msg').innerHTML='<div class="ok">✅ Gambar terkompres jadi '+sizeKB+' KB, aman untuk Firestore</div>';
+    }
+  }catch(err){
+    document.getElementById('msg').innerHTML='<div class="err">❌ Gagal kompres: '+err+'</div>';
+    document.getElementById('preview').innerHTML='❌ Gagal';
+  }
 });
 
 function syncCheckUI(){
