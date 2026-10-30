@@ -38,12 +38,12 @@ a.back{color:var(--yellow);text-decoration:none;font-weight:700;font-size:13px}
 </style></head><body>
 <div class="top"><div class="topline"><div class="left"><img src="./logo2.png" class="logo" alt="logo" onerror="this.style.display='none'"><div><div class="brand">TOKO SIAP ANTAR</div><div id="accountNameTop" class="sub-yellow">Admin</div><div class="sub">Persetujuan Pesanan Admin</div></div></div><a class="back" href="./admin-dashboard-rapi-v3-logo-header.html">← Menu Admin</a></div></div>
 <main>
-<div class="panel"><h1 style="margin:0 0 6px">Semua Pesanan</h1><p style="margin:0;font-size:11px;color:var(--muted)">Hemat read + WA personal: Halo Kak (nama akun) ini dari Toko Siap Antar ...</p><div id="log" class="log"></div>
+<div class="panel"><h1 style="margin:0 0 6px">Semua Pesanan</h1><p style="margin:0;font-size:11px;color:var(--muted)">Pesanan dengan status pending tampil di sini. Admin hanya mengubah status menjadi disetujui.</p><div id="log" class="log"></div>
 <div class="tabs">
 <button id="tabPending" class="active" onclick="loadPending()"><span>🟡 Pesanan Pending</span><small id="countPending">Admin</small></button>
 </div>
 </div>
-<div id="content" class="panel">Daftar ini hanya menampilkan pesanan berstatus pending. Admin dapat menyetujui pesanan dari sini.</div>
+<div id="content" class="panel">Memuat pesanan pending...</div>
 </main>
 <script type="module">
 import {auth,db} from "./firebase-config.js";
@@ -56,34 +56,35 @@ function log(m){ const el=$("log"); if(el) el.textContent+="\n"+m; }
 function waLink(num){ if(!num) return null; let p=String(num).replace(/[^0-9]/g,''); if(p.startsWith('0')) p='62'+p.slice(1); if(!p.startsWith('62')) p='62'+p; return 'https://wa.me/'+p; }
 async function loadAccountName(u){ try{ const s=await getDoc(doc(db,"users",u.uid)); const p=s.data(); if(p) $("accountNameTop").textContent="Halo, Kak, "+(p.nama||p.namaUsaha||u.email); }catch(e){} }
 let currentUser=null;
-let adminReady=false;
+let authReady=false;
+
+// Gunakan auth dan db yang sama dari firebase-config.js seperti halaman ewallet-admin.
+// Tidak membuat login baru dan tidak melakukan pemeriksaan role tambahan di halaman ini.
 onAuthStateChanged(auth, async u=>{
-  currentUser=u; adminReady=false;
-  if(!u){ $("content").innerHTML='<div class="err">Silakan login sebagai admin.</div>'; return; }
-  try{
-    const profileSnap=await getDoc(doc(db,"users",u.uid));
-    const profile=profileSnap.exists()?profileSnap.data():{};
-    const role=String(profile.role||"").toLowerCase();
-    if(!["admin","superadmin"].includes(role) || profile.aktif===false || profile.status==="nonaktif"){
-      $("content").innerHTML='<div class="err">Akses ditolak. Halaman ini khusus Admin/Superadmin.</div>';
-      return;
-    }
-    adminReady=true;
-    await loadAccountName(u);
-    await loadPending();
-  }catch(e){
-    $("content").innerHTML='<div class="err">Gagal memeriksa akses admin: '+esc(e.message)+'</div>';
+  currentUser=u;
+  authReady=!!u;
+  if(!u){
+    $("content").innerHTML='<div class="err">Sesi login tidak ditemukan. Silakan login melalui E-Wallet Admin.</div>';
+    return;
   }
+  await loadAccountName(u);
+  await loadPending();
 });
 
 window.loadPending=async()=>{
-  if(!currentUser || !adminReady){ $("content").innerHTML='<div class="err">Akses admin belum tervalidasi.</div>'; return; }
+  if(!authReady || !currentUser){
+    $("content").innerHTML='<div class="err">Menunggu sesi login Admin dari E-Wallet...</div>';
+    return;
+  }
   $("content").innerHTML='Memuat pesanan pending...';
   try{
     const q=query(collection(db,"orders"),where("status","==","pending"),limit(100));
     const snap=await getDocs(q);
     $("countPending").textContent=String(snap.size);
-    if(snap.empty){ $("content").innerHTML='<div class="ok">Belum ada pesanan pending.</div>'; return; }
+    if(snap.empty){
+      $("content").innerHTML='<div class="ok">Belum ada pesanan pending.</div>';
+      return;
+    }
 
     let cards='';
     for(const d of snap.docs){
@@ -98,11 +99,12 @@ window.loadPending=async()=>{
       </div>`).join("");
       const shipping=o.metodePengiriman||"-";
       const payment=o.metodePembayaran||"-";
+      const created=o.createdAt?.toDate?.()?.toLocaleString?.("id-ID")||"-";
       cards+=`<div class="item">
         <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap">
           <strong>${esc(o.nomorPesanan||id)}</strong><span class="status-badge">PENDING</span>
         </div>
-        <div class="meta">Dibuat: ${esc(o.createdAt?.toDate?.()?.toLocaleString?.("id-ID")||"-")}</div>
+        <div class="meta">Dibuat: ${esc(created)}</div>
         <hr style="border:0;border-top:1px solid #eee;margin:9px 0">
         <b>Data Pelanggan</b><br>${esc(customer)}<br>${esc(phone)}<br><span class="meta">${esc(address)}</span>
         <hr style="border:0;border-top:1px solid #eee;margin:9px 0">
@@ -127,28 +129,31 @@ window.loadPending=async()=>{
 };
 
 window.approveOrder=async(id)=>{
-  if(!currentUser || !adminReady){ alert("Akses admin tidak valid."); return; }
+  if(!authReady || !currentUser){
+    alert("Sesi login Admin tidak ditemukan. Silakan login melalui E-Wallet Admin.");
+    return;
+  }
   if(!confirm("Setujui pesanan ini? Status akan berubah dari pending menjadi disetujui.")) return;
   try{
     const ref=doc(db,"orders",id);
     const snap=await getDoc(ref);
-    if(!snap.exists()){ alert("Pesanan tidak ditemukan."); await loadPending(); return; }
-    const order=snap.data();
-    if(order.status!=="pending"){ alert("Pesanan sudah berubah status. Muat ulang daftar."); await loadPending(); return; }
-    await updateDoc(ref,{
-      status:"disetujui",
-      disetujuiAdminUid:currentUser.uid,
-      disetujuiAdminNama:$("accountNameTop").textContent.replace(/^Halo, Kak, /,""),
-      disetujuiAdminAt:serverTimestamp(),
-      updatedAt:serverTimestamp()
-    });
-    alert("Pesanan berhasil disetujui. Status sekarang: disetujui.");
+    if(!snap.exists()){
+      alert("Pesanan tidak ditemukan.");
+      await loadPending();
+      return;
+    }
+    if(snap.data().status!=="pending"){
+      alert("Status pesanan sudah berubah. Daftar akan dimuat ulang.");
+      await loadPending();
+      return;
+    }
+    // Sesuai ketentuan: hanya field status yang diubah.
+    await updateDoc(ref,{status:"disetujui"});
+    alert("Pesanan berhasil disetujui.");
     await loadPending();
   }catch(e){
     console.error(e);
-    alert("Gagal menyetujui pesanan: "+e.message);
+    alert("Gagal mengubah status: "+e.message);
   }
 };
-
-window.copyPesan=(txt)=>{ navigator.clipboard.writeText(txt).then(()=>alert('Pesan disalin:\n'+txt)); }
 </script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
