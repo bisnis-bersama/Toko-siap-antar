@@ -203,29 +203,68 @@ function renderOrderRecord(x){
   const no=esc(x.nomorPesanan||("Pesanan "+x.id));
   const items=getOrderItems(x);
   const mitraTotal = x.mitraModalTotal || x.mitraHargaTotal || x.modalTotal || x.mitraTotal || 0;
-  const hargaInfo = mitraTotal ? `<div class="meta" style="color:#087443;font-weight:800;font-size:12px">Harga Mitra tersimpan: ${rupiah(mitraTotal)}</div>` : `<div class="meta" style="font-size:11px">Harga Mitra belum ada</div>`;
+  const hargaInfo = mitraTotal
+    ? `<div class="meta" style="color:#087443;font-weight:800;font-size:12px">Total Harga Mitra: ${rupiah(mitraTotal)}</div>`
+    : `<div class="meta" style="font-size:11px">Harga Mitra belum ada</div>`;
   const shortId = esc(x.id).slice(0,16);
+
+  const alamatData = x.alamatPengiriman || {};
+  const namaPelanggan = x.ownerName || alamatData.nama || x.namaPelanggan || "Pelanggan";
+  const noWa = x.telepon || alamatData.telepon || alamatData.noWA || x.noWA || x.whatsapp || "-";
+  const alamat = x.alamat || alamatData.alamat || alamatData.alamatLengkap || "-";
+  const lat = x.lat ?? alamatData.lat ?? x.lokasi?.lat;
+  const lng = x.lng ?? alamatData.lng ?? x.lokasi?.lng;
+  const gpsUrl = x.gpsLink || (lat !== null && lat !== undefined && lng !== null && lng !== undefined
+    ? `https://www.google.com/maps?q=${encodeURIComponent(lat)},${encodeURIComponent(lng)}`
+    : "");
+  const gpsInfo = lat !== null && lat !== undefined && lng !== null && lng !== undefined
+    ? `${esc(Number(lat).toFixed ? Number(lat).toFixed(6) : lat)}, ${esc(Number(lng).toFixed ? Number(lng).toFixed(6) : lng)}`
+    : "GPS belum tersedia";
+  const gpsHtml = gpsUrl
+    ? `<a href="${esc(gpsUrl)}" target="_blank" rel="noopener" style="display:inline-block;margin-top:5px;color:#087443;font-weight:800;text-decoration:underline">📍 Buka lokasi pelanggan di Google Maps</a>`
+    : `<span class="muted">📍 ${gpsInfo}</span>`;
+
+  const itemRows = items.length
+    ? items.map(it=>`<div class="product-row" style="grid-template-columns:1fr 60px"><div class="product-name">${esc(it.name)}</div><span class="product-qty">x ${it.qty}</span></div>`).join("")
+    : '<div class="muted">Rincian produk tidak tersedia.</div>';
+
   const sudahDikemas = String(x.status||'').toLowerCase()==='dikemas'
     || String(x.statusPemenuhan||'').toLowerCase()==='dikemas';
   const sudahDikirim = ['dikirim','dalam_pengiriman','selesai'].includes(String(x.status||'').toLowerCase());
-  const bolehProses = (x.acceptedByMitraUid===userNow?.uid || x.mitraUsahaUid===userNow?.uid || x.mitraUid===userNow?.uid)
-    && !sudahDikemas && !sudahDikirim;
+  const milikSaya = x.acceptedByMitraUid===userNow?.uid
+    || x.mitraUsahaUid===userNow?.uid
+    || x.mitraUid===userNow?.uid;
+  const bolehProses = milikSaya && !sudahDikemas && !sudahDikirim;
   const pilihanProses = bolehProses ? `<div class="actions" style="margin-top:10px">
     <button class="btn" type="button" data-order-action="pack-self" data-id="${esc(x.id)}">📦 Dikemas & Kirim Sendiri</button>
     <button class="btn dark" type="button" data-order-action="pack-courier" data-id="${esc(x.id)}">📦 Dikemas & Serahkan ke Kurir</button>
   </div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>` : '';
+
   const metodeLabel = x.metodePenyerahan==='mitra_kirim_sendiri' ? 'Dikirim sendiri oleh mitra'
     : x.metodePenyerahan==='serahkan_ke_kurir' ? 'Diserahkan ke kurir' : '';
   const infoPenyerahan = metodeLabel ? `<div class="meta">Penyerahan: <b>${metodeLabel}</b></div>` : '';
-  const products = items.length ? `<div class="products-box hidden" data-detail-box="${esc(x.id)}" style="margin-top:8px;border-top:1px dashed #e5e7eb;padding-top:8px">${items.map(it=>`<div class="product-row" style="grid-template-columns:1fr 60px"><div class="product-name">${esc(it.name)}</div><span class="product-qty">x ${it.qty}</span></div>`).join("")}<div style="margin-top:6px">${hargaInfo}</div></div>` : '';
-  return `<article class="item order-collapse" data-id="${esc(x.id)}" style="cursor:pointer">
+
+  return `<article class="item order-collapse" data-id="${esc(x.id)}">
     <div class="itemtop"><strong style="font-size:13px">${no}</strong><span class="status">${esc(status)}</span></div>
     <div class="meta">ID: ${shortId}...</div>
-    ${hargaInfo}
+
+    <div style="margin-top:10px;padding:10px;background:#f7faf8;border:1px solid #e2eee7;border-radius:10px">
+      <strong style="font-size:12px">👤 DATA PELANGGAN</strong>
+      <div style="margin-top:6px"><b>${esc(namaPelanggan)}</b></div>
+      <div class="meta">WhatsApp: <a href="https://wa.me/${esc(String(noWa).replace(/\D/g,''))}" target="_blank" rel="noopener" style="color:#087443;font-weight:800">${esc(noWa)}</a></div>
+      <div class="meta" style="margin-top:5px">Alamat: ${esc(alamat)}</div>
+      <div class="meta" style="margin-top:5px">GPS: ${gpsInfo}</div>
+      ${gpsHtml}
+    </div>
+
+    <div style="margin-top:10px;padding:10px;background:#fff;border:1px solid #e6e7e8;border-radius:10px">
+      <strong style="font-size:12px">📦 DATA PESANAN (${items.length} produk)</strong>
+      ${itemRows}
+      <div style="margin-top:7px">${hargaInfo}</div>
+      ${x.catatan ? `<div class="meta">Catatan pelanggan: ${esc(x.catatan)}</div>` : ''}
+    </div>
     ${infoPenyerahan}
-    <div class="meta" style="margin-top:6px;font-size:10px;color:#888">👁️ Klik untuk lihat produk lengkap</div>
-    ${products}
-    ${sudahDikemas ? '<div class="ok">Pesanan sudah dikemas.</div>' : ''}
+    ${sudahDikemas ? '<div class="ok" style="margin-top:8px">Pesanan sudah dikemas.</div>' : ''}
     ${pilihanProses}
   </article>`;
 }
@@ -271,13 +310,7 @@ async function loadRecords(){
     const docs=orders.filter(x=>!filter||String(x.nomorPesanan||"").toLowerCase().includes(filter)).sort((a,b)=>(asDate(b.createdAt)?.getTime()||0)-(asDate(a.createdAt)?.getTime()||0));
     box.innerHTML=docs.length?docs.map(renderOrderRecord).join(""):'<div class="muted">Tidak ada.</div>';
     // Pasang klik untuk buka tutup produk - sembunyikan dulu nama produk, hanya tampil Harga Mitra tersimpan
-    box.querySelectorAll('.order-collapse').forEach(card=>{
-      card.addEventListener('click', (e)=>{
-        if(e.target.closest('button[data-order-action]')) return;
-        const detail = card.querySelector('[data-detail-box]');
-        if(detail) detail.classList.toggle('hidden');
-      });
-    });
+
   }catch(err){box.innerHTML='<div class="err">'+esc(err.message)+'</div>';}
 }
 $("records")?.addEventListener("click",e=>{
