@@ -1,4 +1,4 @@
-<!-- FIX FINAL 2025-10-29 20:27 WIB - Baca login e-wallet + 3 checkbox COD/Kurir/Expedisi simpan ke Spreadsheet MEMBER -->
+<!-- FINAL FIX - Simpan ke MEMBER Spreadsheet - Baca login e-wallet - 3 checkbox COD/Kurir/Expedisi -->
 <!doctype html>
 <html lang="id"><head><style>
 @font-face {
@@ -21,144 +21,174 @@
 :where(code, pre, kbd, samp) {
   font-family: "Optimistic Mono", ui-monospace, monospace;
 }
-</style>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+</style><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#00a85a">
 <title>Input Produk Mitra</title>
 <style>
-*{box-sizing:border-box}body{background:#f8fdf9;margin:0;padding:12px;font-family:system-ui;max-width:480px;margin:auto}
-h2{font-size:22px;margin:14px 6px}
-.card-mitra{background:#eef6ee;border:1px solid #c8e6c9;border-radius:16px;padding:16px;margin:8px 0}
-.card-form{background:#fff;border:1px solid #e0e0e0;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 1px 4px #0001}
-label{font-weight:700;font-size:14px;margin:14px 0 6px;display:block;color:#123}
-input,select,textarea{width:100%;border:1px solid #cfe5d8;border-radius:12px;padding:14px;background:#fff;font-size:14px}
-.preview{width:100%;max-width:340px;height:200px;background:#f6f6e8;border-radius:12px;display:grid;place-items:center;margin:10px 0;overflow:hidden;border:1px dashed #ddd}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#f4fff7;color:#18312b;font:14px/1.5 system-ui,sans-serif;padding:12px;max-width:720px;margin:auto;padding-bottom:80px}
+.card{background:#fff;border:1px solid #dceee5;border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 2px 6px #0001}
+h2{color:#18312b;font-size:22px;display:flex;gap:8px;align-items:center}
+label{font-weight:700;font-size:13px;margin-top:12px;display:block}
+input,textarea,select{width:100%;border:1px solid #cfe5d8;border-radius:10px;padding:12px;margin:6px 0 10px;background:#fff}
+.check-group{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.check-card{border:2px solid #e5e7eb;border-radius:12px;padding:12px;display:flex;gap:10px;align-items:center;cursor:pointer;flex:1 1 160px;background:#fafafa}
+.check-card.active{border-color:#00a85a;background:#f0faf4}
+.check-card input{width:20px;height:20px;accent-color:#00a85a}
+.btn{border:0;border-radius:12px;padding:13px 16px;font-weight:800;cursor:pointer}
+.btn-primary{background:linear-gradient(90deg,#00a85a,#00c8d7);color:#fff;width:100%;font-size:15px}
+.muted{color:#66756f;font-size:12px}
+.ok{background:#e5fff0;color:#087b45;border:1px solid #c3ead7;border-radius:10px;padding:10px;margin:8px 0}
+.err{background:#fff0ed;color:#b42318;border:1px solid #f5c6c1;border-radius:10px;padding:10px;margin:8px 0}
+.preview{width:100%;max-width:260px;height:180px;background:#f6f6e8;border-radius:12px;display:grid;place-items:center;overflow:hidden;margin:8px 0;position:relative}
 .preview img{width:100%;height:100%;object-fit:contain}
-.check-wrap{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
-.check-box{border:2px solid #ddd;border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:8px;flex:1;cursor:pointer;background:#fafafa;font-size:13px;font-weight:600}
-.check-box.active{border-color:#00a85a;background:#e8f5e9}
-.check-box input{width:18px;height:18px;accent-color:#00a85a}
-.btn{width:100%;background:linear-gradient(90deg,#00a85a,#00c8d7);color:#fff;border:0;border-radius:12px;padding:14px;font-weight:800;font-size:15px;margin-top:12px}
-.msg{padding:10px;border-radius:10px;margin:8px 0;font-size:13px}
-.ok{background:#e5fff0;color:#087b45;border:1px solid #c3ead7}
-.err{background:#fff0ed;color:#b42318;border:1px solid #f5c6c1}
+.badge{position:absolute;bottom:4px;right:4px;background:#0008;color:#fff;font-size:10px;padding:2px 6px;border-radius:999px}
 </style></head><body>
 <h2>📦 Input Produk Mitra</h2>
 <div id="msg"></div>
-<div class="card-mitra">
-  <div style="display:flex;justify-content:space-between;align-items:center">
-    <div>
-      <b id="mitraLabel">Memuat...</b><br>
-      <span id="mitraUidLabel" style="font-size:10px;color:#666;word-break:break-all"></span>
-    </div>
-    <a href="login.html" id="btnLogin" style="display:none;background:#00a85a;color:#fff;padding:6px 14px;border-radius:20px;text-decoration:none;font-size:12px">Login</a>
-  </div>
+
+<div class="card" style="background:#e8f5e9;border-color:#a5d6a7">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div><b id="mitraLabel">Memuat...</b><br><span class="muted" id="mitraUidLabel" style="font-size:11px;word-break:break-all"></span></div>
+<a href="login.html" id="loginLink" style="display:none;background:#00a85a;color:#fff;padding:6px 12px;border-radius:20px;text-decoration:none;font-size:12px">Login</a>
+</div>
 </div>
 
-<div class="card-form">
-  <label>Nama Produk *</label>
-  <input id="nama" placeholder="Ayam goreng">
+<div class="card">
+<label>Nama Produk *</label><input id="nama" placeholder="Ayam goreng">
+<label>Harga *</label><input id="harga" type="number" placeholder="15000">
+<label>Stok</label><input id="stok" type="number" value="100">
+<label>Deskripsi / Model</label><input id="deskripsi" placeholder="jbl / Roko herbal">
+<label>Kategori</label><select id="kategori"><option>Makanan</option><option>Minuman</option><option>Sparepart</option><option>Lainnya</option><option>Pakaian</option><option>Elektronik</option></select>
+<label>Foto (auto kompres &lt;45KB)</label><input id="foto" type="file" accept="image/*">
+<div class="preview" id="preview">📦 Preview</div>
 
-  <label>Harga *</label>
-  <input id="harga" type="number" placeholder="15000">
+<h3 style="margin:16px 0 8px">🚚 Batas Pengiriman</h3>
+<p class="muted" style="margin-bottom:8px">Centang yang didukung produk ini (bisa diubah nanti oleh pemilik)</p>
+<div class="check-group">
+  <label class="check-card active" id="card_cod"><input type="checkbox" id="bisa_cod" checked><div><b>✅ COD</b><div class="muted" style="font-size:11px">Bayar ditempat</div></div></label>
+  <label class="check-card active" id="card_kurir"><input type="checkbox" id="bisa_kurir" checked><div><b>🛵 Kurir</b><div class="muted" style="font-size:11px">Siap Antar</div></div></label>
+  <label class="check-card active" id="card_expedisi"><input type="checkbox" id="bisa_expedisi" checked><div><b>📦 Expedisi</b><div class="muted" style="font-size:11px">JNE/J&T</div></div></label>
+</div>
 
-  <label>Stok</label>
-  <input id="stok" type="number" value="100">
-
-  <label>Deskripsi / Model</label>
-  <input id="deskripsi" placeholder="jbl / Roko herbal">
-
-  <label>Kategori</label>
-  <select id="kategori"><option>Makanan</option><option>Minuman</option><option>Sparepart</option><option>Lainnya</option><option>Elektronik</option><option>Pakaian</option></select>
-
-  <label>Foto (auto kompres &lt;45KB)</label>
-  <input id="foto" type="file" accept="image/*">
-  <div class="preview" id="preview">📦 Preview</div>
-
-  <!-- INI TAMBAHAN BARU - 3 CHECKBOX -->
-  <label>🚚 Batas Pengiriman (bisa diubah pemilik)</label>
-  <div class="check-wrap">
-    <label class="check-box active" id="cb1"><input type="checkbox" id="bisa_cod" checked> ✅ COD</label>
-    <label class="check-box active" id="cb2"><input type="checkbox" id="bisa_kurir" checked> 🛵 Kurir</label>
-    <label class="check-box active" id="cb3"><input type="checkbox" id="bisa_expedisi" checked> 📦 Expedisi</label>
-  </div>
-  <div style="font-size:11px;color:#666;background:#fffde7;border:1px solid #ffe082;padding:8px;border-radius:8px">Kalau makanan basah, matikan Expedisi. Kalau barang mahal, matikan COD.</div>
-
-  <button class="btn" id="btnSimpan">💾 Simpan ke Spreadsheet</button>
+<button class="btn btn-primary" id="btnSimpan">💾 Simpan ke Spreadsheet</button>
 </div>
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import {getFirestore,doc,getDoc} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
-const firebaseConfig={apiKey:"AIzaSyBxqZhl6t3RwrXMwVdJeIkg0NzGfwvlweM",authDomain:"toko-siap-antar-9a7bb.firebaseapp.com",projectId:"toko-siap-antar-9a7bb",storageBucket:"toko-siap-antar-9a7bb.firebasestorage.app",messagingSenderId:"351335838712",appId:"1:351335838712:web:14cc2c7b91bb0c9e1b5c0d"};
-const app=initializeApp(firebaseConfig);const auth=getAuth(app);const db=getFirestore(app);
-const SCRIPT_URL="https://script.google.com/macros/s/AKfycbyvY5Cfm73AStD8Kz-_qYISexH4SBGDZyE3omXT2DnZwZbwqkxXtfcJBr1AmgFFTypN/exec";
-let mitraNama='',mitraUid='',fotoPolos='',fotoKb=0;
+const firebaseConfig = {apiKey: "AIzaSyBxqZhl6t3RwrXMwVdJeIkg0NzGfwvlweM",authDomain: "toko-siap-antar-9a7bb.firebaseapp.com",projectId: "toko-siap-antar-9a7bb",storageBucket: "toko-siap-antar-9a7bb.firebasestorage.app",messagingSenderId: "351335838712",appId: "1:351335838712:web:14cc2c7b91bb0c9e1b5c0d"};
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
 
-function singkatan(n){if(!n)return 'MM';let w=n.trim().split(/\s+/);if(w.length>=2)return (w[0][0]+w[1][0]).toUpperCase();return n.slice(0,2).toUpperCase();}
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyvY5Cfm73AStD8Kz-_qYISexH4SBGDZyE3omXT2DnZwZbwqkxXtfcJBr1AmgFFTypN/exec";
+
+let mitraNama='', mitraUid='', fotoPolos='';
+
+function singkatan(n){ if(!n) return 'MM'; let w=n.trim().split(/\s+/); if(w.length>=2) return (w[0][0]+w[1][0]).toUpperCase(); return n.slice(0,2).toUpperCase(); }
 
 async function kompres(file){
- return new Promise((res,rej)=>{
-  let img=new Image(), url=URL.createObjectURL(file);
-  img.onload=()=>{
-   let max=400,w=img.width,h=img.height;
-   if(w>max){h=Math.round(h*max/w);w=max}if(h>400){w=Math.round(w*400/h);h=400}
-   let cv=document.createElement('canvas');cv.width=w;cv.height=h;
-   cv.getContext('2d').drawImage(img,0,0,w,h);
-   let q=0.5,d=cv.toDataURL('image/jpeg',q),a=0;
-   while(d.length>60000&&a<6){q-=0.07;if(q<0.15)break;d=cv.toDataURL('image/jpeg',q);a++}
-   URL.revokeObjectURL(url);
-   let polos=d.replace(/^data:image\/\w+;base64,/,'');
-   res({dataUrl:d,polos,size:Math.round(polos.length/1024*0.75)});
-  };
-  img.onerror=()=>{URL.revokeObjectURL(url);rej('gagal')};
-  img.src=url;
- });
+  return new Promise((res,rej)=>{
+    let img=new Image(); let url=URL.createObjectURL(file);
+    img.onload=()=>{
+      let max=400, w=img.width, h=img.height;
+      if(w>max){ h=Math.round(h*max/w); w=max; } if(h>400){ w=Math.round(w*400/h); h=400; }
+      let cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+      cv.getContext('2d').drawImage(img,0,0,w,h);
+      let q=0.55, d=cv.toDataURL('image/jpeg',q), a=0;
+      while(d.length>60000 && a<6){ q-=0.08; if(q<0.15) break; d=cv.toDataURL('image/jpeg',q); a++; }
+      URL.revokeObjectURL(url);
+      let polos=d.replace(/^data:image\/\w+;base64,[STRIPPED], '');
+      res({dataUrl:d, polos});
+    };
+    img.onerror=()=>{ URL.revokeObjectURL(url); rej('gagal'); };
+    img.src=url;
+  });
 }
 
-document.getElementById('foto').addEventListener('change',async e=>{
- let f=e.target.files[0];if(!f)return;
- document.getElementById('preview').innerHTML='⏳ Kompres...';
- try{let r=await kompres(f);fotoPolos=r.polos;fotoKb=r.size;document.getElementById('preview').innerHTML=`<img src="${r.dataUrl}"><span style="position:absolute;bottom:4px;right:4px;background:#0008;color:#fff;font-size:10px;padding:2px 6px;border-radius:20px">${r.size}KB</span>`;document.getElementById('preview').style.position='relative';}catch{document.getElementById('preview').innerHTML='Gagal'}
+document.getElementById('foto').addEventListener('change', async e=>{
+  let f=e.target.files[0]; if(!f) return;
+  document.getElementById('preview').innerHTML='⏳ Kompres...';
+  try{
+    let r=await kompres(f); fotoPolos=r.polos;
+    let kb=Math.round(r.polos.length/1024*0.75);
+    document.getElementById('preview').innerHTML=`<img src="${r.dataUrl}"><span class="badge">${kb}KB</span>`;
+  }catch{ document.getElementById('preview').innerHTML='Gagal'; }
 });
 
 function sync(){
- ['cod','kurir','expedisi'].forEach((k,i)=>{
-  let c=document.getElementById('bisa_'+k),b=document.getElementById('cb'+(i+1));
-  if(c.checked)b.classList.add('active');else b.classList.remove('active');
- });
+  ['cod','kurir','expedisi'].forEach(k=>{
+    let c=document.getElementById('bisa_'+k); let card=document.getElementById('card_'+k);
+    if(c.checked) card.classList.add('active'); else card.classList.remove('active');
+  });
 }
-document.querySelectorAll('.check-box input').forEach(el=>el.addEventListener('change',sync));
+document.querySelectorAll('.check-card input').forEach(i=>i.addEventListener('change', sync)); sync();
 
 document.getElementById('btnSimpan').onclick=async()=>{
- let nama=document.getElementById('nama').value.trim();
- let harga=Number(document.getElementById('harga').value);
- let stok=Number(document.getElementById('stok').value)||100;
- let desk=document.getElementById('deskripsi').value.trim();
- let kat=document.getElementById('kategori').value;
- let bisaCOD=document.getElementById('bisa_cod').checked?1:0;
- let bisaKurir=document.getElementById('bisa_kurir').checked?1:0;
- let bisaExp=document.getElementById('bisa_expedisi').checked?1:0;
- if(!nama||!harga){alert('Nama & Harga wajib');return}
- if(!fotoPolos){alert('Pilih foto');return}
- if(!mitraUid){alert('Belum login');location.href='login.html';return}
- let btn=document.getElementById('btnSimpan');btn.disabled=true;btn.textContent='Menyimpan...';
- try{
-  let id='prcd_'+Date.now();
-  let payload={action:'add_product',Column1:new Date().toLocaleString('id-ID'),Column2:id,Column3:nama,Column4:desk,Column5:harga,Column6:fotoPolos,Column7:mitraUid,Column8:mitraNama,Column9:kat,Column10:bisaCOD,Column11:bisaKurir,Column12:bisaExp,Column13:stok,ID:id,Nama:nama,Harga:harga,Deskripsi:desk,Kategori:kat,Stok:stok,Image:fotoPolos,MitraUid:mitraUid,MitraNama:mitraNama,Singkatan:singkatan(mitraNama),BisaCOD:bisaCOD,BisaKurir:bisaKurir,BisaExpedisi:bisaExp};
-  await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',body:JSON.stringify(payload)});
-  document.getElementById('msg').innerHTML=`<div class="msg ok">✅ Masuk Sheet MEMBER! ${nama} - COD:${bisaCOD?'Ya':'Tidak'} Kurir:${bisaKurir?'Ya':'Tidak'} Exp:${bisaExp?'Ya':'Tidak'}<br>Cek baris bawah Sheet</div>`;
-  document.getElementById('nama').value='';document.getElementById('harga').value='';document.getElementById('deskripsi').value='';fotoPolos='';document.getElementById('preview').innerHTML='📦 Preview';
- }catch(e){document.getElementById('msg').innerHTML=`<div class="msg err">${e.message}</div>`}
- btn.disabled=false;btn.textContent='💾 Simpan ke Spreadsheet';
+  let nama=document.getElementById('nama').value.trim();
+  let harga=Number(document.getElementById('harga').value);
+  let stok=Number(document.getElementById('stok').value)||100;
+  let deskripsi=document.getElementById('deskripsi').value.trim();
+  let kategori=document.getElementById('kategori').value;
+  let bisaCOD=document.getElementById('bisa_cod').checked?1:0;
+  let bisaKurir=document.getElementById('bisa_kurir').checked?1:0;
+  let bisaExp=document.getElementById('bisa_expedisi').checked?1:0;
+  if(!nama||!harga){ alert('Nama & Harga wajib'); return; }
+  if(!fotoPolos){ alert('Pilih foto'); return; }
+  if(!mitraUid){ alert('Belum login / Memuat masih - login dulu'); location.href='login.html'; return; }
+  let btn=document.getElementById('btnSimpan'); btn.disabled=true; btn.textContent='Menyimpan...';
+  try{
+    let id='prcd_'+Date.now();
+    let payload={
+      action:'add_product',
+      Column1: new Date().toLocaleString('id-ID'),
+      Column2: id,
+      Column3: nama,
+      Column4: deskripsi,
+      Column5: harga,
+      Column6: fotoPolos,
+      Column7: mitraUid,
+      Column8: mitraNama,
+      Column9: kategori,
+      Column10: bisaCOD,
+      Column11: bisaKurir,
+      Column12: bisaExp,
+      Column13: stok,
+      ID:id, Nama:nama, Harga:harga, Deskripsi:deskripsi, Kategori:kategori, Stok:stok, Image:fotoPolos, MitraUid:mitraUid, MitraNama:mitraNama, Singkatan:singkatan(mitraNama), BisaCOD:bisaCOD, BisaKurir:bisaKurir, BisaExpedisi:bisaExp
+    };
+    await fetch(SCRIPT_URL, {method:'POST', mode:'no-cors', body: JSON.stringify(payload)});
+    document.getElementById('msg').innerHTML=`<div class="ok">✅ Masuk Sheet MEMBER! ID ${id} - ${nama}<br>Batas: ${bisaCOD?'COD ':''}${bisaKurir?'Kurir ':''}${bisaExp?'Expedisi':''}<br>Cek Sheet baris bawah</div>`;
+    document.getElementById('nama').value=''; document.getElementById('harga').value=''; document.getElementById('deskripsi').value=''; fotoPolos=''; document.getElementById('preview').innerHTML='📦 Preview';
+  }catch(e){ document.getElementById('msg').innerHTML=`<div class="err">${e.message}</div>`; }
+  btn.disabled=false; btn.textContent='💾 Simpan ke Spreadsheet';
 };
 
-onAuthStateChanged(auth,async user=>{
- let lab=document.getElementById('mitraLabel'),uidL=document.getElementById('mitraUidLabel'),log=document.getElementById('btnLogin');
- if(!user){lab.textContent='⚠️ Belum login - klik Login';uidL.textContent='';log.style.display='inline-block';mitraUid='';mitraNama='';return;}
- mitraUid=user.uid;uidL.textContent=mitraUid;log.style.display='none';
- mitraNama=user.email||'Mitra';lab.textContent='👤 '+mitraNama; // LANGSUNG TAMPIL, GAK MEMUAT LAMA
- try{let snap=await getDoc(doc(db,'users',user.uid));if(snap.exists()){let d=snap.data();mitraNama=d.nama||d.namaToko||user.email;lab.textContent='👤 '+mitraNama+' ('+singkatan(mitraNama)+')';}}catch{}
+onAuthStateChanged(auth, async (user)=>{
+  let label=document.getElementById('mitraLabel');
+  let uidLabel=document.getElementById('mitraUidLabel');
+  let loginLink=document.getElementById('loginLink');
+  if(!user){
+    label.textContent='⚠️ Belum login - klik Login';
+    uidLabel.textContent='';
+    loginLink.style.display='inline-block';
+    mitraUid=''; mitraNama='';
+    return;
+  }
+  mitraUid=user.uid;
+  uidLabel.textContent=mitraUid;
+  loginLink.style.display='none';
+  // tampilkan email dulu biar tidak Memuat lama
+  mitraNama=user.email||'Mitra';
+  label.textContent='👤 '+mitraNama;
+  try{
+    let snap=await getDoc(doc(db,'users', user.uid));
+    if(snap.exists()){
+      let d=snap.data();
+      mitraNama=d.nama||d.namaToko||d.namaUsaha||user.email||'Mitra';
+      label.textContent='👤 '+mitraNama+' ('+singkatan(mitraNama)+')';
+    }
+  }catch(e){ console.log(e); }
 });
 </script>
 <script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
