@@ -62,12 +62,6 @@ label{display:block;font-size:11px;font-weight:700;margin:8px 0 4px}input,select
 .products-box{margin-top:8px;border-top:1px solid var(--line);padding-top:6px}
 .price-total{font-weight:850;text-align:right;margin-top:10px;padding-top:8px;border-top:2px dashed var(--line);font-size:12px}
 @media(max-width:640px){.product-row{grid-template-columns:1fr 60px;}.product-row > div:last-child{grid-column:1 / -1}}
-
-.fulfillment-summary{background:#f7f8f8;border:1px solid #e8ece9;border-radius:10px;padding:9px;margin-top:8px}
-.fulfillment-summary .line{display:flex;justify-content:space-between;gap:10px;font-size:11px;margin:3px 0}
-.fulfillment-summary .total{border-top:1px dashed #cfd7d2;padding-top:6px;margin-top:6px;font-weight:900}
-.btn.green{background:#087443;color:#fff}.btn.red{background:#b42318;color:#fff}
-.btn:disabled{opacity:.55;cursor:not-allowed}
 </style></head>
 <body>
 <header><div class="head"><div class="brandWrap">
@@ -90,248 +84,149 @@ label{display:block;font-size:11px;font-weight:700;margin:8px 0 4px}input,select
 <script type="module">
 import {auth,db} from "./firebase-config.js";
 import {onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-import {doc,getDoc,collection,getDocs,query,where,limit,runTransaction,serverTimestamp,writeBatch} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
-
-const $=id=>document.getElementById(id), EXPECTED="mitra_usaha", FEE_RATE=0.05;
-let profile=null,userNow=null,ordersCache=[];
-const money=n=>"Rp "+(Number(n)||0).toLocaleString("id-ID");
-const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-function norm(v){let x=String(v??"").trim().toLowerCase().replace(/[\s-]+/g,"_");return ({customer:"pelanggan",mitra:"mitra_usaha",mitrausaha:"mitra_usaha"})[x]||x;}
-async function profileFor(u){
-  const s=await getDoc(doc(db,"users",u.uid));if(s.exists())return s.data();
-  const q=query(collection(db,"users"),where("email","==",u.email||""),limit(1));const r=await getDocs(q);
-  if(!r.empty)return r.docs[0].data();throw Error("Profil tidak ditemukan");
-}
+import {doc,getDoc,collection,getDocs,query,where,limit,runTransaction,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+const $=id=>document.getElementById(id), EXPECTED="mitra_usaha";
+function norm(v){let x=String(v??"").trim().toLowerCase().replace(/[\s-]+/g,"_");const a={customer:"pelanggan",mitra:"mitra_usaha",mitrausaha:"mitra_usaha"};return a[x]||x;}
+async function profileFor(u){const s=await getDoc(doc(db,"users",u.uid));if(s.exists())return s.data();const q=query(collection(db,"users"),where("email","==",u.email||""),limit(1));const r=await getDocs(q);if(!r.empty)return r.docs[0].data();throw Error("Profil tidak ditemukan");}
 $("loginForm").addEventListener("submit",async e=>{e.preventDefault();$("loginMsg").textContent="Memeriksa…";try{await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);}catch(err){$("loginMsg").textContent="Login gagal: "+err.message;}});
 $("logoutBtn").onclick=()=>signOut(auth);
-
+let profile=null,userNow=null;
 onAuthStateChanged(auth,async u=>{
   if(!u){$("loginPanel").classList.remove("hidden");$("app").classList.add("hidden");$("logoutBtn").classList.add("hidden");$("bottom").classList.add("hidden");return;}
-  try{
-    userNow=u;profile=await profileFor(u);
-    const role=norm(profile.role);
-    if(role!==EXPECTED)throw Error("Halaman ini khusus Mitra Usaha.");
-    if(profile.status && profile.status!=="aktif")throw Error("Akun mitra belum aktif.");
-    $("loginPanel").classList.add("hidden");$("app").classList.remove("hidden");
-    $("logoutBtn").classList.remove("hidden");$("bottom").classList.remove("hidden");
-    $("greeting").textContent="Pesanan yang sudah disetujui Admin akan muncul di sini. Pilih cara pemenuhan atau batalkan jika ada kendala.";
-    $("greetingTop").textContent="Halo, "+(profile.nama||profile.namaUsaha||"Mitra");$("greetingTop").style.display="block";
-    await loadOffers();await loadRecords();
-  }catch(err){$("loginPanel").classList.remove("hidden");$("app").classList.add("hidden");$("loginMsg").textContent=err.message;}
+  try{userNow=u;profile=await profileFor(u);const role=norm(profile.role);if(role!==EXPECTED)throw Error("Role harus mitra_usaha, Anda: "+role);if(profile.status!=='aktif'||profile.aktif!==true)throw Error("Akun belum aktif");$("loginPanel").classList.add("hidden");$("app").classList.remove("hidden");$("logoutBtn").classList.remove("hidden");$("bottom").classList.remove("hidden");$("greeting").textContent="Halo, "+(profile.nama||profile.namaUsaha||u.email)+" — Isi harga mitra manual, harga jual disembunyikan.";$("greetingTop").textContent="Halo, "+(profile.nama||profile.namaUsaha||"Mitra");$("greetingTop").style.display="block";await loadOffers();await loadRecords();}catch(err){$("loginPanel").classList.remove("hidden");$("app").classList.add("hidden");$("loginMsg").textContent=err.message;}
 });
+const esc=v=>String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function asDate(v){if(!v)return null;if(typeof v.toDate==="function")return v.toDate();if(v instanceof Date)return v;const d=new Date(v);return Number.isNaN(d.getTime())?null:d;}
+function firstDate(x,keys){for(const k of keys){const d=asDate(x[k]);if(d)return d;}return null;}
+function fmtLeft(ms){if(ms<=0)return "00:00";const sec=Math.floor(ms/1000);return String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0");}
+function rupiah(n){return 'Rp '+(Number(n)||0).toLocaleString('id-ID')}
+function isAssignedToMe(x){const uid=userNow?.uid;return !!uid && (x.mitraUsahaUid===uid || x.mitraUid===uid || x.acceptedByMitraUid===uid || (Array.isArray(x.mitraCandidateUids)&&x.mitraCandidateUids.includes(uid)) || x.statusPemenuhan==='pending_mitra');}
+function isAccepted(x){return !!(x.acceptedByMitraUid) || ["diterima_mitra","mitra_menerima","diproses_mitra"].includes(String(x.status||"").toLowerCase());}
+function offerStart(x){return firstDate(x,["offerSentAt","createdAt"]);}
+function orderStart(x){return firstDate(x,["createdAt"]);}
 
-function asDate(v){if(!v)return null;if(typeof v.toDate==="function")return v.toDate();const d=new Date(v);return Number.isNaN(d.getTime())?null:d;}
-function getQty(it){return Math.max(1,Number(it.qty??it.jumlah??1)||1);}
-function itemUnitPrice(it){
-  const direct=[it.hargaJual,it.hargaProduk,it.harga,it.price,it.unitPrice,it.displayPrice,it.displayedPrice].map(Number).find(n=>Number.isFinite(n)&&n>0);
-  if(direct)return direct;
-  const sub=Number(it.subtotal??it.totalHarga??it.total??0);
-  return sub>0?sub/getQty(it):0;
-}
-function itemSubtotal(it){const sub=Number(it.subtotal??it.totalHarga??it.total??0);return sub>0?sub:itemUnitPrice(it)*getQty(it);}
-function getShipping(x){
-  return Number(x.ongkir??x.biayaOngkir??x.shippingCost??x.shippingFee??x.totalOngkir??x.alamatPengiriman?.ongkir??0)||0;
-}
-function getCustomerUid(x){return x.pelangganUid||x.customerUid||x.ownerUid||x.uid||x.userUid||x.createdByUid||"";}
-function getCustomerName(x){return x.ownerName||x.namaPelanggan||x.customerName||x.namaPemesan||"Pelanggan";}
-function getOrderNo(x){return x.nomorPesanan||("Pesanan "+x.id);}
-function groupForMe(x){
-  const uid=userNow.uid;
-  if(x._collection==="mitra_orders"){
-    const assigned=x.mitraUid||x.mitraUsahaUid||x.ownerMitraUid||"";
-    return assigned===uid?{...x,items:Array.isArray(x.items)?x.items:[]}:null;
+function productDeliveryLabels(it){
+  // Sumber utama: snapshot metode pengiriman yang tersimpan pada masing-masing item pesanan.
+  const enabled=v=>v===true||['1','true','ya','yes','aktif'].includes(String(v??'').trim().toLowerCase());
+  const labels=[];
+  if(enabled(it.cod)) labels.push('COD');
+  if(enabled(it.kurir)) labels.push('Kurir Siap Antar');
+  if(enabled(it.expedisi)||enabled(it.ekspedisi)) labels.push('Ekspedisi');
+  // Kompatibilitas bila checkout menyimpan pilihan dalam bentuk teks.
+  const raw=it.metodePengiriman??it.metode_pengiriman??it.jenisPengiriman??it.deliveryMethod??it.shippingMethod??it.pengiriman;
+  if(!labels.length&&raw){
+    const v=String(raw).trim();
+    if(v) labels.push(v.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()));
   }
-  const groups=x.mitraGroupDetails;
-  if(Array.isArray(groups)){
-    const g=groups.find(v=>(v.mitraUid||v.mitraUsahaUid||v.uid||v.ownerUid)===uid);
-    if(g)return g;
-  }else if(groups && typeof groups==="object"){
-    if(groups[uid])return groups[uid];
-    const g=Object.values(groups).find(v=>(v.mitraUid||v.mitraUsahaUid||v.uid||v.ownerUid)===uid);
-    if(g)return g;
-  }
-  const all=Array.isArray(x.items)?x.items:[];
-  const mine=all.filter(it=>(it.mitraUid||it.mitraUsahaUid||it.ownerUid||it.sellerUid)===uid);
-  if(mine.length)return {mitraUid:uid,items:mine};
-  if((x.mitraUsahaUid||x.mitraUid||x.acceptedByMitraUid)===uid)return {mitraUid:uid,items:all};
-  return null;
+  return labels.length?labels.join(' · '):'Belum tercatat pada data item';
 }
-function isAssigned(x){return !!groupForMe(x) && !["dibatalkan","dibatalkan_mitra","selesai","ditolak_mitra"].includes(String(x.status||"").toLowerCase());}
-function isAwaitingMitra(x){
-  const s=String(x.statusPemenuhan||x.status||"").toLowerCase();
-  return ["pending_mitra","menunggu_mitra","menunggu_harga_mitra","diteruskan_ke_mitra","menunggu_persetujuan_mitra"].includes(s) &&
-    !x.mitraFulfillmentChoice && !x.fulfillmentChoice && !x.mitraDibatalkanAt;
+function productRowsModalOnly(x){
+  const items=Array.isArray(x.items)?x.items:[];
+  if(!items.length)return '<div class="notice">Tidak ada produk.</div>';
+  const rows=items.map((it,i)=>{
+    const name=it.nama||it.namaProduk||it.name||('Produk '+(i+1));
+    const qty=Number(it.qty||it.jumlah||1)||1;
+    const savedModal = Array.isArray(x.mitraHargaItems) && x.mitraHargaItems[i] ? x.mitraHargaItems[i].hargaModal : '';
+    const delivery=productDeliveryLabels(it);
+    return `<div class="product-row">
+      <div><div class="product-name">${esc(name)}</div><div class="muted" style="font-size:10px">Kode: ${esc(it.kode||it.produkId||it.id||'-')} | ${esc(it.satuan||'pcs')}</div><div style="margin-top:5px;padding:5px 7px;border-radius:8px;background:#fff8d9;color:#695300;font-size:10px"><b>Metode pengiriman produk:</b> ${esc(delivery)}</div></div>
+      <div class="product-qty">x ${qty}</div>
+      <div><label style="font-size:10px;margin:0 0 3px;display:block;font-weight:700">Harga Mitra *</label><input class="modal-input" type="number" min="0" step="100" inputmode="numeric" data-modal-index="${i}" data-qty="${qty}" data-nama="${esc(name)}" value="${savedModal!==''?Number(savedModal):''}" placeholder="Isi harga mitra" required></div>
+    </div>`;
+  }).join('');
+  return `<div class="products-box"><strong style="font-size:12px">Produk yang dipesan (${items.length} item) - Harga jual disembunyikan, isi modal saja</strong><div class="notice" style="margin:7px 0">Metode pengiriman di bawah setiap produk mengikuti pengaturan produk saat dipesan. Mitra menangani sesuai metode tersebut.</div>${rows}<div class="price-total">Total Harga Mitra: <span id="modalTotal-${x.id}" style="color:#008b5a">Rp 0 (isi dulu)</span></div><div style="margin-top:6px"><label style="font-size:10px;margin-top:6px">Catatan Harga Mitra (opsional)</label><textarea class="catatanModal" data-id="${x.id}" rows="2" placeholder="Contoh: harga mitra dari gudang A"></textarea></div></div>`;
 }
-function moneyLines(x,g){
-  const items=Array.isArray(g?.items)?g.items:(Array.isArray(x.items)?x.items:[]);
-  const productTotal=items.reduce((a,it)=>a+itemSubtotal(it),0);
-  const allGroups=x.mitraGroupDetails;
-  let shipping=Number(g?.ongkir??g?.biayaOngkir??g?.shippingCost??0)||0;
-  if(!shipping){
-    const groupsCount=Array.isArray(allGroups)?allGroups.length:(allGroups&&typeof allGroups==="object"?Object.keys(allGroups).length:0);
-    if(groupsCount<=1)shipping=getShipping(x);
-    else if(x.ongkirPerMitra && x.ongkirPerMitra[userNow.uid]!=null)shipping=Number(x.ongkirPerMitra[userNow.uid])||0;
-  }
-  const fee=Math.round(productTotal*FEE_RATE);
-  return {items,productTotal,shipping,fee,mitraNet:productTotal-fee,total:productTotal+shipping};
-}
-function renderOrder(x,mode){
-  const g=groupForMe(x),calc=moneyLines(x,g),status=String(x.statusPemenuhan||x.status||"menunggu mitra").replace(/_/g," ");
-  const rows=calc.items.map((it,i)=>`<div class="product-row" style="grid-template-columns:minmax(0,1fr) 55px 110px"><div><div class="product-name">${esc(it.nama||it.namaProduk||it.name||("Produk "+(i+1)))}</div><div class="meta">${esc(it.kode||it.produkId||"")}</div></div><div class="product-qty">x ${getQty(it)}</div><div style="text-align:right;font-weight:800">${money(itemSubtotal(it))}</div></div>`).join("");
-  const no=esc(getOrderNo(x));
-  const chosen=x.mitraFulfillmentChoice||x.fulfillmentChoice||"";
-  const choiceLabel=chosen==="antar_sendiri"?"Disetujui · Antar sendiri":chosen==="lempar_kurir"?"Disetujui · Dikirim kurir":chosen==="batal"?"Dibatalkan":"Menunggu keputusan mitra";
-  const summary=`<div class="fulfillment-summary">
-    <div class="line"><span>Nilai produk</span><b>${money(calc.productTotal)}</b></div>
-    <div class="line"><span>Ongkir</span><b>${money(calc.shipping)}</b></div>
-    <div class="line"><span>Potongan admin 5% (ditahan)</span><b>${money(calc.fee)}</b></div>
-    <div class="line"><span>Bagian mitra setelah potongan</span><b>${money(calc.mitraNet)}</b></div>
-    <div class="line total"><span>Total nilai pesanan</span><b>${money(calc.total)}</b></div>
-  </div>`;
-  const actions=!chosen?`<div class="actions">
-    <button class="btn green" data-action="self" data-id="${esc(x.id)}">✅ Setujui & Antar Sendiri</button>
-    <button class="btn dark" data-action="courier" data-id="${esc(x.id)}">🛵 Setujui & Lempar ke Kurir</button>
-    <button class="btn red" data-action="cancel" data-id="${esc(x.id)}">Batalkan · Produk kosong/kendala</button>
-  </div>`:`<div class="notice">${esc(choiceLabel)}. ${chosen==="batal"?"Pengembalian dana diproses ke e-wallet pelanggan.":"Dana dicatat sesuai pilihan pemenuhan."}</div>`;
-  return `<article class="item" data-order-id="${esc(x.id)}" data-collection="${esc(x._collection||"orders")}"><div class="itemtop"><strong>${no}</strong><span class="status">${esc(status)}</span></div>
-    <div class="meta">Pelanggan: ${esc(getCustomerName(x))} · ${esc(x.alamat||x.alamatPengiriman?.alamat||"-")}</div>
-    <div class="products-box">${rows||'<div class="muted">Produk tidak ditemukan pada grup mitra ini.</div>'}</div>
-    ${summary}<div class="meta">Status pilihan: <b>${esc(choiceLabel)}</b></div>${actions}<div class="offer-message"></div></article>`;
+
+function getOrderItems(x){const arr=Array.isArray(x.items)?x.items:[];return arr.map(it=>({name:it.nama||it.name||"Produk",qty:Number(it.qty||1)||1}));}
+const offerOrderItemsById=new Map();
+function renderOffer(x){
+  offerOrderItemsById.set(String(x.id),Array.isArray(x.items)?x.items:[]);
+  const start=offerStart(x), orderAt=orderStart(x);
+  const offerDeadline=start?start.getTime()+15*60*1000:null;
+  const status=String(x.status||"menunggu_mitra");
+  const accepted=isAccepted(x);
+  const title=esc(x.nomorPesanan||("Pesanan "+x.id));
+  const customer=esc(x.ownerName||"Pelanggan");
+  const address=esc(x.alamat||x.alamatPengiriman?.alamat||"-");
+  const overdue=offerDeadline!==null&&Date.now()>=offerDeadline;
+  return `<article class="item" data-offer-id="${esc(x.id)}" data-order-id="${esc(x.id)}"><div class="itemtop"><strong style="font-size:13px">${title}</strong><span class="status">${esc(status.replace(/_/g," "))}</span></div><div class="meta">ID: ${esc(x.id)} | Pelanggan: ${customer} | Alamat: ${address}</div>${productRowsModalOnly(x)}${!accepted?`<div class="meta" style="margin-top:8px">Batas: <b class="offer-countdown" data-start="${start?start.getTime():""}">${!start?"-":overdue?"Terlambat":fmtLeft(offerDeadline-Date.now())}</b></div>`:''}${accepted?`<div class="ok">Sudah diterima - harga mitra tersimpan</div>`:`<div class="actions"><button class="btn" type="button" data-action="accept" data-id="${esc(x.id)}">✅ Terima + Simpan Harga Mitra</button><button class="btn dark" type="button" data-action="decline" data-id="${esc(x.id)}">Tolak</button></div>`}<div class="offer-message"></div></article>`;
 }
 async function fetchAssignedOrders(){
-  const found=new Map(),uid=userNow.uid;
-  // Pesanan baru dari persetujuan Admin disimpan per mitra di mitra_orders.
-  const childQueries=[
-    query(collection(db,"mitra_orders"),where("mitraUid","==",uid)),
-    query(collection(db,"mitra_orders"),where("mitraUsahaUid","==",uid))
-  ];
-  for(const q of childQueries){
-    try{const snap=await getDocs(q);snap.docs.forEach(d=>found.set("mitra_orders:"+d.id,{id:d.id,_collection:"mitra_orders",...d.data()}));}
-    catch(e){console.warn("Query mitra_orders:",e.message);}
-  }
-  // Kompatibilitas untuk pesanan lama yang masih berada langsung di orders.
-  if(!found.size){
-    const legacy=[
-      query(collection(db,"orders"),where("statusPemenuhan","==","pending_mitra")),
-      query(collection(db,"orders"),where("mitraUsahaUid","==",uid)),
-      query(collection(db,"orders"),where("mitraUid","==",uid)),
-      query(collection(db,"orders"),where("acceptedByMitraUid","==",uid)),
-      query(collection(db,"orders"),where("mitraCandidateUids","array-contains",uid)),
-      query(collection(db,"orders"),where("status","==","menunggu_mitra"))
-    ];
-    for(const q of legacy){try{const snap=await getDocs(q);snap.docs.forEach(d=>found.set("orders:"+d.id,{id:d.id,_collection:"orders",...d.data()}));}catch(e){console.warn("Query pesanan lama:",e.message);}}
-  }
-  return [...found.values()].filter(isAssigned);
+  const found=new Map(), uid=userNow.uid;
+  const attempts=[query(collection(db,"orders"),where("statusPemenuhan","==","pending_mitra")),query(collection(db,"orders"),where("mitraUsahaUid","==",uid)),query(collection(db,"orders"),where("mitraUid","==",uid)),query(collection(db,"orders"),where("acceptedByMitraUid","==",uid)),query(collection(db,"orders"),where("mitraCandidateUids","array-contains",uid))];
+  for(const q of attempts){try{const snap=await getDocs(q);snap.docs.forEach(d=>found.set(d.id,{id:d.id,...d.data()}));}catch(e){}}
+  return {orders:[...found.values()].filter(isAssignedToMe)};
 }
 async function loadOffers(){
   const box=$("offerRecords");box.innerHTML='<div class="muted">Memuat…</div>';
-  try{
-    ordersCache=await fetchAssignedOrders();
-    const active=ordersCache.filter(isAwaitingMitra);
-    box.innerHTML=active.length?active.map(x=>renderOrder(x,"offer")).join(""):'<div class="muted">Belum ada pesanan baru yang menunggu keputusan.</div>';
-  }catch(err){box.innerHTML='<div class="err">'+esc(err.message)+'</div>';}
+  try{const {orders}=await fetchAssignedOrders();const active=orders.filter(x=>!isAccepted(x)&&!["ditolak_mitra","dibatalkan","selesai"].includes(String(x.status||"").toLowerCase()));box.innerHTML=active.length?active.map(renderOffer).join(""):'<div class="muted">Belum ada penawaran.</div>';attachModalListeners();updateTimers();}catch(err){box.innerHTML='<div class="err">'+esc(err.message)+'</div>';}
 }
-function renderHistory(x){
-  const g=groupForMe(x),c=moneyLines(x,g);
-  return `<article class="item"><div class="itemtop"><strong>${esc(getOrderNo(x))}</strong><span class="status">${esc(String(x.statusPemenuhan||x.status||"-").replace(/_/g," "))}</span></div>
-  <div class="meta">Pilihan: ${esc(x.mitraFulfillmentChoice||x.fulfillmentChoice||"-")} · ${esc(asDate(x.mitraFulfillmentAt)?.toLocaleString("id-ID")||"")}</div>
-  <div class="meta">Produk ${money(c.productTotal)} · Ongkir ${money(c.shipping)} · Potongan admin tertahan ${money(c.fee)}</div></article>`;
+function attachModalListeners(){document.querySelectorAll('.modal-input').forEach(inp=>{inp.addEventListener('input', e=>{const card=e.target.closest('[data-order-id]');if(!card)return;calcModalTotal(card);});});}
+function calcModalTotal(card){const id=card.dataset.orderId;let total=0;card.querySelectorAll('.modal-input').forEach(inp=>{const qty=Number(inp.dataset.qty||1);const modal=Number(inp.value||0);total+=modal*qty;});const el=card.querySelector(`#modalTotal-${id}`);if(el)el.textContent=rupiah(total);return total;}
+async function handleOfferAction(id,action,card){
+  const msg=card.querySelector(".offer-message"), btns=card.querySelectorAll("button[data-action]");btns.forEach(b=>b.disabled=true);msg.className="meta";msg.textContent="Memproses…";
+  try{
+    const modalInputs=[...card.querySelectorAll('.modal-input')];
+    let mitraHargaItems=[];let modalTotal=0;let valid=true;
+    if(action==="accept"){
+      if(modalInputs.length===0)valid=false;
+      modalInputs.forEach((inp,i)=>{
+        const qty=Number(inp.dataset.qty||1);const nama=inp.dataset.nama||('Produk '+(i+1));const modal=Number(inp.value);
+        if(!Number.isFinite(modal)||modal<=0){valid=false;inp.classList.add('err-input');}else{inp.classList.remove('err-input');modalTotal+=modal*qty;const sourceItem=(offerOrderItemsById.get(String(id))||[])[i]||null;mitraHargaItems.push({nama,qty,hargaModal:modal,subtotalModal:modal*qty,...(sourceItem?{cod:sourceItem.cod??false,kurir:sourceItem.kurir??false,expedisi:sourceItem.expedisi??sourceItem.ekspedisi??false,metodePengiriman:sourceItem.metodePengiriman??sourceItem.metode_pengiriman??sourceItem.jenisPengiriman??sourceItem.deliveryMethod??sourceItem.shippingMethod??sourceItem.pengiriman??null}:{})});}
+      });
+      if(!valid)throw Error("Isi semua Harga Mitra (harus >0) sebelum terima.");
+    }
+    const catatanEl=card.querySelector('.catatanModal');const catatan=catatanEl?catatanEl.value.trim():'';
+    const ref=doc(db,"orders",id);
+    await runTransaction(db,async tx=>{
+      const snap=await tx.get(ref);if(!snap.exists())throw Error("Pesanan tidak ditemukan");const x=snap.data();if(x.mitraUsahaUid && x.mitraUsahaUid!==userNow.uid && x.acceptedByMitraUid)throw Error("Sudah diambil mitra lain");
+      if(action==="accept"){
+        tx.update(ref,{status:"diterima_mitra",statusPemenuhan:"diterima_mitra",acceptedByMitraUid:userNow.uid,mitraUsahaUid:userNow.uid,mitraUid:userNow.uid,mitraNama:profile?.namaUsaha||profile?.nama||"",mitraHargaItems,mitraModalTotal:modalTotal,modalTotal,mitraCatatanModal:catatan,mitraAcceptedAt:serverTimestamp(),updatedAt:serverTimestamp()});
+      }else{tx.update(ref,{mitraDitolakUid:userNow.uid,mitraCandidatesTried:arrayUnion(userNow.uid),updatedAt:serverTimestamp()});}
+    });
+    msg.className="ok";msg.textContent=action==="accept"?`Diterima! Total harga mitra ${rupiah(modalTotal)} tersimpan.`:"Ditolak.";await loadOffers();await loadRecords();
+  }catch(err){msg.className="err";msg.textContent=err.message;btns.forEach(b=>b.disabled=false);}
+}
+$("offerRecords")?.addEventListener("click",e=>{const b=e.target.closest("button[data-action]");if(!b)return;const card=b.closest("[data-offer-id]");if(card)handleOfferAction(b.dataset.id,b.dataset.action,card);});
+function updateTimers(){document.querySelectorAll(".offer-countdown[data-start]").forEach(el=>{const n=Number(el.dataset.start);if(n){const left=n+15*60*1000-Date.now();el.textContent=left>0?fmtLeft(left):"Terlambat";}else el.textContent="-";});}
+function renderOrderRecord(x){
+  const status=String(x.status||"").replace(/_/g," ");
+  const no=esc(x.nomorPesanan||("Pesanan "+x.id));
+  const items=getOrderItems(x);
+  const mitraTotal = x.mitraModalTotal || x.mitraHargaTotal || x.modalTotal || x.mitraTotal || 0;
+  const hargaInfo = mitraTotal ? `<div class="meta" style="color:#087443;font-weight:800;font-size:12px">Harga Mitra tersimpan: ${rupiah(mitraTotal)}</div>` : `<div class="meta" style="font-size:11px">Harga Mitra belum ada</div>`;
+  const shortId = esc(x.id).slice(0,16);
+  // Produk disembunyikan dulu - hanya tampil setelah klik
+  const products = items.length ? `<div class="products-box hidden" data-detail-box="${esc(x.id)}" style="margin-top:8px;border-top:1px dashed #e5e7eb;padding-top:8px">${items.map(it=>`<div class="product-row" style="grid-template-columns:1fr 60px"><div class="product-name">${esc(it.name)}</div><span class="product-qty">x ${it.qty}</span></div>`).join("")}<div style="margin-top:6px">${hargaInfo}</div></div>` : '';
+  return `<article class="item order-collapse" data-id="${esc(x.id)}" style="cursor:pointer">
+    <div class="itemtop"><strong style="font-size:13px">${no}</strong><span class="status">${esc(status)}</span></div>
+    <div class="meta">ID: ${shortId}...</div>
+    ${hargaInfo}
+    <div class="meta" style="margin-top:6px;font-size:10px;color:#888">👁️ Klik untuk lihat produk lengkap</div>
+    ${products}
+  </article>`;
 }
 async function loadRecords(){
   const box=$("records");box.innerHTML='<div class="muted">Memuat…</div>';
   const filter=($("filter")?.value||"").trim().toLowerCase();
   try{
-    const docs=(ordersCache.length?ordersCache:await fetchAssignedOrders()).filter(x=>!isAwaitingMitra(x)&&(!filter||String(x.nomorPesanan||"").toLowerCase().includes(filter)))
-      .sort((a,b)=>(asDate(b.createdAt)?.getTime()||0)-(asDate(a.createdAt)?.getTime()||0));
-    box.innerHTML=docs.length?docs.map(renderHistory).join(""):'<div class="muted">Belum ada riwayat keputusan.</div>';
+    const {orders}=await fetchAssignedOrders();
+    const docs=orders.filter(x=>!filter||String(x.nomorPesanan||"").toLowerCase().includes(filter)).sort((a,b)=>(asDate(b.createdAt)?.getTime()||0)-(asDate(a.createdAt)?.getTime()||0));
+    box.innerHTML=docs.length?docs.map(renderOrderRecord).join(""):'<div class="muted">Tidak ada.</div>';
+    // Pasang klik untuk buka tutup produk - sembunyikan dulu nama produk, hanya tampil Harga Mitra tersimpan
+    box.querySelectorAll('.order-collapse').forEach(card=>{
+      card.addEventListener('click', (e)=>{
+        const detail = card.querySelector('[data-detail-box]');
+        if(detail){
+          detail.classList.toggle('hidden');
+          const hint = card.querySelector('.meta:last-of-type');
+        }
+      });
+    });
   }catch(err){box.innerHTML='<div class="err">'+esc(err.message)+'</div>';}
 }
-async function findAdminUid(x){
-  if(x.adminUid||x.disetujuiAdminUid)return x.adminUid||x.disetujuiAdminUid;
-  const q=query(collection(db,"users"),where("role","==","admin"),limit(2));
-  const snap=await getDocs(q);
-  if(snap.empty)throw Error("Profil Admin tidak ditemukan. Tidak bisa menyiapkan bagian potongan Admin 5%.");
-  if(snap.size>1)throw Error("Ada lebih dari satu akun Admin. Tambahkan adminUid pada dokumen pesanan agar komisi masuk ke akun yang benar.");
-  return snap.docs[0].id;
-}
-function customerTotal(x,calc){
-  const v=[x.totalBayar,x.grandTotal,x.totalHarga,x.total,x.amount,x.totalPembayaran].map(Number).find(n=>Number.isFinite(n)&&n>0);
-  return v||calc.total;
-}
-async function executeChoice(id,action,card){
-  const buttons=card.querySelectorAll("button[data-action]"),msg=card.querySelector(".offer-message");
-  buttons.forEach(b=>b.disabled=true);msg.className="meta";msg.textContent="Memproses keputusan dan pembukuan…";
-  try{
-    const collectionName=card.dataset.collection||"mitra_orders";
-    const ref=doc(db,collectionName,id),snap=await getDoc(ref);if(!snap.exists())throw Error("Pesanan tidak ditemukan.");
-    const x={id,_collection:collectionName,...snap.data()},g=groupForMe(x);if(!g)throw Error("Pesanan ini bukan milik akun mitra Anda.");
-    if(x.mitraFulfillmentChoice||x.fulfillmentChoice)throw Error("Keputusan mitra untuk pesanan ini sudah tercatat.");
-    const calc=moneyLines(x,g);
-    if(!calc.items.length||calc.productTotal<=0)throw Error("Nilai produk tidak terbaca. Periksa field harga pada items sebelum melanjutkan.");
-    const customerUid=getCustomerUid(x);
-    if(action==="cancel"&&!customerUid)throw Error("UID pelanggan tidak ditemukan. Tidak bisa mengembalikan dana.");
-    const adminUid=action==="cancel"?null:await findAdminUid(x);
-    if(action==="cancel"&&customerUid===userNow.uid)throw Error("UID pelanggan tidak valid.");
-    const feeId=doc(collection(db,"ewallet_transactions")).id;
-    const mitraTxId=doc(collection(db,"ewallet_transactions")).id;
-    const customerTxId=doc(collection(db,"ewallet_transactions")).id;
-    const courierTxId=doc(collection(db,"ewallet_transactions")).id;
-    let courierUid=x.kurirUid||x.courierUid||"";
-    if(action==="courier"&&!courierUid){
-      const cq=query(collection(db,"users"),where("role","==","kurir"),where("status","==","aktif"),limit(1));
-      const cs=await getDocs(cq);
-      // No kurir is assigned here: the order is made available to the courier queue.
-      if(!cs.empty)courierUid="";
-    }
-    const parentId=x.orderId||x.parentOrderId||id;
-    const parentRef=parentId!==id?doc(db,"orders",parentId):null;
-    await runTransaction(db,async tx=>{
-      const orderSnap=await tx.get(ref);if(!orderSnap.exists())throw Error("Pesanan tidak ditemukan.");
-      let parentSnap=null;
-      if(parentRef){parentSnap=await tx.get(parentRef);if(!parentSnap.exists())throw Error("Pesanan induk tidak ditemukan.");}
-      const current=orderSnap.data();
-      if(current.mitraFulfillmentChoice||current.fulfillmentChoice)throw Error("Pesanan sudah diproses oleh mitra.");
-      const mitraRef=doc(db,"users",userNow.uid),mitraSnap=await tx.get(mitraRef);
-      if(!mitraSnap.exists())throw Error("Profil e-wallet mitra tidak ditemukan.");
-      const mitraData=mitraSnap.data();
-      const mitraOld=Number(mitraData.saldoEwallet??mitraData.saldoWallet??mitraData.saldo??0)||0;
-      const now=serverTimestamp();
-      if(action==="cancel"){
-        const custRef=doc(db,"users",customerUid),custSnap=await tx.get(custRef);
-        if(!custSnap.exists())throw Error("Akun pelanggan tidak ditemukan.");
-        const cust=custSnap.data(),refund=calc.total;
-        const old=Number(cust.saldoEwallet??cust.saldoWallet??cust.saldo??0)||0;
-        const next=old+refund;
-        tx.update(custRef,{saldoEwallet:next,saldoWallet:next,saldo:next,updatedAt:now});
-        tx.set(doc(db,"ewallet_transactions",customerTxId),{uid:customerUid,role:"pelanggan",type:"Pengembalian dana pesanan",direction:"credit",amount:refund,balanceBefore:old,balanceAfter:next,orderId:parentId,mitraOrderId:id,nomorPesanan:current.nomorPesanan||parentId,status:"berhasil",note:"Pengembalian penuh karena pesanan dibatalkan mitra",createdAt:now});
-        tx.update(ref,{status:"dibatalkan",statusPemenuhan:"dibatalkan_mitra",mitraFulfillmentChoice:"batal",mitraDibatalkanUid:userNow.uid,mitraDibatalkanAt:now,refundPelanggan:refund,refundStatus:"berhasil",updatedAt:now});
-      }else{
-        const net=calc.productTotal-calc.fee;
-        const shippingToMitra=action==="self"?calc.shipping:0;
-        const mitraCredit=net+shippingToMitra;
-        const mitraNext=mitraOld+mitraCredit;
-        tx.update(mitraRef,{saldoEwallet:mitraNext,saldoWallet:mitraNext,saldo:mitraNext,totalPendapatan:(Number(mitraData.totalPendapatan||0)+mitraCredit),updatedAt:now});
-        tx.set(doc(db,"ewallet_transactions",mitraTxId),{uid:userNow.uid,role:"mitra_usaha",type:action==="self"?"Pendapatan pesanan · antar sendiri":"Pendapatan produk pesanan",direction:"credit",amount:mitraCredit,balanceBefore:mitraOld,balanceAfter:mitraNext,orderId:parentId,mitraOrderId:id,nomorPesanan:current.nomorPesanan||parentId,status:"berhasil",createdAt:now,detail:{nilaiProduk:calc.productTotal,potonganAdmin5Persen:calc.fee,ongkirDiterimaMitra:shippingToMitra,mode:action}});
-        if(calc.fee>0){
-          tx.set(doc(db,"ewallet_transactions",feeId),{uid:adminUid,role:"admin",type:"Komisi Admin 5% · menunggu konfirmasi pelanggan",direction:"credit",amount:calc.fee,orderId:parentId,mitraOrderId:id,nomorPesanan:current.nomorPesanan||parentId,status:"menunggu_konfirmasi_pelanggan",createdAt:now,note:"Belum masuk saldo. Akan dibukukan setelah pelanggan mengonfirmasi pesanan tiba."});
-        }
-        if(action==="courier"){
-          const courierOrderRef=doc(collection(db,"kurir_orders"));
-          tx.set(courierOrderRef,{orderId:parentId,mitraOrderId:id,nomorPesanan:current.nomorPesanan||parentId,uid:current.uid||customerUid,pelangganUid:customerUid,pelangganNama:getCustomerName(current),alamat:current.alamat||current.alamatPengiriman?.alamat||"",items:calc.items,ongkir:calc.shipping,shippingFee:calc.shipping,penghasilanKurir:calc.shipping,status:"menunggu_kurir",statusPemenuhan:"menunggu_kurir",mitraUid:userNow.uid,mitraUsahaUid:userNow.uid,mitraNama:profile.namaUsaha||profile.nama||"",createdAt:now,updatedAt:now});
-        }
-        tx.update(ref,{status:action==="self"?"diproses_mitra":"menunggu_kurir",statusPemenuhan:action==="self"?"diterima_mitra_antar_sendiri":"menunggu_kurir",mitraFulfillmentChoice:action==="self"?"antar_sendiri":"lempar_kurir",fulfillmentChoice:action==="self"?"antar_sendiri":"lempar_kurir",mitraFulfillmentAt:now,acceptedByMitraUid:userNow.uid,mitraUsahaUid:userNow.uid,mitraUid:userNow.uid,mitraHargaProdukTotal:calc.productTotal,ongkirMitra:shippingToMitra,ongkirKurir:action==="courier"?calc.shipping:0,potonganAdminRate:FEE_RATE,potonganAdminNominal:calc.fee,potonganAdminStatus:"menunggu_konfirmasi_pelanggan",potonganAdminUid:adminUid,potonganAdminTransaksiId:feeId,mitraDiterimaBersih:mitraCredit,updatedAt:now});
-        if(parentRef){
-          tx.update(parentRef,{[`mitraFulfillmentChoices.${userNow.uid}`]:action==="self"?"antar_sendiri":"lempar_kurir",[`mitraFulfillmentStatus.${userNow.uid}`]:action==="self"?"diproses_mitra":"menunggu_kurir",updatedAt:now});
-        }
-      }
-    });
-    msg.className="ok";
-    msg.textContent=action==="cancel"?"Pesanan dibatalkan. Pengembalian dana pelanggan berhasil dicatat.":action==="self"?"Disetujui. Nilai produk setelah potongan 5% dan ongkir masuk ke e-wallet mitra. Potongan Admin menunggu konfirmasi pelanggan.":"Disetujui dan diteruskan ke antrean kurir. Nilai produk setelah potongan 5% masuk ke e-wallet mitra; ongkir disiapkan untuk kurir.";
-    await loadOffers();await loadRecords();
-  }catch(err){msg.className="err";msg.textContent=err.message;buttons.forEach(b=>b.disabled=false);}
-}
-$("offerRecords").addEventListener("click",e=>{const b=e.target.closest("button[data-action]");if(!b)return;const card=b.closest("[data-order-id]");if(card)executeChoice(b.dataset.id,b.dataset.action,card);});
-$("reloadBtn")?.addEventListener("click",async()=>{await loadOffers();await loadRecords();});
-$("filter")?.addEventListener("input",()=>{if(userNow)loadRecords();});
-window.addEventListener("pageshow",e=>{if(e.persisted)location.reload();});
+$("reloadBtn")?.addEventListener("click",()=>{loadOffers();loadRecords();});$("filter")?.addEventListener("input",()=>{if(userNow)loadRecords();});setInterval(updateTimers,1000);
+
+// AUTO REFRESH pas balik
+window.addEventListener('pageshow', (e)=>{ if(e.persisted) location.reload(); });
 </script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
