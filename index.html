@@ -396,19 +396,20 @@ function normalizeWhatsAppNumber(value) {
 // Tab dibuka saat klik masih berlangsung agar tidak mudah diblokir browser.
 async function openOwnerWhatsApp(p, intro='Halo, saya ingin bertanya tentang produk: ') {
   const ownerUid = String(p?.mitraUid || '').trim();
-  const waTab = window.open('about:blank', '_blank');
+  if (!ownerUid) {
+    alert('UID pemilik produk pada kolom G spreadsheet masih kosong.');
+    return;
+  }
 
   try {
-    if (!ownerUid) throw new Error('UID pemilik produk pada kolom G spreadsheet masih kosong.');
-
-    const ownerRef = doc(db, 'users', ownerUid);
-    const ownerSnap = await getDoc(ownerRef);
+    // Ambil nomor WhatsApp dari users/{UID} sesuai data Firestore mitra.
+    const ownerSnap = await getDoc(doc(db, 'users', ownerUid));
     if (!ownerSnap.exists()) {
       throw new Error('Data pemilik tidak ditemukan pada users/' + ownerUid + '. Periksa UID mitra di spreadsheet.');
     }
 
     const ownerData = ownerSnap.data() || {};
-    const ownerNumber = normalizeWhatsAppNumber(ownerData.noWA);
+    const ownerNumber = normalizeWhatsAppNumber(ownerData.noWA || '');
     if (!ownerNumber || ownerNumber.length < 10) {
       throw new Error('Nomor WhatsApp pemilik belum valid. Periksa field noWA pada dokumen users/' + ownerUid + '.');
     }
@@ -416,18 +417,13 @@ async function openOwnerWhatsApp(p, intro='Halo, saya ingin bertanya tentang pro
     const ownerName = String(p.mitraNama || ownerData.nama || 'Mitra').trim();
     const message = intro + String(p.name || 'produk') +
       ' — ' + formatPrice(p.price) + ' (Mitra: ' + ownerName + ')';
-    const waUrl = 'https://wa.me/' + ownerNumber + '?text=' + encodeURIComponent(message);
+    const waUrl = 'https://api.whatsapp.com/send?phone=' + ownerNumber + '&text=' + encodeURIComponent(message);
 
-    if (waTab && !waTab.closed) {
-      waTab.location.replace(waUrl);
-    } else {
-      // Fallback jika browser memblokir tab baru.
-      window.location.assign(waUrl);
-    }
+    // Navigasi tab yang sama agar tidak terkena pemblokir popup browser HP.
+    window.location.href = waUrl;
   } catch (error) {
-    if (waTab && !waTab.closed) waTab.close();
     console.error('Gagal membuka WhatsApp pemilik produk:', error);
-    alert(error.message || 'Tidak dapat membuka WhatsApp pemilik produk.');
+    alert(error.message || 'Tidak dapat membuka WhatsApp pemilik produk. Periksa koneksi dan izin Firestore.');
   }
 }
 
