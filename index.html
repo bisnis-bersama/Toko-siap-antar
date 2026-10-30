@@ -1,27 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
-<head><style>
-@font-face {
-  font-family: "Optimistic";
-  font-style: normal;
-  font-weight: 400 600;
-  font-display: swap;
-  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Optimistic Mono";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
-}
-:where(html) {
-  font-family: "Optimistic", system-ui, sans-serif;
-}
-:where(code, pre, kbd, samp) {
-  font-family: "Optimistic Mono", ui-monospace, monospace;
-}
-</style>
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#00a85a">
@@ -66,6 +45,8 @@ main{padding:10px 12px 18px;min-height:150px}
 .product-info{padding:8px 7px 9px;display:flex;flex-direction:column;flex:1;text-align:center;gap:6px}
 .product-name{font-size:11px;line-height:1.35;min-height:29px;overflow-wrap:anywhere}
 .product-desc{font-size:9px;line-height:1.35;color:var(--muted);min-height:25px}
+.product-meta{font-size:9px;line-height:1.4;color:#52635b;background:#f3fff7;border-radius:7px;padding:5px 3px}
+.product-meta strong{color:#008b4c}
 .price{font-weight:800;color:#008b4c;font-size:12px}
 .actions{display:grid;grid-template-columns:30px 30px minmax(0,1fr);gap:4px;margin-top:auto}
 .actions button{border:0;border-radius:8px;min-height:29px;font-size:11px}
@@ -127,7 +108,7 @@ header::before{top:0}header::after{bottom:0}
 <body>
 <header>
   <div class="brand">
-    <img class="brand-logo-left" src="logo2.png" alt="Logo">
+    <img class="brand-logo-left" src="logo3.png" alt="Logo">
     <div class="welcome-text">
       <strong>Selamat Datang di Toko Siap Antar!</strong>
       <span id="welcomeSub">Marketplace - Produk mitra tampil di sini, input produk mitra langsung di index (Spreadsheet). Ongkir dari GPS akun mitra pemilik produk.</span>
@@ -179,7 +160,6 @@ header::before{top:0}header::after{bottom:0}
 </div>
 
 <section class="quick-wrap">
-  <div id="statusBox" style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:6px 8px;font-size:10px;margin-bottom:8px">Memuat MEMBER...</div>
   <nav class="categories" id="categories" aria-label="Kategori">
     <button class="cat menu" data-cat="__menu">☰ MENU</button>
     <button class="cat active" data-cat="Semua">🏠 Semua</button>
@@ -252,6 +232,21 @@ function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 function num(v){const n=Number(v); return isNaN(n)?null:n;}
+function ownerInitials(name){
+  const words=String(name||'Mitra').trim().split(/\s+/).filter(Boolean);
+  return words.map(word=>Array.from(word)[0].toUpperCase()).join('').slice(0,5)||'M';
+}
+function flagEnabled(value){
+  const v=String(value??'').trim().toLowerCase();
+  return value===true || v==='1' || v==='true' || v==='ya' || v==='yes' || v==='aktif';
+}
+function deliveryLabels(p){
+  const labels=[];
+  if(flagEnabled(p.cod)) labels.push('COD');
+  if(flagEnabled(p.kurir)) labels.push('Kurir');
+  if(flagEnabled(p.expedisi)) labels.push('Ekspedisi');
+  return labels.length ? labels.join(' · ') : 'Belum tersedia';
+}
 
 function compressImage(file, maxWidth=500, quality=0.6){
   return new Promise((resolve, reject)=>{
@@ -295,12 +290,12 @@ function renderProducts() {
   }
   productsEl.innerHTML = filtered.map(p => `
     <article class="product" data-product-id="${escapeHtml(p.id)}">
-      <div class="product-photo">${p.image ? `<img loading="lazy" src="${escapeHtml(p.image.slice(0,200))}" alt="${escapeHtml(p.name)}" onerror="this.style.display='none'">` : '<span>📦</span>'}<span class="mitra-tag">🏪 ${escapeHtml(p.mitraNama||'Mitra')}</span></div>
+      <div class="product-photo">${p.image ? `<img loading="lazy" src="${escapeHtml(p.image.slice(0,200))}" alt="${escapeHtml(p.name)}" onerror="this.style.display='none'">` : '<span>📦</span>'}<span class="mitra-tag">🏪 ${escapeHtml(ownerInitials(p.mitraNama))}</span></div>
       <div class="product-info">
         <div class="product-name">${escapeHtml(p.name)}</div>
         <div class="product-desc">${escapeHtml(p.description || 'Pesanan siap antar ±1 jam').slice(0,80)}</div>
         <div class="price">${escapeHtml(formatPrice(p.price))}</div>
-        <div style="font-size:8px;color:#888">UID: ${(p.mitraUid||'').slice(0,6)}... • ${escapeHtml((p.category||''))}</div>
+        <div class="product-meta"><strong>Pemilik:</strong> ${escapeHtml(ownerInitials(p.mitraNama))} · ${escapeHtml(p.category||'') }<br><strong>Pengiriman:</strong> ${escapeHtml(deliveryLabels(p))}</div>
         <div class="actions">
           <button class="wa" data-action="wa" data-id="${escapeHtml(p.id)}" aria-label="Tanya WhatsApp">☏</button>
           <button class="cart" data-action="cart" data-id="${escapeHtml(p.id)}" aria-label="Tambah keranjang">🛒</button>
@@ -384,14 +379,14 @@ async function loadProductsFromSheet(){
     const json=parseGviz(raw);
     const rows=json.table && json.table.rows;
     if(!rows) throw new Error('Sheet tidak ada data');
-    // Kolom: Timestamp(0), ID(1), Nama(2), Deskripsi(3), Harga(4), Image(5), MitraUid(6), MitraNama(7), Kategori(8), Lat(9), Lng(10) - flexible
+    // Kolom Spreadsheet: tanggal(0), kode produk(1), nama(2), deskripsi(3), harga(4), foto(5), uid(6), nama mitra(7), kategori(8), cod(9), kurir(10), expedisi(11), stock(12)
     allProducts=rows.map((row,index)=>{
       const c=row.c||[];
       const getVal = (i)=>c[i]?.v??'';
       let id=getVal(1)||String(index);
-      let name='', desc='', price='', image='', mUid='', mNama='', cat='';
+      let name='', desc='', price='', image='', mUid='', mNama='', cat='', cod='', kurir='', expedisi='', stock='';
       if(c.length>=9){
-        name=getVal(2); desc=getVal(3); price=getVal(4); image=getVal(5); mUid=getVal(6); mNama=getVal(7); cat=getVal(8);
+        name=getVal(2); desc=getVal(3); price=getVal(4); image=getVal(5); mUid=getVal(6); mNama=getVal(7); cat=getVal(8); cod=getVal(9); kurir=getVal(10); expedisi=getVal(11); stock=getVal(12);
       } else {
         // format lama
         name=getVal(1)||getVal(0); desc=getVal(2); price=getVal(3); image=getVal(4);
@@ -406,6 +401,7 @@ async function loadProductsFromSheet(){
         mitraUid:String(mUid).trim(),
         mitraNama:String(mNama).trim()||'Mitra',
         category:String(cat).trim()||'Makanan',
+        cod, kurir, expedisi, stock,
         searchText:(String(name)+' '+String(desc)+' '+String(mNama)+' '+String(mUid)).toLowerCase()
       };
     }).filter(Boolean);
@@ -546,5 +542,5 @@ productZoom.addEventListener('click', function(e) {
 document.getElementById('productZoomClose').addEventListener('click', closeProductZoom);
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeProductZoom(); });
 </script>
-<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
+</body>
 </html>
