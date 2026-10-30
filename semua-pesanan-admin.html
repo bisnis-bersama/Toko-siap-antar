@@ -19,7 +19,7 @@
 :where(code, pre, kbd, samp) {
   font-family: "Optimistic Mono", ui-monospace, monospace;
 }
-</style><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Semua Pesanan Admin - Verifikasi & Distribusi</title><style>
+</style><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Semua Pesanan v6 WA Personal</title><style>
 :root{--yellow:#ffcc00;--bg:#f1f2f4;--muted:#64756f}*{box-sizing:border-box}body{margin:0;background:var(--bg);font:14px/1.5 system-ui,sans-serif}
 .top{background:#111;color:#fff;padding:12px 16px 32px;border-radius:0 0 24px 24px}.topline{max-width:1100px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:10px}
 .left{display:flex;align-items:center;gap:10px}.logo{width:38px;height:38px;border-radius:8px;background:#222;object-fit:cover;border:1px solid #333}
@@ -36,186 +36,119 @@ main{max-width:1100px;margin:-18px auto 0;padding:0 12px 80px}.panel{background:
 a.back{color:var(--yellow);text-decoration:none;font-weight:700;font-size:13px}
 .status-badge{font-size:10px;font-weight:800;border-radius:999px;padding:4px 8px;background:#fff4c2;color:#6d5700}
 </style></head><body>
-<div class="top"><div class="topline"><div class="left"><img src="./logo2.png" class="logo" alt="logo" onerror="this.style.display='none'"><div><div class="brand">TOKO SIAP ANTAR</div><div id="accountNameTop" class="sub-yellow">Admin</div><div class="sub">Verifikasi Admin → Distribusi Mitra & Kurir</div></div></div><a class="back" href="./admin-dashboard-rapi-v3-logo-header.html">← Menu Admin</a></div></div>
+<div class="top"><div class="topline"><div class="left"><img src="./logo2.png" class="logo" alt="logo" onerror="this.style.display='none'"><div><div class="brand">TOKO SIAP ANTAR</div><div id="accountNameTop" class="sub-yellow">Admin</div><div class="sub">Persetujuan Pesanan Admin</div></div></div><a class="back" href="./admin-dashboard-rapi-v3-logo-header.html">← Menu Admin</a></div></div>
 <main>
-<div class="panel"><h1 style="margin:0 0 6px">Semua Pesanan</h1><p style="margin:0;font-size:11px;color:var(--muted)">Periksa transaksi dan pembayaran terlebih dahulu. Setelah disetujui, sistem meneruskan pesanan ke mitra pemilik produk.</p><div id="log" class="log"></div>
-<div class="tabs" style="grid-template-columns:repeat(2,1fr)">
-<button id="tabAdmin" onclick="filterStatus('pending_admin')"><span>🟠 Perlu Verifikasi Admin</span><small id="countAdmin">tap</small></button>
-<button id="tabMitra" onclick="filterStatus('menunggu_mitra')"><span>🟡 Menunggu Mitra</span><small id="countMitra">tap</small></button>
-<button id="tabKurir" onclick="filterStatus('menunggu_kurir')"><span>🔵 Menunggu Kurir</span><small id="countKurir">tap</small></button>
-<button id="tabSelesai" onclick="filterStatus('selesai')"><span>🟢 Selesai</span><small id="countSelesai">tap</small></button>
+<div class="panel"><h1 style="margin:0 0 6px">Semua Pesanan</h1><p style="margin:0;font-size:11px;color:var(--muted)">Hemat read + WA personal: Halo Kak (nama akun) ini dari Toko Siap Antar ...</p><div id="log" class="log"></div>
+<div class="tabs">
+<button id="tabPending" class="active" onclick="loadPending()"><span>🟡 Pesanan Pending</span><small id="countPending">Admin</small></button>
 </div>
-<div id="content" class="panel">Klik tombol status - baru load + WA personal sesuai tujuan</div>
+</div>
+<div id="content" class="panel">Daftar ini hanya menampilkan pesanan berstatus pending. Admin dapat menyetujui pesanan dari sini.</div>
 </main>
 <script type="module">
 import {auth,db} from "./firebase-config.js";
 import {onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-import {doc,getDoc,collection,getDocs,query,where,limit,updateDoc,addDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import {doc,getDoc,collection,getDocs,query,where,limit,updateDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 const $=id=>document.getElementById(id);
-const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-function rupiah(n){return 'Rp '+(Number(n)||0).toLocaleString('id-ID')}
-function log(m){const el=$("log");if(el)el.textContent+="\n"+m}
-function phone62(n){let p=String(n||'').replace(/\D/g,'');if(p.startsWith('0'))p='62'+p.slice(1);else if(p&&!p.startsWith('62'))p='62'+p;return p}
-function waUrl(num,msg){const p=phone62(num);return p?'https://wa.me/'+p+'?text='+encodeURIComponent(msg):''}
-async function userInfo(uid){if(!uid)return{};try{const s=await getDoc(doc(db,'users',uid));return s.exists()?s.data():{}}catch(e){return{}}}
-async function loadAccountName(u){try{const p=await userInfo(u.uid);if(p.nama||p.namaUsaha)$("accountNameTop").textContent="Halo, Kak, "+(p.nama||p.namaUsaha)}catch(e){}}
+const esc=v=>String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function rupiah(n){return 'Rp '+(Number(n)||0).toLocaleString('id-ID');}
+function log(m){ const el=$("log"); if(el) el.textContent+="\n"+m; }
+function waLink(num){ if(!num) return null; let p=String(num).replace(/[^0-9]/g,''); if(p.startsWith('0')) p='62'+p.slice(1); if(!p.startsWith('62')) p='62'+p; return 'https://wa.me/'+p; }
+async function loadAccountName(u){ try{ const s=await getDoc(doc(db,"users",u.uid)); const p=s.data(); if(p) $("accountNameTop").textContent="Halo, Kak, "+(p.nama||p.namaUsaha||u.email); }catch(e){} }
 let currentUser=null;
-onAuthStateChanged(auth,u=>{currentUser=u;if(u)loadAccountName(u);});
-const tabs={pending_admin:'tabAdmin',menunggu_mitra:'tabMitra',menunggu_kurir:'tabKurir',selesai:'tabSelesai'};
-function orderDate(o){return o.createdAt?.toDate?.()?.toLocaleString?.('id-ID')||'-'}
-function statusText(v){return String(v||'-').replaceAll('_',' ')}
-function itemSummary(items){return (Array.isArray(items)?items:[]).map(x=>`${x.name||x.nama||'Produk'} × ${Number(x.qty)||1}`).join(', ')}
-async function getContacts(o){
- const pelanggan=await userInfo(o.pelangganUid||o.uid);
- const namaP=o.pelangganNama||o.ownerName||pelanggan.nama||'Pelanggan';
- const hpP=o.pelangganTelepon||o.telepon||pelanggan.telepon||pelanggan.noWA||pelanggan.whatsapp||'';
- return {namaP,hpP};
-}
-function buildMitraGroups(o){
- if(Array.isArray(o.mitraGroupDetails)&&o.mitraGroupDetails.length)return o.mitraGroupDetails;
- const groups={};
- for(const item of (o.items||[])){
-  const uid=item.mitraUid||item.mitra_uid;
-  if(!uid)continue;
-  (groups[uid] ||= []).push(item);
- }
- return Object.entries(groups).map(([mitraUid,items])=>({
-  mitraUid,mitraNama:items[0]?.mitraNama||items[0]?.mitra_nama||'Mitra',
-  items,subtotal:items.reduce((s,x)=>s+(Number(x.price)||0)*(Number(x.qty)||1),0)
- }));
-}
-async function distributeApprovedOrder(orderId,o){
- // Idempotensi sederhana: jika dokumen mitra sudah dibuat pada percobaan sebelumnya, jangan gandakan.
- const groups=buildMitraGroups(o);
- if(!groups.length)throw new Error('Data kelompok mitra tidak ditemukan. Pastikan setiap produk memiliki mitraUid.');
- for(const g of groups){
-  if(!g.mitraUid)throw new Error('Ada kelompok produk tanpa UID mitra.');
-  const existing=await getDocs(query(collection(db,'mitra_orders'),where('orderId','==',orderId),where('mitraUid','==',g.mitraUid),limit(1)));
-  if(!existing.empty)continue;
-  const m=await userInfo(g.mitraUid);
-  const sub=Number(g.subtotal)||((g.items||[]).reduce((s,x)=>s+(Number(x.price)||0)*(Number(x.qty)||1),0));
-  await addDoc(collection(db,'mitra_orders'),{
-   mitraUid:g.mitraUid,mitraNama:g.mitraNama||m.namaUsaha||m.nama||'Mitra',
-   orderId,nomorPesanan:o.nomorPesanan||orderId,
-   pelangganUid:o.pelangganUid||o.uid||'',
-   pelangganNama:o.ownerName||o.pelangganNama||'Pelanggan',
-   pelangganTelepon:o.telepon||o.pelangganTelepon||'',
-   pelangganAlamat:o.alamat||o.alamatPengiriman?.alamat||'',
-   pelangganLat:o.lat??o.alamatPengiriman?.lat??null,
-   pelangganLng:o.lng??o.alamatPengiriman?.lng??null,
-   items:g.items||[],subtotal:sub,
-   ongkir:groups.length===1?(Number(o.ongkir)||0):0,
-   total:sub+(groups.length===1?(Number(o.ongkir)||0):0),
-   totalTransaksiInduk:Number(o.total)||0,
-   metodePengiriman:o.metodePengiriman||'siap_antar',
-   expedisiName:o.expedisiName||'',
-   metodePembayaran:o.metodePembayaran||'transfer',
-   status:'menunggu_mitra',statusPemenuhan:'pending_mitra',
-   alamatMitra:typeof m.alamatToko==='string'?m.alamatToko:(m.alamat||''),
-   mitraLat:m.tokoLat??m.toko_lat??m.lat??m.latitude??m.lokasi?.lat??null,
-   mitraLng:m.tokoLng??m.toko_lng??m.lng??m.longitude??m.lokasi?.lng??null,
-   jarakKm:o.jarakKm||0,createdAt:serverTimestamp(),updatedAt:serverTimestamp()
-  });
- }
- // Kurir baru menerima tugas setelah approval admin; satu tugas per mitra untuk transaksi multi-mitra.
- if(o.metodePengiriman==='siap_antar'){
-  for(const g of groups){
-   const existing=await getDocs(query(collection(db,'kurir_orders'),where('orderId','==',orderId),where('mitraUid','==',g.mitraUid),limit(1)));
-   if(!existing.empty)continue;
-   const m=await userInfo(g.mitraUid);
-   const sub=Number(g.subtotal)||((g.items||[]).reduce((s,x)=>s+(Number(x.price)||0)*(Number(x.qty)||1),0));
-   await addDoc(collection(db,'kurir_orders'),{
-    orderId,nomorPesanan:o.nomorPesanan||orderId,
-    pelangganUid:o.pelangganUid||o.uid||'',
-    pelangganNama:o.ownerName||o.pelangganNama||'Pelanggan',
-    pelangganAlamat:o.alamat||o.alamatPengiriman?.alamat||'',
-    pelangganLat:o.lat??o.alamatPengiriman?.lat??null,pelangganLng:o.lng??o.alamatPengiriman?.lng??null,
-    mitraUid:g.mitraUid,mitraNama:g.mitraNama||m.namaUsaha||m.nama||'Mitra',
-    mitraAlamat:typeof m.alamatToko==='string'?m.alamatToko:(m.alamat||''),
-    mitraLat:m.tokoLat??m.toko_lat??m.lat??m.latitude??m.lokasi?.lat??null,
-    mitraLng:m.tokoLng??m.toko_lng??m.lng??m.longitude??m.lokasi?.lng??null,
-    jarakKm:o.jarakKm||0,ongkir:groups.length===1?(Number(o.ongkir)||0):0,
-    totalProduk:sub,totalTransaksiInduk:Number(o.total)||0,
-    metodePembayaran:o.metodePembayaran||'transfer',
-    status:'menunggu_kurir',kurirStatus:'menunggu_diambil',kurirUid:'',
-    createdAt:serverTimestamp(),updatedAt:serverTimestamp()
-   });
+let adminReady=false;
+onAuthStateChanged(auth, async u=>{
+  currentUser=u; adminReady=false;
+  if(!u){ $("content").innerHTML='<div class="err">Silakan login sebagai admin.</div>'; return; }
+  try{
+    const profileSnap=await getDoc(doc(db,"users",u.uid));
+    const profile=profileSnap.exists()?profileSnap.data():{};
+    const role=String(profile.role||"").toLowerCase();
+    if(!["admin","superadmin"].includes(role) || profile.aktif===false || profile.status==="nonaktif"){
+      $("content").innerHTML='<div class="err">Akses ditolak. Halaman ini khusus Admin/Superadmin.</div>';
+      return;
+    }
+    adminReady=true;
+    await loadAccountName(u);
+    await loadPending();
+  }catch(e){
+    $("content").innerHTML='<div class="err">Gagal memeriksa akses admin: '+esc(e.message)+'</div>';
   }
- }
- await updateDoc(doc(db,'orders',orderId),{
-  status:o.metodePengiriman==='siap_antar'?'menunggu_kurir':'menunggu_mitra',
-  statusPemenuhan:'diteruskan_ke_mitra',
-  pesananDiteruskan:true,distribusiStatus:'berhasil',
-  disetujuiAdmin:true,disetujuiAdminUid:currentUser.uid,
-  disetujuiAdminPada:serverTimestamp(),updatedAt:serverTimestamp()
- });
-}
+});
+
+window.loadPending=async()=>{
+  if(!currentUser || !adminReady){ $("content").innerHTML='<div class="err">Akses admin belum tervalidasi.</div>'; return; }
+  $("content").innerHTML='Memuat pesanan pending...';
+  try{
+    const q=query(collection(db,"orders"),where("status","==","pending"),limit(100));
+    const snap=await getDocs(q);
+    $("countPending").textContent=String(snap.size);
+    if(snap.empty){ $("content").innerHTML='<div class="ok">Belum ada pesanan pending.</div>'; return; }
+
+    let cards='';
+    for(const d of snap.docs){
+      const o=d.data(), id=d.id;
+      const customer=o.pelangganNama||o.ownerName||"Pelanggan";
+      const phone=o.pelangganTelepon||o.telepon||"-";
+      const address=o.pelangganAlamat||o.alamat||o.alamatPengiriman?.alamat||"-";
+      const items=Array.isArray(o.items)?o.items:[];
+      const itemHtml=items.map(it=>`<div style="padding:5px 0;border-bottom:1px solid #eee">
+        <b>${esc(it.name||it.namaProduk||"Produk")}</b>
+        <span class="meta"> — ${Number(it.qty||1)} × ${rupiah(it.price||it.harga||0)}</span>
+      </div>`).join("");
+      const shipping=o.metodePengiriman||"-";
+      const payment=o.metodePembayaran||"-";
+      cards+=`<div class="item">
+        <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap">
+          <strong>${esc(o.nomorPesanan||id)}</strong><span class="status-badge">PENDING</span>
+        </div>
+        <div class="meta">Dibuat: ${esc(o.createdAt?.toDate?.()?.toLocaleString?.("id-ID")||"-")}</div>
+        <hr style="border:0;border-top:1px solid #eee;margin:9px 0">
+        <b>Data Pelanggan</b><br>${esc(customer)}<br>${esc(phone)}<br><span class="meta">${esc(address)}</span>
+        <hr style="border:0;border-top:1px solid #eee;margin:9px 0">
+        <b>Produk Pesanan</b>${itemHtml||'<div class="meta">Detail produk tidak tersedia.</div>'}
+        <div style="margin-top:9px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <div class="meta">Pengiriman<br><b>${esc(shipping)} ${esc(o.expedisiName||"")}</b></div>
+          <div class="meta">Pembayaran<br><b>${esc(payment)}</b></div>
+          <div class="meta">Subtotal<br><b>${rupiah(o.subtotal)}</b></div>
+          <div class="meta">Ongkir<br><b>${rupiah(o.ongkir)}</b></div>
+        </div>
+        <div style="font-size:17px;font-weight:900;margin-top:8px">Total: ${rupiah(o.total)}</div>
+        <div class="actions">
+          <button class="btn" onclick="approveOrder('${id}')">✓ Setujui Pesanan</button>
+        </div>
+      </div>`;
+    }
+    $("content").innerHTML=`<div class="list">${cards}</div>`;
+  }catch(e){
+    $("content").innerHTML='<div class="err">'+esc(e.message)+'</div>';
+    log(e.message);
+  }
+};
+
 window.approveOrder=async(id)=>{
- if(!currentUser){alert('Silakan login sebagai Admin.');return}
- if(!confirm('Setujui transaksi ini? Setelah disetujui, pesanan akan diteruskan ke masing-masing mitra.'))return;
- const btn=document.querySelector(`[data-approve="${CSS.escape(id)}"]`);
- if(btn){btn.disabled=true;btn.textContent='Memproses...'}
- try{
-  const ref=doc(db,'orders',id),snap=await getDoc(ref);
-  if(!snap.exists())throw new Error('Transaksi tidak ditemukan.');
-  const o=snap.data();
-  if(o.pesananDiteruskan===true){alert('Pesanan ini sudah pernah diteruskan.');await window.filterStatus('pending_admin');return}
-  if(!['pending_admin','menunggu_verifikasi_admin','menunggu_pembayaran_admin','menunggu_verifikasi'].includes(o.status))throw new Error('Status transaksi bukan menunggu persetujuan Admin: '+o.status);
-  // Tandai proses supaya klik ganda tidak memulai distribusi bersamaan.
-  await updateDoc(ref,{status:'sedang_didistribusikan',distribusiStatus:'sedang_diproses_admin',updatedAt:serverTimestamp()});
-  await distributeApprovedOrder(id,o);
-  alert('Transaksi disetujui. Pesanan telah diteruskan ke mitra'+(o.metodePengiriman==='siap_antar'?' dan antrean kurir.':'.'));
-  await window.filterStatus('pending_admin');
- }catch(e){
-  console.error(e);log('Approval gagal '+id+': '+e.message);
-  try{await updateDoc(doc(db,'orders',id),{status:'pending_admin',distribusiStatus:'gagal_perlu_dicek',updatedAt:serverTimestamp()})}catch(_){}
-  alert('Gagal meneruskan pesanan: '+e.message+'. Periksa data mitra/koneksi, lalu coba setujui kembali.');
-  if(btn){btn.disabled=false;btn.textContent='Setujui & Teruskan'}
- }
-};
-window.filterStatus=async(key)=>{
- if(!currentUser){$('content').innerHTML='<div class="err">Login terlebih dahulu.</div>';return}
- document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));
- if(tabs[key])$(tabs[key]).classList.add('active');
- $('content').innerHTML='Memuat '+statusText(key)+'...';
- try{
-  let q;
-  if(key==='pending_admin')q=query(collection(db,'orders'),where('status','in',['pending_admin','menunggu_verifikasi_admin','menunggu_pembayaran_admin']),limit(50));
-  else if(key==='menunggu_mitra')q=query(collection(db,'orders'),where('status','in',['menunggu_mitra','menunggu_harga_mitra','diterima_mitra']),limit(50));
-  else if(key==='menunggu_kurir')q=query(collection(db,'orders'),where('status','in',['menunggu_kurir','siap_antar']),limit(50));
-  else q=query(collection(db,'orders'),where('status','==','selesai'),limit(50));
-  const snap=await getDocs(q);
-  if(snap.empty){$('content').innerHTML='<div class="ok">Tidak ada pesanan '+statusText(key)+'.</div>';return}
-  let html='';
-  for(const d of snap.docs){
-   const o=d.data(),id=d.id,total=Number(o.total)||0;
-   const {namaP,hpP}=await getContacts(o);
-   const groups=buildMitraGroups(o);
-   const groupNames=groups.map(g=>g.mitraNama||'Mitra').join(', ')||'Belum terpetakan';
-   const items=itemSummary(o.items);
-   const waP=waUrl(hpP,`Halo Kak ${namaP}, pesanan ${o.nomorPesanan||id} dari Toko Siap Antar sedang ${statusText(o.status)}. Total ${rupiah(total)}. Terima kasih.`);
-   let actions='';
-   if(key==='pending_admin'){
-    actions=`<div class="actions"><button class="btn" data-approve="${esc(id)}" onclick="approveOrder('${esc(id)}')">✓ Setujui & Teruskan</button>${waP?`<a class="btn green" href="${waP}" target="_blank" rel="noopener">📱 WA Pelanggan</a>`:''}</div>`;
-   }else{
-    actions=`<div class="actions">${waP?`<a class="btn green" href="${waP}" target="_blank" rel="noopener">📱 WA Pelanggan</a>`:''}<span class="status-badge">${esc(statusText(o.statusPembayaran||''))}</span></div>`;
-   }
-   html+=`<article class="item">
-    <strong>${esc(o.nomorPesanan||id)}</strong> — ${rupiah(total)}
-    <br><span class="meta">Status: ${esc(statusText(o.status))} | ${esc(orderDate(o))}</span>
-    <div style="margin-top:7px;font-size:12px"><b>Pelanggan:</b> ${esc(namaP)} · ${esc(hpP||'No HP belum tersedia')}</div>
-    <div style="font-size:12px"><b>Produk:</b> ${esc(items||'-')}</div>
-    <div style="font-size:12px"><b>Mitra tujuan:</b> ${esc(groupNames)}</div>
-    <div style="font-size:12px"><b>Pengiriman:</b> ${esc(o.metodePengiriman||'-')} ${o.expedisiName?'('+esc(o.expedisiName)+')':''} · <b>Pembayaran:</b> ${esc(o.metodePembayaran||'-')}</div>
-    <div style="font-size:12px"><b>Alamat:</b> ${esc(o.alamat||o.alamatPengiriman?.alamat||'-')}</div>
-    <div style="font-size:12px"><b>Subtotal:</b> ${rupiah(o.subtotal)} · <b>Ongkir:</b> ${rupiah(o.ongkir)}</div>
-    ${key==='pending_admin'?`<div class="ok" style="margin-top:8px">Pesanan masih di Admin. Belum dikirim ke mitra maupun kurir. Pastikan pembayaran/bukti pembayaran sudah diperiksa sebelum menyetujui.</div>`:''}
-    ${o.distribusiStatus==='gagal_perlu_dicek'?'<div class="err">Distribusi sebelumnya gagal. Periksa dokumen mitra dan coba approval kembali.</div>':''}
-    ${actions}
-   </article>`;
+  if(!currentUser || !adminReady){ alert("Akses admin tidak valid."); return; }
+  if(!confirm("Setujui pesanan ini? Status akan berubah dari pending menjadi disetujui.")) return;
+  try{
+    const ref=doc(db,"orders",id);
+    const snap=await getDoc(ref);
+    if(!snap.exists()){ alert("Pesanan tidak ditemukan."); await loadPending(); return; }
+    const order=snap.data();
+    if(order.status!=="pending"){ alert("Pesanan sudah berubah status. Muat ulang daftar."); await loadPending(); return; }
+    await updateDoc(ref,{
+      status:"disetujui",
+      disetujuiAdminUid:currentUser.uid,
+      disetujuiAdminNama:$("accountNameTop").textContent.replace(/^Halo, Kak, /,""),
+      disetujuiAdminAt:serverTimestamp(),
+      updatedAt:serverTimestamp()
+    });
+    alert("Pesanan berhasil disetujui. Status sekarang: disetujui.");
+    await loadPending();
+  }catch(e){
+    console.error(e);
+    alert("Gagal menyetujui pesanan: "+e.message);
   }
-  $('content').innerHTML=`<div class="list">${html}</div>`;
- }catch(e){$('content').innerHTML='<div class="err">'+esc(e.message)+'</div>';log(e.message)}
 };
-window.copyPesan=txt=>navigator.clipboard.writeText(txt).then(()=>alert('Pesan disalin.'));
+
+window.copyPesan=(txt)=>{ navigator.clipboard.writeText(txt).then(()=>alert('Pesan disalin:\n'+txt)); }
 </script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
