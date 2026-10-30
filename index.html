@@ -41,9 +41,9 @@ main{padding:10px 12px 18px;min-height:150px}
 .product{min-width:0;background:var(--card);border:1px solid var(--line);border-radius:15px;overflow:hidden;box-shadow:0 2px 5px #18312b12;display:flex;flex-direction:column}
 .product-photo{height:112px;background:linear-gradient(135deg,#e4fff2,#fafff0);display:flex;align-items:center;justify-content:center;padding:6px;position:relative}
 .product-photo img{width:100%;height:100%;object-fit:contain}
-.mitra-tag{position:absolute;bottom:4px;left:4px;background:#111;color:#ffd400;font-size:8px;font-weight:800;padding:3px 6px;border-radius:999px;max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mitra-tag{position:absolute;top:4px;right:4px;background:#111;color:#ffd400;font-size:8px;font-weight:800;padding:3px 6px;border-radius:999px;max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .product-info{padding:8px 7px 9px;display:flex;flex-direction:column;flex:1;text-align:center;gap:6px}
-.product-name{font-size:11px;line-height:1.35;min-height:29px;overflow-wrap:anywhere}
+.product-name{font-size:12px;font-weight:800;line-height:1.4;min-height:29px;overflow-wrap:anywhere;color:#18312b}
 .product-desc{font-size:9px;line-height:1.35;color:var(--muted);min-height:25px}
 .product-meta{font-size:9px;line-height:1.4;color:#52635b;background:#f3fff7;border-radius:7px;padding:5px 3px}
 .product-meta strong{color:#008b4c}
@@ -60,7 +60,7 @@ footer h3{margin:0 0 16px;color:#009c54}
 .bottom-nav button{background:none;border:0;color:#777;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px}
 .bottom-nav .ico{font-size:22px;line-height:1.2}
 .bottom-nav button:first-child{color:#009c54}
-@media(max-width:520px){.products{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.product-photo{height:125px}.product-name{font-size:12px}.product-desc{font-size:10px}.price{font-size:13px}.quick-wrap{top:58px}.promo-track img{height:125px}}
+@media(max-width:520px){.products{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.product-photo{height:125px}.product-name{font-size:13px;font-weight:800}.product-desc{font-size:10px}.price{font-size:13px}.quick-wrap{top:58px}.promo-track img{height:125px}}
 @media(max-width:600px){.promo-window{min-height:145px;padding:6px 0}.promo-track img{height:133px;margin-top:0;margin-bottom:0}}
 @media(max-width:360px){.products{grid-template-columns:repeat(2,minmax(0,1fr))}.product-photo{height:105px}.cat{padding:9px 11px;font-size:13px}}
 body{background:#f4fff7;color:var(--ink)}
@@ -134,6 +134,7 @@ body.dark-mode .product-photo{background:linear-gradient(135deg,#263c31,#29352b)
 body.dark-mode .product-meta{background:#26382f;color:#c5d7cc}
 body.dark-mode .product-meta strong{color:#70e6a4}
 body.dark-mode .price{color:#70e6a4}
+body.dark-mode .product-name{color:#edf8f1}
 body.dark-mode .notice{background:#1b2923;border-color:#34483e;color:#bdcbc3}
 body.dark-mode footer{background:#1b2923;color:#e7f2ec}
 body.dark-mode .socials a{color:#e7f2ec}
@@ -205,12 +206,12 @@ body.dark-mode .menu-item:active{background:#294a37}
     <div class="menu-drawer-head"><strong>Menu Toko Siap Antar</strong><button class="menu-close" id="closeMenu" type="button" aria-label="Tutup menu">×</button></div>
     <nav class="menu-items">
       <a class="menu-item" href="gojek-elit.html"><span class="menu-icon">🛵</span>Gojek Elit</a>
-      <a class="menu-item" href="pembukuan-cerdas.html"><span class="menu-icon">📊</span>Pembukuan Cerdas</a>
+      <a class="menu-item" href="https://fixzi-global.vercel.app" target="_blank" rel="noopener"><span class="menu-icon">📊</span>Fixzy Business</a>
       <a class="menu-item" href="daftar-penjual.html"><span class="menu-icon">🏪</span>Daftar Jadi Penjual</a>
       <a class="menu-item" href="daftar-kurir.html"><span class="menu-icon">🚴</span>Daftar Jadi Kurir</a>
       <a class="menu-item" href="daftar-gojek-elit.html"><span class="menu-icon">🚕</span>Daftar Jadi Gojek Elit</a>
-      <a class="menu-item" href="https://wa.me/?text=Halo%20Admin%20Toko%20Siap%20Antar" target="_blank" rel="noopener"><span class="menu-icon">💬</span>Chat Admin</a>
-      <a class="menu-item" href="about.html"><span class="menu-icon">ℹ️</span>About Toko Siap Antar</a>
+      <a class="menu-item" href="https://wa.me/62895707182299" target="_blank" rel="noopener"><span class="menu-icon">💬</span>Chat Admin</a>
+      <a class="menu-item" href="page.html"><span class="menu-icon">ℹ️</span>About Toko Siap Antar</a>
     </nav>
   </aside>
 </div>
@@ -238,6 +239,7 @@ body.dark-mode .menu-item:active{background:#294a37}
 <script type="module">
 import {auth, db} from "./firebase-config.js";
 import {onAuthStateChanged, signOut} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+import {doc, getDoc} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
 // Spreadsheet MEMBER: kolom A-N, kolom N berisi link gambar sponsor.
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=MEMBER';
@@ -383,9 +385,35 @@ function addProductToCart(p) {
   else cart.push({id:p.id,name:p.name,price:p.price,qty:1,mitraUid:p.mitraUid||'',mitraNama:p.mitraNama||'Mitra',image:p.image});
   updateCart();
 }
-function openWhatsApp(p, intro='Halo, saya ingin pesan: ') {
-  const message = intro + p.name + ' — ' + formatPrice(p.price) + ' (Mitra: '+(p.mitraNama||'Mitra')+')';
-  window.open('https://wa.me/?text=' + encodeURIComponent(message), '_blank', 'noopener');
+function normalizeWhatsAppNumber(value) {
+  let number = String(value || '').replace(/\D/g, '');
+  if (number.startsWith('0')) number = '62' + number.slice(1);
+  else if (number.startsWith('8')) number = '62' + number;
+  return number;
+}
+
+// Nomor WhatsApp pemilik diambil dari users/{UID} (field noWA atau telepon).
+async function openOwnerWhatsApp(p, intro='Halo, saya ingin bertanya tentang produk: ') {
+  const waTab = window.open('about:blank', '_blank');
+  try {
+    if (!p.mitraUid) throw new Error('UID pemilik produk tidak tersedia.');
+    const ownerSnap = await getDoc(doc(db, 'users', p.mitraUid));
+    if (!ownerSnap.exists()) throw new Error('Data akun pemilik produk tidak ditemukan.');
+    const ownerData = ownerSnap.data() || {};
+    const ownerNumber = normalizeWhatsAppNumber(ownerData.noWA || ownerData.telepon || '');
+    if (!ownerNumber || ownerNumber.length < 10) throw new Error('Nomor WhatsApp pemilik produk belum tersedia di profil akun.');
+    const message = intro + p.name + ' — ' + formatPrice(p.price) + ' (Mitra: ' + (p.mitraNama || 'Mitra') + ')';
+    const waUrl = 'https://wa.me/' + ownerNumber + '?text=' + encodeURIComponent(message);
+    if (waTab && !waTab.closed) {
+      waTab.opener = null;
+      waTab.location.href = waUrl;
+    } else {
+      window.location.href = waUrl;
+    }
+  } catch (error) {
+    if (waTab && !waTab.closed) waTab.close();
+    alert(error.message || 'Tidak dapat membuka WhatsApp pemilik produk.');
+  }
 }
 
 productsEl.addEventListener('click', e => {
@@ -393,7 +421,7 @@ productsEl.addEventListener('click', e => {
   if (!btn) return;
   const p = allProducts.find(item => item.id === btn.dataset.id);
   if (!p) return;
-  if (btn.dataset.action === 'wa') openWhatsApp(p, 'Halo, saya mau tanya produk: ');
+  if (btn.dataset.action === 'wa') openOwnerWhatsApp(p, 'Halo, saya mau tanya produk: ');
   if (btn.dataset.action === 'buy') {
     addProductToCart(p);
     location.href = 'keranjang.html';
@@ -552,7 +580,7 @@ productZoom.addEventListener('click', function(e) {
   const p = allProducts.find(item => item.id === zoomProductId);
   if (!p) return;
   const action = btn.dataset.zoomAction;
-  if (action === 'wa') { openWhatsApp(p, 'Halo, saya mau tanya produk: '); return; }
+  if (action === 'wa') { openOwnerWhatsApp(p, 'Halo, saya mau tanya produk: '); return; }
   if (action === 'cart' || action === 'buy') {
     addProductToCart(p);
     if (action === 'buy') { location.href = 'keranjang.html'; return; }
