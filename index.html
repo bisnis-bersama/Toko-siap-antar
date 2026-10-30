@@ -103,6 +103,21 @@ header::before{top:0}header::after{bottom:0}
 .btn-y{background:#ffd400;color:#111}.btn-dark{background:#111;color:#ffd400}
 .preview{width:100%;max-height:180px;object-fit:contain;background:#f8f8f8;border-radius:12px;border:2px dashed #ddd;display:none;margin-bottom:10px}
 .linkbox{background:#111;color:#ffd400;padding:10px;border-radius:10px;font-family:monospace;font-size:11px;word-break:break-all}
+
+/* Panel menu hamburger */
+.menu-backdrop{position:fixed;inset:0;z-index:1000;background:rgba(10,30,22,.48);display:none}
+.menu-backdrop.show{display:block}
+.menu-drawer{position:absolute;top:0;left:0;bottom:0;width:min(86vw,340px);background:#fff;padding:18px 14px 24px;overflow-y:auto;box-shadow:8px 0 28px #0002;transform:translateX(-105%);transition:transform .22s ease}
+.menu-backdrop.show .menu-drawer{transform:translateX(0)}
+.menu-drawer-head{display:flex;align-items:center;justify-content:space-between;padding:5px 4px 16px;border-bottom:1px solid var(--line);margin-bottom:10px}
+.menu-drawer-head strong{font-size:18px;color:#008b4c}
+.menu-close{border:0;background:#f1f7f3;border-radius:10px;width:38px;height:38px;font-size:24px;color:#234}
+.menu-items{display:grid;gap:7px}
+.menu-item{display:flex;align-items:center;gap:12px;width:100%;padding:13px 12px;border:1px solid #e1efe7;border-radius:12px;background:#fbfffc;color:#20372e;text-decoration:none;font-size:14px;font-weight:700;text-align:left}
+.menu-item:active{background:#e8fff1}
+.menu-item .menu-icon{width:28px;text-align:center;font-size:20px}
+@media(prefers-reduced-motion:reduce){.menu-drawer{transition:none}}
+
 </style>
 </head>
 <body>
@@ -126,15 +141,49 @@ header::before{top:0}header::after{bottom:0}
 <!-- Pengelolaan produk dilakukan di halaman Kelola Produk, bukan di Index. -->
 <section class="quick-wrap">
   <nav class="categories" id="categories" aria-label="Kategori">
-    <button class="cat menu" data-cat="__menu">☰ MENU</button>
+    <button class="cat menu" type="button" id="openMenu">☰ MENU</button>
     <button class="cat active" data-cat="Semua">🏠 Semua</button>
     <button class="cat" data-cat="Makanan">🍜 Makanan</button>
     <button class="cat" data-cat="Minuman">🥤 Minuman</button>
     <button class="cat" data-cat="Sembako">🧺 Sembako</button>
+    <button class="cat" data-cat="Accessories">🎧 Accessories</button>
+    <button class="cat" data-cat="Sparepart">🔧 Sparepart HP</button>
+    <button class="cat" data-cat="Bibit Tanaman">🌱 Bibit Tanaman</button>
+    <button class="cat" data-cat="Pakaian">👕 Pakaian</button>
+    <button class="cat" data-cat="Kecantikan">💄 Kecantikan</button>
+    <button class="cat" data-cat="Properti">🏠 Properti</button>
+    <button class="cat" data-cat="Alat Dapur">🍳 Alat Dapur</button>
+    <button class="cat" data-cat="Sparepart Motor & Mobil">🚗 Sparepart Motor & Mobil</button>
+    <button class="cat" data-cat="Buah-buahan">🍎 Buah-buahan</button>
+    <button class="cat" data-cat="Sayuran">🥬 Sayuran</button>
+    <button class="cat" data-cat="Pertanian">🚜 Pertanian</button>
+    <button class="cat" data-cat="Elektronik">📺 Elektronik</button>
+    <button class="cat" data-cat="Perlengkapan Rumah">🛋️ Perlengkapan Rumah</button>
+    <button class="cat" data-cat="Perlengkapan Bayi">🍼 Perlengkapan Bayi</button>
+    <button class="cat" data-cat="Hewan & Pakan">🐾 Hewan & Pakan</button>
+    <button class="cat" data-cat="Otomotif">🛵 Otomotif</button>
+    <button class="cat" data-cat="Olahraga">⚽ Olahraga</button>
+    <button class="cat" data-cat="Buku & Alat Tulis">📚 Buku & Alat Tulis</button>
+    <button class="cat" data-cat="Jasa">🧰 Jasa</button>
+    <button class="cat" data-cat="Lainnya">📦 Lainnya</button>
     <button class="cat" data-cat="MitraSaya">🏪 Produk Saya</button>
   </nav>
   <label class="search"><span>🔎</span><input id="searchInput" type="search" placeholder="Cari produk / mitra..." autocomplete="off"></label>
 </section>
+<div class="menu-backdrop" id="menuBackdrop" aria-hidden="true">
+  <aside class="menu-drawer" role="dialog" aria-modal="true" aria-label="Menu Toko Siap Antar">
+    <div class="menu-drawer-head"><strong>Menu Toko Siap Antar</strong><button class="menu-close" id="closeMenu" type="button" aria-label="Tutup menu">×</button></div>
+    <nav class="menu-items">
+      <a class="menu-item" href="gojek-elit.html"><span class="menu-icon">🛵</span>Gojek Elit</a>
+      <a class="menu-item" href="pembukuan-cerdas.html"><span class="menu-icon">📊</span>Pembukuan Cerdas</a>
+      <a class="menu-item" href="daftar-penjual.html"><span class="menu-icon">🏪</span>Daftar Jadi Penjual</a>
+      <a class="menu-item" href="daftar-kurir.html"><span class="menu-icon">🚴</span>Daftar Jadi Kurir</a>
+      <a class="menu-item" href="daftar-gojek-elit.html"><span class="menu-icon">🚕</span>Daftar Jadi Gojek Elit</a>
+      <a class="menu-item" href="https://wa.me/?text=Halo%20Admin%20Toko%20Siap%20Antar" target="_blank" rel="noopener"><span class="menu-icon">💬</span>Chat Admin</a>
+      <a class="menu-item" href="about.html"><span class="menu-icon">ℹ️</span>About Toko Siap Antar</a>
+    </nav>
+  </aside>
+</div>
 <main><div id="products" class="products"><div class="notice" style="grid-column:1/-1">Memuat produk dari Google Sheets…</div></div></main>
 <footer><h3>🌐 Ikuti Kami</h3><div class="socials"><a href="#" id="facebook">● Facebook</a><a href="#" id="instagram">◎ Instagram</a><a href="#" id="whatsapp">◉ WhatsApp</a></div></footer>
 <nav class="bottom-nav" aria-label="Navigasi bawah">
@@ -223,7 +272,7 @@ function renderProducts() {
     if(activeCategory==='MitraSaya' && mitraUid){
       matchesCat = p.mitraUid===mitraUid;
     } else if(activeCategory!=='Semua' && activeCategory!=='__menu'){
-      matchesCat = (p.name + ' ' + p.description + ' ' + (p.category||'')).toLowerCase().includes(activeCategory.toLowerCase());
+      matchesCat = (String(p.category||'').toLowerCase().includes(activeCategory.toLowerCase()) || (p.name + ' ' + p.description).toLowerCase().includes(activeCategory.toLowerCase()));
     }
     return matchesText && matchesCat;
   });
@@ -290,11 +339,17 @@ productsEl.addEventListener('click', e => {
 searchInput.addEventListener('input', renderProducts);
 document.getElementById('categories').addEventListener('click',e=>{
   const btn=e.target.closest('[data-cat]'); if(!btn)return;
-  if(btn.dataset.cat==='__menu'){ alert('Menu: Katalog produk dari Spreadsheet. Untuk menambah atau mengelola produk, buka halaman Kelola Produk.'); return; }
   activeCategory=btn.dataset.cat;
-  document.querySelectorAll('.cat').forEach(el=>el.classList.toggle('active',el===btn));
+  document.querySelectorAll('.cat[data-cat]').forEach(el=>el.classList.toggle('active',el===btn));
   renderProducts();
 });
+const menuBackdrop=document.getElementById('menuBackdrop');
+function openMenu(){menuBackdrop.classList.add('show');menuBackdrop.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';}
+function closeMenu(){menuBackdrop.classList.remove('show');menuBackdrop.setAttribute('aria-hidden','true');document.body.style.overflow='';}
+document.getElementById('openMenu').addEventListener('click',openMenu);
+document.getElementById('closeMenu').addEventListener('click',closeMenu);
+menuBackdrop.addEventListener('click',e=>{if(e.target===menuBackdrop)closeMenu();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu();});
 document.getElementById('refresh').onclick=()=>location.reload();
 document.getElementById('homeBtn').onclick=()=>{location.href='index.html';};
 document.getElementById('cartBtn').onclick=()=>{
