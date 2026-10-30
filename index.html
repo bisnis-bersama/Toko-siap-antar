@@ -392,39 +392,41 @@ function normalizeWhatsAppNumber(value) {
   return number;
 }
 
-// Nomor WhatsApp pemilik diambil dari dokumen Firestore users/{UID},
-// sesuai halaman daftar-mitra-usaha.html: field noWA.
+// WhatsApp pemilik produk: spreadsheet kolom G -> users/{UID} -> field noWA.
+// Tab dibuka saat klik masih berlangsung agar tidak mudah diblokir browser.
 async function openOwnerWhatsApp(p, intro='Halo, saya ingin bertanya tentang produk: ') {
-  // UID mitra pada katalog spreadsheet menjadi penghubung ke dokumen users/{UID}.
-  const ownerUid = String(p.mitraUid || p.ownerUid || p.tokoId || '').trim();
+  const ownerUid = String(p?.mitraUid || '').trim();
   const waTab = window.open('about:blank', '_blank');
 
   try {
-    if (!ownerUid) throw new Error('UID pemilik produk tidak tersedia pada data produk.');
+    if (!ownerUid) throw new Error('UID pemilik produk pada kolom G spreadsheet masih kosong.');
 
-    const ownerSnap = await getDoc(doc(db, 'users', ownerUid));
-    if (!ownerSnap.exists()) throw new Error('Data mitra tidak ditemukan di Firestore users/' + ownerUid + '.');
-
-    const ownerData = ownerSnap.data() || {};
-    // Nama field ini mengikuti struktur pendaftaran mitra: noWA.
-    const ownerNumber = normalizeWhatsAppNumber(ownerData.noWA || '');
-
-    if (!ownerNumber || ownerNumber.length < 10) {
-      throw new Error('Nomor WhatsApp mitra belum diisi pada field noWA di Firestore.');
+    const ownerRef = doc(db, 'users', ownerUid);
+    const ownerSnap = await getDoc(ownerRef);
+    if (!ownerSnap.exists()) {
+      throw new Error('Data pemilik tidak ditemukan pada users/' + ownerUid + '. Periksa UID mitra di spreadsheet.');
     }
 
-    const message = intro + p.name + ' — ' + formatPrice(p.price) +
-      ' (Mitra: ' + (p.mitraNama || ownerData.nama || 'Mitra') + ')';
+    const ownerData = ownerSnap.data() || {};
+    const ownerNumber = normalizeWhatsAppNumber(ownerData.noWA);
+    if (!ownerNumber || ownerNumber.length < 10) {
+      throw new Error('Nomor WhatsApp pemilik belum valid. Periksa field noWA pada dokumen users/' + ownerUid + '.');
+    }
+
+    const ownerName = String(p.mitraNama || ownerData.nama || 'Mitra').trim();
+    const message = intro + String(p.name || 'produk') +
+      ' — ' + formatPrice(p.price) + ' (Mitra: ' + ownerName + ')';
     const waUrl = 'https://wa.me/' + ownerNumber + '?text=' + encodeURIComponent(message);
 
     if (waTab && !waTab.closed) {
-      waTab.opener = null;
-      waTab.location.href = waUrl;
+      waTab.location.replace(waUrl);
     } else {
-      window.location.href = waUrl;
+      // Fallback jika browser memblokir tab baru.
+      window.location.assign(waUrl);
     }
   } catch (error) {
     if (waTab && !waTab.closed) waTab.close();
+    console.error('Gagal membuka WhatsApp pemilik produk:', error);
     alert(error.message || 'Tidak dapat membuka WhatsApp pemilik produk.');
   }
 }
