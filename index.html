@@ -25,218 +25,236 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#00a85a">
-<title>Toko Siap Antar - Promo Balik</title>
+<title>Toko Siap Antar - FINAL GITHUB JSONP</title>
 <style>
-:root{--green:#00a85a;--cyan:#00c8d7;--yellow:#ffd400;--ink:#18312b;--muted:#66756f;--paper:#fffef0;--card:#fff;--line:#dceee5}
-*{box-sizing:border-box}html{scroll-behavior:smooth}
-body{margin:0;background:var(--paper);color:var(--ink);font-family:Arial,Helvetica,sans-serif;padding-bottom:82px}
-header{position:sticky;top:0;z-index:20;background:#fff;padding:10px 14px;min-height:58px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:2px solid var(--yellow);box-shadow:0 2px 7px rgba(0,80,40,.08)}
-.brand{display:flex;align-items:center;gap:8px;font-weight:800}
-.brand img{width:64px;height:52px;object-fit:contain}
-.welcome-text{display:flex;flex-direction:column;gap:3px;max-width:560px}
-.welcome-text strong{font-size:14px;color:#008b4c}
-.welcome-text span{font-size:10px;color:#52635b}
-.head-actions{display:flex;gap:8px}
-.head-actions button{border:1px solid #b9e5ce;background:#f3fff7;color:#008b4c;border-radius:12px;padding:8px 11px;font-size:20px}
-/* PROMO SLIDE BALIK */
-.promo{margin:8px 0 0;border-block:2px solid var(--yellow);background:linear-gradient(90deg,#00a85a,#00c8d7,#d8e500);padding:4px 0}
+:root{--green:#00a85a;--line:#dceee5;--paper:#fffef0}
+*{box-sizing:border-box}body{margin:0;background:#fffef0;font-family:Arial,sans-serif;padding-bottom:82px}
+header{position:sticky;top:0;z-index:20;background:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #ffd400}
+.brand{display:flex;gap:8px;align-items:center;font-weight:800}
+.brand img{width:60px;height:48px;object-fit:contain;background:#fff}
+.head-actions button{border:1px solid #b9e5ce;background:#f3fff7;color:#008b4c;border-radius:12px;padding:8px 11px}
+.promo{margin:8px 0 0;border-block:2px solid #ffd400;background:linear-gradient(90deg,#00a85a,#00c8d7,#d8e500);padding:4px 0}
 .promo-window{overflow:hidden;background:#fff;border-radius:10px;min-height:135px}
-.promo-track{display:flex;align-items:center;width:max-content;animation:promoGeser 24s linear infinite;will-change:transform}
-.promo-track:hover{animation-play-state:paused}
-.promo-track img{display:block;flex:0 0 clamp(250px,42vw,520px);width:clamp(250px,42vw,520px);height:clamp(135px,22vw,220px);object-fit:contain;background:#fff;margin-right:8px}
+.promo-track{display:flex;width:max-content;animation:promoGeser 24s linear infinite}
 @keyframes promoGeser{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-@media(max-width:600px){.promo-window{min-height:145px}.promo-track img{flex-basis:78vw;width:78vw;height:145px;margin-right:6px}}
-
+.promo-track img{width:78vw;height:145px;object-fit:contain;background:#fff;margin-right:6px;flex:0 0 78vw}
 .quick-wrap{position:sticky;top:58px;z-index:15;background:#fffef0;padding:10px 12px 8px;border-bottom:1px solid var(--line)}
-.categories{display:flex;gap:8px;overflow-x:auto;white-space:nowrap;padding:2px 0 9px;scrollbar-width:none}
-.categories::-webkit-scrollbar{display:none}
+.categories{display:flex;gap:8px;overflow-x:auto;white-space:nowrap;padding:2px 0 9px}
 .cat{flex:0 0 auto;border:0;border-radius:30px;background:#edf5f0;padding:10px 14px;font-size:14px}
 .cat.active{background:linear-gradient(100deg,#00a85a,#00c8d7);color:white}
 .search{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid #a8dfc6;border-radius:30px;padding:0 14px}
-.search input{width:100%;border:0;outline:0;background:transparent;padding:13px 0;font-size:15px}
+.search input{width:100%;border:0;outline:0;padding:13px 0;font-size:15px}
 main{padding:10px 12px 18px}
 .products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.product{background:#fff;border:1px solid var(--line);border-radius:15px;overflow:hidden;box-shadow:0 2px 5px #18312b12;display:flex;flex-direction:column}
-.product-photo{height:125px;background:linear-gradient(135deg,#d9ffed,#f4ffe2);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.product{background:#fff;border:1px solid var(--line);border-radius:15px;overflow:hidden;display:flex;flex-direction:column}
+.product-photo{height:125px;background:#d9ffed;display:flex;align-items:center;justify-content:center;position:relative}
 .product-photo img{width:100%;height:100%;object-fit:contain}
-.mitra-badge{position:absolute;left:6px;top:6px;background:linear-gradient(135deg,#00a85a,#00c8d7);color:#fff;font-weight:800;font-size:9px;padding:5px 7px;border-radius:7px;max-width:68%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mitra-badge{position:absolute;left:6px;top:6px;background:linear-gradient(135deg,#00a85a,#00c8d7);color:#fff;font-size:9px;font-weight:800;padding:5px 7px;border-radius:7px}
 .badge-ship{position:absolute;right:6px;bottom:6px;display:flex;gap:2px}
 .badge-ship span{font-size:8px;font-weight:800;padding:2px 4px;border-radius:6px;color:#fff}
 .badge-ship .cod{background:#2e7d32}.badge-ship .kurir{background:#1565c0}.badge-ship .exp{background:#e65100}.badge-ship .no{background:#bdbdbd;color:#444}
-.product-info{padding:8px 7px 9px;display:flex;flex-direction:column;flex:1;text-align:center;gap:6px}
-.product-name{font-size:12px;min-height:29px}
-.product-desc{font-size:9px;color:#66756f;min-height:25px}
+.product-info{padding:8px;text-align:center}
+.product-name{font-size:12px;min-height:28px}
 .price{font-weight:800;color:#008b4c;font-size:13px}
-.actions{display:grid;grid-template-columns:30px 30px minmax(0,1fr);gap:4px;margin-top:auto}
-.actions button{border:0;border-radius:8px;min-height:29px;font-size:11px}
+.actions{display:grid;grid-template-columns:30px 30px 1fr;gap:4px;margin-top:6px}
+.actions button{border:0;border-radius:8px;min-height:29px}
 .wa{background:#e0fff0}.cart{background:#fff7ce}.buy{background:#ffc400;font-weight:700}
-.notice{padding:20px 12px;text-align:center;color:#6b7770;background:#fff;border:1px solid var(--line);border-radius:12px}
-.bottom-nav{position:fixed;z-index:30;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e5e7eb;display:grid;grid-template-columns:repeat(4,1fr);padding:7px 4px;box-shadow:0 -3px 12px #0000000c}
-.bottom-nav button{background:none;border:0;color:#777;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px}
-.bottom-nav .ico{font-size:22px}
+.notice{padding:20px;text-align:center;background:#fff;border:1px solid var(--line);border-radius:12px}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e5e7eb;display:grid;grid-template-columns:repeat(4,1fr);padding:7px 4px}
+.bottom-nav button{background:none;border:0;color:#777;font-size:11px;display:flex;flex-direction:column;align-items:center}
+#statusBox{font-size:11px;padding:8px;border-radius:8px;margin-bottom:8px}
 </style>
 </head>
 <body>
 <header>
   <div class="brand">
-    <img src="logo3.png" alt="Logo">
-    <div class="welcome-text">
-      <strong>Toko Siap Antar - FIX Promo Balik</strong>
-      <span>Slide promo + baca MEMBER c4 harga c9-11 COD/Kurir/Exp → Checkout filter</span>
-    </div>
+    <img src="./logo3.png" alt="logo" onerror="this.src='https://via.placeholder.com/60x48?text=Logo'">
+    <div><strong style="color:#008b4c">Toko Siap Antar - FINAL</strong><br><span style="font-size:10px;color:#666">EDIT JSONP - Promo + Produk + COD/Kurir/Exp + Ongkir - Works di Github</span></div>
   </div>
-  <div class="head-actions"><button id="refresh">↻</button><button id="theme">☾</button></div>
+  <div class="head-actions"><button id="refresh">↻</button></div>
 </header>
 
-<!-- PROMO SLIDE BALIK - INI YANG HILANG KEMARIN -->
-<section class="promo" aria-label="Promo">
+<section class="promo">
   <div class="promo-window">
     <div class="promo-track" id="promoTrack">
-      <img src="silde1.png" alt="Promo 1"><img src="silde2.png" alt="Promo 2"><img src="silde3.png" alt="Promo 3"><img src="silde4.png" alt="Promo 4"><img src="silde5.png" alt="Promo 5"><img src="silde6.png" alt="Promo 6">
-      <img src="silde1.png" alt="Promo 1 duplikat" aria-hidden="true"><img src="silde2.png" alt="Promo 2 duplikat" aria-hidden="true"><img src="silde3.png" alt="Promo 3 duplikat" aria-hidden="true"><img src="silde4.png" alt="Promo 4 duplikat" aria-hidden="true"><img src="silde5.png" alt="Promo 5 duplikat" aria-hidden="true"><img src="silde6.png" alt="Promo 6 duplikat" aria-hidden="true">
+      <img src="./silde1.png" alt="1" onerror="this.src='https://via.placeholder.com/300x145?text=Promo1'"><img src="./silde2.png" alt="2" onerror="this.src='https://via.placeholder.com/300x145?text=Promo2'"><img src="./silde3.png" alt="3" onerror="this.src='https://via.placeholder.com/300x145?text=Promo3'"><img src="./silde4.png" alt="4" onerror="this.src='https://via.placeholder.com/300x145?text=Promo4'"><img src="./silde5.png" alt="5" onerror="this.src='https://via.placeholder.com/300x145?text=Promo5'"><img src="./silde6.png" alt="6" onerror="this.src='https://via.placeholder.com/300x145?text=Promo6'">
+      <img src="./silde1.png" alt="1"><img src="./silde2.png" alt="2"><img src="./silde3.png" alt="3"><img src="./silde4.png" alt="4"><img src="./silde5.png" alt="5"><img src="./silde6.png" alt="6">
     </div>
   </div>
 </section>
 
 <section class="quick-wrap">
+  <div id="statusBox" style="background:#e8f5e9;border:1px solid #a5d6a7">Memuat MEMBER via JSONP (bypass Failed to fetch Github)...</div>
   <nav class="categories" id="categories">
     <button class="cat active" data-cat="Semua">🏠 Semua</button>
     <button class="cat" data-cat="Makanan">🍜 Makanan</button>
     <button class="cat" data-cat="Minuman">🥤 Minuman</button>
     <button class="cat" data-cat="Lainnya">📦 Lainnya</button>
   </nav>
-  <label class="search"><span>🔎</span><input id="searchInput" type="search" placeholder="Cari Siomay, Lcd hp, Sarung..." autocomplete="off"></label>
+  <label class="search"><span>🔎</span><input id="searchInput" type="search" placeholder="Cari Siomay, Lcd hp, adha..."></label>
 </section>
 
-<main><div id="products" class="products"><div class="notice" style="grid-column:1/-1">Memuat produk MEMBER + slide promo...</div></div></main>
+<main><div id="products" class="products"><div class="notice" style="grid-column:1/-1">Memuat produk MEMBER c4 harga c9-11 COD/Kurir/Exp via JSONP...</div></div></main>
 
 <nav class="bottom-nav">
-  <button id="homeBtn"><span class="ico">⌂</span>Home</button><button id="historyBtn"><span class="ico">▤</span>Riwayat</button><button id="cartBtn"><span class="ico">🛒 <sup id="cartCount">0</sup></span>Keranjang</button><button id="profileBtn"><span class="ico">👤</span>Profil</button>
+  <button id="homeBtn">⌂ Home</button><button>▤ Riwayat</button><button id="cartBtn">🛒 <sup id="cartCount">0</sup> Keranjang</button><button>👤 Profil</button>
 </nav>
 
 <script>
-const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=MEMBER';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxtjGIn5huyGFVGz7muW4SQGOsAOroDLj0seCnd41pOXFF39Iee0EmjA09KljV4Ahk/exec';
 const productsEl = document.getElementById('products');
-const searchInput = document.getElementById('searchInput');
-let allProducts = [];
-let activeCategory = 'Semua';
-let cart = [];
-try { cart = JSON.parse(localStorage.getItem('tsa_cart') || '[]'); if(!Array.isArray(cart)) cart=[]; } catch { cart=[]; }
+const statusBox = document.getElementById('statusBox');
+let allProducts=[], activeCategory='Semua', cart=[];
+try{ cart=JSON.parse(localStorage.getItem('tsa_cart')||'[]'); }catch{ cart=[]; }
 
-const formatPrice = v => { const n = Number(v); return Number.isFinite(n) && n ? 'Rp ' + n.toLocaleString('id-ID') : 'Hubungi'; };
-function convertImage(url){
-  if(!url) return '';
-  let s = String(url).trim();
-  if(s.startsWith('data:image')) return s;
-  let m = s.match(/=IMAGE\s*\(\s*["']([^"']+)["']/i); if(m) s=m[1];
-  s = s.replace(/^["']|["']$/g,'').trim();
-  if(s.length>100 && !s.startsWith('http')){
-    let clean=s.replace(/\s/g,'').replace(/^data:image\/[^;]+;base64,[STRIPPED],'');
-    if(clean.length>80) return 'data:image/jpeg;base64,'+clean;
+const rupiah = v => { const n=Number(v); return isFinite(n)&&n? 'Rp '+n.toLocaleString('id-ID') : 'Rp 0'; };
+function convertImage(s){
+  if(!s) return '';
+  s=String(s).trim();
+  if(s.startsWith('data:image')) return s.length>50000?s.substring(0,45000):s;
+  let m=s.match(/=IMAGE\s*\(\s*["']([^"']+)["']/i); if(m) s=m[1];
+  s=s.replace(/^["']|["']$/g,'').trim();
+  if(s.length>120 && !s.startsWith('http')){
+    let clean=s.replace(/\s/g,'').replace(/^data:image\/[^;]+;base64,[^,]+,/, '');
+    if(clean.length>80) return 'data:image/jpeg;base64,'+clean.substring(0,40000);
   }
-  let driveId=null, mm;
-  mm=s.match(/\/d\/([A-Za-z0-9_-]{15,})/); if(mm) driveId=mm[1];
-  mm=s.match(/[?&]id=([A-Za-z0-9_-]{15,})/); if(!driveId && mm) driveId=mm[1];
-  if(!driveId && /^[A-Za-z0-9_-]{25,}$/.test(s)) driveId=s;
-  if(driveId) return 'https://drive.google.com/thumbnail?id='+driveId+'&sz=w600';
+  let id=null, mm;
+  mm=s.match(/\/d\/([A-Za-z0-9_-]{15,})/); if(mm) id=mm[1];
+  mm=s.match(/[?&]id=([A-Za-z0-9_-]{15,})/); if(!id&&mm) id=mm[1];
+  if(!id && /^[A-Za-z0-9_-]{25,}$/.test(s)) id=s;
+  if(id) return 'https://drive.google.com/thumbnail?id='+id+'&sz=w600';
   if(s.startsWith('http')) return s;
-  return s;
+  return '';
 }
-function escapeHtml(v){ return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function esc(v){ return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-function renderProducts(){
-  const q = searchInput.value.trim().toLowerCase();
-  const filtered = allProducts.filter(p=>{
-    const matchesText = !q || p.searchText.includes(q);
-    const matchesCat = activeCategory==='Semua' || (p.kategori && p.kategori.toLowerCase().includes(activeCategory.toLowerCase())) || (p.name+' '+p.description).toLowerCase().includes(activeCategory.toLowerCase());
-    return matchesText && matchesCat;
+function render(){
+  const q=document.getElementById('searchInput').value.trim().toLowerCase();
+  const filtered=allProducts.filter(p=>{
+    const text = (p.name+' '+p.description+' '+p.kategori).toLowerCase().includes(q);
+    const cat = activeCategory==='Semua' || (p.kategori && p.kategori.toLowerCase().includes(activeCategory.toLowerCase()));
+    return (q?text:true) && cat;
   });
-  if(!filtered.length){ productsEl.innerHTML='<div class="notice" style="grid-column:1/-1">Produk tidak ditemukan</div>'; return; }
-  productsEl.innerHTML = filtered.map(p=>`
-    <article class="product" data-product-id="${escapeHtml(p.id)}">
+  if(!filtered.length){ productsEl.innerHTML='<div class="notice" style="grid-column:1/-1">Tidak ada produk - cek Sheet MEMBER tab ada data gak</div>'; return; }
+  productsEl.innerHTML=filtered.map(p=>`
+    <div class="product">
       <div class="product-photo">
-        ${p.singkatan ? `<div class="mitra-badge">${escapeHtml(p.singkatan)}</div>` : ''}
-        ${p.image ? `<img loading="lazy" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">` : '<span>📦</span>'}
+        <div class="mitra-badge">${esc(p.singkatan||'AYT')}</div>
+        ${p.image?`<img src="${esc(p.image)}" onerror="this.src='https://via.placeholder.com/300'">`:'📦'}
         <div class="badge-ship">
           <span class="${p.bisaCOD?'cod':'no'}">C${p.bisaCOD?'':''}</span>
           <span class="${p.bisaKurir?'kurir':'no'}">K${p.bisaKurir?':Ya':''}</span>
-          <span class="${p.bisaExp?'exp':'no'}">E${p.bisaExp?'':''}</span>
+          <span class="${p.bisaExp?'exp':'no'}">E${p.bisaExp?':Ya':''}</span>
         </div>
       </div>
       <div class="product-info">
-        <div class="product-name">${escapeHtml(p.name)} ${p.stok<=0?'(Habis)':''}</div>
-        <div class="product-desc">${escapeHtml(p.description||'Siap antar ±1 jam')}</div>
-        <div class="price">${escapeHtml(formatPrice(p.price))} <span style="font-size:9px;color:#999">Stok:${p.stok}</span></div>
-        <div style="font-size:9px;color:${p.bisaCOD&&p.bisaKurir?'#2e7d32':'#b71c1c'}">${p.bisaCOD?'✅COD ':''}${p.bisaKurir?'🛵Kurir ':''}${p.bisaExp?'📦Exp':''}</div>
+        <div class="product-name">${esc(p.name)}</div>
+        <div style="font-size:9px;color:#666">${esc(p.description||'')}</div>
+        <div class="price">${rupiah(p.price)} <span style="font-size:9px;color:#999">Stok:${p.stok}</span></div>
+        <div style="font-size:9px;color:${p.bisaKurir?'#1565c0':'#999'}">${p.bisaCOD?'✅COD ':''}${p.bisaKurir?'🛵Kurir ':''}${p.bisaExp?'📦Exp':''}</div>
         <div class="actions">
-          <button class="wa" data-action="wa" data-id="${escapeHtml(p.id)}">☏</button>
-          <button class="cart" data-action="cart" data-id="${escapeHtml(p.id)}">🛒</button>
-          <button class="buy" data-action="buy" data-id="${escapeHtml(p.id)}">Beli</button>
+          <button class="wa" data-id="${esc(p.id)}">☏</button>
+          <button class="cart" data-id="${esc(p.id)}">🛒</button>
+          <button class="buy" data-id="${esc(p.id)}">Beli</button>
         </div>
       </div>
-    </article>
+    </div>
   `).join('');
 }
+
 function updateCart(){
-  document.getElementById('cartCount').textContent = cart.reduce((s,i)=>s+(Number(i.qty)||0),0);
+  document.getElementById('cartCount').textContent=cart.reduce((s,i)=>s+(i.qty||0),0);
   localStorage.setItem('tsa_cart', JSON.stringify(cart));
 }
-function addProductToCart(p){
-  const ex = cart.find(i=>i.id===p.id);
-  if(ex) ex.qty = (Number(ex.qty)||0)+1;
-  else cart.push({id:p.id,name:p.name,price:p.price,image:p.image,mitraNama:p.mitraNama,mitraUid:p.mitraUid,kategori:p.kategori,bisaCOD:p.bisaCOD,bisaKurir:p.bisaKurir,bisaExp:p.bisaExp,stok:p.stok,qty:1});
+function addCart(p){
+  let ex=cart.find(i=>i.id===p.id);
+  if(ex) ex.qty++;
+  else cart.push({id:p.id,name:p.name,price:p.price,image:p.image,bisaCOD:p.bisaCOD,bisaKurir:p.bisaKurir,bisaExp:p.bisaExp,stok:p.stok,mitraNama:p.mitraNama,qty:1});
   updateCart();
 }
 productsEl.addEventListener('click', e=>{
-  const btn=e.target.closest('button[data-action]'); if(!btn) return;
-  const p=allProducts.find(x=>x.id===btn.dataset.id); if(!p) return;
-  if(btn.dataset.action==='wa'){ window.open('https://wa.me/?text='+encodeURIComponent('Halo pesan '+p.name),'_blank'); }
-  if(btn.dataset.action==='buy'){ addProductToCart(p); location.href='keranjang.html'; }
-  if(btn.dataset.action==='cart'){ addProductToCart(p); btn.textContent='✓'; setTimeout(()=>btn.textContent='🛒',700); }
+  const b=e.target.closest('button'); if(!b) return;
+  const p=allProducts.find(x=>x.id===b.dataset.id); if(!p) return;
+  if(b.classList.contains('cart')){ addCart(p); b.textContent='✓'; setTimeout(()=>b.textContent='🛒',700); }
+  if(b.classList.contains('buy')){ addCart(p); location.href='keranjang.html'; }
 });
-searchInput.addEventListener('input', renderProducts);
 document.getElementById('categories').addEventListener('click', e=>{
-  const b=e.target.closest('[data-cat]'); if(!b) return;
-  activeCategory=b.dataset.cat;
-  document.querySelectorAll('.cat').forEach(el=>el.classList.toggle('active',el===b));
-  renderProducts();
+  const btn=e.target.closest('[data-cat]'); if(!btn) return;
+  activeCategory=btn.dataset.cat;
+  document.querySelectorAll('.cat').forEach(c=>c.classList.toggle('active',c===btn));
+  render();
 });
+document.getElementById('searchInput').addEventListener('input', render);
 document.getElementById('refresh').onclick=()=>location.reload();
 document.getElementById('homeBtn').onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
-document.getElementById('cartBtn').onclick=()=>{ if(!cart.length){ alert('Keranjang kosong'); return; } location.href='keranjang.html'; };
-document.getElementById('historyBtn').onclick=()=>location.href='riwayat.html';
-document.getElementById('profileBtn').onclick=()=>location.href='profil.html';
+document.getElementById('cartBtn').onclick=()=>{ if(!cart.length) alert('Keranjang kosong'); else location.href='keranjang.html'; };
 
-function parseGviz(raw){
-  const s=raw.indexOf('{'), e=raw.lastIndexOf('}');
-  if(s<0||e<s) throw new Error('Format gviz salah');
-  return JSON.parse(raw.slice(s,e+1));
+// JSONP callback - ini yang bikin lolos di Github (gak pakai fetch)
+window.memberCallback = function(j){
+  try{
+    let data = j.data || [];
+    if(!data.length){ statusBox.textContent='❌ Sheet MEMBER kosong'; return; }
+    let products=[];
+    // format object {id,nama,harga,bisaCOD...} dari GS_FINAL_JSONP
+    if(typeof data[0]==='object' && !Array.isArray(data[0])){
+      products = data.map(o=>({
+        id: String(o.id||'').trim(),
+        name: String(o.nama||o.name||'').trim(),
+        description: String(o.deskripsi||'').trim(),
+        price: Number(o.harga||0),
+        image: convertImage(o.image||''),
+        mitraNama: String(o.mitraNama||'').trim(),
+        kategori: String(o.kategori||'Lainnya').trim(),
+        bisaCOD: Number(o.bisaCOD??1),
+        bisaKurir: Number(o.bisaKurir??1),
+        bisaExp: Number(o.bisaExp??1),
+        stok: Number(o.stok??100),
+        singkatan: String(o.mitraNama||'AYT').split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,3)
+      }));
+    }else{
+      // raw array
+      products = data.map((row,i)=>{
+        if(!row) return null;
+        if(i===0 && String(row[0]).includes('Column')) return null;
+        return {
+          id: String(row[1]||'').trim(),
+          name: String(row[2]||'').trim(),
+          description: String(row[3]||'').trim(),
+          price: Number(row[4]||0),
+          image: convertImage(row[5]||''),
+          mitraNama: String(row[7]||'').trim(),
+          kategori: String(row[8]||'Lainnya').trim(),
+          bisaCOD: Number(row[9]??1),
+          bisaKurir: Number(row[10]??1),
+          bisaExp: Number(row[11]??1),
+          stok: Number(row[12]??100),
+          singkatan: 'AYT'
+        };
+      }).filter(Boolean);
+    }
+    products = products.filter(p=>p.name);
+    allProducts = products;
+    statusBox.innerHTML = '✅ Loaded via JSONP (bypass Failed to fetch): '+products.length+' produk - Sheet gak perlu publik, cukup Apps Script Anyone';
+    statusBox.style.background='#e8f5e9';
+    render();
+    updateCart();
+  }catch(e){
+    statusBox.textContent='❌ Error parse JSONP: '+e.message;
+    statusBox.style.background='#ffebee';
+  }
+};
+
+function loadMemberJSONP(){
+  let s=document.createElement('script');
+  s.src = SCRIPT_URL + '?action=list&callback=memberCallback&_=' + Date.now();
+  s.onerror = function(){
+    statusBox.textContent='❌ Gagal JSONP - Deploy GS_FINAL_JSONP.gs jadi Anyone dulu! Sheet ID: 1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0 harus bisa diakses script';
+    statusBox.style.background='#ffebee';
+    productsEl.innerHTML='<div class="notice" style="color:#b42318">Gagal load MEMBER via JSONP.<br>1. Deploy GS_FINAL_JSONP.gs di Apps Script → Deploy → Anyone<br>2. Pastikan SCRIPT_URL bener: AKfycbxtjGIn5huy...<br>File ini work di Github karena pakai JSONP, bukan fetch.</div>';
+  };
+  document.head.appendChild(s);
 }
-fetch(SHEET_URL, {cache:'no-store'})
-.then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
-.then(raw=>{
-  const json=parseGviz(raw);
-  const rows=json.table?.rows; if(!rows) throw new Error('No rows');
-  allProducts = rows.map((row,i)=>{
-    const c=row.c||[];
-    const id = c[1]?.v || ('prod_'+i);
-    const name = c[2]?.v || '';
-    const desc = c[3]?.v || '';
-    const price = c[4]?.v || 0;
-    const image = convertImage(c[5]?.v||'');
-    const mitraUid = c[6]?.v || '';
-    const mitraNama = c[7]?.v || '';
-    const kategori = c[8]?.v || 'Lainnya';
-    const bisaCOD = c[9]?.v != null ? Number(c[9].v) : 1;
-    const bisaKurir = c[10]?.v != null ? Number(c[10].v) : 1;
-    const bisaExp = c[11]?.v != null ? Number(c[11].v) : 1;
-    const stok = c[12]?.v != null ? Number(c[12].v) : 100;
-    const singkatan = (()=>{ if(!mitraNama) return ''; let w=String(mitraNama).trim().split(/\s+/).filter(Boolean); if(w.length===1) return w[0].slice(0,2).toUpperCase(); return w.map(x=>x[0]).join('').toUpperCase().slice(0,4); })();
-    return {id:String(id).trim(),name:String(name).trim(),description:String(desc).trim(),price:Number(price)||0,image,mitraUid:String(mitraUid).trim(),mitraNama:String(mitraNama).trim(),kategori:String(kategori).trim(),bisaCOD,bisaKurir,bisaExp,stok,singkatan,searchText:(String(name)+' '+String(desc)+' '+String(mitraNama)).toLowerCase()};
-  }).filter(p=>p.name);
-  renderProducts();
-})
-.catch(err=>{ productsEl.innerHTML='<div class="notice" style="grid-column:1/-1;color:#b42318">Gagal: '+escapeHtml(err.message)+'</div>'; });
+loadMemberJSONP();
 updateCart();
 </script>
 <script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
