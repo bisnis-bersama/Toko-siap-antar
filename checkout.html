@@ -234,6 +234,7 @@ let pLat=null,pLng=null,mitra=null,jarak=null,ongkirSiapAntar=5000;
 let expedisiOngkir=9000;
 let selectedShip='siap_antar';
 let selectedPay='transfer';
+let orderSubmitting=false;
 const checkoutByOwner = new Map();
 const expeditionOptions = [{id:'jne_reg',name:'JNE Reguler',cost:9000},{id:'jne_yes',name:'JNE YES',cost:18000},{id:'jnt_reg',name:'J&T Reguler',cost:10000},{id:'sicepat_reg',name:'SiCepat Reg',cost:11000},{id:'anteraja_reg',name:'AnterAja',cost:12000},{id:'jne_jtr',name:'JNE JTR',cost:25000}];
 function flagOn(v){ if(v===undefined||v===null||v==='') return true; return ['1','true','ya','yes','aktif','boleh','tersedia','on'].includes(String(v).trim().toLowerCase()); }
@@ -538,6 +539,8 @@ document.getElementById('btnSimpanAlamat').onclick=async()=>{
 
 // Buat Pesanan
 async function buatPesanan(){
+  // Kunci proses sejak klik pertama agar tidak terjadi pesanan ganda.
+  if(orderSubmitting) return;
   if(cart.length===0){alert('Keranjang kosong');return;}
   if(!currentUser){alert('Harus login dulu untuk checkout');location.href='login.html?next=checkout-baru.html';return;}
   if(!['transfer','qris','cod'].includes(selectedPay)){
@@ -546,8 +549,16 @@ async function buatPesanan(){
     updateGlobalPayment();
     return;
   }
+  orderSubmitting=true;
+  const btn=document.getElementById('btnBuatPesanan');
+  const bottomBtn=document.getElementById('bottomCheckout');
+  // Sembunyikan kedua tombol segera setelah klik pertama.
+  btn.disabled=true;
+  bottomBtn.disabled=true;
+  btn.style.display='none';
+  bottomBtn.style.display='none';
+  document.getElementById('msg').innerHTML='<div class="ok">⏳ Pesanan sedang diproses. Mohon jangan menekan tombol kembali atau memuat ulang halaman.</div>';
   const alamatData={nama:document.getElementById('alamatNama').textContent,telepon:document.getElementById('alamatHp').textContent,alamat:document.getElementById('alamatLengkap').textContent,lat:pLat||null,lng:pLng||null,gpsLink:pLat&&pLng?`https://www.google.com/maps?q=${pLat},${pLng}`:''};
-  const btn=document.getElementById('btnBuatPesanan');btn.disabled=true;btn.textContent='Membuat pesanan...';
   try{
     await renderPerToko();
     const groups=new Map();
@@ -574,10 +585,24 @@ async function buatPesanan(){
       const ref=await addDoc(collection(db,'orders'),orderData);
       createdOrders.push({nomor,total:subtotal+ongkirGroup,qty,orderId:ref.id,shipping:group.shipping,payment:group.payment,ongkir:ongkirGroup,mitra:group.info.nama||'Mitra'});
     }
-    localStorage.setItem('tsa_cart','[]');const totalSemua=createdOrders.reduce((a,o)=>a+o.total,0);
+    // Kosongkan keranjang hanya setelah seluruh dokumen pesanan berhasil dibuat.
+    localStorage.setItem('tsa_cart','[]');
+    cart=[];
+    renderProduk();
+    const totalSemua=createdOrders.reduce((a,o)=>a+o.total,0);
     document.getElementById('msg').innerHTML=`<div class="ok">✅ Berhasil membuat ${createdOrders.length} pesanan terpisah.<br>${createdOrders.map(o=>`<b>${o.nomor}</b> — ${o.mitra}<br>${o.shipping==='expedisi'?'Ekspedisi':'Siap Antar'} / ${o.payment.toUpperCase()}<br>Ongkir: ${rupiah(o.ongkir)} · Total: ${rupiah(o.total)}`).join('<hr style="border:0;border-top:1px solid #c3ead7;margin:8px 0">')}<br><br>Setiap pesanan masuk ke koleksi <b>orders</b> dengan mitra dan metode masing-masing.</div>`;
     document.getElementById('bottomTotal').textContent=rupiah(totalSemua);setTimeout(()=>{location.href='riwayat.html';},3500);
-  }catch(e){console.error(e);document.getElementById('msg').innerHTML='<div class="err">❌ Gagal buat pesanan: '+e.message+'</div>';btn.disabled=false;btn.textContent='Buat Pesanan →';}
+  }catch(e){
+    console.error(e);
+    orderSubmitting=false;
+    document.getElementById('msg').innerHTML='<div class="err">❌ Gagal buat pesanan: '+e.message+'</div>';
+    // Jika gagal, tampilkan kembali tombol agar pengguna bisa mencoba lagi.
+    btn.style.display='';
+    bottomBtn.style.display='';
+    btn.disabled=false;
+    bottomBtn.disabled=false;
+    btn.textContent='Buat Pesanan →';
+  }
 }
 
 
