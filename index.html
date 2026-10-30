@@ -103,7 +103,6 @@ header::before{top:0}header::after{bottom:0}
 .btn-y{background:#ffd400;color:#111}.btn-dark{background:#111;color:#ffd400}
 .preview{width:100%;max-height:180px;object-fit:contain;background:#f8f8f8;border-radius:12px;border:2px dashed #ddd;display:none;margin-bottom:10px}
 .linkbox{background:#111;color:#ffd400;padding:10px;border-radius:10px;font-family:monospace;font-size:11px;word-break:break-all}
-
 /* Panel menu hamburger */
 .menu-backdrop{position:fixed;inset:0;z-index:1000;background:rgba(10,30,22,.48);display:none}
 .menu-backdrop.show{display:block}
@@ -117,8 +116,6 @@ header::before{top:0}header::after{bottom:0}
 .menu-item:active{background:#e8fff1}
 .menu-item .menu-icon{width:28px;text-align:center;font-size:20px}
 @media(prefers-reduced-motion:reduce){.menu-drawer{transition:none}}
-
-
 /* Mode gelap: diaktifkan dari tombol pada header. */
 body.dark-mode{--ink:#e7f2ec;--muted:#aabbb2;--paper:#101a16;--card:#1b2923;--line:#34483e;background:#101a16;color:var(--ink)}
 body.dark-mode header{background:#17251e;box-shadow:0 2px 8px #0006}
@@ -149,7 +146,6 @@ body.dark-mode .menu-drawer-head strong{color:#70e6a4}
 body.dark-mode .menu-close{background:#26382f;color:#e7f2ec}
 body.dark-mode .menu-item{background:#1f3028;border-color:#34483e;color:#e7f2ec}
 body.dark-mode .menu-item:active{background:#294a37}
-
 </style>
 </head>
 <body>
@@ -163,11 +159,12 @@ body.dark-mode .menu-item:active{background:#294a37}
   </div>
   <div class="head-actions"><button id="refresh" aria-label="Muat ulang" title="Muat ulang">↻</button><button id="themeToggle" type="button" aria-label="Aktifkan mode gelap" title="Mode gelap">🌙</button></div>
 </header>
-<section class="promo" aria-label="Promo">
-  <div class="promo-window"><div class="promo-track" id="promoTrack">
-    <img src="silde1.png" alt="Promo 1"><img src="silde2.png" alt="Promo 2"><img src="silde3.png" alt="Promo 3"><img src="silde4.png" alt="Promo 4"><img src="silde5.png" alt="Promo 5"><img src="silde6.png" alt="Promo 6">
-    <img src="silde1.png" alt="Promo 1" aria-hidden="true"><img src="silde2.png" alt="Promo 2" aria-hidden="true"><img src="silde3.png" alt="Promo 3" aria-hidden="true"><img src="silde4.png" alt="Promo 4" aria-hidden="true"><img src="silde5.png" alt="Promo 5" aria-hidden="true"><img src="silde6.png" alt="Promo 6" aria-hidden="true">
-  </div></div>
+
+<!-- Slide sponsor otomatis membaca link gambar dari kolom N Spreadsheet MEMBER -->
+<section class="promo" aria-label="Sponsor Toko Siap Antar" id="sponsorPromo">
+  <div class="promo-window">
+    <div class="promo-track" id="promoTrack"></div>
+  </div>
 </section>
 
 <!-- Pengelolaan produk dilakukan di halaman Kelola Produk, bukan di Index. -->
@@ -202,6 +199,7 @@ body.dark-mode .menu-item:active{background:#294a37}
   </nav>
   <label class="search"><span>🔎</span><input id="searchInput" type="search" placeholder="Cari produk / mitra..." autocomplete="off"></label>
 </section>
+
 <div class="menu-backdrop" id="menuBackdrop" aria-hidden="true">
   <aside class="menu-drawer" role="dialog" aria-modal="true" aria-label="Menu Toko Siap Antar">
     <div class="menu-drawer-head"><strong>Menu Toko Siap Antar</strong><button class="menu-close" id="closeMenu" type="button" aria-label="Tutup menu">×</button></div>
@@ -216,6 +214,7 @@ body.dark-mode .menu-item:active{background:#294a37}
     </nav>
   </aside>
 </div>
+
 <main><div id="products" class="products"><div class="notice" style="grid-column:1/-1">Memuat produk dari Google Sheets…</div></div></main>
 <footer><h3>🌐 Ikuti Kami</h3><div class="socials"><a href="#" id="facebook">● Facebook</a><a href="#" id="instagram">◎ Instagram</a><a href="#" id="whatsapp">◉ WhatsApp</a></div></footer>
 <nav class="bottom-nav" aria-label="Navigasi bawah">
@@ -225,9 +224,7 @@ body.dark-mode .menu-item:active{background:#294a37}
 <div id="productZoom" class="product-zoom" role="dialog" aria-modal="true" aria-label="Detail produk">
   <button type="button" id="productZoomClose" class="product-zoom-close" aria-label="Tutup popup">×</button>
   <div class="product-zoom-content">
-    <div class="product-zoom-image-wrap">
-      <img id="productZoomImage" src="" alt="Foto produk">
-    </div>
+    <div class="product-zoom-image-wrap"><img id="productZoomImage" src="" alt="Foto produk"></div>
     <div id="productZoomName" class="product-zoom-name"></div>
     <div id="productZoomPrice" class="product-zoom-price"></div>
     <div class="product-zoom-actions">
@@ -238,12 +235,11 @@ body.dark-mode .menu-item:active{background:#294a37}
   </div>
 </div>
 
-
 <script type="module">
 import {auth, db} from "./firebase-config.js";
 import {onAuthStateChanged, signOut} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 
-// GANTI dengan URL Web App dari Apps Script setelah deploy
+// Spreadsheet MEMBER: kolom A-N, kolom N berisi link gambar sponsor.
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=MEMBER';
 
 const productsEl = document.getElementById('products');
@@ -259,23 +255,29 @@ try {
 } catch (error) {
   cart = [];
 }
+
 const formatPrice = value => {
   const n = Number(String(value ?? '').replace(/[^\d,-]/g,'').replace(/\./g,'').replace(',','.'));
   return Number.isFinite(n) && n ? 'Rp ' + n.toLocaleString('id-ID') : (value ? String(value) : 'Hubungi kami');
 };
+
 function convertImage(url) {
   if (!url) return '';
   const s = String(url).trim().replace(/^\s+|\s+$/g, '');
   if (/^data:image\//i.test(s)) return s;
-  // Kolom F spreadsheet menyimpan Base64 mentah; JPEG umumnya diawali /9j/.
   if (/^\/9j\//i.test(s)) return 'data:image/jpeg;base64,' + s;
   if (/^iVBORw0KGgo/.test(s)) return 'data:image/png;base64,' + s;
   if (/^R0lGOD/.test(s)) return 'data:image/gif;base64,' + s;
   if (/^UklGR/.test(s)) return 'data:image/webp;base64,' + s;
-  const id = s.match(/(?:id=|\/d\/)([A-Za-z0-9_-]{15,})/);
-  if (id && /drive\.google\.com/.test(s)) return 'https://drive.google.com/thumbnail?id=' + id[1] + '&sz=w600';
+
+  // Link Google Drive biasa diubah menjadi URL thumbnail agar bisa dimuat sebagai gambar.
+  const driveId = s.match(/(?:id=|\/d\/)([A-Za-z0-9_-]{15,})/);
+  if (driveId && /drive\.google\.com/i.test(s)) {
+    return 'https://drive.google.com/thumbnail?id=' + driveId[1] + '&sz=w1200';
+  }
   return s;
 }
+
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -296,6 +298,42 @@ function deliveryLabels(p){
   return labels.length ? labels.join(' · ') : 'Belum tersedia';
 }
 
+/* SLIDE SPONSOR: mengambil link gambar dari kolom N (indeks 13). */
+function renderSponsorSlides(rows) {
+  const section = document.getElementById('sponsorPromo');
+  const track = document.getElementById('promoTrack');
+  if (!section || !track) return;
+
+  const sponsorLinks = [...new Set(
+    rows.map(row => {
+      const cells = row.c || [];
+      return String(cells[13]?.v ?? cells[13]?.f ?? '').trim();
+    }).filter(url => /^https?:\/\//i.test(url))
+  )];
+
+  const images = sponsorLinks.map(convertImage).filter(Boolean);
+
+  if (!images.length) {
+    section.style.display = 'none';
+    track.replaceChildren();
+    return;
+  }
+
+  section.style.display = 'block';
+  const repeatedSlides = images.length > 1 ? [...images, ...images] : images;
+  track.innerHTML = repeatedSlides.map((url, index) => `
+    <img
+      src="${escapeHtml(url)}"
+      alt="Sponsor Toko Siap Antar"
+      loading="${index < images.length ? 'eager' : 'lazy'}"
+      onerror="this.style.display='none'"
+    >
+  `).join('');
+
+  // Jika hanya satu sponsor, hentikan animasi agar gambar tidak bergeser ke ruang kosong.
+  track.style.animation = images.length > 1 ? '' : 'none';
+}
+
 function renderProducts() {
   const q = searchInput.value.trim().toLowerCase();
   let filtered = allProducts.filter(p => {
@@ -309,7 +347,7 @@ function renderProducts() {
     return matchesText && matchesCat;
   });
   if (!filtered.length) {
-    productsEl.innerHTML = '<div class="notice" style="grid-column:1/-1">Produk tidak ditemukan. Kategori: '+activeCategory+'</div>';
+    productsEl.innerHTML = '<div class="notice" style="grid-column:1/-1">Produk tidak ditemukan. Kategori: '+escapeHtml(activeCategory)+'</div>';
     return;
   }
   productsEl.innerHTML = filtered.map(p => `
@@ -319,7 +357,7 @@ function renderProducts() {
         <div class="product-name">${escapeHtml(p.name)}</div>
         <div class="product-desc">${escapeHtml(p.description || 'Pesanan siap antar ±1 jam').slice(0,80)}</div>
         <div class="price">${escapeHtml(formatPrice(p.price))}</div>
-        <div class="product-meta"><strong>Pemilik:</strong> ${escapeHtml(ownerInitials(p.mitraNama))} · ${escapeHtml(p.category||'') }<br><strong>Pengiriman:</strong> ${escapeHtml(deliveryLabels(p))}</div>
+        <div class="product-meta"><strong>Pemilik:</strong> ${escapeHtml(ownerInitials(p.mitraNama))} · ${escapeHtml(p.category||'')}<br><strong>Pengiriman:</strong> ${escapeHtml(deliveryLabels(p))}</div>
         <div class="actions">
           <button class="wa" data-action="wa" data-id="${escapeHtml(p.id)}" aria-label="Tanya WhatsApp">☏</button>
           <button class="cart" data-action="cart" data-id="${escapeHtml(p.id)}" aria-label="Tambah keranjang">🛒</button>
@@ -327,15 +365,14 @@ function renderProducts() {
         </div>
       </div>
     </article>`).join('');
-  // fix full base64
+
   productsEl.querySelectorAll('.product').forEach((card, idx)=>{
     const p=filtered[idx];
     const imgEl=card.querySelector('.product-photo img');
-    if(imgEl && p.image){
-      imgEl.src=p.image;
-    }
+    if(imgEl && p.image) imgEl.src=p.image;
   });
 }
+
 function updateCart() {
   document.getElementById('cartCount').textContent = cart.reduce((sum,item)=>sum+(Number(item.qty)||0),0);
   try { localStorage.setItem('tsa_cart', JSON.stringify(cart)); } catch (error) {}
@@ -368,6 +405,7 @@ productsEl.addEventListener('click', e => {
     setTimeout(()=>{if(btn.isConnected)btn.textContent='🛒'},700);
   }
 });
+
 searchInput.addEventListener('input', renderProducts);
 document.getElementById('categories').addEventListener('click',e=>{
   const btn=e.target.closest('[data-cat]'); if(!btn)return;
@@ -375,6 +413,7 @@ document.getElementById('categories').addEventListener('click',e=>{
   document.querySelectorAll('.cat[data-cat]').forEach(el=>el.classList.toggle('active',el===btn));
   renderProducts();
 });
+
 const menuBackdrop=document.getElementById('menuBackdrop');
 function openMenu(){menuBackdrop.classList.add('show');menuBackdrop.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';}
 function closeMenu(){menuBackdrop.classList.remove('show');menuBackdrop.setAttribute('aria-hidden','true');document.body.style.overflow='';}
@@ -382,6 +421,7 @@ document.getElementById('openMenu').addEventListener('click',openMenu);
 document.getElementById('closeMenu').addEventListener('click',closeMenu);
 menuBackdrop.addEventListener('click',e=>{if(e.target===menuBackdrop)closeMenu();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu();});
+
 document.getElementById('refresh').onclick=()=>location.reload();
 document.getElementById('homeBtn').onclick=()=>{location.href='index.html';};
 document.getElementById('cartBtn').onclick=()=>{
@@ -390,6 +430,7 @@ document.getElementById('cartBtn').onclick=()=>{
 };
 document.getElementById('historyBtn').onclick=()=>{location.href='riwayat-pelanggan.html';};
 document.getElementById('profileBtn').onclick=()=>{location.href='profil.html';};
+
 // Tombol header: aktif/nonaktifkan mode gelap dan simpan pilihan pengguna.
 const themeToggle = document.getElementById('themeToggle');
 function applyTheme(isDark){
@@ -403,6 +444,7 @@ let savedDarkMode = false;
 try { savedDarkMode = localStorage.getItem('tsa_dark_mode') === '1'; } catch(e) {}
 applyTheme(savedDarkMode);
 themeToggle.onclick = () => applyTheme(!document.body.classList.contains('dark-mode'));
+
 document.getElementById('facebook').onclick=e=>{e.preventDefault();alert('Tambahkan tautan Facebook toko pada HTML.');};
 document.getElementById('instagram').onclick=e=>{e.preventDefault();alert('Tambahkan tautan Instagram toko pada HTML.');};
 document.getElementById('whatsapp').onclick=e=>{e.preventDefault();window.open('https://wa.me/','_blank','noopener');};
@@ -421,16 +463,24 @@ async function loadProductsFromSheet(){
     const json=parseGviz(raw);
     const rows=json.table && json.table.rows;
     if(!rows) throw new Error('Sheet tidak ada data');
-    // Kolom Spreadsheet: tanggal(0), kode produk(1), nama(2), deskripsi(3), harga(4), foto(5), uid(6), nama mitra(7), kategori(8), cod(9), kurir(10), expedisi(11), stock(12)
+
+    // Ambil gambar sponsor dari kolom N sebelum memproses daftar produk.
+    renderSponsorSlides(rows);
+
+    // Kolom Spreadsheet: tanggal(0), kode produk(1), nama(2), deskripsi(3),
+    // harga(4), foto(5), uid(6), nama mitra(7), kategori(8), cod(9),
+    // kurir(10), ekspedisi(11), stock(12), sponsor(13).
     allProducts=rows.map((row,index)=>{
       const c=row.c||[];
       const getVal = (i)=>c[i]?.v??'';
       let id=getVal(1)||String(index);
       let name='', desc='', price='', image='', mUid='', mNama='', cat='', cod='', kurir='', expedisi='', stock='';
       if(c.length>=9){
-        name=getVal(2); desc=getVal(3); price=getVal(4); image=getVal(5); mUid=getVal(6); mNama=getVal(7); cat=getVal(8); cod=getVal(9); kurir=getVal(10); expedisi=getVal(11); stock=getVal(12);
+        name=getVal(2); desc=getVal(3); price=getVal(4); image=getVal(5);
+        mUid=getVal(6); mNama=getVal(7); cat=getVal(8);
+        cod=getVal(9); kurir=getVal(10); expedisi=getVal(11); stock=getVal(12);
       } else {
-        // format lama
+        // Format lama
         name=getVal(1)||getVal(0); desc=getVal(2); price=getVal(3); image=getVal(4);
       }
       if(!String(name).trim()) return null;
@@ -447,6 +497,7 @@ async function loadProductsFromSheet(){
         searchText:(String(name)+' '+String(desc)+' '+String(mNama)+' '+String(mUid)).toLowerCase()
       };
     }).filter(Boolean);
+
     if(!allProducts.length) throw new Error('Tidak ada produk');
     renderProducts();
   }catch(err){
@@ -469,12 +520,14 @@ const productZoomImage = document.getElementById('productZoomImage');
 const productZoomName = document.getElementById('productZoomName');
 const productZoomPrice = document.getElementById('productZoomPrice');
 let zoomProductId = null;
+
 function closeProductZoom() {
   productZoom.classList.remove('show');
   productZoomImage.src = '';
   zoomProductId = null;
   document.body.style.overflow = '';
 }
+
 productsEl.addEventListener('click', function(e) {
   if (e.target.closest('button')) return;
   const img = e.target.closest('.product-photo img');
@@ -491,6 +544,7 @@ productsEl.addEventListener('click', function(e) {
   productZoom.classList.add('show');
   document.body.style.overflow = 'hidden';
 });
+
 productZoom.addEventListener('click', function(e) {
   if (e.target === productZoom) { closeProductZoom(); return; }
   const btn = e.target.closest('[data-zoom-action]');
@@ -506,6 +560,7 @@ productZoom.addEventListener('click', function(e) {
     setTimeout(() => { if (btn.isConnected) { btn.textContent = '🛒'; btn.disabled = false; } }, 700);
   }
 });
+
 document.getElementById('productZoomClose').addEventListener('click', closeProductZoom);
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeProductZoom(); });
 </script>
