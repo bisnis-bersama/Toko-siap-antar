@@ -53,41 +53,72 @@ main{max-width:720px;margin:-18px auto 0;padding:0 12px 30px}
 <script type="module">
 import {auth, db} from "./firebase-config.js";
 import {onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-import {collection, query, where, onSnapshot} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
-const $=id=>document.getElementById(id);
-const list=$('list'), empty=$('empty');
-function isMasihProses(s){s=(s||'').toLowerCase(); return s!=='' && !s.includes('selesai') && !s.includes('complete') && !s.includes('batal') && !s.includes('cancel');}
+import {collection, query, where, onSnapshot, doc, getDoc, getDocs, runTransaction, serverTimestamp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+const $=id=>document.getElementById(id), list=$('list'), empty=$('empty');
+function isMasihProses(s){s=(s||'').toLowerCase();return s!==''&&!s.includes('selesai')&&!s.includes('complete')&&!s.includes('batal')&&!s.includes('cancel');}
 function rp(n){return 'Rp '+Number(n||0).toLocaleString('id-ID');}
-function fmt(ts){try{const d=ts.toDate?ts.toDate():new Date(ts); return d.toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}catch{return '-';}}
-onAuthStateChanged(auth, u=>{
-  if(!u){list.innerHTML='<div class=empty>Belum login</div>'; return;}
-  document.getElementById('uEmail').textContent=u.email;
-  const col=collection(db,'orders');
-  const queries=[query(col, where('ownerUid','==',u.uid)), query(col, where('userId','==',u.uid)), query(col, where('uid','==',u.uid)), query(col, where('email','==',u.email))];
-  let all=[];
-  queries.forEach(q=>{
-    onSnapshot(q, snap=>{
-      snap.docs.forEach(d=>{
-        const data={id:d.id, ...d.data()};
-        if(!all.find(x=>x.id===data.id)){
-          const own = data.ownerUid===u.uid || data.userId===u.uid || data.uid===u.uid || data.email===u.email;
-          if(own) all.push(data);
-        }
-      });
-      render();
-    });
-  });
-  function render(){
-    const aktif = all.filter(o=>isMasihProses(o.status));
-    list.innerHTML='';
-    if(aktif.length===0){empty.style.display='block'; document.getElementById('count').textContent='0 aktif'; return;}
-    empty.style.display='none';
-    document.getElementById('count').textContent=aktif.length+' aktif';
-    aktif.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)).forEach(o=>{
-      const el=document.createElement('div'); el.className='order-card';
-      el.innerHTML='<div class="order-head"><span class="no">#'+(o.nomorPesanan||o.id.slice(0,8))+'</span><span class="badge">'+(o.status||'Diproses')+'</span></div><div class="row"><span>Barang lengkap</span><b>'+(o.items?o.items.map(i=>i.nama||i.name||'item').join(', ').slice(0,80): (o.namaBarang||o.totalQty+' item'))+'</b></div><div class="row"><span>Total</span><b>'+rp(o.total||o.grandTotal)+'</b></div><div class="row"><span>Tanggal</span><b>'+fmt(o.createdAt||o.tanggal)+'</b></div><div class="row"><span>Alamat lengkap</span><b style="max-width:60%;text-align:right">'+((o.alamat||o.alamatPengiriman?.alamat||'-').slice(0,100))+'</b></div><div class="row"><span>Penerima</span><b>'+(o.alamatPengiriman?.nama||o.nama||'-')+' - '+(o.telepon||o.alamatPengiriman?.telepon||'')+'</b></div><a href="./rute/perjalanan-kuri.html?orderId='+o.id+'" class="btn" style="margin-top:10px">Lacak Perjalanan Kurir</a>';
-      list.appendChild(el);
-    });
+function fmt(ts){try{const d=ts?.toDate?ts.toDate():new Date(ts);return d.toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}catch{return '-';}}
+let currentUser=null, all=[];
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function canConfirm(o){const s=String(o.status||'').toLowerCase();return !o.pelangganKonfirmasiDiterimaAt && !['selesai','dibatalkan','batal'].some(x=>s.includes(x));}
+async function confirmReceived(id,button){
+ if(!currentUser||!confirm('Konfirmasi bahwa barang pesanan ini sudah benar-benar diterima? Setelah dikonfirmasi, komisi Admin yang tertahan akan masuk ke e-wallet Admin.'))return;
+ button.disabled=true;button.textContent='Memproses konfirmasi…';
+ try{
+  const orderRef=doc(db,'orders',id), orderSnap=await getDoc(orderRef);
+  if(!orderSnap.exists())throw Error('Pesanan tidak ditemukan.');
+  const order=orderSnap.data();
+  const owner=order.ownerUid||order.userId||order.uid;
+  if(owner!==currentUser.uid && order.email!==currentUser.email)throw Error('Pesanan ini bukan milik akun Anda.');
+  if(order.pelangganKonfirmasiDiterimaAt||String(order.status||'').toLowerCase()==='selesai')throw Error('Pesanan sudah pernah dikonfirmasi.');
+  const childCol=collection(db,'mitra_orders');
+  let childDocs=[];
+  for(const field of ['orderId','parentOrderId']){
+   try{const snap=await getDocs(query(childCol,where(field,'==',id)));snap.docs.forEach(d=>{if(!childDocs.some(x=>x.id===d.id))childDocs.push({id:d.id,ref:d.ref,data:d.data()});});}catch(e){console.warn('Cari pesanan mitra:',e.message);}
   }
-});
-</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
+  await runTransaction(db,async tx=>{
+   const fresh=await tx.get(orderRef);if(!fresh.exists())throw Error('Pesanan tidak ditemukan.');
+   const current=fresh.data();
+   const own=current.ownerUid||current.userId||current.uid;
+   if(own!==currentUser.uid && current.email!==currentUser.email)throw Error('Akses pesanan ditolak.');
+   if(current.pelangganKonfirmasiDiterimaAt||String(current.status||'').toLowerCase()==='selesai')throw Error('Pesanan sudah dikonfirmasi sebelumnya.');
+   const rows=[];
+   for(const child of childDocs){
+    const cs=await tx.get(child.ref);if(!cs.exists())continue;
+    const d=cs.data();
+    if(String(d.potonganAdminStatus||'').toLowerCase()!=='menunggu_konfirmasi_pelanggan')continue;
+    const fee=Number(d.potonganAdminNominal||0),adminUid=d.potonganAdminUid,txId=d.potonganAdminTransaksiId;
+    if(!(fee>0)||!adminUid||!txId)continue;
+    const walletTxRef=doc(db,'ewallet_transactions',txId), adminRef=doc(db,'users',adminUid);
+    const walletTxSnap=await tx.get(walletTxRef),adminSnap=await tx.get(adminRef);
+    if(!adminSnap.exists())throw Error('Profil e-wallet Admin tidak ditemukan.');
+    if(!walletTxSnap.exists())throw Error('Catatan komisi Admin tidak ditemukan untuk pesanan mitra '+child.id+'.');
+    rows.push({childRef:child.ref,walletTxRef,adminRef,fee,adminData:adminSnap.data(),txData:walletTxSnap.data()});
+   }
+   // Bila pelanggan yang mengonfirmasi lebih dahulu, sistem juga menutup konfirmasi kurir dan membayar ongkirnya.
+   let courierRow=null;
+   const courierUid=current.kurirUid||null;
+   if(courierUid && !current.kurirPenghasilanDibayar){
+    const courierRef=doc(db,'users',courierUid), courierTxRef=doc(db,'ewallet_transactions','kurir_'+id);
+    const courierSnap=await tx.get(courierRef), courierTxSnap=await tx.get(courierTxRef);
+    if(!courierSnap.exists())throw Error('Profil e-wallet kurir tidak ditemukan.');
+    if(courierTxSnap.exists())throw Error('Catatan penghasilan kurir sudah ada, periksa status pesanan.');
+    const amount=Number(current.penghasilanKurir??current.shippingFee??current.ongkirKurir??current.ongkir??0)||0;
+    courierRow={courierRef,courierTxRef,courierData:courierSnap.data(),amount};
+   }
+   const now=serverTimestamp();
+   // Semua pembacaan selesai sebelum penulisan transaksi dimulai.
+   for(const row of rows){
+    if(row.txData.status==='berhasil'||row.txData.status==='sudah_dibayar')continue;
+    const old=Number(row.adminData.saldoEwallet??row.adminData.saldoWallet??row.adminData.saldo??0)||0,newBalance=old+row.fee;
+    tx.update(row.adminRef,{saldoEwallet:newBalance,saldoWallet:newBalance,saldo:newBalance,totalPendapatan:(Number(row.adminData.totalPendapatan||0)+row.fee),updatedAt:now});
+    tx.update(row.walletTxRef,{status:'berhasil',direction:'credit',balanceBefore:old,balanceAfter:newBalance,paidAt:now,note:'Komisi Admin 5% dicairkan setelah pelanggan mengonfirmasi barang diterima.'});
+    tx.update(row.childRef,{potonganAdminStatus:'sudah_dibayarkan',potonganAdminDibayarAt:now,updatedAt:now});
+   }
+   if(courierRow){
+    const old=Number(courierRow.courierData.saldoEwallet??courierRow.courierData.saldoWallet??courierRow.courierData.saldo??0)||0,next=old+courierRow.amount;
+    tx.update(courierRow.courierRef,{saldoEwallet:next,saldoWallet:next,saldo:next,totalPendapatan:Number(courierRow.courierData.totalPendapatan||0)+courierRow.amount,updatedAt:now});
+    tx.set(courierRow.courierTxRef,{uid:courierUid,role:'kurir',type:'Penghasilan ongkir pengantaran',direction:'credit',amount:courierRow.amount,balanceBefore:old,balanceAfter:next,orderId:id,nomorPesanan:current.nomorPesanan||id,status:'berhasil',createdAt:now,note:'Ongkir otomatis dicairkan karena pelanggan mengonfirmasi barang sudah diterima.'});
+   }
+   tx.update(orderRef,{status:'selesai',statusPemenuhan:'selesai',statusPembayaranPenghasilan:'dikonfirmasi_pelanggan',pelangganKonfirmasiDiterimaAt:now,pelangganKonfirmasiUid:currentUser.uid,kurirKonfirmasiDiterimaAt:current.kurirKonfirmasiDiterimaAt||(courierUid?now:null),kurirKonfirmasiOtomatis:!!courierRow||!!current.kurirKonfirmasiDiterimaAt,kurirPenghasilanDibayar:!!courierRow||!!current.kurirPenghasilanDibayar,kurirPenghasilanNominal:courierRow?.amount??current.kurirPenghasilanNominal??0,kurirPenghasilanTransaksiId:courierRow?'kurir_'+id:(current.kurirPenghasilanTransaksiId||null),updatedAt:now});
+ 
