@@ -41,7 +41,7 @@ main{padding:10px 12px 18px;min-height:150px}
 .product{min-width:0;background:var(--card);border:1px solid var(--line);border-radius:15px;overflow:hidden;box-shadow:0 2px 5px #18312b12;display:flex;flex-direction:column}
 .product-photo{height:112px;background:linear-gradient(135deg,#e4fff2,#fafff0);display:flex;align-items:center;justify-content:center;padding:6px;position:relative}
 .product-photo img{width:100%;height:100%;object-fit:contain}
-.mitra-tag{position:absolute;top:4px;right:4px;background:#111;color:#ffd400;font-size:8px;font-weight:800;padding:3px 6px;border-radius:999px;max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mitra-tag{position:absolute;top:4px;left:4px;background:#111;color:#ffd400;font-size:8px;font-weight:800;padding:3px 6px;border-radius:999px;max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .product-info{padding:8px 7px 9px;display:flex;flex-direction:column;flex:1;text-align:center;gap:6px}
 .product-name{font-size:12px;font-weight:800;line-height:1.4;min-height:29px;overflow-wrap:anywhere;color:#18312b}
 .product-desc{font-size:9px;line-height:1.35;color:var(--muted);min-height:25px}
@@ -392,18 +392,31 @@ function normalizeWhatsAppNumber(value) {
   return number;
 }
 
-// Nomor WhatsApp pemilik diambil dari users/{UID} (field noWA atau telepon).
+// Nomor WhatsApp pemilik diambil dari dokumen Firestore users/{UID},
+// sesuai halaman daftar-mitra-usaha.html: field noWA.
 async function openOwnerWhatsApp(p, intro='Halo, saya ingin bertanya tentang produk: ') {
+  // UID mitra pada katalog spreadsheet menjadi penghubung ke dokumen users/{UID}.
+  const ownerUid = String(p.mitraUid || p.ownerUid || p.tokoId || '').trim();
   const waTab = window.open('about:blank', '_blank');
+
   try {
-    if (!p.mitraUid) throw new Error('UID pemilik produk tidak tersedia.');
-    const ownerSnap = await getDoc(doc(db, 'users', p.mitraUid));
-    if (!ownerSnap.exists()) throw new Error('Data akun pemilik produk tidak ditemukan.');
+    if (!ownerUid) throw new Error('UID pemilik produk tidak tersedia pada data produk.');
+
+    const ownerSnap = await getDoc(doc(db, 'users', ownerUid));
+    if (!ownerSnap.exists()) throw new Error('Data mitra tidak ditemukan di Firestore users/' + ownerUid + '.');
+
     const ownerData = ownerSnap.data() || {};
-    const ownerNumber = normalizeWhatsAppNumber(ownerData.noWA || ownerData.telepon || '');
-    if (!ownerNumber || ownerNumber.length < 10) throw new Error('Nomor WhatsApp pemilik produk belum tersedia di profil akun.');
-    const message = intro + p.name + ' — ' + formatPrice(p.price) + ' (Mitra: ' + (p.mitraNama || 'Mitra') + ')';
+    // Nama field ini mengikuti struktur pendaftaran mitra: noWA.
+    const ownerNumber = normalizeWhatsAppNumber(ownerData.noWA || '');
+
+    if (!ownerNumber || ownerNumber.length < 10) {
+      throw new Error('Nomor WhatsApp mitra belum diisi pada field noWA di Firestore.');
+    }
+
+    const message = intro + p.name + ' — ' + formatPrice(p.price) +
+      ' (Mitra: ' + (p.mitraNama || ownerData.nama || 'Mitra') + ')';
     const waUrl = 'https://wa.me/' + ownerNumber + '?text=' + encodeURIComponent(message);
+
     if (waTab && !waTab.closed) {
       waTab.opener = null;
       waTab.location.href = waUrl;
