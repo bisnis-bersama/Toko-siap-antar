@@ -21,94 +21,83 @@
   font-family: "Optimistic Mono", ui-monospace, monospace;
 }
 </style>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#00a85a">
-<title>Checkout - Filter COD/Kurir/Expedisi dari MEMBER</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Checkout FIX Alamat + Filter COD - V8</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{margin:0;background:#f4fff7;color:#18312b;font:14px/1.5 system-ui;padding-bottom:120px}
+*{box-sizing:border-box;margin:0;padding:0}body{background:#f4fff7;color:#18312b;font:14px/1.5 system-ui;padding-bottom:120px}
 header{background:#fff;border-bottom:2px solid #ffd400;padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10}
 .card{background:#fff;border:1px solid #dceee5;border-radius:16px;padding:14px;margin:12px;box-shadow:0 2px 10px #18312b08}
-.shopee{border:2px dashed #00a85a;background:#fbfffe;position:relative}
+.shopee{border:2px dashed #00a85a;background:#fbfffe;position:relative;padding-top:18px}
 .shopee::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:repeating-linear-gradient(90deg,#ff6b6b 0 20px,#fff 20px 30px,#00a85a 30px 50px,#fff 50px 60px)}
 .prod{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f0f0f0}
-.prod:last-child{border:0}
 .prod-img{width:64px;height:64px;background:#f6f6e8;border-radius:12px;display:grid;place-items:center;overflow:hidden}
-.prod-img img{width:100%;height:100%;object-fit:cover}
-.badge{display:inline-block;background:linear-gradient(135deg,#00a85a,#00c8d7);color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:6px;margin-left:6px}
-.row{display:flex;justify-content:space-between;padding:8px 0}
+.badge-limit{font-size:10px;padding:3px 8px;border-radius:10px;margin:2px;font-weight:700;display:inline-block}
+.badge-limit.ok{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7}
+.badge-limit.no{background:#ffebee;color:#b71c1c;border:1px solid #ef9a9a}
 .ship-option{border:2px solid #e5e7eb;border-radius:12px;padding:12px;margin:8px 0;cursor:pointer;display:flex;gap:10px;align-items:center;position:relative}
 .ship-option.active{border-color:#00a85a;background:#f0faf4}
-.ship-option.disabled{opacity:0.4;pointer-events:none;border-color:#ddd;background:#f5f5f5}
-.ship-option.disabled::after{content:'Tidak didukung produk ini';position:absolute;right:12px;top:12px;font-size:10px;background:#ffebee;color:#b71c1c;padding:2px 6px;border-radius:10px}
-.pay-box{display:none;background:#fff;border:1px solid #dceee5;border-radius:12px;padding:12px;margin-top:10px}
+.ship-option.disabled{opacity:0.45;pointer-events:none;background:#f5f5f5}
+.ship-option.disabled::after{content:'Tidak didukung';position:absolute;right:10px;top:10px;font-size:9px;background:#ffebee;color:#b71c1c;padding:2px 6px;border-radius:10px}
+.pay-box{display:none;border:1px solid #dceee5;border-radius:12px;padding:12px;margin-top:10px;background:#fff}
 .pay-box.active{display:block}
 .bottom{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e0e0e0;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;z-index:20}
 .btn-checkout{background:linear-gradient(90deg,#00b050,#00c9a7);color:#fff;border:0;border-radius:999px;padding:12px 24px;font-weight:900;cursor:pointer}
-.badge-limit{font-size:10px;padding:2px 6px;border-radius:10px;margin-left:6px;font-weight:700}
-.badge-limit.ok{background:#e8f5e9;color:#2e7d32}
-.badge-limit.no{background:#ffebee;color:#b71c1c}
 .muted{color:#66756f;font-size:12px}
-.ok{background:#e5fff0;color:#087b45;border:1px solid #c3ead7;border-radius:10px;padding:10px}
-.err{background:#fff0ed;color:#b42318;border:1px solid #f5c6c1;border-radius:10px;padding:10px}
+.row{display:flex;justify-content:space-between;padding:8px 0}
 </style></head><body>
-<header><div style="display:flex;align-items:center;gap:10px"><img src="logo3.png" style="width:40px"><div><b>Checkout</b><div class="muted" style="font-size:11px">Shopee Style • Filter COD/Kurir/Expedisi dari MEMBER Column10-12</div></div></div><a href="keranjang.html" style="margin-left:auto;text-decoration:none;background:#e8f5e9;color:#00a85a;border-radius:20px;padding:6px 12px;font-weight:700;font-size:12px">← Keranjang</a></header>
-
+<header><div><b>Checkout FIX V8</b><div class="muted" style="font-size:11px">Alamat Fix + Filter COD dari MEMBER real</div></div><a href="keranjang.html" style="margin-left:auto;background:#e8f5e9;color:#00a85a;border-radius:20px;padding:6px 12px;text-decoration:none;font-weight:700;font-size:12px">← Keranjang</a></header>
 <main>
 <div id="msg"></div>
-
 <div class="card shopee" id="alamatCard">
-  <b>📍 Alamat Pengiriman</b><div id="alamatInfo" class="muted">Memuat alamat...</div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start">
+    <div>
+      <b>📍 Alamat Pengiriman</b><br>
+      <b id="alamatNama" style="font-size:15px">Memuat alamat...</b><br>
+      <span id="alamatHp" class="muted">-</span><br>
+      <div id="alamatLengkap" class="muted" style="margin-top:6px">Memuat alamat...</div>
+      <div class="muted" style="margin-top:6px;font-size:11px">GPS: <span id="alamatGPS">-</span> • UID: <span id="uidInfo">-</span></div>
+    </div>
+    <button id="btnEditAlamat" style="border:1px solid #00a85a;background:#e8f5e9;color:#00a85a;border-radius:20px;padding:6px 14px;font-weight:700;font-size:12px">Edit</button>
+  </div>
 </div>
-
 <div class="card">
   <h3>🛒 Produk Dipesan <span id="produkCount" class="muted"></span></h3>
   <div id="produkList">Memuat...</div>
   <div id="batasInfo" style="margin-top:10px"></div>
   <div class="row"><span>Total Barang</span><b id="totalBarang">Rp 0</b></div>
   <div class="row"><span>Total Qty</span><b id="totalQty">0 pcs</b></div>
+  <div id="debugMap" class="muted" style="margin-top:10px;background:#111;color:#0f0;padding:8px;border-radius:8px;font-size:10px;white-space:pre-wrap"></div>
 </div>
-
 <div class="card">
-  <h3>🚚 Metode Pengiriman (filter dari MEMBER)</h3>
-  <div class="ship-option active" data-ship="siap_antar" id="optSiapAntar">
-    <input type="radio" name="ship" value="siap_antar" checked>
-    <div><b>Siap Antar (Kurir Toko)</b><div class="muted">Ongkir GPS pelanggan ↔ mitra</div></div>
-  </div>
-  <div class="ship-option" data-ship="expedisi" id="optExpedisi">
-    <input type="radio" name="ship" value="expedisi">
-    <div><b>Via Expedisi</b><div class="muted">JNE, J&T, SiCepat • Mitra kirim langsung</div></div>
-  </div>
+  <h3>🚚 Metode Pengiriman (filter real dari MEMBER)</h3>
+  <div class="ship-option active" data-ship="siap_antar" id="optSiapAntar"><input type="radio" name="ship" value="siap_antar" checked><div><b>Siap Antar (Kurir Toko)</b><div class="muted">Ongkir GPS</div></div></div>
+  <div class="ship-option" data-ship="expedisi" id="optExpedisi"><input type="radio" name="ship" value="expedisi"><div><b>Via Expedisi</b><div class="muted">JNE J&T SiCepat</div></div></div>
   <div id="shipNote" class="muted" style="margin-top:8px;background:#fff8e1;border:1px solid #ffe082;padding:8px;border-radius:8px;display:none"></div>
   <div class="row"><span>Total Produk</span><b id="saTotalProduk">Rp 0</b></div>
-  <div class="row"><span>Ongkir</span><b id="saOngkir">Rp 0</b></div>
+  <div class="row"><span>Ongkir</span><b id="saOngkir">Rp 5.000</b></div>
 </div>
-
 <div class="card">
   <h3>💳 Metode Pembayaran</h3>
   <select id="bayarSelect" style="width:100%;border:2px solid #00a85a;border-radius:12px;padding:12px;font-weight:700">
     <option value="">-- Pilih Metode Pembayaran --</option>
-    <option value="bca">Bank BCA - 4180734771</option>
-    <option value="seabank">SeaBank - 901341445605</option>
-    <option value="bri">Bank BRI - Hub Admin</option>
-    <option value="dana">DANA - 082319264646</option>
-    <option value="gopay">GoPay - 082319264646</option>
+    <option value="bca">BCA 4180734771 - YUDI ALIYUDIN</option>
+    <option value="seabank">SeaBank 901341445605 - YUDI ALIYUDIN</option>
+    <option value="bri">BRI - Hub Admin</option>
+    <option value="dana">DANA 082319264646 - YUDI ALIYUDIN</option>
+    <option value="gopay">GoPay 082319264646 - YUDI ALIYUDIN</option>
     <option value="qris">QRIS - YUDI ALIYUDIN</option>
     <option value="cod" id="optCod">COD (Bayar di Tempat)</option>
   </select>
-
-  <div id="pay_bca" class="pay-box"><b>🏦 BCA</b> 4180734771 a.n. YUDI ALIYUDIN <button onclick="navigator.clipboard.writeText('4180734771');alert('BCA disalin')" style="border:1px solid #0b57d0;background:#e8f0fe;color:#0b57d0;border-radius:20px;padding:4px 10px;font-size:11px">📋 Salin</button></div>
-  <div id="pay_seabank" class="pay-box"><b>🏦 SeaBank</b> 901341445605 a.n. YUDI ALIYUDIN <button onclick="navigator.clipboard.writeText('901341445605');alert('SeaBank disalin')" style="border:1px solid #2e7d32;background:#e8f5e9;color:#2e7d32;border-radius:20px;padding:4px 10px;font-size:11px">📋 Salin</button></div>
-  <div id="pay_dana" class="pay-box"><b>📱 DANA</b> 082319264646 a.n. YUDI ALIYUDIN <button onclick="navigator.clipboard.writeText('082319264646');alert('DANA disalin')" style="border:1px solid #f57f17;background:#fff8e1;color:#e65100;border-radius:20px;padding:4px 10px;font-size:11px">📋 Salin</button></div>
-  <div id="pay_gopay" class="pay-box"><b>📱 GoPay</b> 082319264646 a.n. YUDI ALIYUDIN</div>
-  <div id="pay_qris" class="pay-box" style="text-align:center"><b>📱 QRIS</b><br><img src="qris.jpg" style="max-width:260px;width:100%;border:2px solid #00a85a;border-radius:12px"><br><span class="muted">Scan DANA/GoPay/OVO/BCA Mobile</span></div>
-  <div id="pay_cod" class="pay-box"><b>💵 COD</b> Bayar tunai saat sampai</div>
-  <div id="pay_bri" class="pay-box"><b>🏦 BRI</b> Hub Admin</div>
+  <div id="pay_bca" class="pay-box"><b>BCA</b> 4180734771 a.n. YUDI ALIYUDIN <button onclick="navigator.clipboard.writeText('4180734771');alert('BCA disalin')">📋 Salin</button></div>
+  <div id="pay_seabank" class="pay-box"><b>SeaBank</b> 901341445605 a.n. YUDI ALIYUDIN</div>
+  <div id="pay_dana" class="pay-box"><b>DANA</b> 082319264646 a.n. YUDI ALIYUDIN</div>
+  <div id="pay_gopay" class="pay-box"><b>GoPay</b> 082319264646</div>
+  <div id="pay_qris" class="pay-box" style="text-align:center"><b>QRIS</b><br><img src="qris.jpg" style="max-width:240px;width:100%"></div>
+  <div id="pay_cod" class="pay-box"><b>COD</b> Bayar tunai saat sampai</div>
+  <div id="pay_bri" class="pay-box"><b>BRI</b> Hub Admin</div>
 </div>
-
 </main>
-
 <div class="bottom"><div><small class="muted">Total Bayar</small><br><b id="bottomTotal" style="color:#00a85a;font-size:18px">Rp 0</b></div><button class="btn-checkout" id="bottomCheckout">Buat Pesanan →</button></div>
-
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
@@ -117,155 +106,94 @@ const firebaseConfig = {apiKey: "AIzaSyBxqZhl6t3RwrXMwVdJeIkg0NzGfwvlweM",authDo
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
-
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxtjGIn5huyGFVGz7muW4SQGOsAOroDLj0seCnd41pOXFF39Iee0EmjA09KljV4Ahk/exec";
 const rupiah = n => 'Rp ' + (Number(n)||0).toLocaleString('id-ID');
 function cartRead(){try{return JSON.parse(localStorage.getItem('tsa_cart')||'[]')}catch{return []}}
-
-let cart=[], memberMap={};
-
+let memberMap = {};
+let currentUser=null;
 async function loadMemberMap(){
   try{
-    let r = await fetch(SCRIPT_URL);
+    let r = await fetch(SCRIPT_URL + '?action=list');
     let j = await r.json();
-    // doGet returns {rows, sheet, data?} - we need full data, so fetch via ?action=list if implemented, fallback try parse data
-    if(j.data){
-      // j.data is array of rows, first row header
-      let rows = j.data;
-      if(rows.length>1){
-        for(let i=1;i<rows.length;i++){
-          let row = rows[i];
-          let id = row[1] || row[0];
-          if(!id) continue;
-          memberMap[id] = {
-            id: id,
-            nama: row[2]||'',
-            bisaCOD: Number(row[9]||0),
-            bisaKurir: Number(row[10]||0),
-            bisaExp: Number(row[11]||0),
-            stok: Number(row[12]||100)
-          };
+    let debug = 'GS rows:'+j.rows+'\n';
+    if(j.data && Array.isArray(j.data)){
+      if(j.data.length>0 && typeof j.data[0] === 'object' && !Array.isArray(j.data[0])){
+        j.data.forEach(o=>{ memberMap[o.id] = o; debug += o.id + ' => COD:'+o.bisaCOD+' Kurir:'+o.bisaKurir+' Exp:'+o.bisaExp+'\n'; });
+      }else{
+        for(let i=0;i<j.data.length;i++){
+          let row = j.data[i];
+          if(i===0 && (String(row[0]).includes('Column') || String(row[1]).includes('Column'))) continue;
+          let id = row[1]; if(!id) continue;
+          memberMap[id] = {id:id,nama:row[2]||'',bisaCOD:Number(row[9]||0),bisaKurir:Number(row[10]||0),bisaExp:Number(row[11]||0),stok:Number(row[12]||100)};
+          debug += id + ' => COD:'+row[9]+' Kurir:'+row[10]+' Exp:'+row[11]+'\n';
         }
       }
     }
-    console.log('memberMap', memberMap);
-  }catch(e){
-    console.log('Gagal load MEMBER map', e);
-  }
+    document.getElementById('debugMap').textContent = debug || 'Map kosong';
+  }catch(e){ document.getElementById('debugMap').textContent = 'Gagal load MEMBER: '+e; }
 }
-
 function renderProduk(){
-  cart = cartRead();
+  let cart = cartRead();
   let list = document.getElementById('produkList');
   let totalBarang=0, totalQty=0;
   let allowCOD=true, allowKurir=true, allowExp=true;
   let batasHtml='';
-  
-  if(cart.length===0){
-    list.innerHTML='<div class="muted">Keranjang kosong</div>';
-  }else{
+  if(cart.length===0){ list.innerHTML='<div class="muted">Keranjang kosong</div>'; }
+  else{
     list.innerHTML = cart.map(item=>{
       let id = item.id || item.productId || item.ID || '';
-      let m = memberMap[id] || {bisaCOD:1,bisaKurir:1,bisaExp:1};
-      // update global allow
+      let m = memberMap[id];
+      if(!m){ let byName = Object.values(memberMap).find(x=> (x.nama||'').toLowerCase() === (item.name||'').toLowerCase()); if(byName) m = byName; }
+      if(!m){ m = {bisaCOD: item.bisaCOD!=null ? Number(item.bisaCOD) : 1, bisaKurir: item.bisaKurir!=null ? Number(item.bisaKurir) : 1, bisaExp: item.bisaExp!=null ? Number(item.bisaExp) : 1, id:id, nama:item.name||''}; }
       if(m.bisaCOD==0) allowCOD=false;
       if(m.bisaKurir==0) allowKurir=false;
       if(m.bisaExp==0) allowExp=false;
-      
-      let price = Number(item.price||item.Harga||0);
-      let qty = Number(item.qty||1);
-      totalBarang += price*qty;
-      totalQty += qty;
-      
-      batasHtml += `<div style="font-size:11px;border:1px solid #e0e0e0;border-radius:8px;padding:6px 8px;margin:4px 0;display:flex;gap:6px;flex-wrap:wrap">
-        <b>${item.name||item.Nama||id}</b>
-        <span class="badge-limit ${m.bisaCOD?'ok':'no'}">COD:${m.bisaCOD?'Ya':'Tidak'}</span>
-        <span class="badge-limit ${m.bisaKurir?'ok':'no'}">Kurir:${m.bisaKurir?'Ya':'Tidak'}</span>
-        <span class="badge-limit ${m.bisaExp?'ok':'no'}">Exp:${m.bisaExp?'Ya':'Tidak'}</span>
-      </div>`;
-      
-      return `<div class="prod">
-        <div class="prod-img">${item.image?`<img src="${item.image}">`:'📦'}</div>
-        <div style="flex:1"><b>${item.name||item.Nama||'Produk'} <span class="badge">${item.mitraNama||''}</span></b><br><span class="muted">${rupiah(price)} x ${qty}</span><br><span style="font-size:10px">${m.bisaCOD? '✅COD ':''}${m.bisaKurir?'🛵Kurir ':''}${m.bisaExp?'📦Exp':''}</span></div>
-        <b>${rupiah(price*qty)}</b>
-      </div>`;
+      let price = Number(item.price||0); let qty = Number(item.qty||1);
+      totalBarang+=price*qty; totalQty+=qty;
+      batasHtml += `<div style="font-size:11px;border:1px solid #e0e0e0;border-radius:8px;padding:6px 8px;margin:4px 0;display:flex;gap:6px;flex-wrap:wrap"><b>${item.name||id}</b><span style="font-size:9px;color:#999">${id}</span><span class="badge-limit ${m.bisaCOD?'ok':'no'}">COD:${m.bisaCOD?'Ya':'Tidak'}</span><span class="badge-limit ${m.bisaKurir?'ok':'no'}">Kurir:${m.bisaKurir?'Ya':'Tidak'}</span><span class="badge-limit ${m.bisaExp?'ok':'no'}">Exp:${m.bisaExp?'Ya':'Tidak'}</span></div>`;
+      return `<div class="prod"><div class="prod-img">${item.image?`<img src="${item.image}" style="width:100%;height:100%;object-fit:cover">`:'📦'}</div><div style="flex:1"><b>${item.name||'Produk'}</b><br><span class="muted">Rp ${price} x ${qty}</span><br><span style="font-size:10px">${m.bisaCOD?'✅COD ':''}${m.bisaKurir?'🛵Kurir ':''}${m.bisaExp?'📦Exp':''} ${!memberMap[id] ? '(dari cache)' : '(dari Sheet)'}</span></div><b>${rupiah(price*qty)}</b></div>`;
     }).join('');
   }
-  
-  document.getElementById('batasInfo').innerHTML = batasHtml + `<div class="muted" style="margin-top:8px">Filter dari MEMBER Column10-12 (bisa diedit pemilik di kelola-produk)</div>`;
+  document.getElementById('batasInfo').innerHTML = batasHtml;
   document.getElementById('totalBarang').textContent = rupiah(totalBarang);
   document.getElementById('totalQty').textContent = totalQty+' pcs';
   document.getElementById('saTotalProduk').textContent = rupiah(totalBarang);
-  document.getElementById('bottomTotal').textContent = rupiah(totalBarang+15000);
+  document.getElementById('bottomTotal').textContent = rupiah(totalBarang+5000);
   document.getElementById('produkCount').textContent = '('+cart.length+' item)';
-
-  // Filter shipping
   let optKurir = document.getElementById('optSiapAntar');
   let optExp = document.getElementById('optExpedisi');
   let shipNote = document.getElementById('shipNote');
   let optCod = document.getElementById('optCod');
-  
-  if(!allowKurir){
-    optKurir.classList.add('disabled');
-    optKurir.querySelector('input').disabled=true;
-    if(optKurir.classList.contains('active')){optKurir.classList.remove('active'); optExp.classList.add('active'); optExp.querySelector('input').checked=true;}
-  }else{
-    optKurir.classList.remove('disabled');
-    optKurir.querySelector('input').disabled=false;
-  }
-  
-  if(!allowExp){
-    optExp.classList.add('disabled');
-    optExp.querySelector('input').disabled=true;
-    if(optExp.classList.contains('active')){optExp.classList.remove('active'); optKurir.classList.add('active'); optKurir.querySelector('input').checked=true;}
-  }else{
-    optExp.classList.remove('disabled');
-    optExp.querySelector('input').disabled=false;
-  }
-
-  if(!allowCOD){
-    optCod.disabled=true;
-    optCod.textContent='COD (Tidak didukung produk ini)';
-    shipNote.style.display='block';
-    shipNote.innerHTML='⚠️ Ada produk yang <b>Tidak mendukung COD</b> (Column10=0), jadi COD dinonaktifkan. Silakan pakai Transfer / QRIS.';
-  }else{
-    optCod.disabled=false;
-    optCod.textContent='COD (Bayar di Tempat)';
-    if(!allowKurir || !allowExp){shipNote.style.display='block'; shipNote.innerHTML='ℹ️ Batas pengiriman diambil dari setting pemilik di kelola-produk (MEMBER Column10-12).';}else{shipNote.style.display='none';}
-  }
-
-  // Jika cuma 1 metode tersisa, auto pilih
-  if(!allowKurir && allowExp){ document.querySelector('input[value="expedisi"]').checked=true; }
-  if(!allowExp && allowKurir){ document.querySelector('input[value="siap_antar"]').checked=true; }
+  if(!allowKurir){ optKurir.classList.add('disabled'); optKurir.querySelector('input').disabled=true; if(optKurir.classList.contains('active')){optKurir.classList.remove('active'); optExp.classList.add('active'); optExp.querySelector('input').checked=true;} }else{ optKurir.classList.remove('disabled'); optKurir.querySelector('input').disabled=false; }
+  if(!allowExp){ optExp.classList.add('disabled'); optExp.querySelector('input').disabled=true; if(optExp.classList.contains('active')){optExp.classList.remove('active'); optKurir.classList.add('active'); optKurir.querySelector('input').checked=true;} }else{ optExp.classList.remove('disabled'); optExp.querySelector('input').disabled=false; }
+  if(!allowCOD){ optCod.disabled=true; optCod.textContent='COD (Tidak didukung - hanya transfer)'; shipNote.style.display='block'; shipNote.innerHTML='⚠️ Ada produk tidak dukung COD (Column10=0) → COD disabled.'; }else{ optCod.disabled=false; optCod.textContent='COD (Bayar di Tempat)'; if(!allowKurir || !allowExp){shipNote.style.display='block'; shipNote.innerHTML='ℹ️ Filter MEMBER: COD:'+(allowCOD?'Ya':'Tidak')+' Kurir:'+(allowKurir?'Ya':'Tidak')+' Exp:'+(allowExp?'Ya':'Tidak');}else{shipNote.style.display='none';} }
+  if(!allowKurir && allowExp) document.querySelector('input[value="expedisi"]').checked=true;
+  if(!allowExp && allowKurir) document.querySelector('input[value="siap_antar"]').checked=true;
 }
-
-document.querySelectorAll('.ship-option').forEach(el=>{
-  el.addEventListener('click',()=>{
-    if(el.classList.contains('disabled')) return;
-    document.querySelectorAll('.ship-option').forEach(o=>o.classList.remove('active'));
-    el.classList.add('active');
-    el.querySelector('input').checked=true;
-  });
-});
-
-document.getElementById('bayarSelect').addEventListener('change', e=>{
-  document.querySelectorAll('.pay-box').forEach(b=>b.classList.remove('active'));
-  let v=e.target.value;
-  if(v){ let box=document.getElementById('pay_'+v); if(box) box.classList.add('active'); }
-});
-
-document.getElementById('bottomCheckout').onclick = async ()=>{
-  let ship = document.querySelector('input[name="ship"]:checked')?.value||'siap_antar';
-  let pay = document.getElementById('bayarSelect').value;
-  if(!pay){ alert('Pilih metode pembayaran dulu'); return; }
-  alert('Pesanan dibuat! Ship:'+ship+' Pay:'+pay+' - lanjut ke flow admin verifikasi mutasi');
-};
-
-async function init(){
-  await loadMemberMap();
-  renderProduk();
+document.querySelectorAll('.ship-option').forEach(el=>{ el.addEventListener('click',()=>{ if(el.classList.contains('disabled')) return; document.querySelectorAll('.ship-option').forEach(o=>o.classList.remove('active')); el.classList.add('active'); el.querySelector('input').checked=true; }); });
+document.getElementById('bayarSelect').addEventListener('change', e=>{ document.querySelectorAll('.pay-box').forEach(b=>b.classList.remove('active')); let v=e.target.value; if(v){ let box=document.getElementById('pay_'+v); if(box) box.classList.add('active'); } });
+async function loadAlamat(){
+  try{
+    if(!currentUser){ document.getElementById('alamatNama').textContent='Belum login'; return; }
+    document.getElementById('uidInfo').textContent = currentUser.uid;
+    let snap = await getDoc(doc(db,'users',currentUser.uid));
+    if(snap.exists()){
+      let d=snap.data();
+      let nama = d.nama||d.namaLengkap||currentUser.email||'Mitra';
+      let hp = d.telepon||d.noWA||d.phone||'-';
+      let alamat = d.alamat||d.alamatLengkap||d.alamatPengiriman?.alamat||'Alamat belum diisi';
+      let detail = d.alamatDetail||d.alamatPengiriman?.detail||'';
+      let lat = d.lat||d.alamatPengiriman?.lat||null;
+      let lng = d.lng||d.alamatPengiriman?.lng||null;
+      document.getElementById('alamatNama').textContent = nama;
+      document.getElementById('alamatHp').textContent = hp;
+      document.getElementById('alamatLengkap').textContent = alamat + (detail? ', '+detail:'');
+      document.getElementById('alamatGPS').textContent = lat&&lng? lat.toFixed(5)+', '+lng.toFixed(5) : 'Belum ada GPS';
+    }else{ document.getElementById('alamatNama').textContent='User tidak ada di Firestore'; }
+  }catch(e){ document.getElementById('alamatNama').textContent='Gagal load alamat: '+e.message; }
 }
-
+onAuthStateChanged(auth, async user=>{ currentUser=user; if(user){ await loadAlamat(); } else{ document.getElementById('alamatNama').textContent='Belum login - buka login.html'; } });
+async function init(){ await loadMemberMap(); renderProduk(); }
 init();
 </script>
 <script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
