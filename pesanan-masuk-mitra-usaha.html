@@ -100,26 +100,38 @@ function asDate(v){if(!v)return null;if(typeof v.toDate==="function")return v.to
 function firstDate(x,keys){for(const k of keys){const d=asDate(x[k]);if(d)return d;}return null;}
 function fmtLeft(ms){if(ms<=0)return "00:00";const sec=Math.floor(ms/1000);return String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0");}
 function rupiah(n){return 'Rp '+(Number(n)||0).toLocaleString('id-ID')}
-function isAssignedToMe(x){const uid=userNow?.uid;return !!uid && (x.mitraUsahaUid===uid || x.mitraUid===uid || x.acceptedByMitraUid===uid || (Array.isArray(x.mitraCandidateUids)&&x.mitraCandidateUids.includes(uid)) || x.statusPemenuhan==='pending_mitra');}
+function isAssignedToMe(x){
+  const uid=userNow?.uid;
+  if(!uid) return false;
+  // Jangan tampilkan semua pesanan pending_mitra ke seluruh mitra.
+  // Pesanan harus ditujukan ke UID akun ini atau sudah diterima akun ini.
+  return x.mitraUsahaUid===uid
+    || x.mitraUid===uid
+    || x.acceptedByMitraUid===uid
+    || (Array.isArray(x.mitraCandidateUids) && x.mitraCandidateUids.includes(uid));
+}
+function isApprovedOfferForMe(x){
+  const uid=userNow?.uid;
+  if(!uid) return false;
+
+  // Status persetujuan admin pada dokumen pesanan adalah "disetujui".
+  // Tetap dukung alur lama yang memakai statusPemenuhan "pending_mitra".
+  const statusAdmin = String(x.status || '').trim().toLowerCase();
+  const statusPemenuhan = String(x.statusPemenuhan || '').trim().toLowerCase();
+  const sudahDisetujui = statusAdmin === 'disetujui'
+    || statusPemenuhan === 'pending_mitra';
+
+  const ditujukanKeAkunIni = x.mitraUsahaUid === uid
+    || x.mitraUid === uid
+    || (Array.isArray(x.mitraCandidateUids) && x.mitraCandidateUids.includes(uid))
+    || (Array.isArray(x.mitraGroups) && x.mitraGroups.includes(uid));
+
+  return sudahDisetujui && ditujukanKeAkunIni;
+}
 function isAccepted(x){return !!(x.acceptedByMitraUid) || ["diterima_mitra","mitra_menerima","diproses_mitra"].includes(String(x.status||"").toLowerCase());}
 function offerStart(x){return firstDate(x,["offerSentAt","createdAt"]);}
 function orderStart(x){return firstDate(x,["createdAt"]);}
 
-function productDeliveryLabels(it){
-  // Sumber utama: snapshot metode pengiriman yang tersimpan pada masing-masing item pesanan.
-  const enabled=v=>v===true||['1','true','ya','yes','aktif'].includes(String(v??'').trim().toLowerCase());
-  const labels=[];
-  if(enabled(it.cod)) labels.push('COD');
-  if(enabled(it.kurir)) labels.push('Kurir Siap Antar');
-  if(enabled(it.expedisi)||enabled(it.ekspedisi)) labels.push('Ekspedisi');
-  // Kompatibilitas bila checkout menyimpan pilihan dalam bentuk teks.
-  const raw=it.metodePengiriman??it.metode_pengiriman??it.jenisPengiriman??it.deliveryMethod??it.shippingMethod??it.pengiriman;
-  if(!labels.length&&raw){
-    const v=String(raw).trim();
-    if(v) labels.push(v.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()));
-  }
-  return labels.length?labels.join(' · '):'Belum tercatat pada data item';
-}
 function productRowsModalOnly(x){
   const items=Array.isArray(x.items)?x.items:[];
   if(!items.length)return '<div class="notice">Tidak ada produk.</div>';
@@ -127,20 +139,17 @@ function productRowsModalOnly(x){
     const name=it.nama||it.namaProduk||it.name||('Produk '+(i+1));
     const qty=Number(it.qty||it.jumlah||1)||1;
     const savedModal = Array.isArray(x.mitraHargaItems) && x.mitraHargaItems[i] ? x.mitraHargaItems[i].hargaModal : '';
-    const delivery=productDeliveryLabels(it);
     return `<div class="product-row">
-      <div><div class="product-name">${esc(name)}</div><div class="muted" style="font-size:10px">Kode: ${esc(it.kode||it.produkId||it.id||'-')} | ${esc(it.satuan||'pcs')}</div><div style="margin-top:5px;padding:5px 7px;border-radius:8px;background:#fff8d9;color:#695300;font-size:10px"><b>Metode pengiriman produk:</b> ${esc(delivery)}</div></div>
+      <div><div class="product-name">${esc(name)}</div><div class="muted" style="font-size:10px">Kode: ${esc(it.kode||it.produkId||'-')} | ${esc(it.satuan||'pcs')}</div></div>
       <div class="product-qty">x ${qty}</div>
       <div><label style="font-size:10px;margin:0 0 3px;display:block;font-weight:700">Harga Mitra *</label><input class="modal-input" type="number" min="0" step="100" inputmode="numeric" data-modal-index="${i}" data-qty="${qty}" data-nama="${esc(name)}" value="${savedModal!==''?Number(savedModal):''}" placeholder="Isi harga mitra" required></div>
     </div>`;
   }).join('');
-  return `<div class="products-box"><strong style="font-size:12px">Produk yang dipesan (${items.length} item) - Harga jual disembunyikan, isi modal saja</strong><div class="notice" style="margin:7px 0">Metode pengiriman di bawah setiap produk mengikuti pengaturan produk saat dipesan. Mitra menangani sesuai metode tersebut.</div>${rows}<div class="price-total">Total Harga Mitra: <span id="modalTotal-${x.id}" style="color:#008b5a">Rp 0 (isi dulu)</span></div><div style="margin-top:6px"><label style="font-size:10px;margin-top:6px">Catatan Harga Mitra (opsional)</label><textarea class="catatanModal" data-id="${x.id}" rows="2" placeholder="Contoh: harga mitra dari gudang A"></textarea></div></div>`;
+  return `<div class="products-box"><strong style="font-size:12px">Produk yang dipesan (${items.length} item) - Harga jual disembunyikan, isi modal saja</strong>${rows}<div class="price-total">Total Harga Mitra: <span id="modalTotal-${x.id}" style="color:#008b5a">Rp 0 (isi dulu)</span></div><div style="margin-top:6px"><label style="font-size:10px;margin-top:6px">Catatan Harga Mitra (opsional)</label><textarea class="catatanModal" data-id="${x.id}" rows="2" placeholder="Contoh: harga mitra dari gudang A"></textarea></div></div>`;
 }
 
 function getOrderItems(x){const arr=Array.isArray(x.items)?x.items:[];return arr.map(it=>({name:it.nama||it.name||"Produk",qty:Number(it.qty||1)||1}));}
-const offerOrderItemsById=new Map();
 function renderOffer(x){
-  offerOrderItemsById.set(String(x.id),Array.isArray(x.items)?x.items:[]);
   const start=offerStart(x), orderAt=orderStart(x);
   const offerDeadline=start?start.getTime()+15*60*1000:null;
   const status=String(x.status||"menunggu_mitra");
@@ -159,7 +168,7 @@ async function fetchAssignedOrders(){
 }
 async function loadOffers(){
   const box=$("offerRecords");box.innerHTML='<div class="muted">Memuat…</div>';
-  try{const {orders}=await fetchAssignedOrders();const active=orders.filter(x=>!isAccepted(x)&&!["ditolak_mitra","dibatalkan","selesai"].includes(String(x.status||"").toLowerCase()));box.innerHTML=active.length?active.map(renderOffer).join(""):'<div class="muted">Belum ada penawaran.</div>';attachModalListeners();updateTimers();}catch(err){box.innerHTML='<div class="err">'+esc(err.message)+'</div>';}
+  try{const {orders}=await fetchAssignedOrders();const active=orders.filter(x=>isApprovedOfferForMe(x)&&!isAccepted(x)&&!["ditolak_mitra","dibatalkan","selesai"].includes(String(x.status||"").toLowerCase()));box.innerHTML=active.length?active.map(renderOffer).join(""):'<div class="muted">Belum ada pesanan yang disetujui admin untuk akun mitra ini.</div>';attachModalListeners();updateTimers();}catch(err){box.innerHTML='<div class="err">'+esc(err.message)+'</div>';}
 }
 function attachModalListeners(){document.querySelectorAll('.modal-input').forEach(inp=>{inp.addEventListener('input', e=>{const card=e.target.closest('[data-order-id]');if(!card)return;calcModalTotal(card);});});}
 function calcModalTotal(card){const id=card.dataset.orderId;let total=0;card.querySelectorAll('.modal-input').forEach(inp=>{const qty=Number(inp.dataset.qty||1);const modal=Number(inp.value||0);total+=modal*qty;});const el=card.querySelector(`#modalTotal-${id}`);if(el)el.textContent=rupiah(total);return total;}
@@ -172,7 +181,7 @@ async function handleOfferAction(id,action,card){
       if(modalInputs.length===0)valid=false;
       modalInputs.forEach((inp,i)=>{
         const qty=Number(inp.dataset.qty||1);const nama=inp.dataset.nama||('Produk '+(i+1));const modal=Number(inp.value);
-        if(!Number.isFinite(modal)||modal<=0){valid=false;inp.classList.add('err-input');}else{inp.classList.remove('err-input');modalTotal+=modal*qty;const sourceItem=(offerOrderItemsById.get(String(id))||[])[i]||null;mitraHargaItems.push({nama,qty,hargaModal:modal,subtotalModal:modal*qty,...(sourceItem?{cod:sourceItem.cod??false,kurir:sourceItem.kurir??false,expedisi:sourceItem.expedisi??sourceItem.ekspedisi??false,metodePengiriman:sourceItem.metodePengiriman??sourceItem.metode_pengiriman??sourceItem.jenisPengiriman??sourceItem.deliveryMethod??sourceItem.shippingMethod??sourceItem.pengiriman??null}:{})});}
+        if(!Number.isFinite(modal)||modal<=0){valid=false;inp.classList.add('err-input');}else{inp.classList.remove('err-input');modalTotal+=modal*qty;mitraHargaItems.push({nama,qty,hargaModal:modal,subtotalModal:modal*qty});}
       });
       if(!valid)throw Error("Isi semua Harga Mitra (harus >0) sebelum terima.");
     }
@@ -196,15 +205,63 @@ function renderOrderRecord(x){
   const mitraTotal = x.mitraModalTotal || x.mitraHargaTotal || x.modalTotal || x.mitraTotal || 0;
   const hargaInfo = mitraTotal ? `<div class="meta" style="color:#087443;font-weight:800;font-size:12px">Harga Mitra tersimpan: ${rupiah(mitraTotal)}</div>` : `<div class="meta" style="font-size:11px">Harga Mitra belum ada</div>`;
   const shortId = esc(x.id).slice(0,16);
-  // Produk disembunyikan dulu - hanya tampil setelah klik
+  const sudahDikemas = String(x.status||'').toLowerCase()==='dikemas'
+    || String(x.statusPemenuhan||'').toLowerCase()==='dikemas';
+  const sudahDikirim = ['dikirim','dalam_pengiriman','selesai'].includes(String(x.status||'').toLowerCase());
+  const bolehProses = (x.acceptedByMitraUid===userNow?.uid || x.mitraUsahaUid===userNow?.uid || x.mitraUid===userNow?.uid)
+    && !sudahDikemas && !sudahDikirim;
+  const pilihanProses = bolehProses ? `<div class="actions" style="margin-top:10px">
+    <button class="btn" type="button" data-order-action="pack-self" data-id="${esc(x.id)}">📦 Dikemas & Kirim Sendiri</button>
+    <button class="btn dark" type="button" data-order-action="pack-courier" data-id="${esc(x.id)}">📦 Dikemas & Serahkan ke Kurir</button>
+  </div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>` : '';
+  const metodeLabel = x.metodePenyerahan==='mitra_kirim_sendiri' ? 'Dikirim sendiri oleh mitra'
+    : x.metodePenyerahan==='serahkan_ke_kurir' ? 'Diserahkan ke kurir' : '';
+  const infoPenyerahan = metodeLabel ? `<div class="meta">Penyerahan: <b>${metodeLabel}</b></div>` : '';
   const products = items.length ? `<div class="products-box hidden" data-detail-box="${esc(x.id)}" style="margin-top:8px;border-top:1px dashed #e5e7eb;padding-top:8px">${items.map(it=>`<div class="product-row" style="grid-template-columns:1fr 60px"><div class="product-name">${esc(it.name)}</div><span class="product-qty">x ${it.qty}</span></div>`).join("")}<div style="margin-top:6px">${hargaInfo}</div></div>` : '';
   return `<article class="item order-collapse" data-id="${esc(x.id)}" style="cursor:pointer">
     <div class="itemtop"><strong style="font-size:13px">${no}</strong><span class="status">${esc(status)}</span></div>
     <div class="meta">ID: ${shortId}...</div>
     ${hargaInfo}
+    ${infoPenyerahan}
     <div class="meta" style="margin-top:6px;font-size:10px;color:#888">👁️ Klik untuk lihat produk lengkap</div>
     ${products}
+    ${sudahDikemas ? '<div class="ok">Pesanan sudah dikemas.</div>' : ''}
+    ${pilihanProses}
   </article>`;
+}
+async function handleOrderPacking(id, mode, card){
+  const buttons=card.querySelectorAll('button[data-order-action]');
+  buttons.forEach(b=>b.disabled=true);
+  const msg=card.querySelector('[data-message-for]');
+  if(msg){msg.className='meta';msg.textContent='Menyimpan status dikemas…';}
+  try{
+    const ref=doc(db,'orders',id);
+    await runTransaction(db,async tx=>{
+      const snap=await tx.get(ref);
+      if(!snap.exists()) throw new Error('Pesanan tidak ditemukan.');
+      const x=snap.data();
+      const uid=userNow.uid;
+      if(x.acceptedByMitraUid!==uid && x.mitraUsahaUid!==uid && x.mitraUid!==uid){
+        throw new Error('Pesanan ini bukan milik akun mitra Anda.');
+      }
+      const statusNow=String(x.status||'').toLowerCase();
+      if(['dikemas','dikirim','dalam_pengiriman','selesai'].includes(statusNow)){
+        throw new Error('Pesanan sudah diproses sebelumnya.');
+      }
+      tx.update(ref,{
+        status:'dikemas',
+        statusPemenuhan:'dikemas',
+        metodePenyerahan:mode==='pack-self'?'mitra_kirim_sendiri':'serahkan_ke_kurir',
+        dikemasOlehUid:uid,
+        dikemasAt:serverTimestamp(),
+        updatedAt:serverTimestamp()
+      });
+    });
+    await loadRecords();
+  }catch(err){
+    if(msg){msg.className='err';msg.textContent=err.message;}
+    buttons.forEach(b=>b.disabled=false);
+  }
 }
 async function loadRecords(){
   const box=$("records");box.innerHTML='<div class="muted">Memuat…</div>';
@@ -216,15 +273,19 @@ async function loadRecords(){
     // Pasang klik untuk buka tutup produk - sembunyikan dulu nama produk, hanya tampil Harga Mitra tersimpan
     box.querySelectorAll('.order-collapse').forEach(card=>{
       card.addEventListener('click', (e)=>{
+        if(e.target.closest('button[data-order-action]')) return;
         const detail = card.querySelector('[data-detail-box]');
-        if(detail){
-          detail.classList.toggle('hidden');
-          const hint = card.querySelector('.meta:last-of-type');
-        }
+        if(detail) detail.classList.toggle('hidden');
       });
     });
   }catch(err){box.innerHTML='<div class="err">'+esc(err.message)+'</div>';}
 }
+$("records")?.addEventListener("click",e=>{
+  const btn=e.target.closest("button[data-order-action]");
+  if(!btn) return;
+  const card=btn.closest(".order-collapse");
+  if(card) handleOrderPacking(btn.dataset.id,btn.dataset.orderAction,card);
+});
 $("reloadBtn")?.addEventListener("click",()=>{loadOffers();loadRecords();});$("filter")?.addEventListener("input",()=>{if(userNow)loadRecords();});setInterval(updateTimers,1000);
 
 // AUTO REFRESH pas balik
