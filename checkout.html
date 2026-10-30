@@ -95,7 +95,8 @@ main{max-width:840px;margin:auto;padding:12px}
   <div class="row"><span>Total Qty</span><b id="totalQty">0 pcs</b></div>
 </div>
 
-<div class="card" id="perTokoCard"><h3>🚚 Pengiriman & Pembayaran per Toko</h3><div class="muted" style="font-size:12px;margin-bottom:10px">Setiap toko memiliki pilihan pengiriman dan pembayaran sendiri. Pesanan akan dipisah otomatis seperti marketplace.</div><div id="perTokoList">Memuat pilihan toko...</div></div>
+<div class="card" id="perTokoCard"><h3>🚚 Pengiriman per Mitra</h3><div class="muted" style="font-size:12px;margin-bottom:10px">Setiap mitra mengatur metode pengiriman dan ongkir masing-masing.</div><div id="perTokoList">Memuat pilihan toko...</div></div>
+<div class="card" id="pembayaranGlobalCard"><h3 style="margin-bottom:10px">💳 Metode Pembayaran</h3><div class="muted" style="margin-bottom:10px">Pembayaran disatukan untuk seluruh pesanan. Pilih satu metode pembayaran.</div><div class="pay-option active" data-global-pay="transfer"><input type="radio" name="globalPay" value="transfer" checked><div><b>Transfer Bank</b><div class="muted">BCA / SeaBank / DANA / GoPay</div></div></div><div class="pay-option" data-global-pay="qris"><input type="radio" name="globalPay" value="qris"><div><b>QRIS</b><div class="muted">Scan satu QRIS untuk total seluruh pesanan</div></div></div><div class="pay-option" data-global-pay="cod" id="globalCodOption" style="display:none"><input type="radio" name="globalPay" value="cod"><div><b>COD (Bayar di Tempat)</b><div class="muted">Tersedia jika semua mitra mengizinkan COD</div></div></div><div id="globalTransferDetail" class="dropdown"><b>💳 Rekening Admin - a.n. YUDI ALIYUDIN</b><br><br><b>Bank BCA:</b> 4180734771<br><b>SeaBank:</b> 901341445605<br><b>DANA / GoPay:</b> 082319264646<br><small class="muted">Upload bukti pembayaran setelah pesanan dibuat.</small></div><div id="globalQrisDetail" class="dropdown" style="display:none"><b>📱 QRIS Admin - a.n. YUDI ALIYUDIN</b><div style="text-align:center;margin:10px"><img src="qris.jpg" alt="QRIS Admin" style="max-width:280px;width:100%;border:2px solid #00a85a;border-radius:12px" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><div class="err" style="display:none">File qris.jpg belum tersedia di folder hosting.</div></div></div><div id="globalCodDetail" class="dropdown" style="display:none">Bayar tunai saat pesanan diterima.</div></div>
 
 <!-- 3. METODE PENGIRIMAN -->
 <div class="card" id="pengirimanCard" style="display:none">
@@ -358,20 +359,33 @@ async function renderPerToko(){
     checkoutByOwner.set(uid,cfg);
     const subtotal=items.reduce((a,x)=>a+(Number(x.price)||0)*(Number(x.qty)||1),0);
     const shipOpts=(canCourier?'<option value="siap_antar">Siap Antar (Kurir Toko)</option>':'')+(canExp?'<option value="expedisi">Ekspedisi</option>':'');
-    const payOpts='<option value="transfer">Transfer Bank</option><option value="qris">QRIS</option>'+(canCod?'<option value="cod">COD</option>':'');
-    rows.push(`<section style="border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin:10px 0;background:#fff"><div style="display:flex;justify-content:space-between;gap:8px"><b>🏪 ${info.nama}</b><span class="muted">${items.length} jenis produk</span></div><div class="muted" style="font-size:11px;margin:5px 0 10px">${items.map(x=>`${x.name} × ${x.qty||1}`).join('<br>')}</div><label>Metode Pengiriman</label><select data-owner-ship="${uid}" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px" ${!canCourier&&!canExp?'disabled':''}>${shipOpts||'<option value="">Tidak ada metode pengiriman tersedia</option>'}</select><div style="margin-top:8px" data-owner-service-wrap="${uid}"><label>Pilih Ekspedisi</label><select data-owner-service="${uid}" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px">${expeditionOptions.map(o=>`<option value="${o.id}">${o.name} - ${rupiah(o.cost)}</option>`).join('')}</select></div><label style="display:block;margin-top:8px">Metode Pembayaran</label><select data-owner-pay="${uid}" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px">${payOpts}</select><div class="row"><span>Subtotal</span><b>${rupiah(subtotal)}</b></div><div class="row"><span>Ongkir</span><b data-owner-ongkir="${uid}">${rupiah(cfg.shipping==='expedisi'?9000:info.ongkir)}</b></div><div class="row total"><b>Total toko</b><b data-owner-total="${uid}">${rupiah(subtotal+(cfg.shipping==='expedisi'?9000:info.ongkir))}</b></div></section>`);
+    rows.push(`<section style="border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin:10px 0;background:#fff"><div style="display:flex;justify-content:space-between;gap:8px"><b>🏪 ${info.nama}</b><span class="muted">${items.length} jenis produk</span></div><div class="muted" style="font-size:11px;margin:5px 0 10px">${items.map(x=>`${x.name} × ${x.qty||1}`).join('<br>')}</div><label>Metode Pengiriman</label><select data-owner-ship="${uid}" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px" ${!canCourier&&!canExp?'disabled':''}>${shipOpts||'<option value="">Tidak ada metode pengiriman tersedia</option>'}</select><div style="margin-top:8px" data-owner-service-wrap="${uid}"><label>Pilih Ekspedisi</label><select data-owner-service="${uid}" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px">${expeditionOptions.map(o=>`<option value="${o.id}">${o.name} - ${rupiah(o.cost)}</option>`).join('')}</select></div><div class="row"><span>Subtotal</span><b>${rupiah(subtotal)}</b></div><div class="row"><span>Ongkir</span><b data-owner-ongkir="${uid}">${rupiah(cfg.shipping==='expedisi'?9000:info.ongkir)}</b></div><div class="row total"><b>Total toko</b><b data-owner-total="${uid}">${rupiah(subtotal+(cfg.shipping==='expedisi'?9000:info.ongkir))}</b></div></section>`);
   }
   document.getElementById('perTokoList').innerHTML=rows.join('');
+  updateGlobalPayment();
   for(const [uid,cfg] of checkoutByOwner){
     const ship=document.querySelector(`[data-owner-ship="${CSS.escape(uid)}"]`);if(ship){ship.value=cfg.shipping;ship.onchange=()=>{cfg.shipping=ship.value;renderPerTokoControls(uid);updateTotals();};}
-    const pay=document.querySelector(`[data-owner-pay="${CSS.escape(uid)}"]`);if(pay){pay.value=cfg.payment;pay.onchange=()=>{cfg.payment=pay.value;updateTotals();};}
     const service=document.querySelector(`[data-owner-service="${CSS.escape(uid)}"]`);if(service){service.value=cfg.service;service.onchange=()=>{cfg.service=service.value;updateTotals();};}
     renderPerTokoControls(uid);
   }
+  updateGlobalPayment();
   updateTotals();
 }
 function renderPerTokoControls(uid){const cfg=checkoutByOwner.get(uid);const wrap=document.querySelector(`[data-owner-service-wrap="${CSS.escape(uid)}"]`);if(wrap)wrap.style.display=cfg.shipping==='expedisi'?'block':'none';}
 
+
+
+function updateGlobalPayment(){
+  const allCod=[...ownerItems().keys()].length>0 && [...ownerItems()].every(([uid,items])=>items.every(x=>flagOn(x.cod)));
+  const cod=document.getElementById('globalCodOption');
+  cod.style.display=allCod?'flex':'none';
+  if(!allCod && selectedPay==='cod') selectedPay='transfer';
+  document.querySelectorAll('[data-global-pay]').forEach(el=>{const active=el.dataset.globalPay===selectedPay;el.classList.toggle('active',active);el.querySelector('input').checked=active;});
+  document.getElementById('globalTransferDetail').style.display=selectedPay==='transfer'?'block':'none';
+  document.getElementById('globalQrisDetail').style.display=selectedPay==='qris'?'block':'none';
+  document.getElementById('globalCodDetail').style.display=selectedPay==='cod'?'block':'none';
+}
+document.querySelectorAll('[data-global-pay]').forEach(el=>el.addEventListener('click',()=>{if(el.dataset.globalPay==='cod' && document.getElementById('globalCodOption').style.display==='none')return;selectedPay=el.dataset.globalPay;updateGlobalPayment();}));
 
 async function loadAlamat(){
   if(!currentUser){
@@ -536,14 +550,14 @@ async function buatPesanan(){
     const groups=new Map();
     for(const item of cart){
       const uid=ownerKey(item),cfg=checkoutByOwner.get(uid)||{};
-      if(!cfg.shipping||!cfg.payment)throw new Error('Lengkapi metode pengiriman dan pembayaran setiap toko.');
+      if(!cfg.shipping)throw new Error('Lengkapi metode pengiriman setiap toko.');
       if(cfg.shipping==='siap_antar'&&!cfg.canCourier)throw new Error(`Toko ${cfg.info?.nama||uid} tidak menyediakan Siap Antar.`);
       if(cfg.shipping==='expedisi'&&!cfg.canExp)throw new Error(`Toko ${cfg.info?.nama||uid} tidak menyediakan Ekspedisi.`);
-      if(cfg.payment==='cod'&&!cfg.canCod)throw new Error(`Produk di toko ${cfg.info?.nama||uid} tidak mengizinkan COD.`);
+      if(selectedPay==='cod'&&!cfg.canCod)throw new Error(`COD tidak tersedia karena semua mitra harus mendukung COD.`);
       const service=cfg.shipping==='expedisi'?(expeditionOptions.find(x=>x.id===cfg.service)||expeditionOptions[0]):null;
       const ongkir=cfg.shipping==='expedisi'?service.cost:(cfg.info?.ongkir||5000);
-      const key=[uid,cfg.shipping,cfg.payment,ongkir,service?.id||''].join('::');
-      if(!groups.has(key))groups.set(key,{uid,shipping:cfg.shipping,payment:cfg.payment,shippingCost:ongkir,service:service?.id||'',info:cfg.info||{},items:[]});
+      const key=[uid,cfg.shipping,ongkir,service?.id||''].join('::');
+      if(!groups.has(key))groups.set(key,{uid,shipping:cfg.shipping,payment:selectedPay,shippingCost:ongkir,service:service?.id||'',info:cfg.info||{},items:[]});
       groups.get(key).items.push(item);
     }
     const createdOrders=[];
