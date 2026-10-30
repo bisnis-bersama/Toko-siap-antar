@@ -477,16 +477,13 @@ document.getElementById('expedisiSelect').addEventListener('change', e=>{
   updateTotals();
 });
 
-// Pay option
-document.querySelectorAll('.pay-option').forEach(el=>{
+// PEMBAYARAN LAMA DI DALAM PANEL PENGIRIMAN TERSEMBUNYI
+// Tidak boleh mengubah selectedPay global. Pembayaran dipilih hanya
+// melalui #pembayaranGlobalCard.
+document.querySelectorAll('#pengirimanCard [data-pay]').forEach(el=>{
   el.addEventListener('click',()=>{
-    document.querySelectorAll('.pay-option').forEach(o=>o.classList.remove('active'));
-    el.classList.add('active');
-    el.querySelector('input').checked=true;
-    selectedPay=el.dataset.pay;
-    document.getElementById('payTransferDetail').style.display = selectedPay==='transfer'?'block':'none';
-    document.getElementById('payQrisDetail').style.display = selectedPay==='qris'?'block':'none';
-    document.getElementById('payCodDetail').style.display = selectedPay==='cod'?'block':'none';
+    // Panel lama disembunyikan dan tidak digunakan untuk checkout.
+    return;
   });
 });
 
@@ -543,6 +540,12 @@ document.getElementById('btnSimpanAlamat').onclick=async()=>{
 async function buatPesanan(){
   if(cart.length===0){alert('Keranjang kosong');return;}
   if(!currentUser){alert('Harus login dulu untuk checkout');location.href='login.html?next=checkout-baru.html';return;}
+  if(!['transfer','qris','cod'].includes(selectedPay)){
+    alert('Metode pembayaran belum dipilih atau tidak valid. Silakan pilih Transfer, QRIS, atau COD.');
+    selectedPay='transfer';
+    updateGlobalPayment();
+    return;
+  }
   const alamatData={nama:document.getElementById('alamatNama').textContent,telepon:document.getElementById('alamatHp').textContent,alamat:document.getElementById('alamatLengkap').textContent,lat:pLat||null,lng:pLng||null,gpsLink:pLat&&pLng?`https://www.google.com/maps?q=${pLat},${pLng}`:''};
   const btn=document.getElementById('btnBuatPesanan');btn.disabled=true;btn.textContent='Membuat pesanan...';
   try{
@@ -566,7 +569,8 @@ async function buatPesanan(){
       const subtotal=group.items.reduce((a,x)=>a+(Number(x.price)||0)*(Number(x.qty)||1),0);
       const qty=group.items.reduce((a,x)=>a+(Number(x.qty)||1),0);
       const nomor=makeOrderNumber(),ongkirGroup=group.shippingCost;
-      const orderData={uid:currentUser.uid,ownerUid:currentUser.uid,pelangganUid:currentUser.uid,ownerName:alamatData.nama,email:currentUser.email||'',nomorPesanan:nomor,items:group.items,mitraGroups:group.uid==='unknown'?[]:[group.uid],mitraUsahaUid:group.uid==='unknown'?'':group.uid,mitraCandidateUids:group.uid==='unknown'?[]:[group.uid],mitraNama:group.info.nama||'Mitra',mitraUid:group.uid==='unknown'?'':group.uid,subtotal,ongkir:ongkirGroup,total:subtotal+ongkirGroup,totalQty:qty,metodePengiriman:group.shipping,expedisiName:group.service,jarakKm:group.info.jarak||0,lat:pLat||null,lng:pLng||null,lokasi:pLat&&pLng?{lat:pLat,lng:pLng}:null,alamatPengiriman:alamatData,alamat:alamatData.alamat,telepon:alamatData.telepon,metodePembayaran:group.payment,status:'menunggu_verifikasi_admin',statusPemenuhan:'pending_admin',statusPembayaran:group.payment==='cod'?'cod':'menunggu_verifikasi',slaStatus:'berjalan',slaDurasiMenit:60,slaDeadlineAt:new Date(Date.now()+3600000),kurirUid:'',mitraAlamat:group.info.alamat||'',mitraLat:group.info.lat||null,mitraLng:group.info.lng||null,createdAt:serverTimestamp(),updatedAt:serverTimestamp()};
+      const metodeBayar = ['transfer','qris','cod'].includes(selectedPay) ? selectedPay : 'transfer';
+      const orderData={uid:currentUser.uid,ownerUid:currentUser.uid,pelangganUid:currentUser.uid,ownerName:alamatData.nama,email:currentUser.email||'',nomorPesanan:nomor,items:group.items,mitraGroups:group.uid==='unknown'?[]:[group.uid],mitraUsahaUid:group.uid==='unknown'?'':group.uid,mitraCandidateUids:group.uid==='unknown'?[]:[group.uid],mitraNama:group.info.nama||'Mitra',mitraUid:group.uid==='unknown'?'':group.uid,subtotal,ongkir:ongkirGroup,total:subtotal+ongkirGroup,totalQty:qty,metodePengiriman:group.shipping,expedisiName:group.service,jarakKm:group.info.jarak||0,lat:pLat||null,lng:pLng||null,lokasi:pLat&&pLng?{lat:pLat,lng:pLng}:null,alamatPengiriman:alamatData,alamat:alamatData.alamat,telepon:alamatData.telepon,metodePembayaran:metodeBayar,status:'menunggu_verifikasi_admin',statusPemenuhan:'pending_admin',statusPembayaran:metodeBayar==='cod'?'cod':'menunggu_verifikasi',slaStatus:'berjalan',slaDurasiMenit:60,slaDeadlineAt:new Date(Date.now()+3600000),kurirUid:'',mitraAlamat:group.info.alamat||'',mitraLat:group.info.lat||null,mitraLng:group.info.lng||null,createdAt:serverTimestamp(),updatedAt:serverTimestamp()};
       const ref=await addDoc(collection(db,'orders'),orderData);
       createdOrders.push({nomor,total:subtotal+ongkirGroup,qty,orderId:ref.id,shipping:group.shipping,payment:group.payment,ongkir:ongkirGroup,mitra:group.info.nama||'Mitra'});
     }
