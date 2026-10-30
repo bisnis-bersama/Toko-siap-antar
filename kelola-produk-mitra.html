@@ -22,7 +22,7 @@
 }
 </style>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Input Produk Mitra BARU V5</title>
+<title>Input Produk Mitra BARU V6 - ULTRA KOMPRES</title>
 <style>
 *{box-sizing:border-box}body{background:#f8fdf9;margin:0;padding:12px;font-family:system-ui;max-width:480px;margin:auto}
 .card-mitra{background:#eef6ee;border:1px solid #c8e6c9;border-radius:16px;padding:16px;margin:8px 0}
@@ -39,7 +39,7 @@ input,select{width:100%;border:1px solid #cfe5d8;border-radius:12px;padding:14px
 .msg-ok{background:#e5fff0;color:#087b45;border:1px solid #a7e8c5;padding:12px;border-radius:12px;margin:10px 0;font-size:13px;font-weight:600}
 .msg-err{background:#fff0ed;color:#b42318;border:1px solid #f5c6c1;padding:12px;border-radius:12px;margin:10px 0}
 </style></head><body>
-<h2 style="margin:16px 6px;font-size:24px">📦 Input Produk Mitra BARU V5</h2>
+<h2 style="margin:16px 6px;font-size:24px">📦 Input Produk Mitra BARU V6 - ULTRA KOMPRES</h2>
 <div id="msg"></div>
 <div class="card-mitra">
   <div style="display:flex;justify-content:space-between;align-items:center">
@@ -105,26 +105,35 @@ async function kompres(file){
   const img=new Image();
   const url=URL.createObjectURL(file);
   img.onload=()=>{
-   let max=400,w=img.width,h=img.height;
+   let max=300,w=img.width,h=img.height;
    if(w>max){h=Math.round(h*max/w);w=max}
-   if(h>400){w=Math.round(w*400/h);h=400}
+   if(h>300){w=Math.round(w*300/h);h=300}
    const cv=document.createElement('canvas');
    cv.width=w;cv.height=h;
    const ctx=cv.getContext('2d');
    ctx.drawImage(img,0,0,w,h);
-   let q=0.6;
+   let q=0.5;
    let d=cv.toDataURL('image/jpeg',q);
    let a=0;
-   while(d.length>60000 && a<8){
-     q-=0.08;
-     if(q<0.12) break;
+   while(d.length>40000 && a<10){
+     q-=0.05;
+     if(q<0.08) break;
      d=cv.toDataURL('image/jpeg',q);
      a++;
    }
    URL.revokeObjectURL(url);
    const polos=d.split(',')[1]||'';
    const sizeKB=Math.round(polos.length*0.75/1024);
-   res({dataUrl:d,polos,sizeKB});
+   // Jika masih >30KB, paksa resize lagi ke 200px
+   if(sizeKB>30){
+     const cv2=document.createElement('canvas');
+     cv2.width=200;cv2.height=200;
+     cv2.getContext('2d').drawImage(img,0,0,200,200);
+     d=cv2.toDataURL('image/jpeg',0.4);
+   }
+   const polos2=d.split(',')[1]||'';
+   const sizeKB2=Math.round(polos2.length*0.75/1024);
+   res({dataUrl:d,polos:polos2,sizeKB:sizeKB2});
   };
   img.onerror=()=>{URL.revokeObjectURL(url);rej('gagal load');};
   img.src=url;
@@ -197,7 +206,7 @@ document.getElementById('btnSimpan').onclick=async()=>{
      ID:id,Nama:nama,Harga:harga,Deskripsi:desk,Kategori:kat,Stok:stok,Image:fotoPolos,MitraUid:mitraUid,MitraNama:mitraNama,Singkatan:singkatan(mitraNama),BisaCOD:bisaCOD,BisaKurir:bisaKurir,BisaExpedisi:bisaExp
    };
    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',body:JSON.stringify(payload)});
-   msg.innerHTML=`<div class="msg-ok">✅ Masuk Sheet MEMBER! <b>${nama}</b><br>COD:${bisaCOD?'Ya':'Tidak'} | Kurir:${bisaKurir?'Ya':'Tidak'} | Exp:${bisaExp?'Ya':'Tidak'} | Stok:${stok}<br><small>Cek baris paling bawah di tab MEMBER</small></div>`;
+   msg.innerHTML=`<div class="msg-ok">✅ Masuk Sheet MEMBER! <b>${nama}</b><br>COD:${bisaCOD?'Ya':'Tidak'} | Kurir:${bisaKurir?'Ya':'Tidak'} | Exp:${bisaExp?'Ya':'Tidak'} | Stok:${stok}<br><small>Jika foto >30KB, akan auto kecilin ke 200px biar masuk Sheet</small></div>`;
    document.getElementById('nama').value='';
    document.getElementById('harga').value='';
    document.getElementById('deskripsi').value='';
