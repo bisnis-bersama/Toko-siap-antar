@@ -205,11 +205,11 @@ body.dark-mode .menu-item:active{background:#294a37}
   <aside class="menu-drawer" role="dialog" aria-modal="true" aria-label="Menu Toko Siap Antar">
     <div class="menu-drawer-head"><strong>Menu Toko Siap Antar</strong><button class="menu-close" id="closeMenu" type="button" aria-label="Tutup menu">×</button></div>
     <nav class="menu-items">
-      <a class="menu-item" href="gojek-elit.html"><span class="menu-icon">🛵</span>Gojek Elit</a>
-      <a class="menu-item" href="https://fixzy-global.vercel.app" target="_blank" rel="noopener"><span class="menu-icon">📊</span>Fixzy Business</a>
-      <a class="menu-item" href="daftar-penjual.html"><span class="menu-icon">🏪</span>Daftar Jadi Penjual</a>
-      <a class="menu-item" href="daftar-kurir.html"><span class="menu-icon">🚴</span>Daftar Jadi Kurir</a>
-      <a class="menu-item" href="daftar-gojek-elit.html"><span class="menu-icon">🚕</span>Daftar Jadi Gojek Elit</a>
+      <a class="menu-item" href="data-gojek-elit.html"><span class="menu-icon">🛵</span>Gojek Elit</a>
+      <a class="menu-item" href="https://fixzi-global.vercel.app" target="_blank" rel="noopener"><span class="menu-icon">📊</span>Fixzy Business</a>
+      <a class="menu-item" href="daftar-mitra-usaha.html"><span class="menu-icon">🏪</span>Daftar Jadi Penjual</a>
+      <a class="menu-item" href="daftar-mitra-pengantaran.html"><span class="menu-icon">🚴</span>Daftar Jadi Kurir</a>
+      <a class="menu-item" href="daftar-mitra-pengantaran.html"><span class="menu-icon">🚕</span>Daftar Jadi Gojek Elit</a>
       <a class="menu-item" href="https://wa.me/62895707182299" target="_blank" rel="noopener"><span class="menu-icon">💬</span>Chat Admin</a>
       <a class="menu-item" href="page.html"><span class="menu-icon">ℹ️</span>About Toko Siap Antar</a>
     </nav>
@@ -354,7 +354,7 @@ function renderProducts() {
   }
   productsEl.innerHTML = filtered.map(p => `
     <article class="product" data-product-id="${escapeHtml(p.id)}">
-      <div class="product-photo">${p.image ? `<img loading="lazy" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" onerror="this.style.display='none'">` : '<span>📦</span>'}<span class="mitra-tag"> ${escapeHtml(ownerInitials(p.mitraNama))}</span></div>
+      <div class="product-photo">${p.image ? `<img loading="lazy" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" onerror="this.style.display='none'">` : '<span>📦</span>'}<span class="mitra-tag">🏪 ${escapeHtml(ownerInitials(p.mitraNama))}</span></div>
       <div class="product-info">
         <div class="product-name">${escapeHtml(p.name)}</div>
         <div class="product-desc">${escapeHtml(p.description || 'Pesanan siap antar ±1 jam').slice(0,80)}</div>
