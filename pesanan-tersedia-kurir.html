@@ -94,7 +94,7 @@
 <script type="module">
 import {auth, db} from "./firebase-config.js";
 import {onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-import {collection, query, where, onSnapshot, doc, getDoc, getDocs, updateDoc, addDoc, serverTimestamp, increment, runTransaction} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import {collection, query, where, onSnapshot, doc, getDoc, getDocs, updateDoc, addDoc, serverTimestamp, increment} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
 const $=id=>document.getElementById(id);
 let currentUser=null, all=[], mitraCache={};
@@ -152,19 +152,22 @@ async function enrichOrders(){
   render();
 }
 
-function render(){
-  const siap = all.filter(o=>['diterima_mitra','baru','menunggu'].some(k=>(o.status||'').toLowerCase().includes(k)));
-  const aktif = all.filter(o=> o.kurirUid===currentUser?.uid && (!['selesai','batal'].some(k=>(o.status||'').toLowerCase().includes(k)) || o.pelangganKonfirmasiDiterimaAt || o.kurirKonfirmasiDiterimaAt));
+let kurirProfiles=[];
+let courierGps=null;
+const MAX_JARAK_KM=25;
 
-  const c1=$('listSiap'); c1.innerHTML=''; $('emptySiap').style.display= siap.length?'none':'block';
-  siap.forEach(o=>{ c1.innerHTML+=renderOrder(o,false); });
-  const c2=$('listAktif'); c2.innerHTML=''; $('emptyAktif').style.display= aktif.length?'none':'block';
-  aktif.forEach(o=>{ c2.innerHTML+=renderOrder(o,true); });
+function getCoords(d){
+  const lat=num(get(d,['lat','lokasi.lat','currentLat','latitude','latMitra','tokoLat']));
+  const lng=num(get(d,['lng','lokasi.lng','currentLng','longitude','lngMitra','tokoLng']));
+  return lat!==null && lng!==null ? [lat,lng] : null;
 }
-
-function renderOrder(o, isAktif=false){
-  const mitraUid = get(o, ['mitraUid','tokoId','ownerToko','sellerUid','mitraId']);
-  const mitraCacheData = mitraUid ? mitraCache[mitraUid] : null;
-
-  // GPS DARI AKUN MITRA
-  let mitraLat = null, mitraLng = null, mitr
+function courierDistance(o, profile){
+  const uid=get(o,['mitraUid','tokoId','ownerToko','sellerUid','mitraId']);
+  const m=mitraCache[uid];
+  const ml=num(m?.lat) ?? num(get(o,['mitraLat','tokoLat','pickupLat','alamatPickup.lat']));
+  const mn=num(m?.lng) ?? num(get(o,['mitraLng','tokoLng','pickupLng','alamatPickup.lng']));
+  const pl=num(get(o,['alamatPengiriman.lat','lokasi.lat','lat']));
+  const pn=num(get(o,['alamatPengiriman.lng','lokasi.lng','lng']));
+  const c=getCoords(profile);
+  if(!c) return {toMitra:null,toCustomer:null,eligible:false};
+  const toMitra=ml!==null&&mn!==null?distanceKm(c,[ml,mn]):nu
