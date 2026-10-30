@@ -354,7 +354,7 @@ function renderProducts() {
   }
   productsEl.innerHTML = filtered.map(p => `
     <article class="product" data-product-id="${escapeHtml(p.id)}">
-      <div class="product-photo">${p.image ? `<img loading="lazy" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" onerror="this.style.display='none'">` : '<span>📦</span>'}<span class="mitra-tag">🏪 ${escapeHtml(ownerInitials(p.mitraNama))}</span></div>
+      <div class="product-photo">${p.image ? `<img loading="lazy" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" onerror="this.style.display='none'">` : '<span>📦</span>'}<span class="mitra-tag"> ${escapeHtml(ownerInitials(p.mitraNama))}</span></div>
       <div class="product-info">
         <div class="product-name">${escapeHtml(p.name)}</div>
         <div class="product-desc">${escapeHtml(p.description || 'Pesanan siap antar ±1 jam').slice(0,80)}</div>
