@@ -551,6 +551,8 @@ async function buatPesanan(){
       pelangganUid:currentUser.uid,
       ownerName:alamatData.nama,
       pelangganNama:alamatData.nama,
+      pelangganTelepon:alamatData.telepon,
+      pelangganAlamat:alamatData.alamat,
       email:currentUser.email||'',
       nomorPesanan:nomor,
       items:cart,
@@ -574,8 +576,7 @@ async function buatPesanan(){
       alamat:alamatData.alamat,
       telepon:alamatData.telepon,
       metodePembayaran:selectedPay,
-      status:'pending_admin',
-      statusPemenuhan:'pending_admin',
+      status:'pending',
       statusPembayaran:selectedPay==='cod' ? 'cod' : 'menunggu_verifikasi',
       kurirUid:'',
       kurirNama:'',
@@ -601,7 +602,7 @@ async function buatPesanan(){
     document.getElementById('msg').innerHTML=
       `<div class="ok">✅ Pesanan <b>${nomor}</b> berhasil dibuat.<br>
       Total: <b>${rupiah(totalBayar)}</b><br>
-      Status: <b>Menunggu pemeriksaan admin</b><br><br>
+      Status: <b>Pending — menunggu pemeriksaan admin</b><br><br>
       Pesanan tersimpan sebagai satu data. Setelah admin menyetujui, pesanan akan tampil untuk mitra pemilik produk. Setelah seluruh mitra menyetujui, pesanan Siap Antar akan tersedia bagi kurir. Expedisi diproses oleh mitra.<br>
       <small>ID Pesanan: ${orderRef.id}</small></div>`;
     document.getElementById('bottomTotal').textContent=rupiah(totalBayar);
