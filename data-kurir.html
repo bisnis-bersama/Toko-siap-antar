@@ -40,6 +40,15 @@ import {auth,db} from "./firebase-config.js";
 import {onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import {doc,getDoc,collection,getDocs,query,where,limit,updateDoc,serverTimestamp,orderBy} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 const $=id=>document.getElementById(id);
+async function requireAdmin(u){
+  const ps=await getDoc(doc(db,"users",u.uid));
+  if(!ps.exists()) throw new Error("Profil akun tidak ditemukan.");
+  const p=ps.data(), role=String(p.role||"").toLowerCase();
+  if(!["admin","superadmin"].includes(role)) throw new Error("Akses ditolak. Halaman ini khusus Admin/Superadmin.");
+  if(p.status==="nonaktif" || p.aktif===false) throw new Error("Akun admin sedang nonaktif.");
+  return p;
+}
+
 const esc=v=>String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function rupiah(n){return 'Rp '+(Number(n)||0).toLocaleString('id-ID');}
 function log(m){ const el=$("log"); if(el) el.textContent+="\n"+m; }
@@ -49,7 +58,8 @@ async function loadAccountName(u){ try{ const s=await getDoc(doc(db,"users",u.ui
 let currentUser=null;
 onAuthStateChanged(auth, async u=>{
   currentUser=u; if(!u){ $("content").innerHTML='<div class="err">Login admin</div>'; return; }
-  loadAccountName(u); loadKurir();
+  try{ await requireAdmin(u); loadAccountName(u); loadKurir(); }
+  catch(e){ $("content").innerHTML='<div class="err">'+esc(e.message)+'</div>'; log(e.message); }
 });
 async function loadKurir(){
   try{
@@ -63,7 +73,7 @@ async function loadKurir(){
       const status=x.status||'aktif';
       return `<div class="item"><div style="display:flex;justify-content:space-between"><strong>${esc(namaAkun)}</strong><span class="status-badge">${esc(status)}</span></div><div>${esc(x.email||'')} - Saldo ${rupiah(saldo)}</div><div class="meta">${esc(phone)} | ${esc(x.kendaraan||'Motor')} | ${esc(x.alamat||'')}</div><div class="actions"><button class="btn green" onclick="waKurir('${id}','${esc(namaAkun).replace(/'/g,"\'")}','${esc(phone)}','sapa')">📱 WA ${esc(namaAkun).split(' ')[0]}</button><button class="btn" onclick="waKurir('${id}','${esc(namaAkun).replace(/'/g,"\'")}','${esc(phone)}','pesanan')">📦 WA Pesanan</button><button class="btn dark" onclick="tindakKurir('${id}','aktif','${esc(namaAkun).replace(/'/g,"\'")}')">✅ Aktifkan</button><button class="btn red" onclick="tindakKurir('${id}','nonaktif','${esc(namaAkun).replace(/'/g,"\'")}')">⏸ Nonaktifkan</button><button class="btn dark" onclick="lihatPesananKurir('${id}')">📋 Pesanan Kurir</button></div></div>`;
     }).join('')}</div>`;
-  }catch(e){ $("content").innerHTML='<div class="err">Error: '+esc(e.message)+'<br>Publish rules v3.8 dulu</div>'; log(e.message); }
+  }catch(e){ $("content").innerHTML='<div class="err">Error: '+esc(e.message)+'<br>Periksa izin akses Firestore Rules</div>'; log(e.message); }
 }
 window.waKurir=(id,namaAkun,phone,tipe)=>{
   if(!phone){ const inp=prompt('Nomor WA Kurir '+namaAkun+' (08..):'); if(!inp) return; phone=inp; }
@@ -85,7 +95,7 @@ window.tindakKurir=async(id,statusBaru,namaAkun)=>{
     let newData=statusBaru==='aktif'? {status:'aktif', aktif:true, updatedAt:serverTimestamp()} : {status:'nonaktif', aktif:false, updatedAt:serverTimestamp()};
     await updateDoc(doc(db,"users",id), newData);
     alert('Berhasil '+namaAkun+' jadi '+statusBaru); loadKurir();
-  }catch(e){ alert('Gagal: '+e.message+' - publish rules v3.8'); }
+  }catch(e){ alert('Gagal: '+e.message+' - periksa izin akses Firestore Rules'); }
 }
 window.lihatPesananKurir=(kurirUid)=>{
   localStorage.setItem('filterKurirUid', kurirUid);

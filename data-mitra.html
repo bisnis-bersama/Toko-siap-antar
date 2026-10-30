@@ -40,6 +40,15 @@ import {auth,db} from "./firebase-config.js";
 import {onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import {doc,getDoc,collection,getDocs,query,where,limit,updateDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 const $=id=>document.getElementById(id);
+async function requireAdmin(u){
+  const ps=await getDoc(doc(db,"users",u.uid));
+  if(!ps.exists()) throw new Error("Profil akun tidak ditemukan.");
+  const p=ps.data(), role=String(p.role||"").toLowerCase();
+  if(!["admin","superadmin"].includes(role)) throw new Error("Akses ditolak. Halaman ini khusus Admin/Superadmin.");
+  if(p.status==="nonaktif" || p.aktif===false) throw new Error("Akun admin sedang nonaktif.");
+  return p;
+}
+
 const esc=v=>String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function rupiah(n){return 'Rp '+(Number(n)||0).toLocaleString('id-ID');}
 function log(m){ const el=$("log"); if(el) el.textContent+="\n"+new Date().toLocaleTimeString()+" "+m; }
@@ -48,7 +57,8 @@ async function loadAccountName(u){ try{ const s=await getDoc(doc(db,"users",u.ui
 let currentUser=null, currentProfile=null;
 onAuthStateChanged(auth, async u=>{
   currentUser=u; if(!u){ $("content").innerHTML='<div class="err">Login admin</div>'; return; }
-  try{ const s=await getDoc(doc(db,"users",u.uid)); currentProfile=s.data(); loadAccountName(u); }catch(e){}
+  try{ currentProfile=await requireAdmin(u); loadAccountName(u); }
+  catch(e){ $("content").innerHTML='<div class="err">'+esc(e.message)+'</div>'; log(e.message); return; }
   loadMitra();
 });
 async function loadMitra(){
@@ -61,7 +71,7 @@ async function loadMitra(){
       const namaAkun=x.namaUsaha||x.nama||id.slice(0,6);
       return `<div class="item"><div style="display:flex;justify-content:space-between"><strong>${esc(namaAkun)}</strong><span class="status-badge">${esc(x.status||'')}</span></div><div>${esc(x.email||'')} - Saldo ${rupiah(x.saldoEwallet||0)}</div><div class="meta">${esc(x.alamat||'')} | ${esc(phone)}</div><div class="actions"><button class="btn green" onclick="waMitra('${id}','${esc(namaAkun).replace(/'/g,"\\'")}','${esc(phone)}','verifikasi')">📱 WA Mitra</button><button class="btn" onclick="tindakMitra('${id}','aktif','${esc(namaAkun).replace(/'/g,"\\'")}','${esc(phone)}')">✅ Aktifkan</button><button class="btn red" onclick="tindakMitra('${id}','ditolak','${esc(namaAkun).replace(/'/g,"\\'")}','${esc(phone)}')">❌ Tolak</button><button class="btn dark" onclick="tindakMitra('${id}','nonaktif','${esc(namaAkun).replace(/'/g,"\\'")}','${esc(phone)}')">⏸ Nonaktifkan</button></div></div>`;
     }).join('')}</div>`;
-  }catch(e){ $("content").innerHTML='<div class="err">Error load: '+esc(e.message)+'<br>Publish rules v3.8 dulu</div>'; log(e.message); }
+  }catch(e){ $("content").innerHTML='<div class="err">Error load: '+esc(e.message)+'<br>Periksa izin akses Firestore Rules</div>'; log(e.message); }
 }
 window.waMitra=(id,namaAkun,phone,tipe)=>{
   if(!phone){ const inp=prompt('Nomor WA Mitra '+namaAkun+' (08..):'); if(!inp) return; phone=inp; }
@@ -96,7 +106,7 @@ window.tindakMitra=async(id,statusBaru,namaAkun,phone)=>{
     }
     alert('Berhasil: '+namaAkun+' jadi '+statusBaru); loadMitra();
   }catch(e){
-    alert('Gagal: '+e.message+'\n\nPublish rules v3.8 dulu di Firebase Console!\nRules v3.7 masih cek aktif admin jadi gagal.');
+    alert('Gagal: '+e.message+'\n\nPeriksa izin akses Firestore Rules di Firebase Console!\nRules v3.7 masih cek aktif admin jadi gagal.');
     log('Gagal update '+id+': '+e.message);
   }
 }

@@ -165,15 +165,20 @@ function render(){
   if($('jmlRiwayat')) $('jmlRiwayat').textContent=riwayat.length;
   if(riwayat.length>0 && $('riwayat')) $('riwayat').innerHTML=riwayat.map(o=>`<div style="padding:6px 0;border-bottom:1px dashed #eee">#${o.nomorPesanan||o.id.slice(0,8)} - ${o.alamatPengiriman?.nama||''} • Selesai</div>`).join('');
 }
-window.ambil=async(id)=>{ if(!currentUser) return; await updateDoc(doc(db,'orders',id), {status:'dikirim', kurirUid:currentUser.uid, kurirNama:currentUser.email, diambilAt:serverTimestamp()}); };
+window.ambil=async(id)=>{
+  if(!currentUser) return;
+  try{
+    const ref=doc(db,'orders',id), snap=await getDoc(ref);
+    if(!snap.exists()) throw new Error('Pesanan tidak ditemukan.');
+    const o=snap.data();
+    if(o.kurirUid && o.kurirUid!==currentUser.uid) throw new Error('Pesanan sudah diambil kurir lain.');
+    if(o.saldoDibagi || String(o.status||'').toLowerCase()==='selesai') throw new Error('Pesanan sudah selesai.');
+    await updateDoc(ref,{status:'dikirim',kurirUid:currentUser.uid,kurirNama:currentUser.email,diambilAt:serverTimestamp()});
+  }catch(e){alert('Gagal mengambil pesanan: '+e.message+'\\nPeriksa izin update pada koleksi orders.');}
+};
 window.selesai=async(id)=>{
   if(!currentUser) return;
-  if(!confirm('Selesai antar?
-
-Rumus: Harga 100 Modal 80 Ongkir 10 Admin 20
-Mitra 80% produk
-Kurir 100% ongkir
-Admin 20% (harga-modal)')) return;
+  if(!confirm(`Selesai antar?\n\nRumus: Harga 100 Modal 80 Ongkir 10 Admin 20\nMitra 80% produk\nKurir 100% ongkir\nAdmin 20% (harga-modal)`)) return;
   try{
     const orderRef=doc(db,'orders',id);
     const snap=await getDoc(orderRef);
@@ -195,13 +200,20 @@ Admin 20% (harga-modal)')) return;
 Mitra +Rp ${sp.modal.toLocaleString('id-ID')}
 Kurir +Rp ${sp.ongkirKurir.toLocaleString('id-ID')}
 Admin +Rp ${sp.laba.toLocaleString('id-ID')}`);
-  }catch(e){ alert('Gagal: '+e.message); console.error(e); }
+  }catch(e){ alert('Gagal menyelesaikan pengantaran: '+e.message+'\\nPerlu izin Rules untuk orders dan ewallet_transaksi.'); console.error(e); }
 };
 window.lacak=(id)=>{ localStorage.setItem('last_order_id', id); location.href='./perjalanan-kurir.html?orderId='+id; };
 document.querySelectorAll('.chip').forEach(ch=>{ ch.onclick=()=>{ document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); ch.classList.add('active'); filter=ch.dataset.f; render(); } });
 onAuthStateChanged(auth, async (u)=>{
-  if(!u) return; currentUser=u;
-  try{ const us=await getDoc(doc(db,'users',u.uid)); if(us.exists() && $('nama')) $('nama').textContent=us.data().nama||u.email; }catch{}
+  if(!u){ alert('Silakan login sebagai kurir.'); location.href='./login.html'; return; }
+  currentUser=u;
+  try{
+    const us=await getDoc(doc(db,'users',u.uid));
+    if(!us.exists()) throw new Error('Profil kurir tidak ditemukan.');
+    const prof=us.data(), role=String(prof.role||'').toLowerCase();
+    if(!['kurir','mitra_pengantaran'].includes(role) || prof.status!=='aktif' || prof.aktif===false) throw new Error('Akun belum aktif sebagai kurir. Hubungi admin.');
+    if($('nama')) $('nama').textContent=prof.nama||u.email;
+  }catch(e){ alert(e.message||'Tidak dapat memeriksa akun kurir.'); return; }
   const col=collection(db,'orders');
   onSnapshot(query(col, where('status','in',['diterima_mitra','baru','menunggu','dikirim','selesai'])), snap=>{ all=snap.docs.map(d=>({id:d.id,...d.data()})); render(); }, err=>{ onSnapshot(col, snap=>{ all=snap.docs.map(d=>({id:d.id,...d.data()})); render(); }); });
   onSnapshot(query(col, where('kurirUid','==',u.uid)), snap=>{ snap.docs.forEach(d=>{ if(!all.find(x=>x.id===d.id)) all.push({id:d.id,...d.data()}); }); render(); });

@@ -38,6 +38,15 @@ import {auth,db} from "./firebase-config.js";
 import {onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import {doc,getDoc,collection,getDocs,query,where,limit,updateDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 const $=id=>document.getElementById(id);
+async function requireAdmin(u){
+  const ps=await getDoc(doc(db,"users",u.uid));
+  if(!ps.exists()) throw new Error("Profil akun tidak ditemukan.");
+  const p=ps.data(), role=String(p.role||"").toLowerCase();
+  if(!["admin","superadmin"].includes(role)) throw new Error("Akses ditolak. Halaman ini khusus Admin/Superadmin.");
+  if(p.status==="nonaktif" || p.aktif===false) throw new Error("Akun admin sedang nonaktif.");
+  return p;
+}
+
 const esc=v=>String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function rupiah(n){return 'Rp '+(Number(n)||0).toLocaleString('id-ID');}
 function log(m){ const el=$("log"); if(el) el.textContent+="\n"+m; }
@@ -45,6 +54,7 @@ async function loadAccountName(u){ try{ const s=await getDoc(doc(db,"users",u.ui
 
 onAuthStateChanged(auth, async u=>{
   if(!u){ $("content").innerHTML='Login'; return; }
+  try{ await requireAdmin(u); }catch(e){ $("content").innerHTML='<div class="err">'+esc(e.message)+'</div>'; return; }
   loadAccountName(u);
   try{
     const snap=await getDocs(collection(db,"settings"));
