@@ -41,12 +41,10 @@ main{padding:10px 12px 18px;min-height:150px}
 .product{min-width:0;background:var(--card);border:1px solid var(--line);border-radius:15px;overflow:hidden;box-shadow:0 2px 5px #18312b12;display:flex;flex-direction:column}
 .product-photo{height:112px;background:linear-gradient(135deg,#e4fff2,#fafff0);display:flex;align-items:center;justify-content:center;padding:6px;position:relative}
 .product-photo img{width:100%;height:100%;object-fit:contain}
-.mitra-tag{position:absolute;top:4px;left:4px;background:#111;color:#ffd400;font-size:8px;font-weight:800;padding:3px 6px;border-radius:999px;max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mitra-tag{position:absolute;bottom:4px;left:4px;background:#111;color:#ffd400;font-size:8px;font-weight:800;padding:3px 6px;border-radius:999px;max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .product-info{padding:8px 7px 9px;display:flex;flex-direction:column;flex:1;text-align:center;gap:6px}
-.product-name{font-size:12px;font-weight:800;line-height:1.4;min-height:29px;overflow-wrap:anywhere;color:#18312b}
+.product-name{font-size:11px;line-height:1.35;min-height:29px;overflow-wrap:anywhere}
 .product-desc{font-size:9px;line-height:1.35;color:var(--muted);min-height:25px}
-.product-meta{font-size:9px;line-height:1.4;color:#52635b;background:#f3fff7;border-radius:7px;padding:5px 3px}
-.product-meta strong{color:#008b4c}
 .price{font-weight:800;color:#008b4c;font-size:12px}
 .actions{display:grid;grid-template-columns:30px 30px minmax(0,1fr);gap:4px;margin-top:auto}
 .actions button{border:0;border-radius:8px;min-height:29px;font-size:11px}
@@ -60,7 +58,7 @@ footer h3{margin:0 0 16px;color:#009c54}
 .bottom-nav button{background:none;border:0;color:#777;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px}
 .bottom-nav .ico{font-size:22px;line-height:1.2}
 .bottom-nav button:first-child{color:#009c54}
-@media(max-width:520px){.products{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.product-photo{height:125px}.product-name{font-size:13px;font-weight:800}.product-desc{font-size:10px}.price{font-size:13px}.quick-wrap{top:58px}.promo-track img{height:125px}}
+@media(max-width:520px){.products{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.product-photo{height:125px}.product-name{font-size:12px}.product-desc{font-size:10px}.price{font-size:13px}.quick-wrap{top:58px}.promo-track img{height:125px}}
 @media(max-width:600px){.promo-window{min-height:145px;padding:6px 0}.promo-track img{height:133px;margin-top:0;margin-bottom:0}}
 @media(max-width:360px){.products{grid-template-columns:repeat(2,minmax(0,1fr))}.product-photo{height:105px}.cat{padding:9px 11px;font-size:13px}}
 body{background:#f4fff7;color:var(--ink)}
@@ -103,119 +101,73 @@ header::before{top:0}header::after{bottom:0}
 .btn-y{background:#ffd400;color:#111}.btn-dark{background:#111;color:#ffd400}
 .preview{width:100%;max-height:180px;object-fit:contain;background:#f8f8f8;border-radius:12px;border:2px dashed #ddd;display:none;margin-bottom:10px}
 .linkbox{background:#111;color:#ffd400;padding:10px;border-radius:10px;font-family:monospace;font-size:11px;word-break:break-all}
-/* Panel menu hamburger */
-.menu-backdrop{position:fixed;inset:0;z-index:1000;background:rgba(10,30,22,.48);display:none}
-.menu-backdrop.show{display:block}
-.menu-drawer{position:absolute;top:0;left:0;bottom:0;width:min(86vw,340px);background:#fff;padding:18px 14px 24px;overflow-y:auto;box-shadow:8px 0 28px #0002;transform:translateX(-105%);transition:transform .22s ease}
-.menu-backdrop.show .menu-drawer{transform:translateX(0)}
-.menu-drawer-head{display:flex;align-items:center;justify-content:space-between;padding:5px 4px 16px;border-bottom:1px solid var(--line);margin-bottom:10px}
-.menu-drawer-head strong{font-size:18px;color:#008b4c}
-.menu-close{border:0;background:#f1f7f3;border-radius:10px;width:38px;height:38px;font-size:24px;color:#234}
-.menu-items{display:grid;gap:7px}
-.menu-item{display:flex;align-items:center;gap:12px;width:100%;padding:13px 12px;border:1px solid #e1efe7;border-radius:12px;background:#fbfffc;color:#20372e;text-decoration:none;font-size:14px;font-weight:700;text-align:left}
-.menu-item:active{background:#e8fff1}
-.menu-item .menu-icon{width:28px;text-align:center;font-size:20px}
-@media(prefers-reduced-motion:reduce){.menu-drawer{transition:none}}
-/* Mode gelap: diaktifkan dari tombol pada header. */
-body.dark-mode{--ink:#e7f2ec;--muted:#aabbb2;--paper:#101a16;--card:#1b2923;--line:#34483e;background:#101a16;color:var(--ink)}
-body.dark-mode header{background:#17251e;box-shadow:0 2px 8px #0006}
-body.dark-mode .brand{color:#edf8f1}
-body.dark-mode .welcome-text strong{color:#70e6a4}
-body.dark-mode .welcome-text span{color:#c0d0c7}
-body.dark-mode .head-actions button{color:#ffe27a;background:#26382f;border-color:#496454}
-body.dark-mode .quick-wrap{background:#14221b;border-color:#34483e}
-body.dark-mode .cat{background:#26382f;color:#e7f2ec}
-body.dark-mode .cat.active{background:linear-gradient(100deg,#008d4b,#009eaa);color:#fff}
-body.dark-mode .cat.menu{background:#ffd400;color:#222}
-body.dark-mode .search{background:#1b2923;border-color:#496454}
-body.dark-mode .search input{color:#f0f7f2}
-body.dark-mode .product{background:#1b2923;border-color:#34483e;box-shadow:0 2px 7px #0005}
-body.dark-mode .product-photo{background:linear-gradient(135deg,#263c31,#29352b)}
-body.dark-mode .product-meta{background:#26382f;color:#c5d7cc}
-body.dark-mode .product-meta strong{color:#70e6a4}
-body.dark-mode .price{color:#70e6a4}
-body.dark-mode .product-name{color:#edf8f1}
-body.dark-mode .notice{background:#1b2923;border-color:#34483e;color:#bdcbc3}
-body.dark-mode footer{background:#1b2923;color:#e7f2ec}
-body.dark-mode .socials a{color:#e7f2ec}
-body.dark-mode .bottom-nav{background:#17251e;border-color:#34483e}
-body.dark-mode .bottom-nav button{color:#bdcbc3}
-body.dark-mode .bottom-nav button:first-child{color:#70e6a4}
-body.dark-mode .menu-drawer{background:#17251e;color:#e7f2ec}
-body.dark-mode .menu-drawer-head{border-color:#34483e}
-body.dark-mode .menu-drawer-head strong{color:#70e6a4}
-body.dark-mode .menu-close{background:#26382f;color:#e7f2ec}
-body.dark-mode .menu-item{background:#1f3028;border-color:#34483e;color:#e7f2ec}
-body.dark-mode .menu-item:active{background:#294a37}
 </style>
 </head>
 <body>
 <header>
   <div class="brand">
-    <img class="brand-logo-left" src="logo2.png" alt="Logo Toko Siap Antar">
+    <img class="brand-logo-left" src="logo3.png" alt="Logo">
     <div class="welcome-text">
       <strong>Selamat Datang di Toko Siap Antar!</strong>
-      <span id="welcomeSub">Marketplace Indonesia dengan segala produk yang mudah dipilih dan diantar dalam estimasi 1 jam.</span>
+      <span id="welcomeSub">Marketplace - Produk mitra tampil di sini, input produk mitra langsung di index (Spreadsheet). Ongkir dari GPS akun mitra pemilik produk.</span>
     </div>
   </div>
-  <div class="head-actions"><button id="refresh" aria-label="Muat ulang" title="Muat ulang">↻</button><button id="themeToggle" type="button" aria-label="Aktifkan mode gelap" title="Mode gelap">🌙</button></div>
+  <div class="head-actions"><button id="refresh" aria-label="Muat ulang">↻</button><button id="loginBtn" aria-label="Login">👤</button></div>
 </header>
-
-<!-- Slide sponsor otomatis membaca link gambar dari kolom N Spreadsheet MEMBER -->
-<section class="promo" aria-label="Sponsor Toko Siap Antar" id="sponsorPromo">
-  <div class="promo-window">
-    <div class="promo-track" id="promoTrack"></div>
-  </div>
+<section class="promo" aria-label="Promo">
+  <div class="promo-window"><div class="promo-track" id="promoTrack">
+    <img src="silde1.png" alt="Promo 1"><img src="silde2.png" alt="Promo 2"><img src="silde3.png" alt="Promo 3"><img src="silde4.png" alt="Promo 4"><img src="silde5.png" alt="Promo 5"><img src="silde6.png" alt="Promo 6">
+    <img src="silde1.png" alt="Promo 1" aria-hidden="true"><img src="silde2.png" alt="Promo 2" aria-hidden="true"><img src="silde3.png" alt="Promo 3" aria-hidden="true"><img src="silde4.png" alt="Promo 4" aria-hidden="true"><img src="silde5.png" alt="Promo 5" aria-hidden="true"><img src="silde6.png" alt="Promo 6" aria-hidden="true">
+  </div></div>
 </section>
 
-<!-- Pengelolaan produk dilakukan di halaman Kelola Produk, bukan di Index. -->
+<!-- CARD INPUT PRODUK MITRA - HANYA MUNCUL KALAU LOGIN MITRA -->
+<div class="mitra-card" id="mitraInputCard" style="display:none">
+  <div class="label">🏪 Input Produk Mitra (Spreadsheet) <span id="mitraBadge" style="background:#111;color:#ffd400;padding:4px 8px;border-radius:999px;font-size:10px">Mitra</span></div>
+  <div class="hint">✅ Penyimpanan di Google Sheet - GRATIS, ga butuh Firebase Storage. Gambar di-compress otomatis (30-50KB) lalu masuk ke kolom Image di Sheet.<br>
+  Produk kamu akan muncul di index (semua produk) + di toko.html?mitraUid=UID_KAMU + di produk-ayudithea.html?mitraUid=UID_KAMU<br>
+  Ongkir nanti = jarak GPS akun kamu (users/{uid}) → GPS pelanggan.</div>
+  <div id="mitraInfo" style="font-size:11px;color:#666;margin-bottom:8px">UID: -</div>
+  
+  <input class="input-mitra" id="pName" placeholder="Nama produk, contoh: Ayam Geprek A Yudi Thea">
+  <input class="input-mitra" id="pPrice" type="number" placeholder="Harga, contoh: 15000">
+  <textarea class="input-mitra" id="pDesc" rows="2" placeholder="Deskripsi produk"></textarea>
+  <input class="input-mitra" id="pCat" placeholder="Kategori: Makanan / Minuman / Sembako">
+  
+  <label style="font-weight:800;font-size:12px">📸 Foto Produk (dari HP - auto kompres):</label>
+  <input class="input-mitra" type="file" id="pFile" accept="image/*" capture="environment">
+  <img id="preview" class="preview">
+  <div id="fileInfo" style="font-size:10px;color:#888;margin-bottom:8px"></div>
+  
+  <label style="font-weight:800;font-size:12px">Atau Link Gambar (opsional):</label>
+  <input class="input-mitra" id="pImage" placeholder="https://... (kosongkan kalau upload file)">
+  
+  <button class="btn-mitra btn-y" id="btnSave">💾 Simpan ke Spreadsheet - Masuk Index</button>
+  <div id="msg" style="margin-top:8px;font-size:12px"></div>
+  
+  <div style="margin-top:10px;padding:8px;background:#f8f8f8;border-radius:8px;font-size:10px;color:#666">
+    Link Toko Kamu: <span id="tokoLink" style="font-family:monospace;word-break:break-all;color:#111">-</span><br>
+    <button class="btn-mitra btn-dark" style="padding:6px 10px;font-size:11px;margin-top:6px" id="btnCopy">📋 Salin Link Toko</button>
+    <button class="btn-mitra btn-dark" style="padding:6px 10px;font-size:11px;margin-top:6px" id="btnBuka">👁️ Buka Toko Saya</button>
+  </div>
+</div>
+
+<div class="mitra-card" id="authBox" style="border:1px solid #e0e0e0">
+  <div style="font-size:12px;color:#666">Status: <span id="authStatus">Memeriksa login...</span></div>
+  <div style="font-size:10px;color:#888">Kalau kamu mitra, login dulu biar bisa input produk di index ini. Produk dari Spreadsheet semua tampil di bawah.</div>
+</div>
+
 <section class="quick-wrap">
   <nav class="categories" id="categories" aria-label="Kategori">
-    <button class="cat menu" type="button" id="openMenu">☰ MENU</button>
+    <button class="cat menu" data-cat="__menu">☰ MENU</button>
     <button class="cat active" data-cat="Semua">🏠 Semua</button>
     <button class="cat" data-cat="Makanan">🍜 Makanan</button>
     <button class="cat" data-cat="Minuman">🥤 Minuman</button>
     <button class="cat" data-cat="Sembako">🧺 Sembako</button>
-    <button class="cat" data-cat="Accessories">🎧 Accessories</button>
-    <button class="cat" data-cat="Sparepart">🔧 Sparepart HP</button>
-    <button class="cat" data-cat="Bibit Tanaman">🌱 Bibit Tanaman</button>
-    <button class="cat" data-cat="Pakaian">👕 Pakaian</button>
-    <button class="cat" data-cat="Kecantikan">💄 Kecantikan</button>
-    <button class="cat" data-cat="Properti">🏠 Properti</button>
-    <button class="cat" data-cat="Alat Dapur">🍳 Alat Dapur</button>
-    <button class="cat" data-cat="Sparepart Motor & Mobil">🚗 Sparepart Motor & Mobil</button>
-    <button class="cat" data-cat="Buah-buahan">🍎 Buah-buahan</button>
-    <button class="cat" data-cat="Sayuran">🥬 Sayuran</button>
-    <button class="cat" data-cat="Pertanian">🚜 Pertanian</button>
-    <button class="cat" data-cat="Elektronik">📺 Elektronik</button>
-    <button class="cat" data-cat="Perlengkapan Rumah">🛋️ Perlengkapan Rumah</button>
-    <button class="cat" data-cat="Perlengkapan Bayi">🍼 Perlengkapan Bayi</button>
-    <button class="cat" data-cat="Hewan & Pakan">🐾 Hewan & Pakan</button>
-    <button class="cat" data-cat="Otomotif">🛵 Otomotif</button>
-    <button class="cat" data-cat="Olahraga">⚽ Olahraga</button>
-    <button class="cat" data-cat="Buku & Alat Tulis">📚 Buku & Alat Tulis</button>
-    <button class="cat" data-cat="Jasa">🧰 Jasa</button>
-    <button class="cat" data-cat="Lainnya">📦 Lainnya</button>
     <button class="cat" data-cat="MitraSaya">🏪 Produk Saya</button>
   </nav>
   <label class="search"><span>🔎</span><input id="searchInput" type="search" placeholder="Cari produk / mitra..." autocomplete="off"></label>
 </section>
-
-<div class="menu-backdrop" id="menuBackdrop" aria-hidden="true">
-  <aside class="menu-drawer" role="dialog" aria-modal="true" aria-label="Menu Toko Siap Antar">
-    <div class="menu-drawer-head"><strong>Menu Toko Siap Antar</strong><button class="menu-close" id="closeMenu" type="button" aria-label="Tutup menu">×</button></div>
-    <nav class="menu-items">
-      <a class="menu-item" href="gojek-elit.html"><span class="menu-icon">🛵</span>Gojek Elit</a>
-      <a class="menu-item" href="https://fixzi-global.vercel.app" target="_blank" rel="noopener"><span class="menu-icon">📊</span>Fixzy Business</a>
-      <a class="menu-item" href="daftar-penjual.html"><span class="menu-icon">🏪</span>Daftar Jadi Penjual</a>
-      <a class="menu-item" href="daftar-kurir.html"><span class="menu-icon">🚴</span>Daftar Jadi Kurir</a>
-      <a class="menu-item" href="daftar-gojek-elit.html"><span class="menu-icon">🚕</span>Daftar Jadi Gojek Elit</a>
-      <a class="menu-item" href="https://wa.me/62895707182299" target="_blank" rel="noopener"><span class="menu-icon">💬</span>Chat Admin</a>
-      <a class="menu-item" href="page.html"><span class="menu-icon">ℹ️</span>About Toko Siap Antar</a>
-    </nav>
-  </aside>
-</div>
-
 <main><div id="products" class="products"><div class="notice" style="grid-column:1/-1">Memuat produk dari Google Sheets…</div></div></main>
 <footer><h3>🌐 Ikuti Kami</h3><div class="socials"><a href="#" id="facebook">● Facebook</a><a href="#" id="instagram">◎ Instagram</a><a href="#" id="whatsapp">◉ WhatsApp</a></div></footer>
 <nav class="bottom-nav" aria-label="Navigasi bawah">
@@ -225,7 +177,9 @@ body.dark-mode .menu-item:active{background:#294a37}
 <div id="productZoom" class="product-zoom" role="dialog" aria-modal="true" aria-label="Detail produk">
   <button type="button" id="productZoomClose" class="product-zoom-close" aria-label="Tutup popup">×</button>
   <div class="product-zoom-content">
-    <div class="product-zoom-image-wrap"><img id="productZoomImage" src="" alt="Foto produk"></div>
+    <div class="product-zoom-image-wrap">
+      <img id="productZoomImage" src="" alt="Foto produk">
+    </div>
     <div id="productZoomName" class="product-zoom-name"></div>
     <div id="productZoomPrice" class="product-zoom-price"></div>
     <div class="product-zoom-actions">
@@ -236,12 +190,15 @@ body.dark-mode .menu-item:active{background:#294a37}
   </div>
 </div>
 
+<canvas id="canvas" style="display:none"></canvas>
+
 <script type="module">
 import {auth, db} from "./firebase-config.js";
 import {onAuthStateChanged, signOut} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import {doc, getDoc} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
-// Spreadsheet MEMBER: kolom A-N, kolom N berisi link gambar sponsor.
+// GANTI dengan URL Web App dari Apps Script setelah deploy
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxtjGln5huyGFVGz7muW4SQGOsAOroDLj0seCnd41pOXFF39Iee0EmjA09KljV4Ahk/exec'; // TODO: ganti
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=MEMBER';
 
 const productsEl = document.getElementById('products');
@@ -257,83 +214,45 @@ try {
 } catch (error) {
   cart = [];
 }
-
 const formatPrice = value => {
   const n = Number(String(value ?? '').replace(/[^\d,-]/g,'').replace(/\./g,'').replace(',','.'));
   return Number.isFinite(n) && n ? 'Rp ' + n.toLocaleString('id-ID') : (value ? String(value) : 'Hubungi kami');
 };
-
 function convertImage(url) {
   if (!url) return '';
-  const s = String(url).trim().replace(/^\s+|\s+$/g, '');
-  if (/^data:image\//i.test(s)) return s;
-  if (/^\/9j\//i.test(s)) return 'data:image/jpeg;base64,' + s;
-  if (/^iVBORw0KGgo/.test(s)) return 'data:image/png;base64,' + s;
-  if (/^R0lGOD/.test(s)) return 'data:image/gif;base64,' + s;
-  if (/^UklGR/.test(s)) return 'data:image/webp;base64,' + s;
-
-  // Link Google Drive biasa diubah menjadi URL thumbnail agar bisa dimuat sebagai gambar.
-  const driveId = s.match(/(?:id=|\/d\/)([A-Za-z0-9_-]{15,})/);
-  if (driveId && /drive\.google\.com/i.test(s)) {
-    return 'https://drive.google.com/thumbnail?id=' + driveId[1] + '&sz=w1200';
-  }
+  const s = String(url).trim();
+  if(s.startsWith('data:image')) return s;
+  const id = s.match(/(?:id=|\/d\/)([A-Za-z0-9_-]{15,})/);
+  if (id && /drive\.google\.com/.test(s)) return 'https://drive.google.com/thumbnail?id=' + id[1] + '&sz=w600';
   return s;
 }
-
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 function num(v){const n=Number(v); return isNaN(n)?null:n;}
-function ownerInitials(name){
-  const words=String(name||'Mitra').trim().split(/\s+/).filter(Boolean);
-  return words.map(word=>Array.from(word)[0].toUpperCase()).join('').slice(0,5)||'M';
-}
-function flagEnabled(value){
-  const v=String(value??'').trim().toLowerCase();
-  return value===true || v==='1' || v==='true' || v==='ya' || v==='yes' || v==='aktif';
-}
-function deliveryLabels(p){
-  const labels=[];
-  if(flagEnabled(p.cod)) labels.push('COD');
-  if(flagEnabled(p.kurir)) labels.push('Kurir');
-  if(flagEnabled(p.expedisi)) labels.push('Ekspedisi');
-  return labels.length ? labels.join(' · ') : 'Belum tersedia';
-}
 
-/* SLIDE SPONSOR: mengambil link gambar dari kolom N (indeks 13). */
-function renderSponsorSlides(rows) {
-  const section = document.getElementById('sponsorPromo');
-  const track = document.getElementById('promoTrack');
-  if (!section || !track) return;
-
-  const sponsorLinks = [...new Set(
-    rows.map(row => {
-      const cells = row.c || [];
-      return String(cells[13]?.v ?? cells[13]?.f ?? '').trim();
-    }).filter(url => /^https?:\/\//i.test(url))
-  )];
-
-  const images = sponsorLinks.map(convertImage).filter(Boolean);
-
-  if (!images.length) {
-    section.style.display = 'none';
-    track.replaceChildren();
-    return;
-  }
-
-  section.style.display = 'block';
-  const repeatedSlides = images.length > 1 ? [...images, ...images] : images;
-  track.innerHTML = repeatedSlides.map((url, index) => `
-    <img
-      src="${escapeHtml(url)}"
-      alt="Sponsor Toko Siap Antar"
-      loading="${index < images.length ? 'eager' : 'lazy'}"
-      onerror="this.style.display='none'"
-    >
-  `).join('');
-
-  // Jika hanya satu sponsor, hentikan animasi agar gambar tidak bergeser ke ruang kosong.
-  track.style.animation = images.length > 1 ? '' : 'none';
+function compressImage(file, maxWidth=500, quality=0.6){
+  return new Promise((resolve, reject)=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        let w=img.width, h=img.height;
+        if(w>maxWidth){h=h*maxWidth/w; w=maxWidth;}
+        if(h>maxWidth){w=w*maxWidth/h; h=maxWidth;}
+        const canvas=document.getElementById('canvas');
+        canvas.width=w; canvas.height=h;
+        const ctx=canvas.getContext('2d');
+        ctx.drawImage(img,0,0,w,h);
+        const base64=canvas.toDataURL('image/jpeg', quality);
+        resolve(base64);
+      };
+      img.onerror=reject;
+      img.src=e.target.result;
+    };
+    reader.onerror=reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 function renderProducts() {
@@ -344,22 +263,22 @@ function renderProducts() {
     if(activeCategory==='MitraSaya' && mitraUid){
       matchesCat = p.mitraUid===mitraUid;
     } else if(activeCategory!=='Semua' && activeCategory!=='__menu'){
-      matchesCat = (String(p.category||'').toLowerCase().includes(activeCategory.toLowerCase()) || (p.name + ' ' + p.description).toLowerCase().includes(activeCategory.toLowerCase()));
+      matchesCat = (p.name + ' ' + p.description + ' ' + (p.category||'')).toLowerCase().includes(activeCategory.toLowerCase());
     }
     return matchesText && matchesCat;
   });
   if (!filtered.length) {
-    productsEl.innerHTML = '<div class="notice" style="grid-column:1/-1">Produk tidak ditemukan. Kategori: '+escapeHtml(activeCategory)+'</div>';
+    productsEl.innerHTML = '<div class="notice" style="grid-column:1/-1">Produk tidak ditemukan. Kategori: '+activeCategory+'</div>';
     return;
   }
   productsEl.innerHTML = filtered.map(p => `
     <article class="product" data-product-id="${escapeHtml(p.id)}">
-      <div class="product-photo">${p.image ? `<img loading="lazy" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" onerror="this.style.display='none'">` : '<span>📦</span>'}<span class="mitra-tag">🏪 ${escapeHtml(ownerInitials(p.mitraNama))}</span></div>
+      <div class="product-photo">${p.image ? `<img loading="lazy" src="${escapeHtml(p.image.slice(0,200))}" alt="${escapeHtml(p.name)}" onerror="this.style.display='none'">` : '<span>📦</span>'}<span class="mitra-tag">🏪 ${escapeHtml(p.mitraNama||'Mitra')}</span></div>
       <div class="product-info">
         <div class="product-name">${escapeHtml(p.name)}</div>
         <div class="product-desc">${escapeHtml(p.description || 'Pesanan siap antar ±1 jam').slice(0,80)}</div>
         <div class="price">${escapeHtml(formatPrice(p.price))}</div>
-        <div class="product-meta"><strong>Pemilik:</strong> ${escapeHtml(ownerInitials(p.mitraNama))} · ${escapeHtml(p.category||'')}<br><strong>Pengiriman:</strong> ${escapeHtml(deliveryLabels(p))}</div>
+        <div style="font-size:8px;color:#888">UID: ${(p.mitraUid||'').slice(0,6)}... • ${escapeHtml((p.category||''))}</div>
         <div class="actions">
           <button class="wa" data-action="wa" data-id="${escapeHtml(p.id)}" aria-label="Tanya WhatsApp">☏</button>
           <button class="cart" data-action="cart" data-id="${escapeHtml(p.id)}" aria-label="Tambah keranjang">🛒</button>
@@ -367,66 +286,28 @@ function renderProducts() {
         </div>
       </div>
     </article>`).join('');
-
+  // fix full base64
   productsEl.querySelectorAll('.product').forEach((card, idx)=>{
     const p=filtered[idx];
     const imgEl=card.querySelector('.product-photo img');
-    if(imgEl && p.image) imgEl.src=p.image;
+    if(imgEl && p.image){
+      imgEl.src=p.image;
+    }
   });
 }
-
 function updateCart() {
   document.getElementById('cartCount').textContent = cart.reduce((sum,item)=>sum+(Number(item.qty)||0),0);
   try { localStorage.setItem('tsa_cart', JSON.stringify(cart)); } catch (error) {}
 }
 function addProductToCart(p) {
   const existing = cart.find(item => item.id === p.id);
-  if (existing) existing.qty = (Number(existing.qty) || 0) + 1;
-  else cart.push({id:p.id,name:p.name,price:p.price,qty:1,mitraUid:p.mitraUid||'',mitraNama:p.mitraNama||'Mitra',image:p.image});
+  if (existing) { existing.qty=(Number(existing.qty)||0)+1; existing.mitraUid=p.mitraUid||existing.mitraUid||''; existing.mitraNama=p.mitraNama||existing.mitraNama||'Mitra'; existing.cod=p.cod; existing.kurir=p.kurir; existing.expedisi=p.expedisi; existing.stock=p.stock; existing.category=p.category; }
+  else cart.push({id:p.id,name:p.name,price:p.price,qty:1,mitraUid:p.mitraUid||'',mitraNama:p.mitraNama||'Mitra',image:p.image,cod:p.cod,kurir:p.kurir,expedisi:p.expedisi,stock:p.stock,category:p.category});
   updateCart();
 }
-function normalizeWhatsAppNumber(value) {
-  let number = String(value || '').replace(/\D/g, '');
-  if (number.startsWith('0')) number = '62' + number.slice(1);
-  else if (number.startsWith('8')) number = '62' + number;
-  return number;
-}
-
-// Nomor WhatsApp pemilik diambil dari dokumen Firestore users/{UID},
-// sesuai halaman daftar-mitra-usaha.html: field noWA.
-async function openOwnerWhatsApp(p, intro='Halo, saya ingin bertanya tentang produk: ') {
-  // UID mitra pada katalog spreadsheet menjadi penghubung ke dokumen users/{UID}.
-  const ownerUid = String(p.mitraUid || p.ownerUid || p.tokoId || '').trim();
-  const waTab = window.open('about:blank', '_blank');
-
-  try {
-    if (!ownerUid) throw new Error('UID pemilik produk tidak tersedia pada data produk.');
-
-    const ownerSnap = await getDoc(doc(db, 'users', ownerUid));
-    if (!ownerSnap.exists()) throw new Error('Data mitra tidak ditemukan di Firestore users/' + ownerUid + '.');
-
-    const ownerData = ownerSnap.data() || {};
-    // Nama field ini mengikuti struktur pendaftaran mitra: noWA.
-    const ownerNumber = normalizeWhatsAppNumber(ownerData.noWA || '');
-
-    if (!ownerNumber || ownerNumber.length < 10) {
-      throw new Error('Nomor WhatsApp mitra belum diisi pada field noWA di Firestore.');
-    }
-
-    const message = intro + p.name + ' — ' + formatPrice(p.price) +
-      ' (Mitra: ' + (p.mitraNama || ownerData.nama || 'Mitra') + ')';
-    const waUrl = 'https://wa.me/' + ownerNumber + '?text=' + encodeURIComponent(message);
-
-    if (waTab && !waTab.closed) {
-      waTab.opener = null;
-      waTab.location.href = waUrl;
-    } else {
-      window.location.href = waUrl;
-    }
-  } catch (error) {
-    if (waTab && !waTab.closed) waTab.close();
-    alert(error.message || 'Tidak dapat membuka WhatsApp pemilik produk.');
-  }
+function openWhatsApp(p, intro='Halo, saya ingin pesan: ') {
+  const message = intro + p.name + ' — ' + formatPrice(p.price) + ' (Mitra: '+(p.mitraNama||'Mitra')+')';
+  window.open('https://wa.me/?text=' + encodeURIComponent(message), '_blank', 'noopener');
 }
 
 productsEl.addEventListener('click', e => {
@@ -434,7 +315,7 @@ productsEl.addEventListener('click', e => {
   if (!btn) return;
   const p = allProducts.find(item => item.id === btn.dataset.id);
   if (!p) return;
-  if (btn.dataset.action === 'wa') openOwnerWhatsApp(p, 'Halo, saya mau tanya produk: ');
+  if (btn.dataset.action === 'wa') openWhatsApp(p, 'Halo, saya mau tanya produk: ');
   if (btn.dataset.action === 'buy') {
     addProductToCart(p);
     location.href = 'keranjang.html';
@@ -446,23 +327,14 @@ productsEl.addEventListener('click', e => {
     setTimeout(()=>{if(btn.isConnected)btn.textContent='🛒'},700);
   }
 });
-
 searchInput.addEventListener('input', renderProducts);
 document.getElementById('categories').addEventListener('click',e=>{
   const btn=e.target.closest('[data-cat]'); if(!btn)return;
+  if(btn.dataset.cat==='__menu'){ alert('Menu: Semua produk dari Spreadsheet. Kalau kamu mitra, login dulu untuk input produk di atas. Produk kamu masuk Spreadsheet otomatis.'); return; }
   activeCategory=btn.dataset.cat;
-  document.querySelectorAll('.cat[data-cat]').forEach(el=>el.classList.toggle('active',el===btn));
+  document.querySelectorAll('.cat').forEach(el=>el.classList.toggle('active',el===btn));
   renderProducts();
 });
-
-const menuBackdrop=document.getElementById('menuBackdrop');
-function openMenu(){menuBackdrop.classList.add('show');menuBackdrop.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';}
-function closeMenu(){menuBackdrop.classList.remove('show');menuBackdrop.setAttribute('aria-hidden','true');document.body.style.overflow='';}
-document.getElementById('openMenu').addEventListener('click',openMenu);
-document.getElementById('closeMenu').addEventListener('click',closeMenu);
-menuBackdrop.addEventListener('click',e=>{if(e.target===menuBackdrop)closeMenu();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu();});
-
 document.getElementById('refresh').onclick=()=>location.reload();
 document.getElementById('homeBtn').onclick=()=>{location.href='index.html';};
 document.getElementById('cartBtn').onclick=()=>{
@@ -471,21 +343,7 @@ document.getElementById('cartBtn').onclick=()=>{
 };
 document.getElementById('historyBtn').onclick=()=>{location.href='riwayat-pelanggan.html';};
 document.getElementById('profileBtn').onclick=()=>{location.href='profil.html';};
-
-// Tombol header: aktif/nonaktifkan mode gelap dan simpan pilihan pengguna.
-const themeToggle = document.getElementById('themeToggle');
-function applyTheme(isDark){
-  document.body.classList.toggle('dark-mode', isDark);
-  themeToggle.textContent = isDark ? '☀️' : '🌙';
-  themeToggle.setAttribute('aria-label', isDark ? 'Aktifkan mode terang' : 'Aktifkan mode gelap');
-  themeToggle.title = isDark ? 'Mode terang' : 'Mode gelap';
-  try { localStorage.setItem('tsa_dark_mode', isDark ? '1' : '0'); } catch(e) {}
-}
-let savedDarkMode = false;
-try { savedDarkMode = localStorage.getItem('tsa_dark_mode') === '1'; } catch(e) {}
-applyTheme(savedDarkMode);
-themeToggle.onclick = () => applyTheme(!document.body.classList.contains('dark-mode'));
-
+document.getElementById('loginBtn').onclick=()=>{location.href='login.html';};
 document.getElementById('facebook').onclick=e=>{e.preventDefault();alert('Tambahkan tautan Facebook toko pada HTML.');};
 document.getElementById('instagram').onclick=e=>{e.preventDefault();alert('Tambahkan tautan Instagram toko pada HTML.');};
 document.getElementById('whatsapp').onclick=e=>{e.preventDefault();window.open('https://wa.me/','_blank','noopener');};
@@ -504,24 +362,16 @@ async function loadProductsFromSheet(){
     const json=parseGviz(raw);
     const rows=json.table && json.table.rows;
     if(!rows) throw new Error('Sheet tidak ada data');
-
-    // Ambil gambar sponsor dari kolom N sebelum memproses daftar produk.
-    renderSponsorSlides(rows);
-
-    // Kolom Spreadsheet: tanggal(0), kode produk(1), nama(2), deskripsi(3),
-    // harga(4), foto(5), uid(6), nama mitra(7), kategori(8), cod(9),
-    // kurir(10), ekspedisi(11), stock(12), sponsor(13).
+    // Kolom: Timestamp(0), ID(1), Nama(2), Deskripsi(3), Harga(4), Image(5), MitraUid(6), MitraNama(7), Kategori(8), Lat(9), Lng(10) - flexible
     allProducts=rows.map((row,index)=>{
       const c=row.c||[];
       const getVal = (i)=>c[i]?.v??'';
       let id=getVal(1)||String(index);
-      let name='', desc='', price='', image='', mUid='', mNama='', cat='', cod='', kurir='', expedisi='', stock='';
+      let name='', desc='', price='', image='', mUid='', mNama='', cat='';
       if(c.length>=9){
-        name=getVal(2); desc=getVal(3); price=getVal(4); image=getVal(5);
-        mUid=getVal(6); mNama=getVal(7); cat=getVal(8);
-        cod=getVal(9); kurir=getVal(10); expedisi=getVal(11); stock=getVal(12);
+        name=getVal(2); desc=getVal(3); price=getVal(4); image=getVal(5); mUid=getVal(6); mNama=getVal(7); cat=getVal(8);
       } else {
-        // Format lama
+        // format lama
         name=getVal(1)||getVal(0); desc=getVal(2); price=getVal(3); image=getVal(4);
       }
       if(!String(name).trim()) return null;
@@ -534,11 +384,9 @@ async function loadProductsFromSheet(){
         mitraUid:String(mUid).trim(),
         mitraNama:String(mNama).trim()||'Mitra',
         category:String(cat).trim()||'Makanan',
-        cod, kurir, expedisi, stock,
         searchText:(String(name)+' '+String(desc)+' '+String(mNama)+' '+String(mUid)).toLowerCase()
       };
     }).filter(Boolean);
-
     if(!allProducts.length) throw new Error('Tidak ada produk');
     renderProducts();
   }catch(err){
@@ -546,14 +394,89 @@ async function loadProductsFromSheet(){
   }
 }
 
-// Index hanya membaca katalog. Pengelolaan/input produk dilakukan di halaman terpisah.
-onAuthStateChanged(auth, u=>{
-  currentUser = u || null;
-  mitraUid = u ? u.uid : '';
+// AUTH & MITRA INPUT LOGIC
+onAuthStateChanged(auth, async u=>{
+  const authStatus=document.getElementById('authStatus');
+  if(!u){
+    authStatus.textContent='Belum login - login sebagai mitra untuk input produk di index';
+    loadProductsFromSheet();
+    return;
+  }
+  currentUser=u; mitraUid=u.uid;
+  try{
+    const snap=await getDoc(doc(db,'users',u.uid));
+    if(snap.exists()){
+      const d=snap.data();
+      currentRole=d.role||'';
+      mitraNama=d.nama||d.namaToko||u.email;
+      authStatus.innerHTML='Login: <b>'+escapeHtml(mitraNama)+'</b> • UID: '+u.uid.slice(0,8)+'... • Role: '+(d.role||'-')+' • GPS: '+(d.lat? d.lat.toFixed(4) : 'belum ada');
+      if((currentRole.toLowerCase().includes('mitra') || true)){ // tampilkan untuk semua user yang login, biar bisa input
+        document.getElementById('mitraInputCard').style.display='block';
+        document.getElementById('mitraInfo').textContent='UID: '+u.uid+' • Nama: '+mitraNama+' • Alamat: '+(d.alamat||'-')+' • GPS akun ini dipakai ongkir';
+        document.getElementById('tokoLink').textContent=location.origin+location.pathname.replace('index.html','toko.html')+'?mitraUid='+u.uid;
+        document.getElementById('btnCopy').onclick=()=>{navigator.clipboard.writeText(document.getElementById('tokoLink').textContent); alert('Link toko disalin!');};
+        document.getElementById('btnBuka').onclick=()=>{window.open(document.getElementById('tokoLink').textContent,'_blank');};
+      }
+    } else {
+      authStatus.textContent='Login: '+u.email+' (users doc belum ada, tapi tetap bisa input)';
+      document.getElementById('mitraInputCard').style.display='block';
+      mitraNama=u.email;
+      document.getElementById('mitraInfo').textContent='UID: '+u.uid+' • Email: '+u.email;
+    }
+  }catch(e){authStatus.textContent='Error: '+e.message;}
   loadProductsFromSheet();
 });
 
+document.getElementById('pFile').addEventListener('change', async (e)=>{
+  const file=e.target.files[0];
+  if(!file) return;
+  document.getElementById('fileInfo').textContent='⏳ Kompres '+Math.round(file.size/1024)+'KB → ...';
+  try{
+    const base64=await compressImage(file, 500, 0.6);
+    compressedBase64=base64;
+    const sizeKB=Math.round(base64.length*0.75/1024);
+    document.getElementById('preview').src=base64;
+    document.getElementById('preview').style.display='block';
+    document.getElementById('fileInfo').innerHTML='✅ Terkompres: '+sizeKB+'KB • Masuk Sheet (max 50KB per cell, aman)';
+    document.getElementById('pImage').value='';
+  }catch(err){document.getElementById('fileInfo').textContent='❌ Gagal: '+err.message;}
+});
+
+document.getElementById('btnSave').addEventListener('click', async()=>{
+  const name=document.getElementById('pName').value.trim();
+  const price=document.getElementById('pPrice').value.trim();
+  const desc=document.getElementById('pDesc').value.trim();
+  const cat=document.getElementById('pCat').value.trim();
+  const linkImage=document.getElementById('pImage').value.trim();
+  if(!name||!price){alert('Nama & harga wajib'); return;}
+  if(!mitraUid){alert('Login dulu sebagai mitra'); return;}
+  if(APPS_SCRIPT_URL.includes('YOUR_ID')){alert('⚠️ Ganti APPS_SCRIPT_URL dulu di index.html dengan URL deploy Apps Script kamu.\n\nCara:\n1. Buka Sheet → Extensions → Apps Script\n2. Paste code dari apps-script-sheet.js\n3. Deploy → Web App → Anyone\n4. Copy URL → paste di index.html'); return;}
+  const finalImage = compressedBase64 || linkImage || '';
+  if(finalImage.length>45000){if(!confirm('Gambar agak besar ('+Math.round(finalImage.length/1024)+'KB). Sheet max 50KB, bisa gagal. Lanjut?')) return;}
+  const btn=document.getElementById('btnSave'); btn.disabled=true; btn.textContent='⏳ Simpan ke Spreadsheet...';
+  try{
+    const payload={
+      action:'addProduct',
+      name, price, description:desc, category:cat||'Makanan',
+      image:finalImage,
+      mitraUid:mitraUid,
+      mitraNama:mitraNama
+    };
+    const res=await fetch(APPS_SCRIPT_URL, {method:'POST', body:JSON.stringify(payload)});
+    const json=await res.json();
+    if(json.success){
+      document.getElementById('msg').innerHTML='✅ Masuk Spreadsheet! ID: '+json.id+'<br>• Muncul di index (semua produk)<br>• Muncul di toko.html?mitraUid='+mitraUid.slice(0,8)+'...<br>• Ongkir dari GPS akun kamu';
+      document.getElementById('pName').value=''; document.getElementById('pPrice').value=''; document.getElementById('pDesc').value=''; document.getElementById('pImage').value=''; document.getElementById('pFile').value=''; compressedBase64=''; document.getElementById('preview').style.display='none'; document.getElementById('fileInfo').textContent='';
+      setTimeout(()=>loadProductsFromSheet(),1500);
+    } else {
+      document.getElementById('msg').textContent='❌ Gagal: '+(json.error||'unknown');
+    }
+  }catch(e){document.getElementById('msg').textContent='❌ Error: '+e.message+' - Pastikan Apps Script deploy Anyone';}
+  btn.disabled=false; btn.textContent='💾 Simpan ke Spreadsheet - Masuk Index';
+});
+
 updateCart();
+loadProductsFromSheet();
 
 /* Popup foto produk */
 const productZoom = document.getElementById('productZoom');
@@ -561,14 +484,12 @@ const productZoomImage = document.getElementById('productZoomImage');
 const productZoomName = document.getElementById('productZoomName');
 const productZoomPrice = document.getElementById('productZoomPrice');
 let zoomProductId = null;
-
 function closeProductZoom() {
   productZoom.classList.remove('show');
   productZoomImage.src = '';
   zoomProductId = null;
   document.body.style.overflow = '';
 }
-
 productsEl.addEventListener('click', function(e) {
   if (e.target.closest('button')) return;
   const img = e.target.closest('.product-photo img');
@@ -585,7 +506,6 @@ productsEl.addEventListener('click', function(e) {
   productZoom.classList.add('show');
   document.body.style.overflow = 'hidden';
 });
-
 productZoom.addEventListener('click', function(e) {
   if (e.target === productZoom) { closeProductZoom(); return; }
   const btn = e.target.closest('[data-zoom-action]');
@@ -593,7 +513,7 @@ productZoom.addEventListener('click', function(e) {
   const p = allProducts.find(item => item.id === zoomProductId);
   if (!p) return;
   const action = btn.dataset.zoomAction;
-  if (action === 'wa') { openOwnerWhatsApp(p, 'Halo, saya mau tanya produk: '); return; }
+  if (action === 'wa') { openWhatsApp(p, 'Halo, saya mau tanya produk: '); return; }
   if (action === 'cart' || action === 'buy') {
     addProductToCart(p);
     if (action === 'buy') { location.href = 'keranjang.html'; return; }
@@ -601,7 +521,6 @@ productZoom.addEventListener('click', function(e) {
     setTimeout(() => { if (btn.isConnected) { btn.textContent = '🛒'; btn.disabled = false; } }, 700);
   }
 });
-
 document.getElementById('productZoomClose').addEventListener('click', closeProductZoom);
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeProductZoom(); });
 </script>
