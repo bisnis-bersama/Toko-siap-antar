@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#ffc107">
+<title>Data Pelanggan - Toko Siap Antar</title>
+<style>
+:root{--yellow:#ffc107;--black:#171717;--green:#078b50;--bg:#f5f6f7;--line:#e5e7eb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#222;font:14px/1.5 system-ui,Arial,sans-serif}
+header{background:var(--black);color:#fff;padding:15px 18px;position:sticky;top:0;z-index:5;border-bottom:4px solid var(--yellow)}
+header .top{max-width:1200px;margin:auto;display:flex;align-items:center;gap:12px}
+.logo{width:40px;height:40px;border-radius:10px;background:var(--yellow);color:#111;display:grid;place-items:center;font-weight:1000;font-size:20px}
+header h1{font-size:18px;margin:0}header small{color:#ccc}
+main{max-width:1200px;margin:18px auto;padding:0 14px}
+.toolbar,.stats,.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+input,select{border:1px solid #d1d5db;border-radius:9px;padding:11px;font:inherit;background:#fff}
+#search{flex:1;min-width:190px}
+button{border:0;border-radius:9px;padding:10px 14px;font-weight:750;cursor:pointer}
+.btn-yellow{background:var(--yellow);color:#171717}.btn-dark{background:#222;color:#fff}.btn-light{background:#eef0f2;color:#222}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{padding:10px;border-radius:10px;background:#fff9df}.stat small{color:#666}.stat b{display:block;font-size:20px}
+.panel h2{font-size:16px;margin:0 0 12px}
+.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:850px}th,td{text-align:left;padding:11px 10px;border-bottom:1px solid #eee;vertical-align:top}th{background:#fafafa;font-size:12px;color:#555;position:sticky;top:0}td small{color:#777;display:block}.pill{display:inline-block;border-radius:20px;padding:3px 8px;background:#e8f7ef;color:#087443;font-size:11px;font-weight:800}
+.action{background:#222;color:#fff;padding:7px 10px;font-size:12px}
+.empty,.notice{padding:18px;text-align:center;color:#666}.notice{background:#fff8df;border-radius:10px;margin-bottom:12px}
+.modal{display:none;position:fixed;inset:0;background:#0008;z-index:20;padding:15px;place-items:center}.modal.show{display:grid}.modalbox{background:#fff;width:min(680px,100%);max-height:90vh;overflow:auto;border-radius:15px;padding:17px}.modalhead{display:flex;justify-content:space-between;align-items:center;gap:10px}.modalhead h2{font-size:17px;margin:0}.detailgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px}.field{padding:9px;background:#f7f7f7;border-radius:8px;overflow-wrap:anywhere}.field small{display:block;color:#777}.field b{font-size:13px;font-weight:650}.foot{color:#777;text-align:center;font-size:11px;padding:12px}
+@media(max-width:600px){.stats{grid-template-columns:1fr 1fr}.detailgrid{grid-template-columns:1fr}.toolbar>*{width:100%}header h1{font-size:16px}}
+</style>
+</head>
+<body>
+<header><div class="top"><div class="logo">T</div><div><h1>DATA PELANGGAN</h1><small>Toko Siap Antar • Database users</small></div></div></header>
+<main>
+<div id="notice" class="notice">Memeriksa sesi admin...</div>
+<section class="stats">
+ <div class="stat"><small>Total pelanggan</small><b id="total">0</b></div>
+ <div class="stat"><small>Memiliki nomor WA</small><b id="withWa">0</b></div>
+ <div class="stat"><small>Total saldo E-Wallet</small><b id="saldo">Rp 0</b></div>
+</section>
+<section class="toolbar">
+ <input id="search" placeholder="Cari nama, email, nomor HP, alamat, atau UID...">
+ <select id="sort"><option value="new">Terbaru</option><option value="old">Terlama</option><option value="name">Nama A-Z</option><option value="saldo">Saldo terbesar</option></select>
+ <button class="btn-yellow" id="refresh">Muat ulang</button>
+ <button class="btn-dark" id="export">Export CSV</button>
+</section>
+<section class="panel">
+ <h2>Daftar akun dengan role pelanggan</h2>
+ <div class="table-wrap"><table><thead><tr>
+ <th>No.</th><th>Nama pelanggan</th><th>Email</th><th>Telepon / WhatsApp</th><th>Alamat</th><th>Saldo E-Wallet</th><th>Terdaftar</th><th>Detail</th>
+ </tr></thead><tbody id="rows"><tr><td colspan="8" class="empty">Menunggu verifikasi admin...</td></tr></tbody></table></div>
+ <div id="countLabel" class="foot"></div>
+</section>
+<div class="foot">Data dibaca dari koleksi <b>users</b> dengan filter <b>role = pelanggan</b>.</div>
+</main>
+<div class="modal" id="detailModal"><div class="modalbox"><div class="modalhead"><h2>Detail pelanggan</h2><button class="btn-light" id="closeModal">Tutup ✕</button></div><div id="detailContent" class="detailgrid"></div></div></div>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+import {getFirestore,doc,getDoc,collection,getDocs,query,where} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+const firebaseConfig={apiKey:"AIzaSyBxqZhl6t3RwrXMwVdJeIkg0NzGfwvlweM",authDomain:"toko-siap-antar-9a7bb.firebaseapp.com",projectId:"toko-siap-antar-9a7bb",storageBucket:"toko-siap-antar-9a7bb.firebasestorage.app",messagingSenderId:"351335838712",appId:"1:351335838712:web:14cc2c7b91bb0c9e1b5c0d"};
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+let customers=[];
+const $=id=>document.getElementById(id);
+const money=n=>'Rp '+(Number(n)||0).toLocaleString('id-ID');
+const safe=v=>v===undefined||v===null||v===''?'-':String(v);
+function dateText(v){if(!v)return '-';try{const d=v.toDate?v.toDate():new Date(v);return isNaN(d)?'-':d.toLocaleString('id-ID')}catch{return '-'}}
+function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function saldoVal(x){return Number(x.saldoEwallet??0)}
+function filtered(){
+ const term=$('search').value.trim().toLowerCase();
+ let a=customers.filter(x=>[x.id,x.nama,x.email,x.telepon,x.noWA,x.alamat,x.alamatLengkap,x.alamatTerakhir].some(v=>String(v??'').toLowerCase().includes(term)));
+ const s=$('sort').value;
+ a.sort((x,y)=>s==='name'?String(x.nama||'').localeCompare(String(y.nama||''),'id'):s==='saldo'?saldoVal(y)-saldoVal(x):s==='old'?((x.createdAt?.seconds||0)-(y.createdAt?.seconds||0)):((y.createdAt?.seconds||0)-(x.createdAt?.seconds||0)));
+ return a;
+}
+function render(){
+ const a=filtered();
+ $('total').textContent=customers.length.toLocaleString('id-ID');
+ $('withWa').textContent=customers.filter(x=>x.noWA||x.telepon).length.toLocaleString('id-ID');
+ $('saldo').textContent=money(customers.reduce((n,x)=>n+saldoVal(x),0));
+ $('rows').innerHTML=a.length?a.map((x,i)=>`<tr>
+ <td>${i+1}</td><td><b>${escapeHtml(x.nama||'Tanpa nama')}</b><small>UID: ${escapeHtml(x.id)}</small></td>
+ <td>${escapeHtml(x.email||'-')}</td><td>${escapeHtml(x.telepon||x.noWA||'-')}<small>${x.telepon&&x.noWA&&x.telepon!==x.noWA?'WA: '+escapeHtml(x.noWA):''}</small></td>
+ <td>${escapeHtml(x.alamat||x.alamatLengkap||x.alamatTerakhir||'-')}</td><td>${money(saldoVal(x))}</td><td>${dateText(x.createdAt)}</td>
+ <td><button class="action" data-detail="${escapeHtml(x.id)}">Lihat</button></td></tr>`).join(''):'<tr><td colspan="8" class="empty">Tidak ada data pelanggan yang cocok.</td></tr>';
+ $('countLabel').textContent=`Menampilkan ${a.length} dari ${customers.length} pelanggan`;
+ document.querySelectorAll('[data-detail]').forEach(b=>b.onclick=()=>showDetail(b.dataset.detail));
+}
+function showDetail(uid){
+ const x=customers.find(v=>v.id===uid);if(!x)return;
+ const fields=[
+ ['alamat',x.alamat],['alamatLengkap',x.alamatLengkap],['alamatTerakhir',x.alamatTerakhir],
+ ['createdAt',dateText(x.createdAt)],['email',x.email],['gpsLink',x.gpsLink],
+ ['lastLat',x.lastLat],['lastLng',x.lastLng],['lat',x.lat],['lng',x.lng],['mapsUrl',x.mapsUrl],
+ ['nama',x.nama],['noWA',x.noWA],['role',x.role],['saldoEwallet',x.saldoEwallet],['telepon',x.telepon],
+ ['updatedAt',dateText(x.updatedAt)],['UID Dokumen',x.id]
+ ];
+ $('detailContent').innerHTML=fields.map(([k,v])=>`<div class="field"><small>${escapeHtml(k)}</small><b>${escapeHtml(safe(v))}</b></div>`).join('');
+ $('detailModal').classList.add('show');
+}
+$('closeModal').onclick=()=>$('detailModal').classList.remove('show');
+$('detailModal').onclick=e=>{if(e.target===$('detailModal'))$('detailModal').classList.remove('show')};
+$('search').addEventListener('input',render);$('sort').addEventListener('change',render);
+async function loadCustomers(){
+ $('notice').textContent='Mengambil data pelanggan dari Firestore...';
+ $('rows').innerHTML='<tr><td colspan="8" class="empty">Memuat data...</td></tr>';
+ try{
+  const snap=await getDocs(query(collection(db,'users'),where('role','==','pelanggan')));
+  customers=snap.docs.map(d=>({id:d.id,...d.data()}));
+  $('notice').textContent='Sesi admin aktif. Data pelanggan berhasil dimuat.';
+  $('notice').style.background='#e8f7ef';$('notice').style.color='#087443';
+  render();
+ }catch(e){
+  console.error(e);$('notice').textContent='Gagal mengambil data: '+e.message+' — periksa Firestore Rules untuk izin admin membaca users.';
+  $('rows').innerHTML='<tr><td colspan="8" class="empty">Data tidak dapat dimuat.</td></tr>';
+ }
+}
+$('refresh').onclick=loadCustomers;
+$('export').onclick=()=>{
+ const a=filtered(),keys=['id','alamat','alamatLengkap','alamatTerakhir','createdAt','email','gpsLink','lastLat','lastLng','lat','lng','mapsUrl','nama','noWA','role','saldoEwallet','telepon','updatedAt'];
+ const val=v=>{if(v?.toDate)v=v.toDate().toISOString();return '"'+String(v??'').replace(/"/g,'""')+'"';};
+ const csv=[keys.join(','),...a.map(x=>keys.map(k=>val(k==='id'?x.id:x[k])).join(','))].join('\r\n');
+ const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),link=document.createElement('a');
+ link.href=url;link.download='data-pelanggan.csv';link.click();URL.revokeObjectURL(url);
+};
+onAuthStateChanged(auth,async user=>{
+ if(!user){$('notice').textContent='Sesi admin tidak ditemukan. Silakan login admin terlebih dahulu.';return;}
+ try{
+  const profile=await getDoc(doc(db,'users',user.uid));
+  const d=profile.exists()?profile.data():null;
+  if(!d||String(d.role||'').toLowerCase()!=='admin'||String(d.status||'').toLowerCase()!=='aktif'||d.aktif!==true){
+   $('notice').textContent='Akses ditolak. Halaman ini khusus admin aktif.';return;
+  }
+  await loadCustomers();
+ }catch(e){console.error(e);$('notice').textContent='Gagal memverifikasi admin: '+e.message;}
+});
+</script>
+</body></html>
