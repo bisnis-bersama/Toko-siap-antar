@@ -223,6 +223,13 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
+// Checkout hanya boleh digunakan akun dengan role pelanggan.
+document.querySelector('main').style.display='none';
+document.querySelector('.bottom').style.display='none';
+document.getElementById('btnBuatPesanan').disabled=true;
+document.getElementById('bottomCheckout').disabled=true;
+let checkoutRoleValid=false;
+
 const rupiah=n=>'Rp '+(Number(n)||0).toLocaleString('id-ID');
 function cartRead(){try{return JSON.parse(localStorage.getItem('tsa_cart')||'[]')}catch{return []}}
 let currentUser=null;
@@ -543,6 +550,7 @@ async function buatPesanan(){
   if(orderSubmitting) return;
   if(cart.length===0){alert('Keranjang kosong');return;}
   if(!currentUser){alert('Harus login dulu untuk checkout');location.href='login.html?next=checkout-baru.html';return;}
+  if(!checkoutRoleValid || userData?.role !== 'pelanggan'){alert('Akses checkout hanya untuk akun pelanggan.');return;}
   if(!['transfer','qris','cod'].includes(selectedPay)){
     alert('Metode pembayaran belum dipilih atau tidak valid. Silakan pilih Transfer, QRIS, atau COD.');
     selectedPay='transfer';
@@ -611,13 +619,34 @@ document.getElementById('bottomCheckout').onclick=buatPesanan;
 
 onAuthStateChanged(auth, async (user)=>{
   currentUser=user;
+  checkoutRoleValid=false;
+  document.querySelector('main').style.display='none';
+  document.querySelector('.bottom').style.display='none';
+  document.getElementById('btnBuatPesanan').disabled=true;
+  document.getElementById('bottomCheckout').disabled=true;
   if(!user){
-    document.getElementById('msg').innerHTML='<div class="err">⚠️ Belum login. <a href="login.html?next=checkout-baru.html">Login dulu</a> agar alamat dari akun tampil seperti Shopee.</div>';
-    renderProduk();
+    document.getElementById('msg').innerHTML='<div class="err">⚠️ Silakan login menggunakan akun pelanggan untuk melakukan checkout. <a href="login.html?next=checkout-baru.html">Login pelanggan</a>.</div>';
     return;
   }
-  await loadAlamat();
-  renderProduk();
+  try{
+    const profileSnap=await getDoc(doc(db,'users',user.uid));
+    userData=profileSnap.exists()?profileSnap.data():null;
+    if(!userData || String(userData.role||'').trim().toLowerCase()!=='pelanggan'){
+      document.getElementById('msg').innerHTML='<div class="err">⛔ Akses ditolak. Halaman checkout hanya dapat digunakan oleh akun dengan role <b>pelanggan</b>. Akun mitra, admin, kurir, dan role lainnya tidak diizinkan melakukan checkout.</div>';
+      return;
+    }
+    checkoutRoleValid=true;
+    document.getElementById('msg').innerHTML='';
+    document.querySelector('main').style.display='';
+    document.querySelector('.bottom').style.display='';
+    document.getElementById('btnBuatPesanan').disabled=false;
+    document.getElementById('bottomCheckout').disabled=false;
+    await loadAlamat();
+    renderProduk();
+  }catch(e){
+    console.error(e);
+    document.getElementById('msg').innerHTML='<div class="err">❌ Tidak dapat memverifikasi role akun. Checkout dikunci. Periksa koneksi dan izin baca dokumen users/{uid}.</div>';
+  }
 });
 
 renderProduk();
