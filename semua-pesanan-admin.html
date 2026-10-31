@@ -26,7 +26,7 @@
 .brand{color:var(--yellow);font-weight:900;font-size:16px}.sub{color:#c7cbd0;font-size:11px}.sub-yellow{color:var(--yellow);font-size:12px;font-weight:800}
 main{max-width:1100px;margin:-18px auto 0;padding:0 12px 80px}.panel{background:#fff;border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 8px 20px #0001}
 .btn{border:0;border-radius:10px;background:var(--yellow);padding:9px 12px;font-weight:800;cursor:pointer;font-size:12px;display:inline-flex;align-items:center;gap:4px}.btn.dark{background:#111;color:var(--yellow)}.btn.green{background:#25d366;color:#fff}.btn.red{background:#fee;color:#b42318;border:1px solid #f5c6c1}
-.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+.tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
 .tabs button{border:1px solid #e5e7eb;border-radius:12px;padding:12px 8px;font-weight:800;font-size:12px;background:#f9f9f9;cursor:pointer}
 .tabs button.active{background:#111;color:var(--yellow);border-color:var(--yellow)}
 .list{display:grid;gap:10px}.item{border:1px solid #e5e7eb;border-radius:14px;padding:12px;background:#fff}.meta{font-size:11px;color:var(--muted)}
@@ -40,7 +40,8 @@ a.back{color:var(--yellow);text-decoration:none;font-weight:700;font-size:13px}
 <main>
 <div class="panel"><h1 style="margin:0 0 6px">Semua Pesanan</h1><p style="margin:0;font-size:11px;color:var(--muted)">Pesanan dengan status pending tampil di sini. Admin hanya mengubah status menjadi disetujui.</p><div id="log" class="log"></div>
 <div class="tabs">
-<button id="tabPending" class="active" onclick="loadPending()"><span>🟡 Pesanan Pending</span><small id="countPending">Admin</small></button>
+<button id="tabPending" class="active" onclick="loadPending()"><span>🟡 Pesanan Pending</span> <small id="countPending">0</small></button>
+<button id="tabVerifikasi" onclick="loadVerifikasi()"><span>🟠 Verifikasi Admin</span> <small id="countVerifikasi">0</small></button>
 </div>
 </div>
 <div id="content" class="panel">Memuat pesanan pending...</div>
@@ -48,7 +49,7 @@ a.back{color:var(--yellow);text-decoration:none;font-weight:700;font-size:13px}
 <script type="module">
 import {auth,db} from "./firebase-config.js";
 import {onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-import {doc,getDoc,collection,getDocs,query,where,limit,updateDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import {doc,getDoc,collection,getDocs,query,where,limit,updateDoc,serverTimestamp,runTransaction} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function rupiah(n){return 'Rp '+(Number(n)||0).toLocaleString('id-ID');}
@@ -78,6 +79,30 @@ async function customerSection(order){
 async function loadAccountName(u){ try{ const s=await getDoc(doc(db,"users",u.uid)); const p=s.data(); if(p) $("accountNameTop").textContent="Halo, Kak, "+(p.nama||p.namaUsaha||u.email); }catch(e){} }
 let currentUser=null;
 let authReady=false;
+function setActiveTab(name){
+  $("tabPending").classList.toggle("active",name==="pending");
+  $("tabVerifikasi").classList.toggle("active",name==="verifikasi");
+}
+function renderOrderItems(items){
+  return items.map(it=>`<div style="padding:5px 0;border-bottom:1px solid #eee"><b>${esc(it.name||it.nama||it.namaProduk||"Produk")}</b><span class="meta"> — ${Number(it.qty||1)} × ${rupiah(it.price||it.harga||0)}</span></div>`).join("");
+}
+async function buildOrderDetails(o,id){
+  const items=Array.isArray(o.items)?o.items:[];
+  const customerHtml=await customerSection(o);
+  const ownersHtml=await ownerSection(o,items);
+  const created=o.createdAt?.toDate?.()?.toLocaleString?.("id-ID")||"-";
+  return `<div class="meta">Dibuat: ${esc(created)}</div>
+    <hr style="border:0;border-top:1px solid #eee;margin:9px 0">${customerHtml}
+    <hr style="border:0;border-top:1px solid #eee;margin:9px 0"><b>Data Pemilik Produk</b>${ownersHtml}
+    <hr style="border:0;border-top:1px solid #eee;margin:9px 0"><b>Produk Pesanan</b>${renderOrderItems(items)||'<div class="meta">Detail produk tidak tersedia.</div>'}
+    <div style="margin-top:9px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      <div class="meta">Pengiriman<br><b>${esc(o.metodePengiriman||"-")} ${esc(o.expedisiName||"")}</b></div>
+      <div class="meta">Pembayaran<br><b>${esc(o.metodePembayaran||"-")}</b></div>
+      <div class="meta">Subtotal<br><b>${rupiah(o.subtotal)}</b></div>
+      <div class="meta">Ongkir<br><b>${rupiah(o.ongkir)}</b></div>
+    </div><div style="font-size:17px;font-weight:900;margin-top:8px">Total: ${rupiah(o.total)}</div>`;
+}
+
 
 // Gunakan auth dan db yang sama dari firebase-config.js seperti halaman ewallet-admin.
 // Tidak membuat login baru dan tidak melakukan pemeriksaan role tambahan di halaman ini.
@@ -93,6 +118,7 @@ onAuthStateChanged(auth, async u=>{
 });
 
 window.loadPending=async()=>{
+  setActiveTab("pending");
   if(!authReady || !currentUser){
     $("content").innerHTML='<div class="err">Menunggu sesi login Admin dari E-Wallet...</div>';
     return;
@@ -147,6 +173,170 @@ window.loadPending=async()=>{
   }catch(e){
     $("content").innerHTML='<div class="err">'+esc(e.message)+'</div>';
     log(e.message);
+  }
+};
+
+window.loadVerifikasi=async()=>{
+  setActiveTab("verifikasi");
+  if(!authReady || !currentUser){
+    $("content").innerHTML='<div class="err">Menunggu sesi login Admin dari E-Wallet...</div>';
+    return;
+  }
+  $("content").innerHTML='Memuat pesanan yang menunggu verifikasi admin...';
+  try{
+    const q=query(collection(db,"orders"),where("status","==","verifikasi_admin"),limit(100));
+    const snap=await getDocs(q);
+    $("countVerifikasi").textContent=String(snap.size);
+    if(snap.empty){
+      $("content").innerHTML='<div class="ok">Belum ada pesanan yang menunggu verifikasi admin.</div>';
+      return;
+    }
+    let cards='';
+    for(const d of snap.docs){
+      const o=d.data(), id=d.id;
+      const details=await buildOrderDetails(o,id);
+      const proofUrl=o.buktiSerahTerimaUrl||o.buktiPengirimanUrl||o.fotoBuktiPengiriman||o.buktiFoto||'';
+      const proofButton=proofUrl
+        ? `<button class="btn dark" onclick="viewDeliveryProof('${id}')">Lihat Bukti Pengiriman</button>`
+        : `<span class="err">Bukti foto belum ditemukan pada data pesanan.</span>`;
+      cards+=`<div class="item">
+        <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap">
+          <strong>${esc(o.nomorPesanan||id)}</strong><span class="status-badge" style="background:#ffedd5;color:#9a3412">VERIFIKASI ADMIN</span>
+        </div>${details}
+        <div class="actions">${proofButton}<button class="btn" onclick="verifyOrderInfo('${id}')">✓ Verifikasi</button></div>
+        <div class="meta" style="margin-top:6px">Klik Verifikasi untuk membagikan saldo mitra/kurir dan admin. Komisi admin 5%. Status berubah menjadi selesai setelah seluruh saldo berhasil diproses.</div>
+      </div>`;
+    }
+    $("content").innerHTML=`<div class="list">${cards}</div>`;
+  }catch(e){
+    $("content").innerHTML='<div class="err">'+esc(e.message)+'</div>';
+    log(e.message);
+  }
+};
+window.viewDeliveryProof=async(id)=>{
+  try{
+    const snap=await getDoc(doc(db,"orders",id));
+    if(!snap.exists()){alert("Pesanan tidak ditemukan.");return;}
+    const o=snap.data();
+    const url=o.buktiSerahTerimaUrl||o.buktiPengirimanUrl||o.fotoBuktiPengiriman||o.buktiFoto;
+    if(!url){alert("URL bukti pengiriman belum tersedia.");return;}
+    window.open(url,"_blank","noopener,noreferrer");
+  }catch(e){alert("Gagal membuka bukti: "+e.message);}
+};
+function moneyValue(v){
+  if(typeof v==='number' && Number.isFinite(v)) return v;
+  if(typeof v==='string'){
+    const n=Number(v.replace(/[^0-9,.-]/g,'').replace(/\./g,'').replace(',','.'));
+    return Number.isFinite(n)?n:0;
+  }
+  return 0;
+}
+function getItemOwner(it){return valFrom(it,['ownerUid','ownerId','pemilikUid','pemilikId','mitraUid','mitra_uid','mitraUsahaUid','sellerUid','userId','konterId','uidPemilik']);}
+function buildFinancialSplit(o,id){
+  const items=Array.isArray(o.items)?o.items:[];
+  if(!items.length) throw Error('Detail item pesanan kosong. Pembagian saldo dibatalkan.');
+  const groups=new Map();
+  let subtotalItems=0;
+  for(const it of items){
+    const uid=String(getItemOwner(it)||'').trim();
+    if(!uid || uid==='unknown') throw Error('UID mitra tidak ditemukan pada salah satu produk. Perbaiki data pemilik produk sebelum verifikasi.');
+    const qty=Math.max(1,Number(it.qty??it.jumlah??1)||1);
+    const price=moneyValue(valFrom(it,['price','harga','unitPrice','hargaJual']));
+    if(price<0) throw Error('Harga produk tidak valid.');
+    const amount=Math.round(price*qty);
+    subtotalItems+=amount;
+    groups.set(uid,(groups.get(uid)||0)+amount);
+  }
+  const subtotal= Math.round(subtotalItems || moneyValue(o.subtotal));
+  if(subtotal<=0) throw Error('Subtotal produk tidak valid.');
+  const ongkir=Math.max(0,Math.round(moneyValue(valFrom(o,['ongkir','ongkirEkspedisi','biayaPengiriman']))));
+  const method=String(o.metodePengiriman||'').toLowerCase();
+  const isExpedisi=method.includes('expedisi')||method.includes('ekspedisi');
+  const kurirUid=String(o.kurirUid||'').trim();
+  if(!isExpedisi && !kurirUid) throw Error('UID kurir belum tercatat pada pesanan. Saldo belum dibagikan.');
+  const rows=[];
+  const adminTotal={amount:0};
+  const ownerEntries=[...groups.entries()];
+  let shippingAssigned=0;
+  ownerEntries.forEach(([uid,productGross],idx)=>{
+    const shippingShare=isExpedisi
+      ? (idx===ownerEntries.length-1 ? ongkir-shippingAssigned : Math.floor(ongkir*productGross/subtotal))
+      : 0;
+    shippingAssigned+=shippingShare;
+    const gross=productGross+shippingShare;
+    const adminCut=Math.round(gross*0.05);
+    const net=gross-adminCut;
+    adminTotal.amount+=adminCut;
+    rows.push({uid,role:'mitra',productGross,shippingGross:shippingShare,gross,adminCut,net});
+  });
+  if(!isExpedisi && ongkir>0){
+    const adminCut=Math.round(ongkir*0.05);
+    adminTotal.amount+=adminCut;
+    rows.push({uid:kurirUid,role:'kurir',productGross:0,shippingGross:ongkir,gross:ongkir,adminCut,net:ongkir-adminCut});
+  }
+  return {rows,adminAmount:adminTotal.amount,subtotal,ongkir,isExpedisi,kurirUid,method};
+}
+window.verifyOrderInfo=async(id)=>{
+  if(!authReady || !currentUser){alert('Sesi admin tidak ditemukan.');return;}
+  const btn=window.event?.currentTarget;
+  if(btn){btn.disabled=true;btn.textContent='Memproses...';}
+  try{
+    const orderRef=doc(db,'orders',id);
+    const orderSnap=await getDoc(orderRef);
+    if(!orderSnap.exists()) throw Error('Pesanan tidak ditemukan.');
+    const order=orderSnap.data();
+    if(order.status!=='verifikasi_admin') throw Error('Status pesanan bukan verifikasi_admin. Muat ulang daftar.');
+    if(order.saldoDibagi===true) throw Error('Pembagian saldo pesanan ini sudah tercatat.');
+    const split=buildFinancialSplit(order,id);
+    const methodLabel=split.isExpedisi?'Ekspedisi':'Kurir Toko Siap Antar';
+    const lines=split.rows.map(r=>`${r.role==='mitra'?'Mitra':'Kurir'} (${r.uid}): ${rupiah(r.net)} | potongan admin ${rupiah(r.adminCut)}`);
+    lines.push(`Admin total: ${rupiah(split.adminAmount)}`);
+    if(!confirm(`Verifikasi final pesanan ${order.nomorPesanan||id}?\n\nMetode: ${methodLabel}\nHarga produk: ${rupiah(split.subtotal)}\nOngkir: ${rupiah(split.ongkir)}\n\n${lines.join('\n')}\n\nSaldo akan masuk ke E-Wallet dan status berubah menjadi selesai. Proses tidak dapat diulang.`)){
+      if(btn){btn.disabled=false;btn.textContent='✓ Verifikasi';}
+      return;
+    }
+    const adminRef=doc(db,'admin_saldo','total');
+    const recipientRefs=[...new Set(split.rows.map(r=>r.uid))].map(uid=>({uid,ref:doc(db,'users',uid)}));
+    const ledgerRefs=split.rows.map(r=>({row:r,ref:doc(db,'ewallet_transaksi',`${id}_${r.role}_${r.uid}`)}));
+    const adminLedgerRef=doc(db,'ewallet_transaksi',`${id}_admin_admin`);
+    await runTransaction(db,async tx=>{
+      const freshOrder=await tx.get(orderRef);
+      if(!freshOrder.exists()) throw Error('Pesanan tidak ditemukan.');
+      const fresh=freshOrder.data();
+      if(fresh.status!=='verifikasi_admin' || fresh.saldoDibagi===true) throw Error('Pesanan sudah diproses atau statusnya berubah.');
+      const userSnaps=[];
+      for(const item of recipientRefs) userSnaps.push({uid:item.uid,ref:item.ref,snap:await tx.get(item.ref)});
+      const adminSnap=await tx.get(adminRef);
+      const ledgerSnaps=[];
+      for(const item of ledgerRefs) ledgerSnaps.push({item,snap:await tx.get(item.ref)});
+      const adminLedgerSnap=await tx.get(adminLedgerRef);
+      if(ledgerSnaps.some(x=>x.snap.exists()) || adminLedgerSnap.exists()) throw Error('Catatan mutasi untuk pesanan ini sudah ada. Proses dihentikan untuk mencegah saldo ganda.');
+      for(const u of userSnaps) if(!u.snap.exists()) throw Error(`Akun penerima saldo tidak ditemukan: ${u.uid}`);
+      // Semua pembacaan selesai; mulai penulisan atomik.
+      const now=serverTimestamp();
+      for(const u of userSnaps){
+        const rows=split.rows.filter(r=>r.uid===u.uid);
+        const credit=rows.reduce((sum,r)=>sum+r.net,0);
+        const data=u.snap.data();
+        const old=Number(data.saldoEwallet??data.saldoWallet??data.saldo??0)||0;
+        const income=Number(data.totalPendapatan??data.totalPenghasilan??0)||0;
+        tx.update(u.ref,{saldoEwallet:old+credit,saldoWallet:old+credit,saldo:old+credit,totalPendapatan:income+credit,updatedAt:now});
+      }
+      const oldAdmin=Number(adminSnap.exists()?adminSnap.data().saldo:0)||0;
+      tx.set(adminRef,{saldo:oldAdmin+split.adminAmount,updatedAt:now},{merge:true});
+      for(const item of ledgerRefs){
+        const r=item.row;
+        tx.set(item.ref,{uid:r.uid,type:'masuk',kategori:r.role==='mitra'?(split.isExpedisi?'penjualan_mitra_ekspedisi':'penjualan_mitra'):'ongkir_kurir',orderId:id,jumlah:r.net,subtotal:r.productGross,ongkirFull:r.shippingGross,potonganAdmin:r.adminCut,persentaseAdmin:5,metodePengiriman:split.method,keterangan:`Pembagian ${r.role} pesanan ${order.nomorPesanan||id}; bruto ${rupiah(r.gross)}, potongan admin 5% ${rupiah(r.adminCut)}, diterima ${rupiah(r.net)}`,createdAt:now});
+      }
+      tx.set(adminLedgerRef,{uid:'admin',type:'masuk',kategori:'komisi_pesanan',orderId:id,jumlah:split.adminAmount,subtotal:split.subtotal,ongkirFull:split.ongkir,persentaseAdmin:5,metodePengiriman:split.method,keterangan:`Komisi admin 5% dari harga produk dan ongkir pesanan ${order.nomorPesanan||id}`,createdAt:now});
+      tx.update(orderRef,{status:'selesai',selesaiAt:now,saldoDibagi:true,saldoDibagiDetail:{metodePengiriman:split.method,subtotal:split.subtotal,ongkir:split.ongkir,persentaseAdmin:5,admin:split.adminAmount,penerima:split.rows.map(r=>({uid:r.uid,role:r.role,produk:r.productGross,ongkir:r.shippingGross,potonganAdmin:r.adminCut,diterima:r.net})),dibagiOleh:currentUser.uid}});
+    });
+    alert(`Verifikasi berhasil. Saldo sudah dibagikan dan status pesanan menjadi selesai.\n\n${lines.join('\n')}`);
+    await loadVerifikasi();
+  }catch(e){
+    console.error(e);
+    alert('Verifikasi gagal: '+(e?.message||e));
+    if(btn){btn.disabled=false;btn.textContent='✓ Verifikasi';}
   }
 };
 
