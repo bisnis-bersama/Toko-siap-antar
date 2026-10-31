@@ -54,6 +54,27 @@ const esc=v=>String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 function rupiah(n){return 'Rp '+(Number(n)||0).toLocaleString('id-ID');}
 function log(m){ const el=$("log"); if(el) el.textContent+="\n"+m; }
 function waLink(num){ if(!num) return null; let p=String(num).replace(/[^0-9]/g,''); if(p.startsWith('0')) p='62'+p.slice(1); if(!p.startsWith('62')) p='62'+p; return 'https://wa.me/'+p; }
+function valFrom(obj,paths){for(const path of paths){const v=path.split('.').reduce((a,k)=>a?.[k],obj);if(v!==undefined&&v!==null&&v!=='')return v;}return null;}
+function gpsOf(obj){const lat=valFrom(obj,['lat','latitude','gps.lat','lokasi.lat','alamatPengiriman.lat','alamatToko.lat','koordinat.lat','location.lat']);const lng=valFrom(obj,['lng','long','longitude','gps.lng','gps.long','lokasi.lng','alamatPengiriman.lng','alamatToko.lng','koordinat.lng','location.lng']);const a=Number(lat),b=Number(lng);return Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a)<=90&&Math.abs(b)<=180?{lat:a,lng:b}:null;}
+function gpsHtml(obj,label){const g=gpsOf(obj||{});if(!g)return `<div class="meta">GPS ${esc(label)}: Belum tersedia</div>`;const url=`https://www.google.com/maps?q=${g.lat},${g.lng}`;return `<div class="meta">GPS ${esc(label)}: ${g.lat.toFixed(6)}, ${g.lng.toFixed(6)}</div><a class="meta" style="display:inline-block;color:#087443;font-weight:800;margin-top:3px" href="${url}" target="_blank" rel="noopener">📍 Buka lokasi ${esc(label)} di Google Maps</a>`;}
+async function readUser(uid){if(!uid)return null;try{const snap=await getDoc(doc(db,'users',String(uid)));return snap.exists()?{uid:String(uid),...snap.data()}:null;}catch(e){return null;}}
+function ownerUidFromItem(it){return valFrom(it,['ownerUid','ownerId','pemilikUid','pemilikId','mitraUid','mitraUsahaUid','sellerUid','userId','konterId','uidPemilik']);}
+async function ownerSection(order,items){
+  const ids=[...new Set(items.map(ownerUidFromItem).filter(Boolean).map(String))];
+  if(!ids.length){const fallback=valFrom(order,['mitraUsahaUid','mitraUid','sellerUid','pemilikUid','ownerUid']);if(fallback)ids.push(String(fallback));}
+  if(!ids.length)return `<div class="meta">Data pemilik produk belum tercatat pada item pesanan (UID pemilik tidak ditemukan).</div>`;
+  const profiles=await Promise.all(ids.map(readUser));
+  return profiles.map((p,i)=>{const uid=ids[i];const embedded=items.find(it=>String(ownerUidFromItem(it)||'')===uid)||{};const name=p?.namaUsaha||p?.nama||embedded.namaPemilik||embedded.namaMitra||embedded.ownerName||'Pemilik Produk';const phone=p?.telepon||p?.noWA||p?.whatsapp||embedded.teleponPemilik||embedded.noWAPemilik||'-';const address=p?.alamat||p?.alamatToko||p?.alamatLengkap||embedded.alamatPemilik||'-';return `<div style="padding:8px 0;border-bottom:1px solid #eee"><b>${esc(name)}</b><div class="meta">UID: ${esc(uid)}</div><div class="meta">WhatsApp: ${esc(phone)}</div><div class="meta">Alamat: ${esc(address)}</div>${gpsHtml(p||embedded,'pemilik produk')}</div>`;}).join('');
+}
+async function customerSection(order){
+  const uid=valFrom(order,['ownerUid','pelangganUid','customerUid','userUid']);
+  const p=await readUser(uid);
+  const merged={...(p||{}),...order,alamatPengiriman:order.alamatPengiriman||p?.alamatPengiriman||{}};
+  const name=valFrom(order,['pelangganNama','ownerName','namaPelanggan','alamatPengiriman.nama'])||p?.nama||'Pelanggan';
+  const phone=valFrom(order,['pelangganTelepon','telepon','noWA','whatsapp','alamatPengiriman.telepon'])||p?.telepon||p?.noWA||'-';
+  const address=valFrom(order,['pelangganAlamat','alamat','alamatPengiriman.alamat','alamatPengiriman.alamatLengkap'])||p?.alamat||'-';
+  return `<b>Data Pelanggan</b><br>${esc(name)}<br>${esc(phone)}<br><span class="meta">${esc(address)}</span>${gpsHtml(merged,'pelanggan')}`;
+}
 async function loadAccountName(u){ try{ const s=await getDoc(doc(db,"users",u.uid)); const p=s.data(); if(p) $("accountNameTop").textContent="Halo, Kak, "+(p.nama||p.namaUsaha||u.email); }catch(e){} }
 let currentUser=null;
 let authReady=false;
@@ -89,12 +110,11 @@ window.loadPending=async()=>{
     let cards='';
     for(const d of snap.docs){
       const o=d.data(), id=d.id;
-      const customer=o.pelangganNama||o.ownerName||"Pelanggan";
-      const phone=o.pelangganTelepon||o.telepon||"-";
-      const address=o.pelangganAlamat||o.alamat||o.alamatPengiriman?.alamat||"-";
       const items=Array.isArray(o.items)?o.items:[];
+      const customerHtml=await customerSection(o);
+      const ownersHtml=await ownerSection(o,items);
       const itemHtml=items.map(it=>`<div style="padding:5px 0;border-bottom:1px solid #eee">
-        <b>${esc(it.name||it.namaProduk||"Produk")}</b>
+        <b>${esc(it.name||it.nama||it.namaProduk||"Produk")}</b>
         <span class="meta"> — ${Number(it.qty||1)} × ${rupiah(it.price||it.harga||0)}</span>
       </div>`).join("");
       const shipping=o.metodePengiriman||"-";
@@ -106,7 +126,9 @@ window.loadPending=async()=>{
         </div>
         <div class="meta">Dibuat: ${esc(created)}</div>
         <hr style="border:0;border-top:1px solid #eee;margin:9px 0">
-        <b>Data Pelanggan</b><br>${esc(customer)}<br>${esc(phone)}<br><span class="meta">${esc(address)}</span>
+        ${customerHtml}
+        <hr style="border:0;border-top:1px solid #eee;margin:9px 0">
+        <b>Data Pemilik Produk</b>${ownersHtml}
         <hr style="border:0;border-top:1px solid #eee;margin:9px 0">
         <b>Produk Pesanan</b>${itemHtml||'<div class="meta">Detail produk tidak tersedia.</div>'}
         <div style="margin-top:9px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
