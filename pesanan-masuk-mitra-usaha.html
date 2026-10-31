@@ -108,18 +108,39 @@ function getOrderItems(x){
 function isAssignedToMe(x){
   const uid=userNow?.uid;
   if(!uid) return false;
-  // Jangan tampilkan semua pesanan pending_mitra ke seluruh mitra.
-  // Pesanan harus ditujukan ke UID akun ini atau sudah diterima akun ini.
   return x.mitraUsahaUid===uid
     || x.mitraUid===uid
     || x.acceptedByMitraUid===uid
-    || (Array.isArray(x.mitraCandidateUids) && x.mitraCandidateUids.includes(uid));
+    || (Array.isArray(x.mitraCandidateUids) && x.mitraCandidateUids.includes(uid))
+    || (Array.isArray(x.mitraGroups) && x.mitraGroups.includes(uid));
+}
+function isVisibleToMitra(x){
+  const status=String(x.status||'').trim().toLowerCase();
+  const pemenuhan=String(x.statusPemenuhan||'').trim().toLowerCase();
+  // Pesanan berstatus pending hanya untuk admin. Mitra menerima pesanan
+  // setelah admin mengubah status menjadi disetujui. Pesanan yang sudah
+  // diterima/diproses oleh mitra tetap tampil pada daftar pesanan miliknya.
+  const approved=status==='disetujui';
+  const alreadyOwned=x.acceptedByMitraUid===userNow?.uid
+    || ['diterima_mitra','dikemas','dikirim','dalam_pengiriman','selesai'].includes(status)
+       && (x.mitraUsahaUid===userNow?.uid || x.mitraUid===userNow?.uid);
+  const progressed=['diterima_mitra','dikemas','dikirim','dalam_pengiriman','selesai'].includes(pemenuhan)
+    && (x.acceptedByMitraUid===userNow?.uid || x.mitraUsahaUid===userNow?.uid || x.mitraUid===userNow?.uid);
+  return approved || alreadyOwned || progressed;
 }
 async function fetchAssignedOrders(){
   const found=new Map(), uid=userNow.uid;
-  const attempts=[query(collection(db,"orders"),where("statusPemenuhan","==","pending_mitra")),query(collection(db,"orders"),where("mitraUsahaUid","==",uid)),query(collection(db,"orders"),where("mitraUid","==",uid)),query(collection(db,"orders"),where("acceptedByMitraUid","==",uid)),query(collection(db,"orders"),where("mitraCandidateUids","array-contains",uid))];
+  // Jangan mengambil status pending/pending_mitra untuk ditampilkan ke mitra.
+  // Ambil pesanan yang sudah disetujui admin serta pesanan lama yang sudah
+  // menjadi milik/diterima mitra agar status proses tetap bisa dipantau.
+  const attempts=[
+    query(collection(db,"orders"),where("status","==","disetujui")),
+    query(collection(db,"orders"),where("mitraUsahaUid","==",uid)),
+    query(collection(db,"orders"),where("mitraUid","==",uid)),
+    query(collection(db,"orders"),where("acceptedByMitraUid","==",uid))
+  ];
   for(const q of attempts){try{const snap=await getDocs(q);snap.docs.forEach(d=>found.set(d.id,{id:d.id,...d.data()}));}catch(e){}}
-  return {orders:[...found.values()].filter(isAssignedToMe)};
+  return {orders:[...found.values()].filter(x=>isAssignedToMe(x)&&isVisibleToMitra(x))};
 }
 function renderOrderRecord(x){
   const status=String(x.status||x.statusPemenuhan||"menunggu").replace(/_/g," ");
