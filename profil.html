@@ -38,7 +38,7 @@ label{font-weight:700;font-size:13px}.note{padding:12px;border-radius:10px;backg
   </form>
   <div class="card" style="background:#f7fcf9;margin-top:16px">
     <h3>Daftar sebagai Pelanggan</h3><p class="muted">Untuk belanja dengan mudah.</p>
-    <a class="btn full" href="daftar-pelanggan.html">Daftar Pelanggan</a>
+    <a class="btn full" href="registrasi-pelanggan.html">Daftar Pelanggan</a>
   </div>
   <div class="card" style="background:#f7fcf9;margin-top:12px">
     <h3>Daftar sebagai mitra usaha</h3><p class="muted">Untuk toko atau distributor yang menyediakan produk. Akun menunggu verifikasi admin.</p>
@@ -132,8 +132,26 @@ $('authForm').addEventListener('submit',async e=>{
 });
 onAuthStateChanged(auth,async u=>{
  user=u;authReady=true;
- if(!u){currentProfile={};showLogin();return;}
- await showProfile(u);
+ if(!u){
+  currentProfile={};
+  showLogin();
+  return;
+ }
+ // Jika sesi Firebase sudah aktif, jangan tampilkan formulir profil.
+ // Verifikasi role Firestore lalu langsung arahkan ke E-Wallet sesuai akun.
+ $('signedOut').hidden=true;
+ $('signedIn').hidden=true;
+ $('msg').innerHTML='';
+ try{
+  const result=await getUserProfile(u.uid);
+  currentProfile=result.data;
+  redirectByRole(result.role);
+ }catch(err){
+  console.error('Gagal mengarahkan akun ke E-Wallet:',err);
+  $('signedOut').hidden=false;
+  $('signedIn').hidden=true;
+  note('Sesi login aktif, tetapi role akun belum dapat diverifikasi. '+(err.message||'Periksa data users di Firestore.'),'err');
+ }
 });
 $('profileForm').addEventListener('submit',async e=>{
  e.preventDefault();if(!user)return;
