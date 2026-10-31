@@ -21,7 +21,7 @@
   font-family: "Optimistic Mono", ui-monospace, monospace;
 }
 </style><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Pesanan Masuk Mitra - Harga Mitra Manual | BERSIH</title>
+<title>Pesanan Masuk Mitra - Toko Siap Antar</title>
 <style>
 :root{--yellow:#ffcc00;--ink:#171717;--green:#008b5a;--muted:#64756f;--bg:#f1f2f4;--line:#e6e7e8}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:#171717;font:14px/1.4 system-ui,sans-serif;padding-bottom:80px}
@@ -66,7 +66,7 @@ label{display:block;font-size:11px;font-weight:700;margin:8px 0 4px}input,select
 <body>
 <header><div class="head"><div class="brandWrap">
 <img src="logo2.png" alt="Logo" onerror="this.src='logo3.png'">
-<div><div class="brand">🛵 TOKO SIAP ANTAR</div><div class="sub">Mitra Usaha · Harga Mitra Manual</div><div class="greet" id="greetingTop" style="display:none"></div></div>
+<div><div class="brand">🛵 TOKO SIAP ANTAR</div><div class="sub">Mitra Usaha · Pesanan Masuk</div><div class="greet" id="greetingTop" style="display:none"></div></div>
 </div><button id="logoutBtn" class="logout hidden" type="button">Keluar</button></div></header>
 
 <main>
@@ -74,9 +74,7 @@ label{display:block;font-size:11px;font-weight:700;margin:8px 0 4px}input,select
 <form id="loginForm"><label>Email</label><input id="email" type="email" required><label>Password</label><input id="password" type="password" required><button class="btn" style="width:100%;margin-top:12px" type="submit">Masuk</button></form><div id="loginMsg" class="err"></div></section>
 
 <section id="app" class="hidden">
-<div class="panel"><div class="eyebrow">PESANAN MASUK · HARGA MITRA</div><h1>Input Harga Mitra</h1><p class="muted" id="greeting">Hanya produk pesanan + kolom harga mitra, harga jual tidak ditampilkan.</p><div class="notice">✅ <b>Kolom Harga Produk (jual) disembunyikan</b>. Hanya tampil <b>Nama Produk + Qty + Kolom Harga Mitra</b> yang diisi mitra.</div></div>
-
-<div class="panel"><div class="itemtop"><h2>Penawaran Aktif</h2><span class="status">Isi harga mitra dulu</span></div><div id="offerRecords" class="list" style="margin-top:10px"><div class="muted">Memuat…</div></div></div>
+<div class="panel"><div class="eyebrow">PESANAN MASUK MITRA</div><h1>Daftar Pesanan Masuk</h1><p class="muted" id="greeting">Pesanan yang sudah disetujui akan tampil di sini. Tidak perlu mengisi harga mitra.</p></div>
 <div class="panel"><div class="itemtop"><h2>Daftar Pesanan Saya</h2></div><label for="filter">Cari nomor pesanan</label><input id="filter" placeholder="Cari nomor pesanan"><div class="actions"><button class="btn" id="reloadBtn" type="button">Muat Ulang</button></div><div id="records" class="list" style="margin-top:10px"><div class="muted">Memuat…</div></div></div>
 </section></main>
 <nav id="bottom" class="bottom hidden"><a href="./ewallet-mitra.html">⌂ Beranda</a></nav>
@@ -84,7 +82,7 @@ label{display:block;font-size:11px;font-weight:700;margin:8px 0 4px}input,select
 <script type="module">
 import {auth,db} from "./firebase-config.js";
 import {onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-import {doc,getDoc,collection,getDocs,query,where,limit,runTransaction,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import {doc,getDoc,collection,getDocs,query,where,limit,runTransaction,serverTimestamp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 const $=id=>document.getElementById(id), EXPECTED="mitra_usaha";
 function norm(v){let x=String(v??"").trim().toLowerCase().replace(/[\s-]+/g,"_");const a={customer:"pelanggan",mitra:"mitra_usaha",mitrausaha:"mitra_usaha"};return a[x]||x;}
 async function profileFor(u){const s=await getDoc(doc(db,"users",u.uid));if(s.exists())return s.data();const q=query(collection(db,"users"),where("email","==",u.email||""),limit(1));const r=await getDocs(q);if(!r.empty)return r.docs[0].data();throw Error("Profil tidak ditemukan");}
@@ -93,7 +91,7 @@ $("logoutBtn").onclick=()=>signOut(auth);
 let profile=null,userNow=null;
 onAuthStateChanged(auth,async u=>{
   if(!u){$("loginPanel").classList.remove("hidden");$("app").classList.add("hidden");$("logoutBtn").classList.add("hidden");$("bottom").classList.add("hidden");return;}
-  try{userNow=u;profile=await profileFor(u);const role=norm(profile.role);if(role!==EXPECTED)throw Error("Role harus mitra_usaha, Anda: "+role);if(profile.status!=='aktif'||profile.aktif!==true)throw Error("Akun belum aktif");$("loginPanel").classList.add("hidden");$("app").classList.remove("hidden");$("logoutBtn").classList.remove("hidden");$("bottom").classList.remove("hidden");$("greeting").textContent="Halo, "+(profile.nama||profile.namaUsaha||u.email)+" — Isi harga mitra manual, harga jual disembunyikan.";$("greetingTop").textContent="Halo, "+(profile.nama||profile.namaUsaha||"Mitra");$("greetingTop").style.display="block";await loadOffers();await loadRecords();}catch(err){$("loginPanel").classList.remove("hidden");$("app").classList.add("hidden");$("loginMsg").textContent=err.message;}
+  try{userNow=u;profile=await profileFor(u);const role=norm(profile.role);if(role!==EXPECTED)throw Error("Role harus mitra_usaha, Anda: "+role);if(profile.status!=='aktif'||profile.aktif!==true)throw Error("Akun belum aktif");$("loginPanel").classList.add("hidden");$("app").classList.remove("hidden");$("logoutBtn").classList.remove("hidden");$("bottom").classList.remove("hidden");$("greeting").textContent="Halo, "+(profile.nama||profile.namaUsaha||u.email)+" — Isi harga mitra manual, harga jual disembunyikan.";$("greetingTop").textContent="Halo, "+(profile.nama||profile.namaUsaha||"Mitra");$("greetingTop").style.display="block";await loadRecords();}catch(err){$("loginPanel").classList.remove("hidden");$("app").classList.add("hidden");$("loginMsg").textContent=err.message;}
 });
 const esc=v=>String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function asDate(v){if(!v)return null;if(typeof v.toDate==="function")return v.toDate();if(v instanceof Date)return v;const d=new Date(v);return Number.isNaN(d.getTime())?null:d;}
@@ -110,182 +108,46 @@ function isAssignedToMe(x){
     || x.acceptedByMitraUid===uid
     || (Array.isArray(x.mitraCandidateUids) && x.mitraCandidateUids.includes(uid));
 }
-function isApprovedOfferForMe(x){
-  const uid=userNow?.uid;
-  if(!uid) return false;
-
-  // Status persetujuan admin pada dokumen pesanan adalah "disetujui".
-  // Tetap dukung alur lama yang memakai statusPemenuhan "pending_mitra".
-  const statusAdmin = String(x.status || '').trim().toLowerCase();
-  const statusPemenuhan = String(x.statusPemenuhan || '').trim().toLowerCase();
-  const sudahDisetujui = statusAdmin === 'disetujui'
-    || statusPemenuhan === 'pending_mitra';
-
-  const ditujukanKeAkunIni = x.mitraUsahaUid === uid
-    || x.mitraUid === uid
-    || (Array.isArray(x.mitraCandidateUids) && x.mitraCandidateUids.includes(uid))
-    || (Array.isArray(x.mitraGroups) && x.mitraGroups.includes(uid));
-
-  return sudahDisetujui && ditujukanKeAkunIni;
-}
-function isAccepted(x){return !!(x.acceptedByMitraUid) || ["diterima_mitra","mitra_menerima","diproses_mitra"].includes(String(x.status||"").toLowerCase());}
-function offerStart(x){return firstDate(x,["offerSentAt","createdAt"]);}
-function orderStart(x){return firstDate(x,["createdAt"]);}
-
-function productRowsModalOnly(x){
-  const items=Array.isArray(x.items)?x.items:[];
-  if(!items.length)return '<div class="notice">Tidak ada produk.</div>';
-  const rows=items.map((it,i)=>{
-    const name=it.nama||it.namaProduk||it.name||('Produk '+(i+1));
-    const qty=Number(it.qty||it.jumlah||1)||1;
-    const savedModal = Array.isArray(x.mitraHargaItems) && x.mitraHargaItems[i] ? x.mitraHargaItems[i].hargaModal : '';
-    return `<div class="product-row">
-      <div><div class="product-name">${esc(name)}</div><div class="muted" style="font-size:10px">Kode: ${esc(it.kode||it.produkId||'-')} | ${esc(it.satuan||'pcs')}</div></div>
-      <div class="product-qty">x ${qty}</div>
-      <div><label style="font-size:10px;margin:0 0 3px;display:block;font-weight:700">Harga Mitra *</label><input class="modal-input" type="number" min="0" step="100" inputmode="numeric" data-modal-index="${i}" data-qty="${qty}" data-nama="${esc(name)}" value="${savedModal!==''?Number(savedModal):''}" placeholder="Isi harga mitra" required></div>
-    </div>`;
-  }).join('');
-  return `<div class="products-box"><strong style="font-size:12px">Produk yang dipesan (${items.length} item) - Harga jual disembunyikan, isi modal saja</strong>${rows}<div class="price-total">Total Harga Mitra: <span id="modalTotal-${x.id}" style="color:#008b5a">Rp 0 (isi dulu)</span></div><div style="margin-top:6px"><label style="font-size:10px;margin-top:6px">Catatan Harga Mitra (opsional)</label><textarea class="catatanModal" data-id="${x.id}" rows="2" placeholder="Contoh: harga mitra dari gudang A"></textarea></div></div>`;
-}
-
-function getOrderItems(x){const arr=Array.isArray(x.items)?x.items:[];return arr.map(it=>({name:it.nama||it.name||"Produk",qty:Number(it.qty||1)||1}));}
-function renderOffer(x){
-  const start=offerStart(x), orderAt=orderStart(x);
-  const offerDeadline=start?start.getTime()+15*60*1000:null;
-  const status=String(x.status||"menunggu_mitra");
-  const accepted=isAccepted(x);
-  const title=esc(x.nomorPesanan||("Pesanan "+x.id));
-  const customer=esc(x.ownerName||"Pelanggan");
-  const address=esc(x.alamat||x.alamatPengiriman?.alamat||"-");
-  const overdue=offerDeadline!==null&&Date.now()>=offerDeadline;
-  return `<article class="item" data-offer-id="${esc(x.id)}" data-order-id="${esc(x.id)}"><div class="itemtop"><strong style="font-size:13px">${title}</strong><span class="status">${esc(status.replace(/_/g," "))}</span></div><div class="meta">ID: ${esc(x.id)} | Pelanggan: ${customer} | Alamat: ${address}</div>${productRowsModalOnly(x)}${!accepted?`<div class="meta" style="margin-top:8px">Batas: <b class="offer-countdown" data-start="${start?start.getTime():""}">${!start?"-":overdue?"Terlambat":fmtLeft(offerDeadline-Date.now())}</b></div>`:''}${accepted?`<div class="ok">Sudah diterima - harga mitra tersimpan</div>`:`<div class="actions"><button class="btn" type="button" data-action="accept" data-id="${esc(x.id)}">✅ Terima + Simpan Harga Mitra</button><button class="btn dark" type="button" data-action="decline" data-id="${esc(x.id)}">Tolak</button></div>`}<div class="offer-message"></div></article>`;
-}
 async function fetchAssignedOrders(){
   const found=new Map(), uid=userNow.uid;
   const attempts=[query(collection(db,"orders"),where("statusPemenuhan","==","pending_mitra")),query(collection(db,"orders"),where("mitraUsahaUid","==",uid)),query(collection(db,"orders"),where("mitraUid","==",uid)),query(collection(db,"orders"),where("acceptedByMitraUid","==",uid)),query(collection(db,"orders"),where("mitraCandidateUids","array-contains",uid))];
   for(const q of attempts){try{const snap=await getDocs(q);snap.docs.forEach(d=>found.set(d.id,{id:d.id,...d.data()}));}catch(e){}}
   return {orders:[...found.values()].filter(isAssignedToMe)};
 }
-async function loadOffers(){
-  const box=$("offerRecords");box.innerHTML='<div class="muted">Memuat…</div>';
-  try{const {orders}=await fetchAssignedOrders();const active=orders.filter(x=>isApprovedOfferForMe(x)&&!isAccepted(x)&&!["ditolak_mitra","dibatalkan","selesai"].includes(String(x.status||"").toLowerCase()));box.innerHTML=active.length?active.map(renderOffer).join(""):'<div class="muted">Belum ada pesanan yang disetujui admin untuk akun mitra ini.</div>';attachModalListeners();updateTimers();}catch(err){box.innerHTML='<div class="err">'+esc(err.message)+'</div>';}
-}
-function attachModalListeners(){document.querySelectorAll('.modal-input').forEach(inp=>{inp.addEventListener('input', e=>{const card=e.target.closest('[data-order-id]');if(!card)return;calcModalTotal(card);});});}
-function calcModalTotal(card){const id=card.dataset.orderId;let total=0;card.querySelectorAll('.modal-input').forEach(inp=>{const qty=Number(inp.dataset.qty||1);const modal=Number(inp.value||0);total+=modal*qty;});const el=card.querySelector(`#modalTotal-${id}`);if(el)el.textContent=rupiah(total);return total;}
-async function handleOfferAction(id,action,card){
-  const msg=card.querySelector(".offer-message"), btns=card.querySelectorAll("button[data-action]");btns.forEach(b=>b.disabled=true);msg.className="meta";msg.textContent="Memproses…";
-  try{
-    const modalInputs=[...card.querySelectorAll('.modal-input')];
-    let mitraHargaItems=[];let modalTotal=0;let valid=true;
-    if(action==="accept"){
-      if(modalInputs.length===0)valid=false;
-      modalInputs.forEach((inp,i)=>{
-        const qty=Number(inp.dataset.qty||1);const nama=inp.dataset.nama||('Produk '+(i+1));const modal=Number(inp.value);
-        if(!Number.isFinite(modal)||modal<=0){valid=false;inp.classList.add('err-input');}else{inp.classList.remove('err-input');modalTotal+=modal*qty;mitraHargaItems.push({nama,qty,hargaModal:modal,subtotalModal:modal*qty});}
-      });
-      if(!valid)throw Error("Isi semua Harga Mitra (harus >0) sebelum terima.");
-    }
-    const catatanEl=card.querySelector('.catatanModal');const catatan=catatanEl?catatanEl.value.trim():'';
-    const ref=doc(db,"orders",id);
-    await runTransaction(db,async tx=>{
-      const snap=await tx.get(ref);if(!snap.exists())throw Error("Pesanan tidak ditemukan");const x=snap.data();if(x.mitraUsahaUid && x.mitraUsahaUid!==userNow.uid && x.acceptedByMitraUid)throw Error("Sudah diambil mitra lain");
-      if(action==="accept"){
-        tx.update(ref,{status:"diterima_mitra",statusPemenuhan:"diterima_mitra",acceptedByMitraUid:userNow.uid,mitraUsahaUid:userNow.uid,mitraUid:userNow.uid,mitraNama:profile?.namaUsaha||profile?.nama||"",mitraHargaItems,mitraModalTotal:modalTotal,modalTotal,mitraCatatanModal:catatan,mitraAcceptedAt:serverTimestamp(),updatedAt:serverTimestamp()});
-      }else{tx.update(ref,{mitraDitolakUid:userNow.uid,mitraCandidatesTried:arrayUnion(userNow.uid),updatedAt:serverTimestamp()});}
-    });
-    msg.className="ok";msg.textContent=action==="accept"?`Diterima! Total harga mitra ${rupiah(modalTotal)} tersimpan.`:"Ditolak.";await loadOffers();await loadRecords();
-  }catch(err){msg.className="err";msg.textContent=err.message;btns.forEach(b=>b.disabled=false);}
-}
-$("offerRecords")?.addEventListener("click",e=>{const b=e.target.closest("button[data-action]");if(!b)return;const card=b.closest("[data-offer-id]");if(card)handleOfferAction(b.dataset.id,b.dataset.action,card);});
-function updateTimers(){document.querySelectorAll(".offer-countdown[data-start]").forEach(el=>{const n=Number(el.dataset.start);if(n){const left=n+15*60*1000-Date.now();el.textContent=left>0?fmtLeft(left):"Terlambat";}else el.textContent="-";});}
 function renderOrderRecord(x){
-  const status=String(x.status||"").replace(/_/g," ");
+  const status=String(x.status||x.statusPemenuhan||"menunggu").replace(/_/g," ");
   const no=esc(x.nomorPesanan||("Pesanan "+x.id));
   const items=getOrderItems(x);
-  const mitraTotal = x.mitraModalTotal || x.mitraHargaTotal || x.modalTotal || x.mitraTotal || 0;
-  const hargaInfo = mitraTotal
-    ? `<div class="meta" style="color:#087443;font-weight:800;font-size:12px">Total Harga Mitra: ${rupiah(mitraTotal)}</div>`
-    : `<div class="meta" style="font-size:11px">Harga Mitra belum ada</div>`;
-  const shortId = esc(x.id).slice(0,16);
-
-  const alamatData = x.alamatPengiriman || {};
-  const namaPelanggan = x.ownerName || alamatData.nama || x.namaPelanggan || "Pelanggan";
-  const noWa = x.telepon || alamatData.telepon || alamatData.noWA || x.noWA || x.whatsapp || "-";
-  const alamat = x.alamat || alamatData.alamat || alamatData.alamatLengkap || "-";
-  const lat = x.lat ?? alamatData.lat ?? x.lokasi?.lat;
-  const lng = x.lng ?? alamatData.lng ?? x.lokasi?.lng;
-  const gpsUrl = x.gpsLink || (lat !== null && lat !== undefined && lng !== null && lng !== undefined
-    ? `https://www.google.com/maps?q=${encodeURIComponent(lat)},${encodeURIComponent(lng)}`
-    : "");
-  const gpsInfo = lat !== null && lat !== undefined && lng !== null && lng !== undefined
-    ? `${esc(Number(lat).toFixed ? Number(lat).toFixed(6) : lat)}, ${esc(Number(lng).toFixed ? Number(lng).toFixed(6) : lng)}`
-    : "GPS belum tersedia";
-  const gpsHtml = gpsUrl
-    ? `<a href="${esc(gpsUrl)}" target="_blank" rel="noopener" style="display:inline-block;margin-top:5px;color:#087443;font-weight:800;text-decoration:underline">📍 Buka lokasi pelanggan di Google Maps</a>`
-    : `<span class="muted">📍 ${gpsInfo}</span>`;
-
-  const itemRows = items.length
-    ? items.map(it=>`<div class="product-row" style="grid-template-columns:1fr 60px"><div class="product-name">${esc(it.name)}</div><span class="product-qty">x ${it.qty}</span></div>`).join("")
-    : '<div class="muted">Rincian produk tidak tersedia.</div>';
-
-  const sudahDikemas = String(x.status||'').toLowerCase()==='dikemas'
-    || String(x.statusPemenuhan||'').toLowerCase()==='dikemas';
-  const sudahDikirim = ['dikirim','dalam_pengiriman','selesai'].includes(String(x.status||'').toLowerCase());
-  const milikSaya = x.acceptedByMitraUid===userNow?.uid
-    || x.mitraUsahaUid===userNow?.uid
-    || x.mitraUid===userNow?.uid;
-  const bolehProses = milikSaya && !sudahDikemas && !sudahDikirim;
-  const pilihanProses = bolehProses ? `<div class="actions" style="margin-top:10px">
-    <button class="btn" type="button" data-order-action="pack-self" data-id="${esc(x.id)}">📦 Dikemas & Kirim Sendiri</button>
-    <button class="btn dark" type="button" data-order-action="pack-courier" data-id="${esc(x.id)}">📦 Dikemas & Serahkan ke Kurir</button>
-  </div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>` : '';
-
-  // Tampilkan metode yang benar-benar dipilih pelanggan saat checkout.
+  const shortId=esc(x.id).slice(0,16);
+  const alamatData=x.alamatPengiriman||{};
+  const namaPelanggan=x.ownerName||alamatData.nama||x.namaPelanggan||"Pelanggan";
+  const noWa=x.telepon||alamatData.telepon||alamatData.noWA||x.noWA||x.whatsapp||"-";
+  const alamat=x.alamat||alamatData.alamat||alamatData.alamatLengkap||"-";
+  const lat=x.lat??alamatData.lat??x.lokasi?.lat;
+  const lng=x.lng??alamatData.lng??x.lokasi?.lng;
+  const gpsUrl=x.gpsLink||(lat!==null&&lat!==undefined&&lng!==null&&lng!==undefined?`https://www.google.com/maps?q=${encodeURIComponent(lat)},${encodeURIComponent(lng)}`:"");
+  const gpsInfo=lat!==null&&lat!==undefined&&lng!==null&&lng!==undefined?`${esc(Number(lat).toFixed(6))}, ${esc(Number(lng).toFixed(6))}`:"GPS belum tersedia";
+  const gpsHtml=gpsUrl?`<a href="${esc(gpsUrl)}" target="_blank" rel="noopener" style="display:inline-block;margin-top:5px;color:#087443;font-weight:800;text-decoration:underline">📍 Buka lokasi pelanggan di Google Maps</a>`:`<span class="muted">📍 ${gpsInfo}</span>`;
+  const itemRows=items.length?items.map(it=>`<div class="product-row" style="grid-template-columns:1fr 60px"><div class="product-name">${esc(it.name)}</div><span class="product-qty">x ${it.qty}</span></div>`).join(""):'<div class="muted">Rincian produk tidak tersedia.</div>';
   const shipRaw=String(x.metodePengiriman||x.shippingMethod||x.pengiriman||'').trim().toLowerCase();
-  const shipLabels={siap_antar:'Siap Antar (Kurir Toko)',expedisi:'Ekspedisi'};
-  const shipLabel=shipLabels[shipRaw]|| (shipRaw ? shipRaw.replace(/_/g,' ') : 'Belum tercatat');
+  const isExpedisi=shipRaw==='expedisi'||shipRaw==='ekspedisi';
+  const shipLabels={siap_antar:'Siap Antar (Kurir Toko)',expedisi:'Ekspedisi',ekspedisi:'Ekspedisi'};
+  const shipLabel=shipLabels[shipRaw]||(shipRaw?shipRaw.replace(/_/g,' '):'Belum tercatat');
   const serviceRaw=String(x.expedisiName||x.expedisi||x.namaEkspedisi||'').trim();
   const serviceLabels={jne_reg:'JNE Reguler',jne_yes:'JNE YES',jnt_reg:'J&T Reguler',sicepat_reg:'SiCepat Reguler',anteraja_reg:'AnterAja Reguler',jne_jtr:'JNE JTR'};
   const serviceLabel=serviceLabels[serviceRaw]||serviceRaw;
   const payRaw=String(x.metodePembayaran||x.paymentMethod||'').trim().toLowerCase();
   const payLabels={transfer:'Transfer Bank',qris:'QRIS',cod:'COD (Bayar di Tempat)'};
-  const payLabel=payLabels[payRaw]|| (payRaw ? payRaw.toUpperCase() : 'Belum tercatat');
-  const infoCheckout=`<div style="margin-top:10px;padding:10px;background:#fffbea;border:1px solid #f4df80;border-radius:10px">
-    <strong style="font-size:12px">🚚 METODE CHECKOUT PELANGGAN</strong>
-    <div class="meta" style="margin-top:6px">Pengiriman: <b>${esc(shipLabel)}</b></div>
-    ${shipRaw==='expedisi' && serviceLabel ? `<div class="meta">Nama ekspedisi: <b>${esc(serviceLabel)}</b></div>` : ''}
-    <div class="meta">Metode pembayaran: <b>${esc(payLabel)}</b></div>
-    <div class="meta">Ongkir: <b>${rupiah(x.ongkir||0)}</b></div>
-    <div class="meta">Total pesanan: <b>${rupiah(x.total||0)}</b></div>
-  </div>`;
-  const metodeLabel = x.metodePenyerahan==='mitra_kirim_sendiri' ? 'Dikirim sendiri oleh mitra'
-    : x.metodePenyerahan==='serahkan_ke_kurir' ? 'Diserahkan ke kurir' : '';
-  const infoPenyerahan = metodeLabel ? `<div class="meta">Penyerahan: <b>${metodeLabel}</b></div>` : '';
-
-  return `<article class="item order-collapse" data-id="${esc(x.id)}">
-    <div class="itemtop"><strong style="font-size:13px">${no}</strong><span class="status">${esc(status)}</span></div>
-    <div class="meta">ID: ${shortId}...</div>
-    ${infoCheckout}
-
-    <div style="margin-top:10px;padding:10px;background:#f7faf8;border:1px solid #e2eee7;border-radius:10px">
-      <strong style="font-size:12px">👤 DATA PELANGGAN</strong>
-      <div style="margin-top:6px"><b>${esc(namaPelanggan)}</b></div>
-      <div class="meta">WhatsApp: <a href="https://wa.me/${esc(String(noWa).replace(/\D/g,''))}" target="_blank" rel="noopener" style="color:#087443;font-weight:800">${esc(noWa)}</a></div>
-      <div class="meta" style="margin-top:5px">Alamat: ${esc(alamat)}</div>
-      <div class="meta" style="margin-top:5px">GPS: ${gpsInfo}</div>
-      ${gpsHtml}
-    </div>
-
-    <div style="margin-top:10px;padding:10px;background:#fff;border:1px solid #e6e7e8;border-radius:10px">
-      <strong style="font-size:12px">📦 DATA PESANAN (${items.length} produk)</strong>
-      ${itemRows}
-      <div style="margin-top:7px">${hargaInfo}</div>
-      ${x.catatan ? `<div class="meta">Catatan pelanggan: ${esc(x.catatan)}</div>` : ''}
-    </div>
-    ${infoPenyerahan}
-    ${sudahDikemas ? '<div class="ok" style="margin-top:8px">Pesanan sudah dikemas.</div>' : ''}
-    ${pilihanProses}
-  </article>`;
+  const payLabel=payLabels[payRaw]||(payRaw?payRaw.toUpperCase():'Belum tercatat');
+  const infoCheckout=`<div style="margin-top:10px;padding:10px;background:#fffbea;border:1px solid #f4df80;border-radius:10px"><strong style="font-size:12px">🚚 METODE CHECKOUT PELANGGAN</strong><div class="meta" style="margin-top:6px">Pengiriman: <b>${esc(shipLabel)}</b></div>${isExpedisi&&serviceLabel?`<div class="meta">Nama ekspedisi: <b>${esc(serviceLabel)}</b></div>`:''}<div class="meta">Metode pembayaran: <b>${esc(payLabel)}</b></div><div class="meta">Ongkir: <b>${rupiah(x.ongkir||0)}</b></div><div class="meta">Total pesanan: <b>${rupiah(x.total||0)}</b></div></div>`;
+  const sudahDikemas=String(x.status||'').toLowerCase()==='dikemas'||String(x.statusPemenuhan||'').toLowerCase()==='dikemas';
+  const sudahDikirim=['dikirim','dalam_pengiriman','selesai'].includes(String(x.status||'').toLowerCase());
+  const milikSaya=x.acceptedByMitraUid===userNow?.uid||x.mitraUsahaUid===userNow?.uid||x.mitraUid===userNow?.uid;
+  const bolehProses=milikSaya&&!sudahDikemas&&!sudahDikirim;
+  const pilihanProses=bolehProses?`<div class="actions" style="margin-top:10px"><button class="btn" type="button" data-order-action="pack-self" data-id="${esc(x.id)}">📦 ${isExpedisi?'Dikemas & Proses Ekspedisi':'Dikemas & Kirim Sendiri'}</button>${!isExpedisi?`<button class="btn dark" type="button" data-order-action="pack-courier" data-id="${esc(x.id)}">📦 Dikemas & Serahkan ke Kurir</button>`:''}</div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`:'';
+  const metodeLabel=x.metodePenyerahan==='mitra_kirim_sendiri'?'Dikirim sendiri oleh mitra':x.metodePenyerahan==='serahkan_ke_kurir'?'Diserahkan ke kurir':x.metodePenyerahan==='via_expedisi'?'Diproses melalui ekspedisi':'';
+  const infoPenyerahan=metodeLabel?`<div class="meta">Penyerahan: <b>${metodeLabel}</b></div>`:'';
+  return `<article class="item order-collapse" data-id="${esc(x.id)}"><div class="itemtop"><strong style="font-size:13px">${no}</strong><span class="status">${esc(status)}</span></div><div class="meta">ID: ${shortId}...</div>${infoCheckout}<div style="margin-top:10px;padding:10px;background:#f7faf8;border:1px solid #e2eee7;border-radius:10px"><strong style="font-size:12px">👤 DATA PELANGGAN</strong><div style="margin-top:6px"><b>${esc(namaPelanggan)}</b></div><div class="meta">WhatsApp: <a href="https://wa.me/${esc(String(noWa).replace(/\D/g,''))}" target="_blank" rel="noopener" style="color:#087443;font-weight:800">${esc(noWa)}</a></div><div class="meta" style="margin-top:5px">Alamat: ${esc(alamat)}</div><div class="meta" style="margin-top:5px">GPS: ${gpsInfo}</div>${gpsHtml}</div><div style="margin-top:10px;padding:10px;background:#fff;border:1px solid #e6e7e8;border-radius:10px"><strong style="font-size:12px">📦 DATA PESANAN (${items.length} produk)</strong>${itemRows}${x.catatan?`<div class="meta">Catatan pelanggan: ${esc(x.catatan)}</div>`:''}</div>${infoPenyerahan}${sudahDikemas?'<div class="ok" style="margin-top:8px">Pesanan sudah dikemas.</div>':''}${pilihanProses}</article>`;
 }
 async function handleOrderPacking(id, mode, card){
   const buttons=card.querySelectorAll('button[data-order-action]');
@@ -303,13 +165,16 @@ async function handleOrderPacking(id, mode, card){
         throw new Error('Pesanan ini bukan milik akun mitra Anda.');
       }
       const statusNow=String(x.status||'').toLowerCase();
+      const shipNow=String(x.metodePengiriman||x.shippingMethod||x.pengiriman||'').trim().toLowerCase();
+      const isExpedisi=shipNow==='expedisi'||shipNow==='ekspedisi';
+      if(mode==='pack-courier' && isExpedisi) throw new Error('Pesanan via ekspedisi tidak dapat dilempar ke kurir Siap Antar.');
       if(['dikemas','dikirim','dalam_pengiriman','selesai'].includes(statusNow)){
         throw new Error('Pesanan sudah diproses sebelumnya.');
       }
       tx.update(ref,{
         status:'dikemas',
         statusPemenuhan:'dikemas',
-        metodePenyerahan:mode==='pack-self'?'mitra_kirim_sendiri':'serahkan_ke_kurir',
+        metodePenyerahan:mode==='pack-courier'?'serahkan_ke_kurir':(isExpedisi?'via_expedisi':'mitra_kirim_sendiri'),
         dikemasOlehUid:uid,
         dikemasAt:serverTimestamp(),
         updatedAt:serverTimestamp()
@@ -328,7 +193,6 @@ async function loadRecords(){
     const {orders}=await fetchAssignedOrders();
     const docs=orders.filter(x=>!filter||String(x.nomorPesanan||"").toLowerCase().includes(filter)).sort((a,b)=>(asDate(b.createdAt)?.getTime()||0)-(asDate(a.createdAt)?.getTime()||0));
     box.innerHTML=docs.length?docs.map(renderOrderRecord).join(""):'<div class="muted">Tidak ada.</div>';
-    // Pasang klik untuk buka tutup produk - sembunyikan dulu nama produk, hanya tampil Harga Mitra tersimpan
 
   }catch(err){box.innerHTML='<div class="err">'+esc(err.message)+'</div>';}
 }
@@ -338,7 +202,7 @@ $("records")?.addEventListener("click",e=>{
   const card=btn.closest(".order-collapse");
   if(card) handleOrderPacking(btn.dataset.id,btn.dataset.orderAction,card);
 });
-$("reloadBtn")?.addEventListener("click",()=>{loadOffers();loadRecords();});$("filter")?.addEventListener("input",()=>{if(userNow)loadRecords();});setInterval(updateTimers,1000);
+$("reloadBtn")?.addEventListener("click",()=>loadRecords());$("filter")?.addEventListener("input",()=>{if(userNow)loadRecords();});
 
 // AUTO REFRESH pas balik
 window.addEventListener('pageshow', (e)=>{ if(e.persisted) location.reload(); });
