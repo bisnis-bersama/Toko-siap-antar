@@ -184,15 +184,23 @@ window.loadVerifikasi=async()=>{
   }
   $("content").innerHTML='Memuat pesanan yang menunggu verifikasi admin...';
   try{
-    const q=query(collection(db,"orders"),where("status","==","verifikasi_admin"),limit(100));
-    const snap=await getDocs(q);
-    $("countVerifikasi").textContent=String(snap.size);
-    if(snap.empty){
+    // Field yang menjadi acuan antrean verifikasi sesuai struktur Firestore:
+    // statusPembayaran == menunggu_verifikasi.
+    const snap=await getDocs(query(
+      collection(db,"orders"),
+      where("statusPembayaran","==","menunggu_verifikasi"),
+      limit(100)
+    ));
+    const orderMap=new Map();
+    snap.docs.forEach(d=>orderMap.set(d.id,d));
+    const docs=[...orderMap.values()];
+    $("countVerifikasi").textContent=String(docs.length);
+    if(!docs.length){
       $("content").innerHTML='<div class="ok">Belum ada pesanan yang menunggu verifikasi admin.</div>';
       return;
     }
     let cards='';
-    for(const d of snap.docs){
+    for(const d of docs){
       const o=d.data(), id=d.id;
       const details=await buildOrderDetails(o,id);
       const proofUrl=o.buktiSerahTerimaUrl||o.buktiPengirimanUrl||o.fotoBuktiPengiriman||o.buktiFoto||'';
@@ -203,8 +211,8 @@ window.loadVerifikasi=async()=>{
         <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap">
           <strong>${esc(o.nomorPesanan||id)}</strong><span class="status-badge" style="background:#ffedd5;color:#9a3412">VERIFIKASI ADMIN</span>
         </div>${details}
-        <div class="actions">${proofButton}<button class="btn" onclick="verifyOrderInfo('${id}')">✓ Verifikasi</button></div>
-        <div class="meta" style="margin-top:6px">Klik Verifikasi untuk membagikan saldo mitra/kurir dan admin. Komisi admin 5%. Status berubah menjadi selesai setelah seluruh saldo berhasil diproses.</div>
+        <div class="actions">${proofButton}<button class="btn" onclick="verifyOrderInfo('${id}',this)">✓ Verifikasi</button></div>
+        <div class="meta" style="margin-top:6px">Klik Verifikasi untuk membagikan saldo mitra/kurir dan admin. Komisi admin 5%. Status pembayaran berubah menjadi terverifikasi setelah saldo berhasil dibagikan; status pesanan yang sudah selesai tetap dipertahankan.</div>
       </div>`;
     }
     $("content").innerHTML=`<div class="list">${cards}</div>`;
@@ -276,22 +284,21 @@ function buildFinancialSplit(o,id){
   }
   return {rows,adminAmount:adminTotal.amount,subtotal,ongkir,isExpedisi,kurirUid,method};
 }
-window.verifyOrderInfo=async(id)=>{
+window.verifyOrderInfo=async(id,btn)=>{
   if(!authReady || !currentUser){alert('Sesi admin tidak ditemukan.');return;}
-  const btn=window.event?.currentTarget;
   if(btn){btn.disabled=true;btn.textContent='Memproses...';}
   try{
     const orderRef=doc(db,'orders',id);
     const orderSnap=await getDoc(orderRef);
     if(!orderSnap.exists()) throw Error('Pesanan tidak ditemukan.');
     const order=orderSnap.data();
-    if(order.status!=='verifikasi_admin') throw Error('Status pesanan bukan verifikasi_admin. Muat ulang daftar.');
+    if(order.statusPembayaran!=='menunggu_verifikasi') throw Error('Status pembayaran bukan menunggu_verifikasi. Muat ulang daftar.');
     if(order.saldoDibagi===true) throw Error('Pembagian saldo pesanan ini sudah tercatat.');
     const split=buildFinancialSplit(order,id);
     const methodLabel=split.isExpedisi?'Ekspedisi':'Kurir Toko Siap Antar';
     const lines=split.rows.map(r=>`${r.role==='mitra'?'Mitra':'Kurir'} (${r.uid}): ${rupiah(r.net)} | potongan admin ${rupiah(r.adminCut)}`);
     lines.push(`Admin total: ${rupiah(split.adminAmount)}`);
-    if(!confirm(`Verifikasi final pesanan ${order.nomorPesanan||id}?\n\nMetode: ${methodLabel}\nHarga produk: ${rupiah(split.subtotal)}\nOngkir: ${rupiah(split.ongkir)}\n\n${lines.join('\n')}\n\nSaldo akan masuk ke E-Wallet dan status berubah menjadi selesai. Proses tidak dapat diulang.`)){
+    if(!confirm(`Verifikasi final pesanan ${order.nomorPesanan||id}?\n\nMetode: ${methodLabel}\nHarga produk: ${rupiah(split.subtotal)}\nOngkir: ${rupiah(split.ongkir)}\n\n${lines.join('\n')}\n\nSaldo akan masuk ke E-Wallet dan statusPembayaran berubah menjadi terverifikasi. Status pesanan tetap seperti semula. Proses tidak dapat diulang.`)){
       if(btn){btn.disabled=false;btn.textContent='✓ Verifikasi';}
       return;
     }
@@ -303,7 +310,7 @@ window.verifyOrderInfo=async(id)=>{
       const freshOrder=await tx.get(orderRef);
       if(!freshOrder.exists()) throw Error('Pesanan tidak ditemukan.');
       const fresh=freshOrder.data();
-      if(fresh.status!=='verifikasi_admin' || fresh.saldoDibagi===true) throw Error('Pesanan sudah diproses atau statusnya berubah.');
+      if(fresh.statusPembayaran!=='menunggu_verifikasi' || fresh.saldoDibagi===true) throw Error('Pesanan sudah diproses atau status pembayaran sudah berubah.');
       const userSnaps=[];
       for(const item of recipientRefs) userSnaps.push({uid:item.uid,ref:item.ref,snap:await tx.get(item.ref)});
       const adminSnap=await tx.get(adminRef);
@@ -329,9 +336,9 @@ window.verifyOrderInfo=async(id)=>{
         tx.set(item.ref,{uid:r.uid,type:'masuk',kategori:r.role==='mitra'?(split.isExpedisi?'penjualan_mitra_ekspedisi':'penjualan_mitra'):'ongkir_kurir',orderId:id,jumlah:r.net,subtotal:r.productGross,ongkirFull:r.shippingGross,potonganAdmin:r.adminCut,persentaseAdmin:5,metodePengiriman:split.method,keterangan:`Pembagian ${r.role} pesanan ${order.nomorPesanan||id}; bruto ${rupiah(r.gross)}, potongan admin 5% ${rupiah(r.adminCut)}, diterima ${rupiah(r.net)}`,createdAt:now});
       }
       tx.set(adminLedgerRef,{uid:'admin',type:'masuk',kategori:'komisi_pesanan',orderId:id,jumlah:split.adminAmount,subtotal:split.subtotal,ongkirFull:split.ongkir,persentaseAdmin:5,metodePengiriman:split.method,keterangan:`Komisi admin 5% dari harga produk dan ongkir pesanan ${order.nomorPesanan||id}`,createdAt:now});
-      tx.update(orderRef,{status:'selesai',selesaiAt:now,saldoDibagi:true,saldoDibagiDetail:{metodePengiriman:split.method,subtotal:split.subtotal,ongkir:split.ongkir,persentaseAdmin:5,admin:split.adminAmount,penerima:split.rows.map(r=>({uid:r.uid,role:r.role,produk:r.productGross,ongkir:r.shippingGross,potonganAdmin:r.adminCut,diterima:r.net})),dibagiOleh:currentUser.uid}});
+      tx.update(orderRef,{statusPembayaran:'terverifikasi',statusPembayaranAt:now,statusPembayaranDiverifikasiOleh:currentUser.uid,selesaiAt:now,saldoDibagi:true,saldoDibagiDetail:{metodePengiriman:split.method,subtotal:split.subtotal,ongkir:split.ongkir,persentaseAdmin:5,admin:split.adminAmount,penerima:split.rows.map(r=>({uid:r.uid,role:r.role,produk:r.productGross,ongkir:r.shippingGross,potonganAdmin:r.adminCut,diterima:r.net})),dibagiOleh:currentUser.uid}});
     });
-    alert(`Verifikasi berhasil. Saldo sudah dibagikan dan status pesanan menjadi selesai.\n\n${lines.join('\n')}`);
+    alert(`Verifikasi berhasil. Saldo sudah dibagikan dan status pembayaran menjadi terverifikasi.\n\n${lines.join('\n')}`);
     await loadVerifikasi();
   }catch(e){
     console.error(e);
