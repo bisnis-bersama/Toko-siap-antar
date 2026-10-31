@@ -203,10 +203,12 @@ window.loadVerifikasi=async()=>{
     for(const d of docs){
       const o=d.data(), id=d.id;
       const details=await buildOrderDetails(o,id);
-      const proofUrl=o.buktiSerahTerimaUrl||o.buktiPengirimanUrl||o.fotoBuktiPengiriman||o.buktiFoto||'';
+      const proofUrl=o.buktiSerahTerimaUrl||o.buktiPengirimanUrl||o.fotoBuktiPengiriman||o.buktiFoto||o.resiFotoUrl||o.resiFotoURL||o.urlFotoResi||'';
       const proofButton=proofUrl
         ? `<button class="btn dark" onclick="viewDeliveryProof('${id}')">Lihat Bukti Pengiriman</button>`
-        : `<span class="err">Bukti foto belum ditemukan pada data pesanan.</span>`;
+        : (o.resiOcrText
+          ? `<button class="btn dark" onclick="viewDeliveryProof('${id}')">Lihat Hasil OCR Resi</button><span class="meta">Foto asli belum tersimpan; hasil OCR tersedia.</span>`
+          : `<span class="err">Bukti foto dan hasil OCR belum ditemukan pada data pesanan.</span>`);
       cards+=`<div class="item">
         <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap">
           <strong>${esc(o.nomorPesanan||id)}</strong><span class="status-badge" style="background:#ffedd5;color:#9a3412">VERIFIKASI ADMIN</span>
@@ -226,8 +228,16 @@ window.viewDeliveryProof=async(id)=>{
     const snap=await getDoc(doc(db,"orders",id));
     if(!snap.exists()){alert("Pesanan tidak ditemukan.");return;}
     const o=snap.data();
-    const url=o.buktiSerahTerimaUrl||o.buktiPengirimanUrl||o.fotoBuktiPengiriman||o.buktiFoto;
-    if(!url){alert("URL bukti pengiriman belum tersedia.");return;}
+    const url=o.buktiSerahTerimaUrl||o.buktiPengirimanUrl||o.fotoBuktiPengiriman||o.buktiFoto||o.resiFotoUrl||o.resiFotoURL||o.urlFotoResi;
+    if(!url){
+      if(o.resiOcrText){
+        const w=window.open("","_blank");
+        if(w){w.document.write(`<meta name="viewport" content="width=device-width,initial-scale=1"><title>Data Resi</title><body style="font:14px system-ui;padding:20px"><h3>Hasil OCR Resi</h3><pre style="white-space:pre-wrap">${String(o.resiOcrText).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))}</pre><p>Nama file: ${String(o.resiNamaFile||'-').replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))}</p></body>`);w.document.close();}
+        else alert("Popup diblokir. Hasil OCR: "+o.resiOcrText);
+        return;
+      }
+      alert("URL foto bukti belum tersedia. Mitra perlu mengunggah ulang foto resi.");return;
+    }
     window.open(url,"_blank","noopener,noreferrer");
   }catch(e){alert("Gagal membuka bukti: "+e.message);}
 };
