@@ -91,13 +91,20 @@ $("logoutBtn").onclick=()=>signOut(auth);
 let profile=null,userNow=null;
 onAuthStateChanged(auth,async u=>{
   if(!u){$("loginPanel").classList.remove("hidden");$("app").classList.add("hidden");$("logoutBtn").classList.add("hidden");$("bottom").classList.add("hidden");return;}
-  try{userNow=u;profile=await profileFor(u);const role=norm(profile.role);if(role!==EXPECTED)throw Error("Role harus mitra_usaha, Anda: "+role);if(profile.status!=='aktif'||profile.aktif!==true)throw Error("Akun belum aktif");$("loginPanel").classList.add("hidden");$("app").classList.remove("hidden");$("logoutBtn").classList.remove("hidden");$("bottom").classList.remove("hidden");$("greeting").textContent="Halo, "+(profile.nama||profile.namaUsaha||u.email)+" — Isi harga mitra manual, harga jual disembunyikan.";$("greetingTop").textContent="Halo, "+(profile.nama||profile.namaUsaha||"Mitra");$("greetingTop").style.display="block";await loadRecords();}catch(err){$("loginPanel").classList.remove("hidden");$("app").classList.add("hidden");$("loginMsg").textContent=err.message;}
+  try{userNow=u;profile=await profileFor(u);const role=norm(profile.role);if(role!==EXPECTED)throw Error("Role harus mitra_usaha, Anda: "+role);if(profile.status!=='aktif'||profile.aktif!==true)throw Error("Akun belum aktif");$("loginPanel").classList.add("hidden");$("app").classList.remove("hidden");$("logoutBtn").classList.remove("hidden");$("bottom").classList.remove("hidden");$("greeting").textContent="Halo, "+(profile.nama||profile.namaUsaha||u.email)+" — Periksa detail pesanan dan proses sesuai metode pengiriman.";$("greetingTop").textContent="Halo, "+(profile.nama||profile.namaUsaha||"Mitra");$("greetingTop").style.display="block";await loadRecords();}catch(err){$("loginPanel").classList.remove("hidden");$("app").classList.add("hidden");$("loginMsg").textContent=err.message;}
 });
 const esc=v=>String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function asDate(v){if(!v)return null;if(typeof v.toDate==="function")return v.toDate();if(v instanceof Date)return v;const d=new Date(v);return Number.isNaN(d.getTime())?null:d;}
 function firstDate(x,keys){for(const k of keys){const d=asDate(x[k]);if(d)return d;}return null;}
 function fmtLeft(ms){if(ms<=0)return "00:00";const sec=Math.floor(ms/1000);return String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0");}
 function rupiah(n){return 'Rp '+(Number(n)||0).toLocaleString('id-ID')}
+function getOrderItems(x){
+  const arr=Array.isArray(x.items)?x.items:[];
+  return arr.map(it=>({
+    name:it.nama||it.namaProduk||it.name||it.nama_produk||'Produk',
+    qty:Number(it.qty??it.jumlah??it.quantity??1)||1
+  }));
+}
 function isAssignedToMe(x){
   const uid=userNow?.uid;
   if(!uid) return false;
