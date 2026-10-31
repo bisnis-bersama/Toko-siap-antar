@@ -396,12 +396,15 @@ async function renderPerToko(){
     const kurirRadius=(info.lat&&info.lng&&pLat&&pLng)?await cariKurirDalamRadius(info.lat,info.lng):[];
     const adaKurirRadius=kurirRadius.length>0;
     const canCourier=items.every(x=>produkBisaKirim(x,'siap_antar')) && adaKurirRadius;
-    const canExp=items.every(x=>produkBisaKirim(x,'expedisi'));
+    const ekspedisiDiizinkan=items.every(x=>produkBisaKirim(x,'expedisi'));
+    // Fallback final: jika Siap Antar tidak tersedia dan ekspedisi tidak
+    // terdeteksi/ditandai pada data produk, tetap arahkan pesanan ke ekspedisi.
+    const canExp=ekspedisiDiizinkan || !canCourier;
     const canCod=items.every(x=>flagOn(x.cod));
     let cfg=checkoutByOwner.get(uid);
-    if(!cfg) cfg={shipping:canCourier?'siap_antar':(canExp?'expedisi':'siap_antar'),payment:'transfer',service:'jne_reg',canCourier,canExp,canCod,info};
+    if(!cfg) cfg={shipping:canCourier?'siap_antar':'expedisi',payment:'transfer',service:'jne_reg',canCourier,canExp,canCod,info};
     cfg={...cfg,canCourier,canExp,canCod,info};
-    if(cfg.shipping==='siap_antar'&&!canCourier&&canExp)cfg.shipping='expedisi';
+    if(cfg.shipping==='siap_antar'&&!canCourier)cfg.shipping='expedisi';
     if(cfg.shipping==='expedisi'&&!canExp&&canCourier)cfg.shipping='siap_antar';
     if(!canCod&&cfg.payment==='cod')cfg.payment='transfer';
     checkoutByOwner.set(uid,cfg);
@@ -615,8 +618,10 @@ async function buatPesanan(){
     for(const item of cart){
       const uid=ownerKey(item),cfg=checkoutByOwner.get(uid)||{};
       if(!cfg.shipping)throw new Error('Lengkapi metode pengiriman setiap toko.');
-      if(cfg.shipping==='siap_antar'&&!cfg.canCourier)throw new Error(`Toko ${cfg.info?.nama||uid} tidak menyediakan Siap Antar.`);
-      if(cfg.shipping==='expedisi'&&!cfg.canExp)throw new Error(`Toko ${cfg.info?.nama||uid} tidak menyediakan Ekspedisi.`);
+      // Siap Antar yang tidak tersedia otomatis dialihkan ke ekspedisi.
+      if(cfg.shipping==='siap_antar'&&!cfg.canCourier)cfg.shipping='expedisi';
+      // Ekspedisi menjadi metode cadangan terakhir agar checkout tidak gagal
+      // hanya karena pengaturan metode pengiriman produk tidak ditemukan.
       if(selectedPay==='cod'&&!cfg.canCod)throw new Error(`COD tidak tersedia karena semua mitra harus mendukung COD.`);
       const service=cfg.shipping==='expedisi'?(expeditionOptions.find(x=>x.id===cfg.service)||expeditionOptions[0]):null;
       const ongkir=cfg.shipping==='expedisi'?service.cost:(cfg.info?.ongkir||5000);
