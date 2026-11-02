@@ -83,7 +83,6 @@ label{display:block;font-size:11px;font-weight:700;margin:8px 0 4px}input,select
 import {auth,db} from "./firebase-config.js";
 import {onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import {doc,getDoc,collection,getDocs,query,where,limit,runTransaction,serverTimestamp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
-import {getStorage,ref as storageRef,uploadBytesResumable,getDownloadURL,deleteObject} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-storage.js";
 const $=id=>document.getElementById(id), EXPECTED="mitra_usaha";
 function norm(v){let x=String(v??"").trim().toLowerCase().replace(/[\s-]+/g,"_");const a={customer:"pelanggan",mitra:"mitra_usaha",mitrausaha:"mitra_usaha"};return a[x]||x;}
 async function profileFor(u){const s=await getDoc(doc(db,"users",u.uid));if(s.exists())return s.data();const q=query(collection(db,"users"),where("email","==",u.email||""),limit(1));const r=await getDocs(q);if(!r.empty)return r.docs[0].data();throw Error("Profil tidak ditemukan");}
@@ -206,7 +205,7 @@ function renderOrderRecord(x){
   } else if(milikSaya && sudahDikemas && diprosesSendiri){
     pilihanProses=`<div class="actions" style="margin-top:10px"><button class="btn" type="button" data-order-action="mark-shipped" data-id="${esc(x.id)}">🚚 Dikirim</button></div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
   } else if(milikSaya && sudahDikirim && diprosesSendiri){
-    pilihanProses=`<div class="actions" style="margin-top:10px"><button class="btn" type="button" data-order-action="finish-with-receipt" data-id="${esc(x.id)}">📤 Kirim Bukti ke Admin</button></div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
+    pilihanProses=`<div class="actions" style="margin-top:10px"><button class="btn" type="button" data-order-action="finish-with-receipt" data-id="${esc(x.id)}">📤 Simpan Hasil OCR</button></div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
   }
   const resiInfo=sudahSelesai && x.resiOcrText?`<div class="ok" style="margin-top:8px"><b>Resi tersimpan (hasil OCR)</b><div class="meta" style="white-space:pre-wrap;margin-top:5px">${esc(x.resiOcrText)}</div><div class="meta">Berkas: ${esc(x.resiNamaFile||'-')}</div></div>`:'';
   const metodeLabel=x.metodePenyerahan==='mitra_kirim_sendiri'?'Dikirim sendiri oleh mitra':x.metodePenyerahan==='serahkan_ke_kurir'?'Diserahkan ke kurir':x.metodePenyerahan==='via_expedisi'?'Diproses melalui ekspedisi':'';
@@ -318,7 +317,7 @@ function openReceiptModal(orderId){
   if(!modal){
     modal=document.createElement('div');modal.id='receiptModal';
     modal.style.cssText='position:fixed;inset:0;background:#0009;z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
-    modal.innerHTML=`<div style="background:#fff;border-radius:16px;padding:16px;width:min(100%,480px);max-height:90vh;overflow:auto"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>Upload Resi Pengiriman</b><button type="button" id="closeReceipt" class="btn dark">Tutup</button></div><p class="meta">Unggah foto bukti pengiriman atau resi. Foto asli disimpan di Firebase Storage dan hasil OCR dikirim bersama bukti ke Admin untuk diverifikasi. Pesanan belum dianggap selesai sampai Admin memverifikasi.</p><label for="receiptFile">Foto resi</label><input id="receiptFile" type="file" accept="image/*" capture="environment"><div id="receiptPreview" style="margin-top:8px"></div><div id="ocrProgress" class="meta" style="margin-top:8px"></div><label for="ocrText">Hasil pembacaan OCR (boleh diperiksa)</label><textarea id="ocrText" rows="6" placeholder="Hasil OCR akan tampil di sini"></textarea><div id="receiptError" class="err" style="display:none"></div><div class="actions"><button type="button" class="btn dark" id="runOcrBtn">Baca Resi (OCR)</button><button type="button" class="btn" id="saveReceiptBtn" disabled>Kirim Bukti ke Admin</button></div></div>`;
+    modal.innerHTML=`<div style="background:#fff;border-radius:16px;padding:16px;width:min(100%,480px);max-height:90vh;overflow:auto"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>Upload Resi Pengiriman</b><button type="button" id="closeReceipt" class="btn dark">Tutup</button></div><p class="meta">Unggah foto bukti pengiriman atau resi. Foto hanya digunakan untuk membaca resi dengan OCR. Yang disimpan ke database hanya teks hasil OCR, bukan foto. Pesanan menunggu verifikasi Admin.</p><label for="receiptFile">Foto resi</label><input id="receiptFile" type="file" accept="image/*" capture="environment"><div id="receiptPreview" style="margin-top:8px"></div><div id="ocrProgress" class="meta" style="margin-top:8px"></div><label for="ocrText">Hasil pembacaan OCR (boleh diperiksa)</label><textarea id="ocrText" rows="6" placeholder="Hasil OCR akan tampil di sini"></textarea><div id="receiptError" class="err" style="display:none"></div><div class="actions"><button type="button" class="btn dark" id="runOcrBtn">Baca Resi (OCR)</button><button type="button" class="btn" id="saveReceiptBtn" disabled>Simpan Hasil OCR</button></div></div>`;
     document.body.appendChild(modal);
     document.getElementById('closeReceipt').onclick=()=>modal.remove();
     document.getElementById('receiptFile').onchange=e=>{
@@ -344,28 +343,10 @@ function openReceiptModal(orderId){
       const saveBtn=document.getElementById('saveReceiptBtn');
       const err=document.getElementById('receiptError');
       const progress=document.getElementById('ocrProgress');
-      if(!originalFile||!textOcr){err.textContent='Foto resi dan hasil OCR wajib tersedia.';err.style.display='block';return;}
-      saveBtn.disabled=true;saveBtn.textContent='Menyiapkan…';err.style.display='none';
-      let uploadedRef=null, uploadCompleted=false;
+      if(!originalFile||!textOcr){err.textContent='Foto resi untuk dibaca dan hasil OCR wajib tersedia.';err.style.display='block';return;}
+      saveBtn.disabled=true;saveBtn.textContent='Menyimpan OCR…';err.style.display='none';
       try{
-        if(!originalFile.type.startsWith('image/'))throw new Error('Berkas bukti harus berupa gambar.');
-        const file=await compressReceiptImage(originalFile);
-        if(file.size>8*1024*1024)throw new Error('Ukuran foto masih lebih dari 8 MB. Pilih foto yang lebih kecil.');
         const uid=userNow.uid;
-        const safeName=String(file.name||'bukti.jpg').replace(/[^a-zA-Z0-9._-]/g,'_');
-        const storage=getStorage();
-        uploadedRef=storageRef(storage,`bukti-pengiriman/${orderId}/${uid}_${Date.now()}_${safeName}`);
-        progress.textContent=`Mengunggah foto (${Math.round(file.size/1024)} KB)…`;
-        saveBtn.textContent='Upload 0%';
-        const uploaded=await uploadReceiptWithProgress(
-          uploadedRef,file,
-          {contentType:file.type||'image/jpeg',customMetadata:{orderId,uploadedByUid:uid}},
-          pct=>{progress.textContent=`Mengunggah foto bukti… ${pct}%`;saveBtn.textContent=`Upload ${pct}%`;}
-        );
-        uploadCompleted=true;
-        const photoUrl=await getDownloadURL(uploaded.ref);
-        progress.textContent='Foto berhasil diunggah. Menyimpan data pesanan…';
-        saveBtn.textContent='Menyimpan data…';
         const orderRef=doc(db,'orders',orderId);
         await runTransaction(db,async tx=>{
           const snap=await tx.get(orderRef);
@@ -373,7 +354,7 @@ function openReceiptModal(orderId){
           const x=snap.data();
           if(x.acceptedByMitraUid!==uid&&x.mitraUsahaUid!==uid&&x.mitraUid!==uid)throw new Error('Pesanan ini bukan milik akun mitra Anda.');
           const statusNow=String(x.status||x.statusPemenuhan||'').toLowerCase();
-          if(statusNow!=='dikirim'&&statusNow!=='dalam_pengiriman')throw new Error('Pesanan harus berstatus dikirim sebelum bukti diserahkan.');
+          if(statusNow!=='dikirim'&&statusNow!=='dalam_pengiriman')throw new Error('Pesanan harus berstatus dikirim sebelum hasil OCR diserahkan.');
           const oldFulfillments=x.fulfillments&&typeof x.fulfillments==='object'?x.fulfillments:{};
           const oldPart=oldFulfillments[uid]&&typeof oldFulfillments[uid]==='object'?oldFulfillments[uid]:{};
           const now=serverTimestamp();
@@ -384,14 +365,13 @@ function openReceiptModal(orderId){
             kurirUid:String(x.kurirUid||oldPart.kurirUid||''),
             bukti:{
               ...(oldPart.bukti||{}),
-              url:photoUrl,
-              path:uploaded.ref.fullPath,
-              namaFile:originalFile.name,
-              mimeType:file.type||'image/jpeg',
-              ukuranBytes:file.size,
               ocrText:textOcr,
+              namaFile:originalFile.name,
+              mimeType:originalFile.type||'image',
+              ukuranBytes:originalFile.size,
               uploadedByUid:uid,
-              uploadedAt:now
+              uploadedAt:now,
+              jenis:'teks_ocr_saja'
             },
             updatedAt:now
           };
@@ -401,24 +381,21 @@ function openReceiptModal(orderId){
             statusPemenuhan:'menunggu_verifikasi',
             resiOcrText:textOcr,
             resiNamaFile:originalFile.name,
-            resiFotoUrl:photoUrl,
-            resiFotoPath:uploaded.ref.fullPath,
             resiDibacaOlehUid:uid,
             resiDibacaAt:now,
             diserahkanUntukVerifikasiAt:now,
             updatedAt:now
           });
         });
-        progress.textContent='Bukti berhasil dikirim ke Admin.';
+        progress.textContent='Hasil OCR berhasil disimpan. Foto tidak diunggah.';
         modal.remove();
         await loadRecords();
       }catch(e){
-        if(uploadedRef&&uploadCompleted){try{await deleteObject(uploadedRef);}catch(cleanupError){console.warn('Berkas sementara tidak berhasil dibersihkan:',cleanupError);}}
-        err.textContent=e.message||'Gagal mengirim bukti ke Admin.';
+        err.textContent=e.message||'Gagal menyimpan hasil OCR.';
         err.style.display='block';
-        progress.textContent='Proses belum berhasil. Periksa pesan kesalahan di atas.';
+        progress.textContent='Penyimpanan belum berhasil.';
         saveBtn.disabled=false;
-        saveBtn.textContent='Coba Kirim Lagi';
+        saveBtn.textContent='Coba Simpan Lagi';
       }
     };
   }
