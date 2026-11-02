@@ -343,6 +343,7 @@ function openReceiptModal(orderId){
       const textOcr=document.getElementById('ocrText').value.trim();
       const saveBtn=document.getElementById('saveReceiptBtn');
       const err=document.getElementById('receiptError');
+      const progress=document.getElementById('ocrProgress');
       if(!originalFile||!textOcr){err.textContent='Foto resi dan hasil OCR wajib tersedia.';err.style.display='block';return;}
       saveBtn.disabled=true;saveBtn.textContent='Menyiapkan…';err.style.display='none';
       let uploadedRef=null, uploadCompleted=false;
