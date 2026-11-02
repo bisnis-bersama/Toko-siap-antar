@@ -356,6 +356,8 @@ function parseGviz(raw) {
 
 async function loadProductsFromSheet(){
   try{
+    // Memastikan migrasi header lama berjalan sebelum membaca Spreadsheet publik.
+    try{await fetch(APPS_SCRIPT_URL,{cache:'no-store'});}catch(_){}
     const res=await fetch(SHEET_URL, {cache:'no-store'});
     if(!res.ok) throw new Error('HTTP '+res.status);
     const raw=await res.text();
