@@ -69,6 +69,13 @@ import {doc,getDoc,collection,getDocs,query,where,limit,updateDoc,serverTimestam
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function rupiah(n){return "Rp "+(Number(n)||0).toLocaleString("id-ID");}
+function hasVerificationProof(f){
+  return !!(f && f.bukti && (
+    String(f.bukti.ocrText||"").trim() ||
+    String(f.bukti.url||"").trim()
+  ));
+}
+
 function log(m){const el=$("log");if(el)el.textContent+="\n"+m;}
 function waLink(num){if(!num)return null;let p=String(num).replace(/[^0-9]/g,"");if(p.startsWith("0"))p="62"+p.slice(1);if(!p.startsWith("62"))p="62"+p;return "https://wa.me/"+p;}
 function valFrom(obj,paths){for(const path of paths){const v=path.split(".").reduce((a,k)=>a?.[k],obj);if(v!==undefined&&v!==null&&v!=="")return v;}return null;}
@@ -187,7 +194,7 @@ window.loadVerifikasi=async()=>{
     const docs=snap.docs.map(d=>({id:d.id,data:d.data()})).filter(({data:o})=>{
       const fs=o.fulfillments&&typeof o.fulfillments==="object"?Object.values(o.fulfillments):[];
       return o.saldoDibagi!==true && fs.length>0 &&
-        fs.some(f=>f&&f.status==="menunggu_verifikasi"&&f.bukti&&f.bukti.url);
+        fs.some(f=>f&&f.status==="menunggu_verifikasi"&&hasVerificationProof(f));
     });
     $("countVerifikasi").textContent=String(docs.length);
     if(!docs.length){$("content").innerHTML='<div class="ok">Belum ada bukti pengiriman yang menunggu verifikasi.</div>';return;}
@@ -195,8 +202,8 @@ window.loadVerifikasi=async()=>{
     for(const entry of docs){
       const id=entry.id,o=entry.data,details=await buildOrderDetails(o,id);
       const fs=o.fulfillments||{};
-      const proofRows=Object.entries(fs).filter(([,f])=>f&&f.status==="menunggu_verifikasi"&&f.bukti?.url).map(([uid,f])=>
-        `<div style="padding:8px 0;border-top:1px solid #eee"><b>${esc(f.namaMitra||f.namaKurir||"Bagian pemenuhan")}</b><div class="meta">UID: ${esc(uid)} • Status: ${esc(f.status)}</div><a class="meta" style="color:#087443;font-weight:800" href="${esc(f.bukti.url)}" target="_blank" rel="noopener">Lihat foto bukti asli</a><div class="meta" style="white-space:pre-wrap">${esc(f.bukti.ocrText||"OCR tidak tersedia")}</div><div class="meta">Pengunggah: ${esc(f.bukti.uploadedByUid||"-")}</div></div>`
+      const proofRows=Object.entries(fs).filter(([,f])=>f&&f.status==="menunggu_verifikasi"&&hasVerificationProof(f)).map(([uid,f])=>
+        `<div style="padding:8px 0;border-top:1px solid #eee"><b>${esc(f.namaMitra||f.namaKurir||"Bagian pemenuhan")}</b><div class="meta">UID: ${esc(uid)} • Status: ${esc(f.status)}</div><div class="meta" style="white-space:pre-wrap"><b>Hasil OCR:</b> ${esc(f.bukti.ocrText||"OCR tidak tersedia")}</div>${f.bukti.url?`<a class="meta" style="color:#087443;font-weight:800" href="${esc(f.bukti.url)}" target="_blank" rel="noopener">Lihat foto bukti asli</a>`:''}<div class="meta">Pengunggah: ${esc(f.bukti.uploadedByUid||"-")}</div></div>`
       ).join("");
       cards+=`<div class="item">
       <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap"><strong>${esc(o.nomorPesanan||id)}</strong><span class="status-badge" style="background:#ffedd5;color:#9a3412">MENUNGGU VERIFIKASI</span></div>
@@ -330,13 +337,13 @@ window.verifyOrderInfo=async(id,btn)=>{
     if(!fulfillmentEntries.length)throw Error("Data fulfillments belum tersedia. Verifikasi dihentikan.");
     const waiting=fulfillmentEntries.filter(([,f])=>f?.status==="menunggu_verifikasi");
     if(!waiting.length)throw Error("Tidak ada bagian pesanan berstatus menunggu_verifikasi.");
-    const missing=fulfillmentEntries.filter(([,f])=>!f||f.status!=="menunggu_verifikasi"||!f.bukti?.url);
-    if(missing.length)throw Error("Belum semua bagian pesanan berstatus menunggu_verifikasi dan memiliki foto bukti asli. Periksa setiap mitra/kurir.");
+    const missing=fulfillmentEntries.filter(([,f])=>!f||f.status!=="menunggu_verifikasi"||!hasVerificationProof(f));
+    if(missing.length)throw Error("Belum semua bagian pesanan berstatus menunggu_verifikasi dan memiliki hasil OCR. Periksa setiap mitra/kurir.");
 
     const split=buildFinancialSplit(order,id);
     const lines=split.rows.map(r=>`${r.role==="mitra"?"Mitra":"Kurir"} (${r.uid}): ${rupiah(r.net)} | bruto ${rupiah(r.gross)} | admin ${rupiah(r.adminCut)}`);
     lines.push(`Admin menerima komisi: ${rupiah(split.adminAmount)}`);
-    if(!confirm(`Verifikasi final pesanan ${order.nomorPesanan||id}?\n\n${split.shippingLabel}\nHarga produk: ${rupiah(split.subtotal)}\nOngkir: ${rupiah(split.ongkir)}\n\n${lines.join("\n")}\n\nSeluruh bagian memiliki foto bukti. Sistem akan membagikan saldo satu kali.`)){
+    if(!confirm(`Verifikasi final pesanan ${order.nomorPesanan||id}?\n\n${split.shippingLabel}\nHarga produk: ${rupiah(split.subtotal)}\nOngkir: ${rupiah(split.ongkir)}\n\n${lines.join("\n")}\n\nSeluruh bagian memiliki hasil OCR. Sistem akan membagikan saldo satu kali.`)){
       if(btn){btn.disabled=false;btn.textContent="✓ Verifikasi seluruh pesanan";}
       return;
     }
@@ -351,7 +358,7 @@ window.verifyOrderInfo=async(id,btn)=>{
       if(!freshOrder.exists())throw Error("Pesanan tidak ditemukan.");
       const fresh=freshOrder.data(),freshEntries=Object.entries(fresh.fulfillments||{});
       if(fresh.saldoDibagi===true)throw Error("Pesanan sudah dibagikan.");
-      if(!freshEntries.length||freshEntries.some(([,f])=>!f||f.status!=="menunggu_verifikasi"||!f.bukti?.url))throw Error("Status/bukti fulfillment berubah. Muat ulang dan periksa ulang seluruh bukti.");
+      if(!freshEntries.length||freshEntries.some(([,f])=>!f||f.status!=="menunggu_verifikasi"||!hasVerificationProof(f)))throw Error("Status/hasil OCR fulfillment berubah. Muat ulang dan periksa ulang seluruh hasil OCR.");
       const userSnaps=[];
       for(const item of recipientRefs)userSnaps.push({uid:item.uid,ref:item.ref,snap:await tx.get(item.ref)});
       const adminSnap=await tx.get(adminRef);
