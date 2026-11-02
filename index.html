@@ -41,7 +41,7 @@ main{padding:10px 12px 18px;min-height:150px}
 .product{min-width:0;background:var(--card);border:1px solid var(--line);border-radius:15px;overflow:hidden;box-shadow:0 2px 5px #18312b12;display:flex;flex-direction:column}
 .product-photo{height:112px;background:linear-gradient(135deg,#e4fff2,#fafff0);display:flex;align-items:center;justify-content:center;padding:6px;position:relative}
 .product-photo img{width:100%;height:100%;object-fit:contain}
-.mitra-tag{position:absolute;top:4px;left:4px;right:auto;background:#111;color:#ffd400;font-size:8px;font-weight:800;padding:3px 6px;border-radius:999px;max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mitra-tag{position:absolute;top:4px;left:4px;background:#111;color:#ffd400;font-size:8px;font-weight:800;padding:3px 6px;border-radius:999px;max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .product-info{padding:8px 7px 9px;display:flex;flex-direction:column;flex:1;text-align:center;gap:6px}
 .product-name{font-size:12px;font-weight:800;line-height:1.4;min-height:29px;overflow-wrap:anywhere;color:#18312b}
 .product-desc{font-size:9px;line-height:1.35;color:var(--muted);min-height:25px}
@@ -205,11 +205,11 @@ body.dark-mode .menu-item:active{background:#294a37}
   <aside class="menu-drawer" role="dialog" aria-modal="true" aria-label="Menu Toko Siap Antar">
     <div class="menu-drawer-head"><strong>Menu Toko Siap Antar</strong><button class="menu-close" id="closeMenu" type="button" aria-label="Tutup menu">×</button></div>
     <nav class="menu-items">
-      <a class="menu-item" href="data-gojek-elit.html"><span class="menu-icon">🛵</span>Gojek Elit</a>
+      <a class="menu-item" href="gojek-elit.html"><span class="menu-icon">🛵</span>Gojek Elit</a>
       <a class="menu-item" href="https://fixzi-global.vercel.app" target="_blank" rel="noopener"><span class="menu-icon">📊</span>Fixzy Business</a>
-      <a class="menu-item" href="daftar-mitra-usaha.html"><span class="menu-icon">🏪</span>Daftar Jadi Penjual</a>
-      <a class="menu-item" href="daftar-mitra-pengantaran.html"><span class="menu-icon">🚴</span>Daftar Jadi Kurir</a>
-      <a class="menu-item" href="daftar-mitra-pengantaran.html"><span class="menu-icon">🚕</span>Daftar Jadi Gojek Elit</a>
+      <a class="menu-item" href="daftar-penjual.html"><span class="menu-icon">🏪</span>Daftar Jadi Penjual</a>
+      <a class="menu-item" href="daftar-kurir.html"><span class="menu-icon">🚴</span>Daftar Jadi Kurir</a>
+      <a class="menu-item" href="daftar-gojek-elit.html"><span class="menu-icon">🚕</span>Daftar Jadi Gojek Elit</a>
       <a class="menu-item" href="https://wa.me/62895707182299" target="_blank" rel="noopener"><span class="menu-icon">💬</span>Chat Admin</a>
       <a class="menu-item" href="page.html"><span class="menu-icon">ℹ️</span>About Toko Siap Antar</a>
     </nav>
@@ -359,7 +359,7 @@ function renderProducts() {
         <div class="product-name">${escapeHtml(p.name)}</div>
         <div class="product-desc">${escapeHtml(p.description || 'Pesanan siap antar ±1 jam').slice(0,80)}</div>
         <div class="price">${escapeHtml(formatPrice(p.price))}</div>
-        <div class="product-meta"><strong>Pengiriman:</strong> ${escapeHtml(deliveryLabels(p))}</div>
+        <div class="product-meta"><strong>Pemilik:</strong> ${escapeHtml(ownerInitials(p.mitraNama))} · ${escapeHtml(p.category||'')}<br><strong>Pengiriman:</strong> ${escapeHtml(deliveryLabels(p))}</div>
         <div class="actions">
           <button class="wa" data-action="wa" data-id="${escapeHtml(p.id)}" aria-label="Tanya WhatsApp">☏</button>
           <button class="cart" data-action="cart" data-id="${escapeHtml(p.id)}" aria-label="Tambah keranjang">🛒</button>
@@ -381,8 +381,8 @@ function updateCart() {
 }
 function addProductToCart(p) {
   const existing = cart.find(item => item.id === p.id);
-  if (existing) { existing.qty = (Number(existing.qty) || 0) + 1; existing.mitraUid=p.mitraUid||existing.mitraUid||''; existing.mitraNama=p.mitraNama||existing.mitraNama||'Mitra'; existing.cod=p.cod; existing.kurir=p.kurir; existing.expedisi=p.expedisi; existing.stock=p.stock; existing.category=p.category; }
-  else cart.push({id:p.id,name:p.name,price:p.price,qty:1,mitraUid:p.mitraUid||'',mitraNama:p.mitraNama||'Mitra',image:p.image,cod:p.cod,kurir:p.kurir,expedisi:p.expedisi,stock:p.stock,category:p.category});
+  if (existing) existing.qty = (Number(existing.qty) || 0) + 1;
+  else cart.push({id:p.id,name:p.name,price:p.price,qty:1,mitraUid:p.mitraUid||'',mitraNama:p.mitraNama||'Mitra',image:p.image});
   updateCart();
 }
 function normalizeWhatsAppNumber(value) {
@@ -395,45 +395,37 @@ function normalizeWhatsAppNumber(value) {
 // Nomor WhatsApp pemilik diambil dari dokumen Firestore users/{UID},
 // sesuai halaman daftar-mitra-usaha.html: field noWA.
 async function openOwnerWhatsApp(p, intro='Halo, saya ingin bertanya tentang produk: ') {
-  // UID pemilik produk berasal dari kolom G spreadsheet dan menjadi ID dokumen mitra_public.
-  const ownerUid = String(p?.mitraUid || p?.ownerUid || p?.tokoId || '').trim();
-  if (!ownerUid) {
-    alert('UID pemilik produk pada kolom G spreadsheet masih kosong.');
-    return;
-  }
-
-  // Buka tab saat klik berlangsung agar tidak diblokir browser HP.
+  // UID mitra pada katalog spreadsheet menjadi penghubung ke dokumen users/{UID}.
+  const ownerUid = String(p.mitraUid || p.ownerUid || p.tokoId || '').trim();
   const waTab = window.open('about:blank', '_blank');
 
   try {
-    // Nomor WhatsApp publik mitra disimpan pada mitra_public/{UID}, field noWA.
-    const ownerSnap = await getDoc(doc(db, 'mitra_public', ownerUid));
-    if (!ownerSnap.exists()) {
-      throw new Error('Data mitra tidak ditemukan di mitra_public/' + ownerUid + '. Pastikan dokumen publik mitra sudah dibuat.');
-    }
+    if (!ownerUid) throw new Error('UID pemilik produk tidak tersedia pada data produk.');
+
+    const ownerSnap = await getDoc(doc(db, 'users', ownerUid));
+    if (!ownerSnap.exists()) throw new Error('Data mitra tidak ditemukan di Firestore users/' + ownerUid + '.');
 
     const ownerData = ownerSnap.data() || {};
-    const ownerNumber = normalizeWhatsAppNumber(ownerData.noWA || ownerData.whatsapp || ownerData.nomorWA || '');
+    // Nama field ini mengikuti struktur pendaftaran mitra: noWA.
+    const ownerNumber = normalizeWhatsAppNumber(ownerData.noWA || '');
+
     if (!ownerNumber || ownerNumber.length < 10) {
-      throw new Error('Nomor WhatsApp mitra belum valid. Periksa field noWA pada dokumen mitra_public/' + ownerUid + '.');
+      throw new Error('Nomor WhatsApp mitra belum diisi pada field noWA di Firestore.');
     }
 
-    const ownerName = String(p.mitraNama || ownerData.nama || 'Mitra').trim();
-    const message = intro + String(p.name || 'produk') +
-      ' — ' + formatPrice(p.price) + ' (Mitra: ' + ownerName + ')';
+    const message = intro + p.name + ' — ' + formatPrice(p.price) +
+      ' (Mitra: ' + (p.mitraNama || ownerData.nama || 'Mitra') + ')';
     const waUrl = 'https://wa.me/' + ownerNumber + '?text=' + encodeURIComponent(message);
 
     if (waTab && !waTab.closed) {
       waTab.opener = null;
       waTab.location.href = waUrl;
     } else {
-      // Cadangan jika browser tidak mengizinkan tab baru.
       window.location.href = waUrl;
     }
   } catch (error) {
     if (waTab && !waTab.closed) waTab.close();
-    console.error('Gagal membuka WhatsApp pemilik produk:', error);
-    alert(error.message || 'Tidak dapat membuka WhatsApp pemilik produk. Periksa koneksi dan izin Firestore.');
+    alert(error.message || 'Tidak dapat membuka WhatsApp pemilik produk.');
   }
 }
 
@@ -612,20 +604,6 @@ productZoom.addEventListener('click', function(e) {
 
 document.getElementById('productZoomClose').addEventListener('click', closeProductZoom);
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeProductZoom(); });
-</script>
-<script>
-/* REFRESH INDEX SAAT KEMBALI DARI HALAMAN LAIN */
-(function () {
-  let isReloading = false;
-
-  window.addEventListener('pageshow', function (event) {
-    // Halaman dipulihkan dari Back/Forward Cache.
-    if (event.persisted && !isReloading) {
-      isReloading = true;
-      window.location.reload();
-    }
-  });
-})();
 </script>
 </body>
 </html>
