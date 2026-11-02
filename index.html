@@ -613,5 +613,19 @@ productZoom.addEventListener('click', function(e) {
 document.getElementById('productZoomClose').addEventListener('click', closeProductZoom);
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeProductZoom(); });
 </script>
+<script>
+/* REFRESH INDEX SAAT KEMBALI DARI HALAMAN LAIN */
+(function () {
+  let isReloading = false;
+
+  window.addEventListener('pageshow', function (event) {
+    // Halaman dipulihkan dari Back/Forward Cache.
+    if (event.persisted && !isReloading) {
+      isReloading = true;
+      window.location.reload();
+    }
+  });
+})();
+</script>
 </body>
 </html>
