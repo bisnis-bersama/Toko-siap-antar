@@ -306,41 +306,34 @@ function renderSponsorSlides(rows) {
   const track = document.getElementById('promoTrack');
   if (!section || !track) return;
 
-  const sponsorLinks = [...new Set((rows || []).map(row => {
-    const cells = row.c || [];
-    return String(cells[13]?.v ?? cells[13]?.f ?? '').trim();
-  }).filter(value =>
-    /^https?:\\/\\//i.test(value) ||
-    /^data:image\\//i.test(value) ||
-    /^(?:\\/9j\\/|iVBORw0KGgo|R0lGOD|UklGR)/.test(value)
-  ))];
+  const sponsorLinks = [...new Set(
+    rows.map(row => {
+      const cells = row.c || [];
+      return String(cells[13]?.v ?? cells[13]?.f ?? '').trim();
+    }).filter(url => /^https?:\/\//i.test(url))
+  )];
 
   const images = sponsorLinks.map(convertImage).filter(Boolean);
-  track.replaceChildren();
-  track.style.animation = 'none';
-  track.style.transform = 'translateX(0)';
 
   if (!images.length) {
-    // Promo tetap terlihat; tampilkan pesan agar area tidak menghilang diam-diam.
-    section.style.display = 'block';
-    track.innerHTML = '<div style="padding:18px;text-align:center;color:#52635b;width:100%">Promo belum tersedia</div>';
+    section.style.display = 'none';
+    track.replaceChildren();
     return;
   }
 
   section.style.display = 'block';
   const repeatedSlides = images.length > 1 ? [...images, ...images] : images;
-  track.innerHTML = repeatedSlides.map(url => `
+  track.innerHTML = repeatedSlides.map((url, index) => `
     <img
       src="${escapeHtml(url)}"
-      alt="Promo Toko Siap Antar"
-      loading="eager"
+      alt="Sponsor Toko Siap Antar"
+      loading="${index < images.length ? 'eager' : 'lazy'}"
+      onerror="this.style.display='none'"
     >
   `).join('');
 
-  // Animasi hanya untuk beberapa gambar. Satu gambar selalu menetap.
-  if (images.length > 1) {
-    track.style.animation = 'promoGeser 24s linear infinite';
-  }
+  // Jika hanya satu sponsor, hentikan animasi agar gambar tidak bergeser ke ruang kosong.
+  track.style.animation = images.length > 1 ? '' : 'none';
 }
 
 function renderProducts() {
@@ -531,7 +524,7 @@ async function loadProductsFromSheet(){
       const getVal = (i)=>c[i]?.v??'';
       let id=getVal(1)||String(index);
       let name='', desc='', price='', image='', mUid='', mNama='', cat='', cod='', kurir='', expedisi='', stock='';
-      if(c.length>=9){
+      if(c.length>=9 || (c[2] && c[4] !== undefined)){
         name=getVal(2); desc=getVal(3); price=getVal(4); image=getVal(5);
         mUid=getVal(6); mNama=getVal(7); cat=getVal(8);
         cod=getVal(9); kurir=getVal(10); expedisi=getVal(11); stock=getVal(12);
