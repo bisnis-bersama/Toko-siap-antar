@@ -261,12 +261,29 @@ function produkBisaKirim(item, metode){
 function ownerKey(item){ return String(item.mitraUid||item.mitra_uid||'unknown'); }
 function ownerItems(){ const m=new Map(); for(const item of cart){const k=ownerKey(item);if(!m.has(k))m.set(k,[]);m.get(k).push(item);} return m; }
 
+function ambilKoordinat(obj, kandidat){
+  if(!obj || typeof obj!=='object') return null;
+  for(const path of kandidat){
+    let value=obj;
+    for(const key of path.split('.')){
+      if(value==null){value=undefined;break;}
+      value=value[key];
+    }
+    if(value===undefined || value===null || String(value).trim()==='') continue;
+    const n=Number(value);
+    if(Number.isFinite(n)) return n;
+  }
+  return null;
+}
+const LAT_FIELDS=['lat','latitude','currentLat','current_lat','latToko','tokoLat','toko_lat','latMitra','alamatPengiriman.lat','alamatToko.lat','lokasi.lat','gps.lat','koordinat.lat','coordinate.lat','posisi.lat','location.lat','alamatPengiriman.latitude','lokasi.latitude','gps.latitude'];
+const LNG_FIELDS=['lng','longitude','currentLng','current_lng','lngToko','tokoLng','toko_lng','lngMitra','alamatPengiriman.lng','alamatToko.lng','lokasi.lng','gps.lng','koordinat.lng','coordinate.lng','posisi.lng','location.lng','alamatPengiriman.longitude','lokasi.longitude','gps.longitude'];
 function hitungJarakKm(lat1,lng1,lat2,lng2){
-  if(!lat1||!lng1||!lat2||!lng2) return null;
+  const aLat=Number(lat1), aLng=Number(lng1), bLat=Number(lat2), bLng=Number(lng2);
+  if(![aLat,aLng,bLat,bLng].every(Number.isFinite)) return null;
   const R=6371;
-  const dLat=(lat2-lat1)*Math.PI/180;
-  const dLng=(lng2-lng1)*Math.PI/180;
-  const a=Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  const dLat=(bLat-aLat)*Math.PI/180;
+  const dLng=(bLng-aLng)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2 + Math.cos(aLat*Math.PI/180)*Math.cos(bLat*Math.PI/180)*Math.sin(dLng/2)**2;
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
 }
 function hitungOngkirFinal(jarakKm){
@@ -300,13 +317,13 @@ async function cariMitraTerdekat(pLat,pLng){
     }
     let terdekat=null; let jarakMin=Infinity;
     for(let m of allMitra){
-      let mLat = m.tokoLat || m.toko_lat || m.lat || m.latitude || m.latToko || m.alamatToko?.lat || m.alamatPengiriman?.lat || m.lokasi?.lat || m.gps?.lat;
-      let mLng = m.tokoLng || m.toko_lng || m.lng || m.longitude || m.lngToko || m.alamatToko?.lng || m.alamatPengiriman?.lng || m.lokasi?.lng || m.gps?.lng;
-      if(!mLat || !mLng) continue;
-      let jarak = hitungJarakKm(parseFloat(mLat), parseFloat(mLng), parseFloat(pLat), parseFloat(pLng));
-      if(jarak!=null && jarak < jarakMin){
+      const mLat=ambilKoordinat(m,LAT_FIELDS);
+      const mLng=ambilKoordinat(m,LNG_FIELDS);
+      if(mLat===null||mLng===null) continue;
+      const jarak=hitungJarakKm(mLat,mLng,pLat,pLng);
+      if(jarak!==null && jarak<jarakMin){
         jarakMin=jarak;
-        terdekat={uid:m.id, nama:m.nama||m.namaToko||m.namaUsaha||'Mitra', lat:parseFloat(mLat), lng:parseFloat(mLng), alamat:m.alamatToko||m.alamat||'', jarak:jarak};
+        terdekat={uid:m.id,nama:m.nama||m.namaToko||m.namaUsaha||'Mitra',lat:mLat,lng:mLng,alamat:m.alamatToko||m.alamat||'',jarak};
       }
     }
     return terdekat;
@@ -355,26 +372,27 @@ function updateTotals(){
 }
 
 async function cariKurirDalamRadius(mitraLat,mitraLng){
-  // Kurir harus berada maksimal 25 km dari pelanggan DAN maksimal 25 km dari mitra.
-  if(!Number.isFinite(Number(pLat))||!Number.isFinite(Number(pLng))||!Number.isFinite(Number(mitraLat))||!Number.isFinite(Number(mitraLng))) return [];
+  // Radius pengambilan: GPS kurir ke GPS mitra maksimal 25 km.
+  // GPS pelanggan dipakai terpisah untuk menghitung ongkir/rute.
+  const mLat=Number(mitraLat), mLng=Number(mitraLng);
+  if(!Number.isFinite(mLat)||!Number.isFinite(mLng)) return [];
   try{
     const snap=await getDocs(collection(db,'users'));
     const hasil=[];
+    const roleKurirDiizinkan=['kurir','mitra_pengantaran','kurir_toko','kurir_siap_antar','kurir_pengantaran','kurir_siapa_antar'];
     snap.forEach(d=>{
       const k=d.data()||{};
-      const role=String(k.role||'').trim().toLowerCase();
-      if(!['kurir','mitra_pengantaran'].includes(role)) return;
-      // Abaikan akun yang secara eksplisit dinonaktifkan.
-      if(k.aktif===false || String(k.status||'').toLowerCase()==='nonaktif') return;
-      const lat=Number(k.lat||k.latitude||k.currentLat||k.lokasi?.lat||k.gps?.lat||k.latMitra||k.tokoLat);
-      const lng=Number(k.lng||k.longitude||k.currentLng||k.lokasi?.lng||k.gps?.lng||k.lngMitra||k.tokoLng);
-      if(!Number.isFinite(lat)||!Number.isFinite(lng)||!lat||!lng) return;
-      const jarakPelanggan=hitungJarakKm(lat,lng,Number(pLat),Number(pLng));
-      const jarakMitra=hitungJarakKm(lat,lng,Number(mitraLat),Number(mitraLng));
-      if(jarakPelanggan!==null && jarakMitra!==null && jarakPelanggan<=25 && jarakMitra<=25){
-        hasil.push({uid:d.id,nama:k.nama||k.namaLengkap||k.displayName||'Kurir',jarakPelanggan,jarakMitra});
+      const role=String(k.role||k.jenisAkun||'').trim().toLowerCase().replace(/[ -]+/g,'_');
+      if(!roleKurirDiizinkan.includes(role)) return;
+      if(k.aktif===false || ['nonaktif','tidak_aktif','disabled'].includes(String(k.status||'').trim().toLowerCase().replace(/[ -]+/g,'_'))) return;
+      const lat=ambilKoordinat(k,LAT_FIELDS), lng=ambilKoordinat(k,LNG_FIELDS);
+      if(lat===null||lng===null) return;
+      const jarakMitra=hitungJarakKm(lat,lng,mLat,mLng);
+      if(jarakMitra!==null && jarakMitra<=25){
+        hasil.push({uid:d.id,nama:k.nama||k.namaLengkap||k.displayName||k.namaKurir||'Kurir',lat,lng,jarakMitra});
       }
     });
+    hasil.sort((a,b)=>a.jarakMitra-b.jarakMitra);
     return hasil;
   }catch(e){console.error('Gagal memeriksa lokasi kurir:',e);return [];}
 }
@@ -387,30 +405,50 @@ async function renderPerToko(){
     let info={nama:items[0].mitraNama||items[0].mitra_nama||'Mitra',alamat:'',lat:null,lng:null,jarak:0,ongkir:5000};
     if(uid!=='unknown'){
       try{const snap=await getDoc(doc(db,'users',uid));const m=snap.exists()?snap.data():{};
-        const lat=Number(m.tokoLat||m.toko_lat||m.lat||m.latitude||m.latToko||m.alamatToko?.lat||m.alamatPengiriman?.lat||m.lokasi?.lat||m.gps?.lat)||null;
-        const lng=Number(m.tokoLng||m.toko_lng||m.lng||m.longitude||m.lngToko||m.alamatToko?.lng||m.alamatPengiriman?.lng||m.lokasi?.lng||m.gps?.lng)||null;
-        const km=pLat&&pLng&&lat&&lng?hitungJarakKm(lat,lng,pLat,pLng):null;
+        const lat=ambilKoordinat(m,LAT_FIELDS);
+        const lng=ambilKoordinat(m,LNG_FIELDS);
+        const km=pLat!==null&&pLng!==null&&lat!==null&&lng!==null?hitungJarakKm(lat,lng,pLat,pLng):null;
         info={nama:m.nama||m.namaToko||m.namaUsaha||info.nama,alamat:m.alamatToko||m.alamat||'',lat,lng,jarak:km||0,ongkir:hitungOngkirFinal(km)};
       }catch(e){}
     }
-    const kurirRadius=(info.lat&&info.lng&&pLat&&pLng)?await cariKurirDalamRadius(info.lat,info.lng):[];
+    // Syarat Siap Antar memiliki dua radius yang berbeda:
+    // 1) Mitra ke pelanggan maksimal 25 km.
+    // 2) Kurir ke mitra maksimal 25 km.
+    const gpsPelangganValid=pLat!==null&&pLng!==null&&Number.isFinite(Number(pLat))&&Number.isFinite(Number(pLng));
+    const gpsMitraValid=info.lat!==null&&info.lng!==null&&Number.isFinite(Number(info.lat))&&Number.isFinite(Number(info.lng));
+    const jarakMitraPelanggan=(gpsPelangganValid&&gpsMitraValid)?hitungJarakKm(info.lat,info.lng,pLat,pLng):null;
+    info.jarak=jarakMitraPelanggan;
+    info.dalamRadiusPelanggan=jarakMitraPelanggan!==null&&jarakMitraPelanggan<=25;
+    const kurirRadius=(gpsMitraValid&&info.dalamRadiusPelanggan)?await cariKurirDalamRadius(info.lat,info.lng):[];
     const adaKurirRadius=kurirRadius.length>0;
-    const canCourier=items.every(x=>produkBisaKirim(x,'siap_antar')) && adaKurirRadius;
-    const ekspedisiDiizinkan=items.every(x=>produkBisaKirim(x,'expedisi'));
-    // Fallback final: jika Siap Antar tidak tersedia dan ekspedisi tidak
-    // terdeteksi/ditandai pada data produk, tetap arahkan pesanan ke ekspedisi.
-    const canExp=ekspedisiDiizinkan || !canCourier;
+    const semuaProdukIzinkanSiapAntar=items.every(x=>produkBisaKirim(x,'siap_antar'));
+    const canCourier=semuaProdukIzinkanSiapAntar && info.dalamRadiusPelanggan && adaKurirRadius;
+    const canExp=items.every(x=>produkBisaKirim(x,'expedisi'));
     const canCod=items.every(x=>flagOn(x.cod));
     let cfg=checkoutByOwner.get(uid);
-    if(!cfg) cfg={shipping:canCourier?'siap_antar':'expedisi',payment:'transfer',service:'jne_reg',canCourier,canExp,canCod,info};
+    if(!cfg) cfg={shipping:canCourier?'siap_antar':(canExp?'expedisi':'siap_antar'),payment:'transfer',service:'jne_reg',canCourier,canExp,canCod,info};
     cfg={...cfg,canCourier,canExp,canCod,info};
-    if(cfg.shipping==='siap_antar'&&!canCourier)cfg.shipping='expedisi';
+    if(cfg.shipping==='siap_antar'&&!canCourier&&canExp)cfg.shipping='expedisi';
     if(cfg.shipping==='expedisi'&&!canExp&&canCourier)cfg.shipping='siap_antar';
     if(!canCod&&cfg.payment==='cod')cfg.payment='transfer';
     checkoutByOwner.set(uid,cfg);
     const subtotal=items.reduce((a,x)=>a+(Number(x.price)||0)*(Number(x.qty)||1),0);
     const shipOpts=(canCourier?'<option value="siap_antar">Siap Antar (Kurir Toko)</option>':'')+(canExp?'<option value="expedisi">Ekspedisi</option>':'');
-    const statusKurir=canCourier?`<div class="muted" style="margin:6px 0;color:#087b45">✅ ${kurirRadius.length} kurir tersedia dalam radius maksimal 25 km dan semua produk mengizinkan Siap Antar.</div>`:(!adaKurirRadius?'<div class="muted" style="margin:6px 0;color:#b42318">ℹ️ Tidak ada kurir dalam radius 25 km dari pelanggan dan mitra.</div>':(!items.every(x=>produkBisaKirim(x,'siap_antar'))?'<div class="muted" style="margin:6px 0;color:#b42318">ℹ️ Siap Antar disembunyikan karena ada produk yang tidak mengizinkan metode ini.</div>':''));
+    const statusKurir=canCourier
+      ?`<div class="muted" style="margin:6px 0;color:#087b45">✅ Jarak mitra–pelanggan ${jarakMitraPelanggan.toFixed(2)} km (maks. 25 km). Ada ${kurirRadius.length} kurir dalam radius 25 km dari mitra.</div>`
+      :(!gpsPelangganValid
+        ?'<div class="muted" style="margin:6px 0;color:#b42318">ℹ️ GPS pelanggan belum tersedia. Isi/ambil GPS alamat pelanggan untuk memeriksa radius 25 km.</div>'
+        :(!gpsMitraValid
+          ?'<div class="muted" style="margin:6px 0;color:#b42318">ℹ️ GPS lokasi mitra belum tersedia atau nama field koordinat tidak dikenali.</div>'
+          :(jarakMitraPelanggan===null
+            ?'<div class="muted" style="margin:6px 0;color:#b42318">ℹ️ Jarak mitra–pelanggan tidak dapat dihitung karena koordinat tidak valid.</div>'
+            :(jarakMitraPelanggan>25
+              ?`<div class="muted" style="margin:6px 0;color:#b42318">ℹ️ Di luar jangkauan Siap Antar. Jarak mitra–pelanggan ${jarakMitraPelanggan.toFixed(2)} km, maksimal 25 km.</div>`
+              :(!adaKurirRadius
+                ?'<div class="muted" style="margin:6px 0;color:#b42318">ℹ️ Tidak ada kurir ber-GPS dalam radius 25 km dari lokasi mitra.</div>'
+                :(!semuaProdukIzinkanSiapAntar
+                  ?'<div class="muted" style="margin:6px 0;color:#b42318">ℹ️ Siap Antar disembunyikan karena ada produk yang tidak mengizinkan metode ini.</div>'
+                  :''))))));
     const statusEkspedisi=!canExp?'<div class="muted" style="margin:6px 0;color:#b42318">ℹ️ Ekspedisi disembunyikan karena ada produk yang tidak mengizinkan metode ini.</div>':'';
     rows.push(`<section style="border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin:10px 0;background:#fff"><div style="display:flex;justify-content:space-between;gap:8px"><b>🏪 ${info.nama}</b><span class="muted">${items.length} jenis produk</span></div><div class="muted" style="font-size:11px;margin:5px 0 10px">${items.map(x=>`${x.name} × ${x.qty||1}`).join('<br>')}</div>${statusKurir}${statusEkspedisi}<label>Metode Pengiriman</label><select data-owner-ship="${uid}" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px" ${!canCourier&&!canExp?'disabled':''}>${shipOpts||'<option value="">Tidak ada metode pengiriman tersedia</option>'}</select><div style="margin-top:8px" data-owner-service-wrap="${uid}"><label>Pilih Ekspedisi</label><select data-owner-service="${uid}" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px">${expeditionOptions.map(o=>`<option value="${o.id}">${o.name} - ${rupiah(o.cost)}</option>`).join('')}</select></div><div class="row"><span>Subtotal</span><b>${rupiah(subtotal)}</b></div><div class="row"><span>Ongkir</span><b data-owner-ongkir="${uid}">${rupiah(cfg.shipping==='expedisi'?9000:info.ongkir)}</b></div><div class="row total"><b>Total toko</b><b data-owner-total="${uid}">${rupiah(subtotal+(cfg.shipping==='expedisi'?9000:info.ongkir))}</b></div></section>`);
   }
@@ -456,24 +494,24 @@ async function loadAlamat(){
       let alamat = userData.alamat || userData.alamatLengkap || userData.alamatPengiriman?.alamat || '-';
       let detail = userData.alamatDetail || '';
       let kodePos = userData.kodePos || '';
-      let lat = userData.lat || userData.latitude || userData.alamatPengiriman?.lat || userData.lokasi?.lat;
-      let lng = userData.lng || userData.longitude || userData.alamatPengiriman?.lng || userData.lokasi?.lng;
+      let lat = ambilKoordinat(userData,LAT_FIELDS);
+      let lng = ambilKoordinat(userData,LNG_FIELDS);
       document.getElementById('alamatNama').textContent=nama;
       document.getElementById('alamatHp').textContent=hp;
       document.getElementById('alamatLengkap').textContent= alamat + (detail? ', '+detail:'') + (kodePos? ' - '+kodePos:'');
-      document.getElementById('alamatGPS').textContent= lat && lng ? lat.toFixed(6)+', '+lng.toFixed(6) : 'Belum ada GPS - klik Edit untuk isi';
-      pLat=lat?parseFloat(lat):null; pLng=lng?parseFloat(lng):null;
+      document.getElementById('alamatGPS').textContent= lat!==null && lng!==null ? lat.toFixed(6)+', '+lng.toFixed(6) : 'Belum ada GPS - klik Edit untuk isi';
+      pLat=lat; pLng=lng;
       // Isi form edit
       document.getElementById('editNama').value=nama;
       document.getElementById('editHp').value=hp;
       document.getElementById('editAlamat').value=alamat;
       document.getElementById('editDetail').value=detail;
       document.getElementById('editKodePos').value=kodePos;
-      if(lat&&lng){
+      if(lat!==null&&lng!==null){
         document.getElementById('gpsModalInfo').textContent='GPS tersimpan: '+lat+', '+lng;
       }
       // Jika ada GPS, hitung jarak mitra
-      if(pLat&&pLng){
+      if(pLat!==null&&pLng!==null){
         hitungJarakDanOngkir();
       } else {
         // Coba ambil GPS browser
@@ -491,7 +529,7 @@ async function loadAlamat(){
 async function getGPS(){return new Promise((res,rej)=>{if(!navigator.geolocation)return rej('No GPS');navigator.geolocation.getCurrentPosition(p=>res({lat:p.coords.latitude,lng:p.coords.longitude}),e=>rej(e.message),{enableHighAccuracy:true,timeout:15000});});}
 
 async function hitungJarakDanOngkir(){
-  if(!pLat||!pLng){ document.getElementById('saDetail').textContent='GPS pelanggan belum ada. Klik Edit alamat dan ambil GPS.'; return; }
+  if(pLat===null||pLng===null){ document.getElementById('saDetail').textContent='GPS pelanggan belum ada. Klik Edit alamat dan ambil GPS.'; return; }
   document.getElementById('saDetail').textContent='🔍 Mencari mitra pemilik produk terdekat...';
   mitra = await cariMitraTerdekat(pLat,pLng);
   if(!mitra){
@@ -618,10 +656,8 @@ async function buatPesanan(){
     for(const item of cart){
       const uid=ownerKey(item),cfg=checkoutByOwner.get(uid)||{};
       if(!cfg.shipping)throw new Error('Lengkapi metode pengiriman setiap toko.');
-      // Siap Antar yang tidak tersedia otomatis dialihkan ke ekspedisi.
-      if(cfg.shipping==='siap_antar'&&!cfg.canCourier)cfg.shipping='expedisi';
-      // Ekspedisi menjadi metode cadangan terakhir agar checkout tidak gagal
-      // hanya karena pengaturan metode pengiriman produk tidak ditemukan.
+      if(cfg.shipping==='siap_antar'&&!cfg.canCourier)throw new Error(`Siap Antar untuk toko ${cfg.info?.nama||uid} tidak memenuhi syarat. GPS mitra–pelanggan harus maksimal 25 km dan harus ada kurir dalam radius 25 km dari mitra.`);
+      if(cfg.shipping==='expedisi'&&!cfg.canExp)throw new Error(`Toko ${cfg.info?.nama||uid} tidak menyediakan Ekspedisi.`);
       if(selectedPay==='cod'&&!cfg.canCod)throw new Error(`COD tidak tersedia karena semua mitra harus mendukung COD.`);
       const service=cfg.shipping==='expedisi'?(expeditionOptions.find(x=>x.id===cfg.service)||expeditionOptions[0]):null;
       const ongkir=cfg.shipping==='expedisi'?service.cost:(cfg.info?.ongkir||5000);
