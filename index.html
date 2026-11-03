@@ -316,8 +316,11 @@ function renderSponsorSlides(rows) {
   const images = sponsorLinks.map(convertImage).filter(Boolean);
 
   if (!images.length) {
-    section.style.display = 'none';
+    // Tetap tampilkan area slide promo; isi akan muncul saat link sponsor kolom N tersedia.
+    section.style.display = 'block';
     track.replaceChildren();
+    track.innerHTML = '<div style="padding:18px;text-align:center;color:#008b4c;font-weight:700">Slide promo</div>';
+    track.style.animation = 'none';
     return;
   }
 
@@ -524,7 +527,7 @@ async function loadProductsFromSheet(){
       const getVal = (i)=>c[i]?.v??'';
       let id=getVal(1)||String(index);
       let name='', desc='', price='', image='', mUid='', mNama='', cat='', cod='', kurir='', expedisi='', stock='';
-      if(c.length>=9 || (c[2] && c[4] !== undefined)){
+      if(c.length>=9){
         name=getVal(2); desc=getVal(3); price=getVal(4); image=getVal(5);
         mUid=getVal(6); mNama=getVal(7); cat=getVal(8);
         cod=getVal(9); kurir=getVal(10); expedisi=getVal(11); stock=getVal(12);
