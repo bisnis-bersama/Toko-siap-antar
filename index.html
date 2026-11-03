@@ -101,6 +101,9 @@ header::before{top:0}header::after{bottom:0}
 .btn-y{background:#ffd400;color:#111}.btn-dark{background:#111;color:#ffd400}
 .preview{width:100%;max-height:180px;object-fit:contain;background:#f8f8f8;border-radius:12px;border:2px dashed #ddd;display:none;margin-bottom:10px}
 .linkbox{background:#111;color:#ffd400;padding:10px;border-radius:10px;font-family:monospace;font-size:11px;word-break:break-all}
+
+/* Form input produk mitra tersedia di halaman khusus, tidak ditampilkan di beranda. */
+#mitraInputCard { display: none !important; }
 </style>
 </head>
 <body>
@@ -221,7 +224,12 @@ const formatPrice = value => {
 function convertImage(url) {
   if (!url) return '';
   const s = String(url).trim();
-  if(s.startsWith('data:image')) return s;
+  if (s.startsWith('data:image/')) return s;
+  // Kolom F pada Sheet MEMBER menyimpan hasil kompresi Base64.
+  // Sebagian data lama tersimpan tanpa awalan data:image/jpeg;base64,
+  if (/^\/9j\//.test(s)) return 'data:image/jpeg;base64,' + s;
+  if (/^iVBORw0KGgo/.test(s)) return 'data:image/png;base64,' + s;
+  if (/^R0lGOD/.test(s)) return 'data:image/gif;base64,' + s;
   const id = s.match(/(?:id=|\/d\/)([A-Za-z0-9_-]{15,})/);
   if (id && /drive\.google\.com/.test(s)) return 'https://drive.google.com/thumbnail?id=' + id[1] + '&sz=w600';
   return s;
@@ -273,7 +281,7 @@ function renderProducts() {
   }
   productsEl.innerHTML = filtered.map(p => `
     <article class="product" data-product-id="${escapeHtml(p.id)}">
-      <div class="product-photo">${p.image ? `<img loading="lazy" src="${escapeHtml(p.image.slice(0,200))}" alt="${escapeHtml(p.name)}" onerror="this.style.display='none'">` : '<span>📦</span>'}<span class="mitra-tag">🏪 ${escapeHtml(p.mitraNama||'Mitra')}</span></div>
+      <div class="product-photo">${p.image ? `<img loading="lazy" src="${escapeHtml(p.image.slice(0,200))}" alt="${escapeHtml(p.name)}" onerror="this.style.display='none';this.parentElement.classList.add('image-missing')">` : '<span>📦</span>'}<span class="mitra-tag">🏪 ${escapeHtml(p.mitraNama||'Mitra')}</span></div>
       <div class="product-info">
         <div class="product-name">${escapeHtml(p.name)}</div>
         <div class="product-desc">${escapeHtml(p.description || 'Pesanan siap antar ±1 jam').slice(0,80)}</div>
