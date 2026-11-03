@@ -327,18 +327,21 @@ function renderSponsorSlides(rows) {
   }
 
   section.style.display = 'block';
+  // Gandakan urutan gambar agar animasi kembali ke awal tanpa jeda kosong.
   const repeatedSlides = images.length > 1 ? [...images, ...images] : images;
-  track.innerHTML = repeatedSlides.map((url, index) => `
+  track.innerHTML = repeatedSlides.map(url => `
     <img
       src="${escapeHtml(url)}"
       alt="Slide promo Toko Siap Antar"
-      loading="${index < images.length ? 'eager' : 'lazy'}"
-      onerror="this.style.display='none'"
+      loading="eager"
     >
   `).join('');
 
-  // Satu gambar tetap tampil; beberapa gambar bergerak berulang.
-  track.style.animation = images.length > 1 ? '' : 'none';
+  // Jangan sembunyikan slide saat gambar gagal; biarkan area promo tetap ada.
+  // Animasi hanya berjalan bila ada lebih dari satu gambar.
+  track.style.animation = images.length > 1
+    ? 'promoGeser 24s linear infinite'
+    : 'none';
 }
 
 function renderProducts() {
