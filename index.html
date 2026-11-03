@@ -109,7 +109,7 @@ header::before{top:0}header::after{bottom:0}
     <img class="brand-logo-left" src="logo3.png" alt="Logo">
     <div class="welcome-text">
       <strong>Selamat Datang di Toko Siap Antar!</strong>
-      <span id="welcomeSub">Marketplace - Produk mitra tampil di sini, input produk mitra langsung di index (Spreadsheet). Ongkir dari GPS akun mitra pemilik produk.</span>
+      <span id="welcomeSub">Marketplace - Produk mitra tampil di sini. Ongkir dari GPS akun mitra pemilik produk.</span>
     </div>
   </div>
   <div class="head-actions"><button id="refresh" aria-label="Muat ulang">↻</button><button id="loginBtn" aria-label="Login">👤</button></div>
@@ -120,42 +120,6 @@ header::before{top:0}header::after{bottom:0}
     <img src="silde1.png" alt="Promo 1" aria-hidden="true"><img src="silde2.png" alt="Promo 2" aria-hidden="true"><img src="silde3.png" alt="Promo 3" aria-hidden="true"><img src="silde4.png" alt="Promo 4" aria-hidden="true"><img src="silde5.png" alt="Promo 5" aria-hidden="true"><img src="silde6.png" alt="Promo 6" aria-hidden="true">
   </div></div>
 </section>
-
-<!-- CARD INPUT PRODUK MITRA - HANYA MUNCUL KALAU LOGIN MITRA -->
-<div class="mitra-card" id="mitraInputCard" style="display:none">
-  <div class="label">🏪 Input Produk Mitra (Spreadsheet) <span id="mitraBadge" style="background:#111;color:#ffd400;padding:4px 8px;border-radius:999px;font-size:10px">Mitra</span></div>
-  <div class="hint">✅ Penyimpanan di Google Sheet - GRATIS, ga butuh Firebase Storage. Gambar di-compress otomatis (30-50KB) lalu masuk ke kolom Image di Sheet.<br>
-  Produk kamu akan muncul di index (semua produk) + di toko.html?mitraUid=UID_KAMU + di produk-ayudithea.html?mitraUid=UID_KAMU<br>
-  Ongkir nanti = jarak GPS akun kamu (users/{uid}) → GPS pelanggan.</div>
-  <div id="mitraInfo" style="font-size:11px;color:#666;margin-bottom:8px">UID: -</div>
-  
-  <input class="input-mitra" id="pName" placeholder="Nama produk, contoh: Ayam Geprek A Yudi Thea">
-  <input class="input-mitra" id="pPrice" type="number" placeholder="Harga, contoh: 15000">
-  <textarea class="input-mitra" id="pDesc" rows="2" placeholder="Deskripsi produk"></textarea>
-  <input class="input-mitra" id="pCat" placeholder="Kategori: Makanan / Minuman / Sembako">
-  
-  <label style="font-weight:800;font-size:12px">📸 Foto Produk (dari HP - auto kompres):</label>
-  <input class="input-mitra" type="file" id="pFile" accept="image/*" capture="environment">
-  <img id="preview" class="preview">
-  <div id="fileInfo" style="font-size:10px;color:#888;margin-bottom:8px"></div>
-  
-  <label style="font-weight:800;font-size:12px">Atau Link Gambar (opsional):</label>
-  <input class="input-mitra" id="pImage" placeholder="https://... (kosongkan kalau upload file)">
-  
-  <button class="btn-mitra btn-y" id="btnSave">💾 Simpan ke Spreadsheet - Masuk Index</button>
-  <div id="msg" style="margin-top:8px;font-size:12px"></div>
-  
-  <div style="margin-top:10px;padding:8px;background:#f8f8f8;border-radius:8px;font-size:10px;color:#666">
-    Link Toko Kamu: <span id="tokoLink" style="font-family:monospace;word-break:break-all;color:#111">-</span><br>
-    <button class="btn-mitra btn-dark" style="padding:6px 10px;font-size:11px;margin-top:6px" id="btnCopy">📋 Salin Link Toko</button>
-    <button class="btn-mitra btn-dark" style="padding:6px 10px;font-size:11px;margin-top:6px" id="btnBuka">👁️ Buka Toko Saya</button>
-  </div>
-</div>
-
-<div class="mitra-card" id="authBox" style="border:1px solid #e0e0e0">
-  <div style="font-size:12px;color:#666">Status: <span id="authStatus">Memeriksa login...</span></div>
-  <div style="font-size:10px;color:#888">Kalau kamu mitra, login dulu biar bisa input produk di index ini. Produk dari Spreadsheet semua tampil di bawah.</div>
-</div>
 
 <section class="quick-wrap">
   <nav class="categories" id="categories" aria-label="Kategori">
@@ -410,86 +374,28 @@ async function loadProductsFromSheet(){
   }
 }
 
-// AUTH & MITRA INPUT LOGIC
+// AUTH CONTEXT ONLY — tidak menampilkan panel status atau form input di Index.
 onAuthStateChanged(auth, async u=>{
-  const authStatus=document.getElementById('authStatus');
-  if(!u){
-    authStatus.textContent='Belum login - login sebagai mitra untuk input produk di index';
-    loadProductsFromSheet();
-    return;
-  }
-  currentUser=u; mitraUid=u.uid;
-  try{
-    const snap=await getDoc(doc(db,'users',u.uid));
-    if(snap.exists()){
-      const d=snap.data();
-      currentRole=d.role||'';
-      mitraNama=d.nama||d.namaToko||u.email;
-      authStatus.innerHTML='Login: <b>'+escapeHtml(mitraNama)+'</b> • UID: '+u.uid.slice(0,8)+'... • Role: '+(d.role||'-')+' • GPS: '+(d.lat? d.lat.toFixed(4) : 'belum ada');
-      if((currentRole.toLowerCase().includes('mitra') || true)){ // tampilkan untuk semua user yang login, biar bisa input
-        document.getElementById('mitraInputCard').style.display='block';
-        document.getElementById('mitraInfo').textContent='UID: '+u.uid+' • Nama: '+mitraNama+' • Alamat: '+(d.alamat||'-')+' • GPS akun ini dipakai ongkir';
-        document.getElementById('tokoLink').textContent=location.origin+location.pathname.replace('index.html','toko.html')+'?mitraUid='+u.uid;
-        document.getElementById('btnCopy').onclick=()=>{navigator.clipboard.writeText(document.getElementById('tokoLink').textContent); alert('Link toko disalin!');};
-        document.getElementById('btnBuka').onclick=()=>{window.open(document.getElementById('tokoLink').textContent,'_blank');};
+  currentUser=u||null;
+  if(u){
+    mitraUid=u.uid;
+    try{
+      const snap=await getDoc(doc(db,'users',u.uid));
+      if(snap.exists()){
+        const d=snap.data();
+        currentRole=d.role||'';
+        mitraNama=d.nama||d.namaToko||u.email||'Mitra';
+      }else{
+        mitraNama=u.email||'Mitra';
       }
-    } else {
-      authStatus.textContent='Login: '+u.email+' (users doc belum ada, tapi tetap bisa input)';
-      document.getElementById('mitraInputCard').style.display='block';
-      mitraNama=u.email;
-      document.getElementById('mitraInfo').textContent='UID: '+u.uid+' • Email: '+u.email;
+    }catch(e){
+      mitraNama=u.email||'Mitra';
     }
-  }catch(e){authStatus.textContent='Error: '+e.message;}
+  }
   loadProductsFromSheet();
 });
 
-document.getElementById('pFile').addEventListener('change', async (e)=>{
-  const file=e.target.files[0];
-  if(!file) return;
-  document.getElementById('fileInfo').textContent='⏳ Kompres '+Math.round(file.size/1024)+'KB → ...';
-  try{
-    const base64=await compressImage(file, 500, 0.6);
-    compressedBase64=base64;
-    const sizeKB=Math.round(base64.length*0.75/1024);
-    document.getElementById('preview').src=base64;
-    document.getElementById('preview').style.display='block';
-    document.getElementById('fileInfo').innerHTML='✅ Terkompres: '+sizeKB+'KB • Masuk Sheet (max 50KB per cell, aman)';
-    document.getElementById('pImage').value='';
-  }catch(err){document.getElementById('fileInfo').textContent='❌ Gagal: '+err.message;}
-});
-
-document.getElementById('btnSave').addEventListener('click', async()=>{
-  const name=document.getElementById('pName').value.trim();
-  const price=document.getElementById('pPrice').value.trim();
-  const desc=document.getElementById('pDesc').value.trim();
-  const cat=document.getElementById('pCat').value.trim();
-  const linkImage=document.getElementById('pImage').value.trim();
-  if(!name||!price){alert('Nama & harga wajib'); return;}
-  if(!mitraUid){alert('Login dulu sebagai mitra'); return;}
-  if(APPS_SCRIPT_URL.includes('YOUR_ID')){alert('⚠️ Ganti APPS_SCRIPT_URL dulu di index.html dengan URL deploy Apps Script kamu.\n\nCara:\n1. Buka Sheet → Extensions → Apps Script\n2. Paste code dari apps-script-sheet.js\n3. Deploy → Web App → Anyone\n4. Copy URL → paste di index.html'); return;}
-  const finalImage = compressedBase64 || linkImage || '';
-  if(finalImage.length>45000){if(!confirm('Gambar agak besar ('+Math.round(finalImage.length/1024)+'KB). Sheet max 50KB, bisa gagal. Lanjut?')) return;}
-  const btn=document.getElementById('btnSave'); btn.disabled=true; btn.textContent='⏳ Simpan ke Spreadsheet...';
-  try{
-    const payload={
-      action:'addProduct',
-      name, price, description:desc, category:cat||'Makanan',
-      image:finalImage,
-      mitraUid:mitraUid,
-      mitraNama:mitraNama
-    };
-    const res=await fetch(APPS_SCRIPT_URL, {method:'POST', body:JSON.stringify(payload)});
-    const json=await res.json();
-    if(json.success){
-      document.getElementById('msg').innerHTML='✅ Masuk Spreadsheet! ID: '+json.id+'<br>• Muncul di index (semua produk)<br>• Muncul di toko.html?mitraUid='+mitraUid.slice(0,8)+'...<br>• Ongkir dari GPS akun kamu';
-      document.getElementById('pName').value=''; document.getElementById('pPrice').value=''; document.getElementById('pDesc').value=''; document.getElementById('pImage').value=''; document.getElementById('pFile').value=''; compressedBase64=''; document.getElementById('preview').style.display='none'; document.getElementById('fileInfo').textContent='';
-      setTimeout(()=>loadProductsFromSheet(),1500);
-    } else {
-      document.getElementById('msg').textContent='❌ Gagal: '+(json.error||'unknown');
-    }
-  }catch(e){document.getElementById('msg').textContent='❌ Error: '+e.message+' - Pastikan Apps Script deploy Anyone';}
-  btn.disabled=false; btn.textContent='💾 Simpan ke Spreadsheet - Masuk Index';
-});
+// Input produk mitra dikelola di halaman khusus; tidak ada form input di Index.
 
 updateCart();
 loadProductsFromSheet();
