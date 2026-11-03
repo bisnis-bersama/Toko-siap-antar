@@ -41,9 +41,9 @@ main{padding:10px 12px 18px;min-height:150px}
 .product{min-width:0;background:var(--card);border:1px solid var(--line);border-radius:15px;overflow:hidden;box-shadow:0 2px 5px #18312b12;display:flex;flex-direction:column}
 .product-photo{height:112px;background:linear-gradient(135deg,#e4fff2,#fafff0);display:flex;align-items:center;justify-content:center;padding:6px;position:relative}
 .product-photo img{width:100%;height:100%;object-fit:contain}
-.mitra-tag{position:absolute;top:5px;left:5px;bottom:auto;background:#111;color:#ffd400;font-size:8px;font-weight:800;padding:3px 6px;border-radius:999px;max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mitra-tag{position:absolute;top:4px;left:4px;bottom:auto;background:#111;color:#ffd400;font-size:8px;font-weight:800;padding:3px 6px;border-radius:999px;max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .product-info{padding:8px 7px 9px;display:flex;flex-direction:column;flex:1;text-align:center;gap:6px}
-.product-name{font-size:14px;line-height:1.35;min-height:29px;overflow-wrap:anywhere;font-weight:800;color:#18312b}
+.product-name{font-size:11px;line-height:1.35;min-height:29px;overflow-wrap:anywhere;font-weight:800}
 .product-desc{font-size:9px;line-height:1.35;color:var(--muted);min-height:25px}
 .price{font-weight:800;color:#008b4c;font-size:12px}
 .actions{display:grid;grid-template-columns:30px 30px minmax(0,1fr);gap:4px;margin-top:auto}
@@ -58,7 +58,7 @@ footer h3{margin:0 0 16px;color:#009c54}
 .bottom-nav button{background:none;border:0;color:#777;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px}
 .bottom-nav .ico{font-size:22px;line-height:1.2}
 .bottom-nav button:first-child{color:#009c54}
-@media(max-width:520px){.products{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.product-photo{height:125px}.product-name{font-size:14px;font-weight:800}.product-desc{font-size:10px}.price{font-size:13px}.quick-wrap{top:58px}.promo-track img{height:125px}}
+@media(max-width:520px){.products{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.product-photo{height:125px}.product-name{font-size:13px;font-weight:800}.product-desc{font-size:10px}.price{font-size:13px}.quick-wrap{top:58px}.promo-track img{height:125px}}
 @media(max-width:600px){.promo-window{min-height:145px;padding:6px 0}.promo-track img{height:133px;margin-top:0;margin-bottom:0}}
 @media(max-width:360px){.products{grid-template-columns:repeat(2,minmax(0,1fr))}.product-photo{height:105px}.cat{padding:9px 11px;font-size:13px}}
 body{background:#f4fff7;color:var(--ink)}
@@ -91,7 +91,7 @@ header::before{top:0}header::after{bottom:0}
 .product-zoom-actions button:active{transform:scale(.97)}
 .product-zoom-actions button:disabled{opacity:.7;cursor:default}
 @media(max-width:520px){.product-zoom{padding:62px 16px 24px}.product-zoom-content{max-width:100%}.product-zoom img{max-height:55vh}.product-zoom-name{font-size:17px}.product-zoom-actions{grid-template-columns:54px 54px minmax(0,1fr)}}
-/* Input mitra dipindahkan ke halaman khusus; panel tidak ditampilkan di Index */
+/* Input produk sudah tersedia di halaman khusus mitra; panel disembunyikan dari index */
 #mitraInputCard,#authBox{display:none!important}
 /* Tambahan untuk input mitra di index */
 .mitra-card{background:#fff;border:2px solid #111;border-radius:16px;padding:14px;margin:10px 12px;box-shadow:0 4px 12px rgba(0,0,0,.08)}
@@ -111,7 +111,7 @@ header::before{top:0}header::after{bottom:0}
     <img class="brand-logo-left" src="logo3.png" alt="Logo">
     <div class="welcome-text">
       <strong>Selamat Datang di Toko Siap Antar!</strong>
-      <span id="welcomeSub">Marketplace Produk Mitra</span>
+      <span id="welcomeSub">Marketplace - Produk mitra tampil di sini, input produk mitra langsung di index (Spreadsheet). Ongkir dari GPS akun mitra pemilik produk.</span>
     </div>
   </div>
   <div class="head-actions"><button id="refresh" aria-label="Muat ulang">↻</button><button id="loginBtn" aria-label="Login">👤</button></div>
@@ -156,7 +156,7 @@ header::before{top:0}header::after{bottom:0}
 
 <div class="mitra-card" id="authBox" style="border:1px solid #e0e0e0">
   <div style="font-size:12px;color:#666">Status: <span id="authStatus">Memeriksa login...</span></div>
-  
+  <div style="font-size:10px;color:#888">Kalau kamu mitra, login dulu biar bisa input produk di index ini. Produk dari Spreadsheet semua tampil di bawah.</div>
 </div>
 
 <section class="quick-wrap">
@@ -209,6 +209,10 @@ let allProducts = [];
 let activeCategory = 'Semua';
 let cart = [];
 let currentUser=null, mitraUid='', mitraNama='', compressedBase64='', currentRole='';
+const ownerContactCache = new Map();
+function ownerShort(name){ const clean=String(name||'Mitra').trim(); const words=clean.split(/\s+/).filter(Boolean); return (words.length>1 ? words.slice(0,3).map(w=>w[0]).join('') : clean.slice(0,3)).toUpperCase();}
+async function getOwnerPhone(uid){ if(!uid)return ''; if(ownerContactCache.has(uid))return ownerContactCache.get(uid); let phone=''; try{const snap=await getDoc(doc(db,'users',uid)); if(snap.exists()){const d=snap.data(); phone=String(d.whatsapp||d.noWa||d.nomorWa||d.phone||d.telepon||d.noHp||'').replace(/[^0-9]/g,''); if(phone.startsWith('0'))phone='62'+phone.slice(1); }}catch(e){} ownerContactCache.set(uid,phone); return phone;}
+
 
 try {
   const savedCart = JSON.parse(localStorage.getItem('tsa_cart') || '[]');
@@ -224,6 +228,11 @@ function convertImage(url) {
   if (!url) return '';
   const s = String(url).trim();
   if(s.startsWith('data:image')) return s;
+  // Spreadsheet dapat menyimpan base64 mentah tanpa prefix data:image.
+  if(/^\/9j\//.test(s)) return 'data:image/jpeg;base64,' + s;
+  if(/^iVBORw0KGgo/.test(s)) return 'data:image/png;base64,' + s;
+  if(/^R0lGOD/.test(s)) return 'data:image/gif;base64,' + s;
+  if(/^UklGR/.test(s)) return 'data:image/webp;base64,' + s;
   const id = s.match(/(?:id=|\/d\/)([A-Za-z0-9_-]{15,})/);
   if (id && /drive\.google\.com/.test(s)) return 'https://drive.google.com/thumbnail?id=' + id[1] + '&sz=w600';
   return s;
@@ -257,14 +266,6 @@ function compressImage(file, maxWidth=500, quality=0.6){
   });
 }
 
-function ownerAbbreviation(name){
-  const clean=String(name||'Mitra').trim().replace(/[^\p{L}\p{N}\s]/gu,' ').replace(/\s+/g,' ');
-  const words=clean.split(' ').filter(Boolean);
-  if(!words.length) return 'M';
-  if(words.length===1) return words[0].slice(0,3).toUpperCase();
-  return words.slice(0,3).map(w=>w[0]).join('').toUpperCase();
-}
-
 function renderProducts() {
   const q = searchInput.value.trim().toLowerCase();
   let filtered = allProducts.filter(p => {
@@ -283,14 +284,14 @@ function renderProducts() {
   }
   productsEl.innerHTML = filtered.map(p => `
     <article class="product" data-product-id="${escapeHtml(p.id)}">
-      <div class="product-photo">${p.image ? `<img loading="lazy" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}">` : '<span>📦</span>'}<span class="mitra-tag">${escapeHtml(ownerAbbreviation(p.mitraNama))}</span></div>
+      <div class="product-photo">${p.image ? `<img loading="lazy" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" onerror="this.onerror=null;this.parentElement.insertAdjacentHTML('beforeend','<span style=\'font-size:24px\'>📦</span>');this.remove()">` : '<span>📦</span>'}<span class="mitra-tag" title="${escapeHtml(p.mitraNama||'Mitra')}">${escapeHtml(ownerShort(p.mitraNama||'Mitra'))}</span></div>
       <div class="product-info">
         <div class="product-name">${escapeHtml(p.name)}</div>
         <div class="product-desc">${escapeHtml(p.description || 'Pesanan siap antar ±1 jam').slice(0,80)}</div>
         <div class="price">${escapeHtml(formatPrice(p.price))}</div>
-        <div style="font-size:9px;color:#888">${escapeHtml((p.category||''))}</div>
+        <div style="font-size:8px;color:#888">UID: ${(p.mitraUid||'').slice(0,6)}... • ${escapeHtml((p.category||''))}</div>
         <div class="actions">
-          <button class="wa" data-action="wa" data-id="${escapeHtml(p.id)}" aria-label="Tanya WhatsApp">☏</button>
+          <button class="wa" data-action="wa" data-id="${escapeHtml(p.id)}" aria-label="WhatsApp pemilik produk">☏</button>
           <button class="cart" data-action="cart" data-id="${escapeHtml(p.id)}" aria-label="Tambah keranjang">🛒</button>
           <button class="buy" data-action="buy" data-id="${escapeHtml(p.id)}">Beli</button>
         </div>
@@ -317,13 +318,9 @@ function addProductToCart(p) {
 }
 async function openWhatsApp(p, intro='Halo, saya ingin pesan: ') {
   const message = intro + p.name + ' — ' + formatPrice(p.price) + ' (Mitra: '+(p.mitraNama||'Mitra')+')';
-  let raw = p.mitraWa || p.waMitra || p.teleponMitra || p.noWa || p.nomorWa || '';
-  if(!raw && p.mitraUid){
-    try{ const snap=await getDoc(doc(db,'users',p.mitraUid)); if(snap.exists()){ const u=snap.data(); raw=u.whatsapp||u.wa||u.noWa||u.nomorWa||u.telepon||u.phone||u.phoneNumber||''; } }catch(err){}
-  }
-  const phone = String(raw).replace(/\D/g,'').replace(/^0/,'62');
-  if(!phone){ alert('Nomor WhatsApp pemilik produk belum tersedia di data akun mitra.'); return; }
-  window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(message), '_blank', 'noopener');
+  const phone=await getOwnerPhone(p.mitraUid);
+  const url=phone ? 'https://wa.me/'+phone+'?text='+encodeURIComponent(message) : 'https://wa.me/?text='+encodeURIComponent(message);
+  window.open(url, '_blank', 'noopener');
 }
 
 productsEl.addEventListener('click', e => {
