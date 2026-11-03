@@ -244,7 +244,20 @@ let selectedPay='transfer';
 let orderSubmitting=false;
 const checkoutByOwner = new Map();
 const expeditionOptions = [{id:'jne_reg',name:'JNE Reguler',cost:9000},{id:'jne_yes',name:'JNE YES',cost:18000},{id:'jnt_reg',name:'J&T Reguler',cost:10000},{id:'sicepat_reg',name:'SiCepat Reg',cost:11000},{id:'anteraja_reg',name:'AnterAja',cost:12000},{id:'jne_jtr',name:'JNE JTR',cost:25000}];
-function flagOn(v){ if(v===undefined||v===null||v==='') return true; return ['1','true','ya','yes','aktif','boleh','tersedia','on'].includes(String(v).trim().toLowerCase()); }
+function flagOn(v){ if(v===undefined||v===null||v==='') return false; return ['1','true','ya','yes','aktif','boleh','tersedia','on'].includes(String(v).trim().toLowerCase()); }
+function codDiizinkan(item){
+  const keys=['cod','bisaCOD','bisaCod','izinCOD','izinCod'];
+  for(const key of keys) if(Object.prototype.hasOwnProperty.call(item,key) && item[key]!==undefined && item[key]!==null && item[key]!=='') return flagOn(item[key]);
+  return false;
+}
+function kurirOnlineDanGPSValid(k){
+  const online=k.online===true||k.isOnline===true||k.statusOnline===true||['online','aktif','tersedia'].includes(String(k.statusOnline||k.status||'').trim().toLowerCase());
+  if(!online||k.aktif===false||String(k.status||'').trim().toLowerCase()==='nonaktif') return false;
+  const ts=k.gpsUpdatedAt||k.locationUpdatedAt||k.updatedLocationAt||k.lastLocationAt||k.lastSeenAt;
+  if(!ts) return false;
+  const ms=typeof ts.toMillis==='function'?ts.toMillis():(ts instanceof Date?ts.getTime():Number(ts));
+  return Number.isFinite(ms)&&Date.now()-ms<=300000&&Date.now()-ms>=-60000;
+}
 // Baca pengaturan pengiriman dari data produk di keranjang.
 // Jika suatu metode diatur false pada salah satu produk, metode itu tidak tersedia
 // untuk seluruh pesanan pada mitra tersebut. Field lama tetap didukung.
@@ -260,9 +273,10 @@ function produkBisaKirim(item, metode){
 }
 function ownerKey(item){ return String(item.mitraUid||item.mitra_uid||'unknown'); }
 function ownerItems(){ const m=new Map(); for(const item of cart){const k=ownerKey(item);if(!m.has(k))m.set(k,[]);m.get(k).push(item);} return m; }
+function itemsForOwnerCodAllowed(uid){return (ownerItems().get(uid)||[]).every(x=>codDiizinkan(x));}
 
 function hitungJarakKm(lat1,lng1,lat2,lng2){
-  if(!lat1||!lng1||!lat2||!lng2) return null;
+  if(!Number.isFinite(Number(lat1))||!Number.isFinite(Number(lng1))||!Number.isFinite(Number(lat2))||!Number.isFinite(Number(lng2))) return null;
   const R=6371;
   const dLat=(lat2-lat1)*Math.PI/180;
   const dLng=(lng2-lng1)*Math.PI/180;
@@ -364,8 +378,8 @@ async function cariKurirDalamRadius(mitraLat,mitraLng){
       const k=d.data()||{};
       const role=String(k.role||'').trim().toLowerCase();
       if(!['kurir','mitra_pengantaran'].includes(role)) return;
-      // Abaikan akun yang secara eksplisit dinonaktifkan.
-      if(k.aktif===false || String(k.status||'').toLowerCase()==='nonaktif') return;
+      // Kurir harus online dan GPS diperbarui maksimal 5 menit terakhir.
+      if(!kurirOnlineDanGPSValid(k)) return;
       const lat=Number(k.lat||k.latitude||k.currentLat||k.lokasi?.lat||k.gps?.lat||k.latMitra||k.tokoLat);
       const lng=Number(k.lng||k.longitude||k.currentLng||k.lokasi?.lng||k.gps?.lng||k.lngMitra||k.tokoLng);
       if(!Number.isFinite(lat)||!Number.isFinite(lng)||!lat||!lng) return;
@@ -400,7 +414,7 @@ async function renderPerToko(){
     // Fallback final: jika Siap Antar tidak tersedia dan ekspedisi tidak
     // terdeteksi/ditandai pada data produk, tetap arahkan pesanan ke ekspedisi.
     const canExp=ekspedisiDiizinkan || !canCourier;
-    const canCod=items.every(x=>flagOn(x.cod));
+    const canCod=items.every(x=>codDiizinkan(x));
     let cfg=checkoutByOwner.get(uid);
     if(!cfg) cfg={shipping:canCourier?'siap_antar':'expedisi',payment:'transfer',service:'jne_reg',canCourier,canExp,canCod,info};
     cfg={...cfg,canCourier,canExp,canCod,info};
@@ -429,7 +443,7 @@ function renderPerTokoControls(uid){const cfg=checkoutByOwner.get(uid);const wra
 
 
 function updateGlobalPayment(){
-  const allCod=[...ownerItems().keys()].length>0 && [...ownerItems()].every(([uid,items])=>items.every(x=>flagOn(x.cod)));
+  const allCod=[...ownerItems().keys()].length>0 && [...ownerItems()].every(([uid,items])=>items.every(x=>codDiizinkan(x)));
   const cod=document.getElementById('globalCodOption');
   cod.style.display=allCod?'flex':'none';
   if(!allCod && selectedPay==='cod') selectedPay='transfer';
@@ -622,7 +636,7 @@ async function buatPesanan(){
       if(cfg.shipping==='siap_antar'&&!cfg.canCourier)cfg.shipping='expedisi';
       // Ekspedisi menjadi metode cadangan terakhir agar checkout tidak gagal
       // hanya karena pengaturan metode pengiriman produk tidak ditemukan.
-      if(selectedPay==='cod'&&!cfg.canCod)throw new Error(`COD tidak tersedia karena semua mitra harus mendukung COD.`);
+      if(selectedPay==='cod'&&!itemsForOwnerCodAllowed(uid))throw new Error('COD hanya tersedia jika semua produk di keranjang mengizinkan COD.');
       const service=cfg.shipping==='expedisi'?(expeditionOptions.find(x=>x.id===cfg.service)||expeditionOptions[0]):null;
       const ongkir=cfg.shipping==='expedisi'?service.cost:(cfg.info?.ongkir||5000);
       const key=[uid,cfg.shipping,ongkir,service?.id||''].join('::');
