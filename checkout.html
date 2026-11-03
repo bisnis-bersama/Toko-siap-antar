@@ -254,7 +254,9 @@ let orderSubmitting=false;
 const checkoutByOwner = new Map();
 const expeditionOptions = [{id:'jne_reg',name:'JNE Reguler',cost:9000},{id:'jne_yes',name:'JNE YES',cost:18000},{id:'jnt_reg',name:'J&T Reguler',cost:10000},{id:'sicepat_reg',name:'SiCepat Reg',cost:11000},{id:'anteraja_reg',name:'AnterAja',cost:12000},{id:'jne_jtr',name:'JNE JTR',cost:25000}];
 function flagOn(v){
-  if(v===undefined||v===null||v==='') return true;
+  // MEMBER sheet uses 1=allowed and 0=not allowed.
+  // Missing/empty values are treated as not allowed for safety.
+  if(v===undefined||v===null||v==='') return false;
   if(v===true || v===1) return true;
   const value=String(v).trim().toLowerCase();
   if(['1','true','ya','yes','aktif','boleh','tersedia','on','kurir','siap antar','siap_antar','cod','ekspedisi'].includes(value)) return true;
@@ -271,8 +273,8 @@ function produkBisaKirim(item, metode){
   for(const key of keys){
     if(Object.prototype.hasOwnProperty.call(item,key) && item[key]!==undefined && item[key]!==null && item[key]!=='') return flagOn(item[key]);
   }
-  // Produk lama yang belum memiliki pengaturan metode tetap dianggap diizinkan.
-  return true;
+  // Izin tidak ada di data keranjang: jangan mengizinkan metode secara otomatis.
+  return false;
 }
 function ambilKoordinat(obj, axis){
   if(!obj || typeof obj!=='object') return null;
