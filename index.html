@@ -185,9 +185,14 @@ const formatPrice = value => {
 function convertImage(url) {
   if (!url) return '';
   const s = String(url).trim();
-  if(s.startsWith('data:image')) return s;
+  if (/^data:image\//i.test(s)) return s;
+  // Sheet dapat menyimpan gambar sebagai Base64 tanpa awalan MIME.
+  if (/^\/9j\//.test(s)) return 'data:image/jpeg;base64,' + s;
+  if (/^iVBORw0KGgo/.test(s)) return 'data:image/png;base64,' + s;
+  if (/^R0lGOD/.test(s)) return 'data:image/gif;base64,' + s;
   const id = s.match(/(?:id=|\/d\/)([A-Za-z0-9_-]{15,})/);
-  if (id && /drive\.google\.com/.test(s)) return 'https://drive.google.com/thumbnail?id=' + id[1] + '&sz=w600';
+  if (id && /drive\.google\.com/.test(s)) return 'https://drive.google.com/thumbnail?id=' + id[1] + '&sz=w1000';
+  // Jangan potong URL/Base64 karena membuat sumber gambar tidak valid.
   return s;
 }
 function escapeHtml(value) {
@@ -237,7 +242,7 @@ function renderProducts() {
   }
   productsEl.innerHTML = filtered.map(p => `
     <article class="product" data-product-id="${escapeHtml(p.id)}">
-      <div class="product-photo">${p.image ? `<img loading="lazy" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" onerror="this.onerror=null;this.parentElement.insertAdjacentHTML('afterbegin','<span>📦</span>');this.remove()">` : '<span>📦</span>'}<span class="mitra-tag">${escapeHtml((p.mitraNama||'Mitra').trim().split(/\s+/).map(x=>x[0]||'').join('').toUpperCase().slice(0,4))}</span></div>
+      <div class="product-photo">${p.image ? `<img loading="lazy" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" onerror="this.onerror=null;this.style.display='none';this.parentElement.classList.add('image-missing');this.parentElement.insertAdjacentHTML('afterbegin','<span class=\"image-fallback\">🖼️</span>')">` : '<span>📦</span>'}<span class="mitra-tag">${escapeHtml((p.mitraNama||'Mitra').trim().split(/\s+/).map(x=>x[0]||'').join('').toUpperCase().slice(0,4))}</span></div>
       <div class="product-info">
         <div class="product-name">${escapeHtml(p.name)}</div>
         <div class="product-desc">${escapeHtml(p.description || 'Pesanan siap antar ±1 jam').slice(0,80)}</div>
