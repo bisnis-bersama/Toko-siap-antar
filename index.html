@@ -300,48 +300,47 @@ function deliveryLabels(p){
   return labels.length ? labels.join(' · ') : 'Belum tersedia';
 }
 
-/* SLIDE PROMO: membaca gambar sponsor dari kolom N (indeks 13). */
+/* SLIDE SPONSOR: mengambil link gambar dari kolom N (indeks 13). */
 function renderSponsorSlides(rows) {
   const section = document.getElementById('sponsorPromo');
   const track = document.getElementById('promoTrack');
   if (!section || !track) return;
 
-  // Terima URL gambar, URL Drive, atau data gambar yang memang tersimpan di kolom N.
   const sponsorLinks = [...new Set((rows || []).map(row => {
-    const cell = (row.c || [])[13];
-    return String(cell?.v ?? cell?.f ?? '').trim();
+    const cells = row.c || [];
+    return String(cells[13]?.v ?? cells[13]?.f ?? '').trim();
   }).filter(value =>
-    /^https?:\/\//i.test(value) ||
-    /^data:image\//i.test(value) ||
-    /^(?:\/9j\/|iVBORw0KGgo|R0lGOD|UklGR)/.test(value)
+    /^https?:\\/\\//i.test(value) ||
+    /^data:image\\//i.test(value) ||
+    /^(?:\\/9j\\/|iVBORw0KGgo|R0lGOD|UklGR)/.test(value)
   ))];
 
   const images = sponsorLinks.map(convertImage).filter(Boolean);
   track.replaceChildren();
+  track.style.animation = 'none';
+  track.style.transform = 'translateX(0)';
 
   if (!images.length) {
-    // Jangan menampilkan kotak promo kosong bila spreadsheet belum berisi gambar sponsor.
-    section.style.display = 'none';
-    track.style.animation = 'none';
+    // Promo tetap terlihat; tampilkan pesan agar area tidak menghilang diam-diam.
+    section.style.display = 'block';
+    track.innerHTML = '<div style="padding:18px;text-align:center;color:#52635b;width:100%">Promo belum tersedia</div>';
     return;
   }
 
   section.style.display = 'block';
-  // Gandakan urutan gambar agar animasi kembali ke awal tanpa jeda kosong.
   const repeatedSlides = images.length > 1 ? [...images, ...images] : images;
   track.innerHTML = repeatedSlides.map(url => `
     <img
       src="${escapeHtml(url)}"
-      alt="Slide promo Toko Siap Antar"
+      alt="Promo Toko Siap Antar"
       loading="eager"
     >
   `).join('');
 
-  // Jangan sembunyikan slide saat gambar gagal; biarkan area promo tetap ada.
-  // Animasi hanya berjalan bila ada lebih dari satu gambar.
-  track.style.animation = images.length > 1
-    ? 'promoGeser 24s linear infinite'
-    : 'none';
+  // Animasi hanya untuk beberapa gambar. Satu gambar selalu menetap.
+  if (images.length > 1) {
+    track.style.animation = 'promoGeser 24s linear infinite';
+  }
 }
 
 function renderProducts() {
