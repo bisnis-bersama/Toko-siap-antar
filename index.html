@@ -300,24 +300,29 @@ function deliveryLabels(p){
   return labels.length ? labels.join(' · ') : 'Belum tersedia';
 }
 
-/* SLIDE SPONSOR: mengambil link gambar dari kolom N (indeks 13). */
+/* SLIDE PROMO: membaca gambar sponsor dari kolom N (indeks 13). */
 function renderSponsorSlides(rows) {
   const section = document.getElementById('sponsorPromo');
   const track = document.getElementById('promoTrack');
   if (!section || !track) return;
 
-  const sponsorLinks = [...new Set(
-    rows.map(row => {
-      const cells = row.c || [];
-      return String(cells[13]?.v ?? cells[13]?.f ?? '').trim();
-    }).filter(url => /^https?:\/\//i.test(url))
-  )];
+  // Terima URL gambar, URL Drive, atau data gambar yang memang tersimpan di kolom N.
+  const sponsorLinks = [...new Set((rows || []).map(row => {
+    const cell = (row.c || [])[13];
+    return String(cell?.v ?? cell?.f ?? '').trim();
+  }).filter(value =>
+    /^https?:\/\//i.test(value) ||
+    /^data:image\//i.test(value) ||
+    /^(?:\/9j\/|iVBORw0KGgo|R0lGOD|UklGR)/.test(value)
+  ))];
 
   const images = sponsorLinks.map(convertImage).filter(Boolean);
+  track.replaceChildren();
 
   if (!images.length) {
+    // Jangan menampilkan kotak promo kosong bila spreadsheet belum berisi gambar sponsor.
     section.style.display = 'none';
-    track.replaceChildren();
+    track.style.animation = 'none';
     return;
   }
 
@@ -326,13 +331,13 @@ function renderSponsorSlides(rows) {
   track.innerHTML = repeatedSlides.map((url, index) => `
     <img
       src="${escapeHtml(url)}"
-      alt="Sponsor Toko Siap Antar"
+      alt="Slide promo Toko Siap Antar"
       loading="${index < images.length ? 'eager' : 'lazy'}"
       onerror="this.style.display='none'"
     >
   `).join('');
 
-  // Jika hanya satu sponsor, hentikan animasi agar gambar tidak bergeser ke ruang kosong.
+  // Satu gambar tetap tampil; beberapa gambar bergerak berulang.
   track.style.animation = images.length > 1 ? '' : 'none';
 }
 
