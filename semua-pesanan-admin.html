@@ -1,6 +1,27 @@
 <!doctype html>
 <html lang="id">
-<head>
+<head><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Semua Pesanan v6 WA Personal</title>
@@ -91,6 +112,51 @@ function gpsHtml(obj,label){
   const url=`https://www.google.com/maps?q=${g.lat},${g.lng}`;
   return `<div class="meta">GPS ${esc(label)}: ${g.lat.toFixed(6)}, ${g.lng.toFixed(6)}</div><a class="meta" style="display:inline-block;color:#087443;font-weight:800;margin-top:3px" href="${url}" target="_blank" rel="noopener">📍 Buka lokasi ${esc(label)} di Google Maps</a>`;
 }
+const RADIUS_KM_ADMIN = 40;
+const JAM_KERJA_MS_ADMIN = 8*60*60*1000;
+function hitungJarakKmAdmin(lat1,lng1,lat2,lng2){
+  const R=6371;
+  const dLat=(lat2-lat1)*Math.PI/180;
+  const dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+async function cekKurirRadius40km(pelangganGPS, mitraGPS){
+  try{
+    const snap=await getDocs(collection(db,'users'));
+    let count=0, denganSaldo=0, list=[];
+    const now=Date.now();
+    snap.forEach(d=>{
+      const u=d.data();
+      const role=String(u.role||'').toLowerCase();
+      if(!['kurir','mitra_pengantaran','kurir_pengantaran'].includes(role)) return;
+      if(u.aktif===false) return;
+      const online=u.online===true||u.isOnline===true||String(u.statusOnline||'').toLowerCase()==='online';
+      if(!online) return;
+      const ts=u.gpsUpdatedAt||u.locationUpdatedAt||u.onlineAt;
+      let ms=null;
+      if(ts){
+        if(typeof ts.toMillis==='function') ms=ts.toMillis();
+        else if(typeof ts.seconds==='number') ms=ts.seconds*1000;
+      }
+      if(ms===null|| now-ms > JAM_KERJA_MS_ADMIN) return;
+      const lat=Number(u.lat||u.lokasi?.lat||u.gps?.lat||u.currentLat);
+      const lng=Number(u.lng||u.lokasi?.lng||u.gps?.lng||u.currentLng);
+      if(!lat||!lng) return;
+      if(!pelangganGPS||!mitraGPS) return;
+      const j1=hitungJarakKmAdmin(lat,lng,pelangganGPS.lat,pelangganGPS.lng);
+      const j2=hitungJarakKmAdmin(lat,lng,mitraGPS.lat,mitraGPS.lng);
+      if(j1!==null&&j2!==null&&j1<=RADIUS_KM_ADMIN&&j2<=RADIUS_KM_ADMIN){
+        count++;
+        const saldo=Number(u.saldo||u.saldoCOD||u.balance||0);
+        if(saldo>0) denganSaldo++;
+        if(list.length<3) list.push({nama:u.nama||'Kurir', jarakMitra:j2, saldo});
+      }
+    });
+    return {count, denganSaldo, list};
+  }catch(e){ return {count:0,denganSaldo:0,list:[]}; }
+}
+
 async function readUser(uid){
   if(!uid)return null;
   try{const snap=await getDoc(doc(db,"users",String(uid)));return snap.exists()?{uid:String(uid),...snap.data()}:null;}
@@ -396,7 +462,29 @@ window.verifyOrderInfo=async(id,btn)=>{
 
 window.approveOrder=async id=>{
   if(!authReady||!currentUser){alert("Sesi login Admin tidak ditemukan. Silakan login melalui E-Wallet Admin.");return;}
-  if(!confirm("Setujui pesanan ini? Status akan berubah dari pending menjadi disetujui."))return;
+  try{
+    const snap=await getDoc(doc(db,"orders",id));
+    if(snap.exists()){
+      const o=snap.data();
+      const pGPS=gpsOf({lat:o.lat||o.lokasi?.lat||o.alamatPengiriman?.lat, lng:o.lng||o.lokasi?.lng||o.alamatPengiriman?.lng});
+      const mGPS=gpsOf({lat:o.mitraLat||o.tokoLat, lng:o.mitraLng||o.tokoLng});
+      if(pGPS&&mGPS){
+        const cek=await cekKurirRadius40km(pGPS,mGPS);
+        if(cek.count===0){
+          if(!confirm(`⚠️ TIDAK ADA KURIR ONLINE dalam radius ${RADIUS_KM_ADMIN}km dari pelanggan & mitra (online 8 jam).\n\nOrder ini akan WAJIB PROSES SENDIRI oleh mitra sesuai metode di checkout.\n\n• Siap Antar = mitra antar sendiri\n• Expedisi = mitra proses via expedisi\n\nLanjut setujui pesanan?`)) return;
+        } else {
+          if(!confirm(`✅ Ditemukan ${cek.count} kurir online dalam ${RADIUS_KM_ADMIN}km (8 jam kerja), ${cek.denganSaldo} punya saldo COD.\n\nTerlampir: ${cek.list.map(c=>c.nama+' '+c.jarakMitra.toFixed(1)+'km').join(', ')}\n\nSetujui pesanan ini? Status akan berubah dari pending menjadi disetujui dan masuk ke pesan mitra.`)) return;
+        }
+      } else {
+        if(!confirm("GPS pelanggan/mitra belum lengkap. Setujui pesanan ini? Status akan berubah dari pending menjadi disetujui."))return;
+      }
+    } else {
+      if(!confirm("Setujui pesanan ini? Status akan berubah dari pending menjadi disetujui."))return;
+    }
+  }catch(e){
+    if(!confirm("Setujui pesanan ini? Status akan berubah dari pending menjadi disetujui."))return;
+  }
+
   try{
     const ref=doc(db,"orders",id),snap=await getDoc(ref);
     if(!snap.exists()){alert("Pesanan tidak ditemukan.");await loadPending();return;}
@@ -406,5 +494,5 @@ window.approveOrder=async id=>{
   }catch(e){console.error(e);alert("Gagal mengubah status: "+e.message);}
 };
 </script>
-</body>
+<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
 </html>
