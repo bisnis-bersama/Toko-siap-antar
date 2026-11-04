@@ -213,7 +213,7 @@ main{max-width:840px;margin:auto;padding:12px}
       
       <span class="muted" id="gpsModalStatus" style="font-size:11px">GPS opsional tapi disarankan untuk hitung ongkir Siap Antar</span>
     </div>
-    <button type="button" class="btn btn-secondary" id="btnAmbilGPS" style="margin-top:8px">📍 Ambil GPS saya</button><div id="gpsModalInfo" class="muted" style="margin-top:6px"></div>
+    <div id="gpsModalInfo" class="muted" style="margin-top:6px"></div>
     <div style="display:flex;gap:8px;margin-top:16px">
       <button class="btn btn-secondary" id="btnBatalAlamat" style="flex:1">Batal</button>
       <button class="btn btn-primary" id="btnSimpanAlamat" style="flex:1">Simpan Alamat</button>
@@ -299,7 +299,7 @@ function ownerKey(item){ return String(item.mitraUid||item.mitra_uid||'unknown')
 function ownerItems(){ const m=new Map(); for(const item of cart){const k=ownerKey(item);if(!m.has(k))m.set(k,[]);m.get(k).push(item);} return m; }
 
 function hitungJarakKm(lat1,lng1,lat2,lng2){
-  if([lat1,lng1,lat2,lng2].some(v=>v===null||v===undefined||!Number.isFinite(Number(v)))) return null;
+  if([lat1,lng1,lat2,lng2].some(v=>v===null||v===undefined||v===''||!Number.isFinite(Number(v)))) return null;
   const R=6371;
   const dLat=(lat2-lat1)*Math.PI/180;
   const dLng=(lng2-lng1)*Math.PI/180;
@@ -339,7 +339,7 @@ async function cariMitraTerdekat(pLat,pLng){
     for(let m of allMitra){
       let mLat = m.tokoLat || m.toko_lat || m.lat || m.latitude || m.latToko || m.alamatToko?.lat || m.alamatPengiriman?.lat || m.lokasi?.lat || m.gps?.lat;
       let mLng = m.tokoLng || m.toko_lng || m.lng || m.longitude || m.lngToko || m.alamatToko?.lng || m.alamatPengiriman?.lng || m.lokasi?.lng || m.gps?.lng;
-      if(!mLat || !mLng) continue;
+      if(mLat===null||mLat===undefined||mLat===''||mLng===null||mLng===undefined||mLng==='') continue;
       let jarak = hitungJarakKm(parseFloat(mLat), parseFloat(mLng), parseFloat(pLat), parseFloat(pLng));
       if(jarak!=null && jarak < jarakMin){
         jarakMin=jarak;
@@ -401,7 +401,7 @@ async function cariKurirDalamRadius(mitraLat,mitraLng){
       const role=String(k.role||'').trim().toLowerCase();
       if(!['kurir','mitra_pengantaran'].includes(role)) return;
       // Abaikan akun yang secara eksplisit dinonaktifkan.
-      if(k.aktif===false || String(k.status||'').toLowerCase()==='nonaktif') return;
+      if(k.aktif===false || ['nonaktif','inactive','disabled','dibekukan'].includes(String(k.status||'').trim().toLowerCase())) return;
       const lat=ambilKoordinat(k,'lat');
       const lng=ambilKoordinat(k,'lng');
       if(lat===null||lng===null) return;
@@ -519,13 +519,13 @@ async function loadAlamat(){
       let alamat = userData.alamat || userData.alamatLengkap || userData.alamatPengiriman?.alamat || '-';
       let detail = userData.alamatDetail || '';
       let kodePos = userData.kodePos || '';
-      let lat = userData.lat ?? userData.latitude ?? userData.alamatPengiriman?.lat ?? userData.lokasi?.lat;
-      let lng = userData.lng ?? userData.longitude ?? userData.alamatPengiriman?.lng ?? userData.lokasi?.lng;
+      let lat = userData.lat || userData.latitude || userData.alamatPengiriman?.lat || userData.lokasi?.lat;
+      let lng = userData.lng || userData.longitude || userData.alamatPengiriman?.lng || userData.lokasi?.lng;
       document.getElementById('alamatNama').textContent=nama;
       document.getElementById('alamatHp').textContent=hp;
       document.getElementById('alamatLengkap').textContent= alamat + (detail? ', '+detail:'') + (kodePos? ' - '+kodePos:'');
       document.getElementById('alamatGPS').textContent= lat && lng ? lat.toFixed(6)+', '+lng.toFixed(6) : 'Belum ada GPS - klik Edit untuk isi';
-      pLat=lat!==null&&lat!==undefined&&Number.isFinite(Number(lat))?parseFloat(lat):null; pLng=lng!==null&&lng!==undefined&&Number.isFinite(Number(lng))?parseFloat(lng):null;
+      pLat=lat?parseFloat(lat):null; pLng=lng?parseFloat(lng):null;
       // Isi form edit
       document.getElementById('editNama').value=nama;
       document.getElementById('editHp').value=hp;
@@ -545,21 +545,10 @@ async function loadAlamat(){
   }catch(e){ console.error(e); }
 }
 
-async function getGPS(){
-  return new Promise((resolve,reject)=>{
-    if(!navigator.geolocation){reject(new Error('Browser tidak mendukung GPS'));return;}
-    document.getElementById('gpsModalStatus').textContent='Meminta izin lokasi…';
-    navigator.geolocation.getCurrentPosition(pos=>{
-      pLat=Number(pos.coords.latitude); pLng=Number(pos.coords.longitude);
-      document.getElementById('gpsModalInfo').textContent='GPS diperoleh: '+pLat.toFixed(6)+', '+pLng.toFixed(6);
-      document.getElementById('gpsModalStatus').textContent='GPS siap disimpan bersama alamat'; resolve({lat:pLat,lng:pLng});
-    },err=>{document.getElementById('gpsModalStatus').textContent='GPS gagal: '+err.message;reject(err);},{enableHighAccuracy:true,timeout:15000,maximumAge:0});
-  });
-}
-document.getElementById('btnAmbilGPS').addEventListener('click',()=>getGPS().catch(e=>alert('Tidak bisa mengambil GPS: '+e.message)));
+async function getGPS(){return Promise.reject('GPS browser tidak digunakan. Gunakan koordinat GPS yang tersimpan di akun.');}
 
 async function hitungJarakDanOngkir(){
-  if(pLat===null||pLng===null){ document.getElementById('saDetail').textContent='GPS pelanggan belum ada. Klik Edit alamat dan ambil GPS.'; return; }
+  if(!pLat||!pLng){ document.getElementById('saDetail').textContent='GPS pelanggan belum ada. Klik Edit alamat dan ambil GPS.'; return; }
   document.getElementById('saDetail').textContent='🔍 Mencari mitra pemilik produk terdekat...';
   mitra = await cariMitraTerdekat(pLat,pLng);
   if(!mitra){
