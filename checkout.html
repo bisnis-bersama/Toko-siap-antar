@@ -283,6 +283,22 @@ function hitungJarakKm(lat1,lng1,lat2,lng2){
   const a=Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
 }
+// Mengambil jarak rute kendaraan dari OSRM (meter -> km). Urutan koordinat OSRM: longitude,latitude.
+// Jika layanan routing gagal, return null agar pemanggil dapat menampilkan status gagal
+// dan tidak menyamarkan jarak garis lurus sebagai jarak jalan.
+async function hitungJarakRuteJalanKm(lat1,lng1,lat2,lng2){
+  const vals=[lat1,lng1,lat2,lng2].map(Number);
+  if(!vals.every(Number.isFinite)) return null;
+  try{
+    const url=`https://router.project-osrm.org/route/v1/driving/${vals[1]},${vals[0]};${vals[3]},${vals[2]}?overview=false&steps=false`;
+    const response=await fetch(url,{headers:{'Accept':'application/json'}});
+    if(!response.ok) return null;
+    const data=await response.json();
+    const meters=data?.routes?.[0]?.distance;
+    return data?.code==='Ok' && Number.isFinite(meters) ? meters/1000 : null;
+  }catch(e){console.warn('Routing jalan gagal:',e);return null;}
+}
+
 function hitungOngkirFinal(jarakKm){
   if(jarakKm==null || jarakKm<0.05) return 5000;
   if(jarakKm <= 3) return 5000;
@@ -317,7 +333,7 @@ async function cariMitraTerdekat(pLat,pLng){
       let mLat = m.tokoLat || m.toko_lat || m.lat || m.latitude || m.latToko || m.alamatToko?.lat || m.alamatPengiriman?.lat || m.lokasi?.lat || m.gps?.lat;
       let mLng = m.tokoLng || m.toko_lng || m.lng || m.longitude || m.lngToko || m.alamatToko?.lng || m.alamatPengiriman?.lng || m.lokasi?.lng || m.gps?.lng;
       if(!mLat || !mLng) continue;
-      let jarak = hitungJarakKm(parseFloat(mLat), parseFloat(mLng), parseFloat(pLat), parseFloat(pLng));
+      let jarak = await hitungJarakRuteJalanKm(parseFloat(pLat), parseFloat(pLng), parseFloat(mLat), parseFloat(mLng));
       if(jarak!=null && jarak < jarakMin){
         jarakMin=jarak;
         terdekat={uid:m.id, nama:m.nama||m.namaToko||m.namaUsaha||'Mitra', lat:parseFloat(mLat), lng:parseFloat(mLng), alamat:m.alamatToko||m.alamat||'', jarak:jarak};
@@ -398,13 +414,13 @@ async function renderPerToko(){
   if(!groups.size){document.getElementById('perTokoList').innerHTML='<div class="muted">Belum ada produk.</div>';return;}
   const rows=[];
   for(const [uid,items] of groups){
-    let info={nama:items[0].mitraNama||items[0].mitra_nama||'Mitra',alamat:'',lat:null,lng:null,jarak:0,ongkir:5000};
+    let info={nama:items[0].mitraNama||items[0].mitra_nama||'Mitra',alamat:'',lat:null,lng:null,jarak:null,ongkir:5000};
     if(uid!=='unknown'){
       try{const snap=await getDoc(doc(db,'users',uid));const m=snap.exists()?snap.data():{};
         const lat=Number(m.tokoLat||m.toko_lat||m.lat||m.latitude||m.latToko||m.alamatToko?.lat||m.alamatPengiriman?.lat||m.lokasi?.lat||m.gps?.lat)||null;
         const lng=Number(m.tokoLng||m.toko_lng||m.lng||m.longitude||m.lngToko||m.alamatToko?.lng||m.alamatPengiriman?.lng||m.lokasi?.lng||m.gps?.lng)||null;
-        const km=pLat&&pLng&&lat&&lng?hitungJarakKm(lat,lng,pLat,pLng):null;
-        info={nama:m.nama||m.namaToko||m.namaUsaha||info.nama,alamat:m.alamatToko||m.alamat||'',lat,lng,jarak:km||0,ongkir:hitungOngkirFinal(km)};
+        const km=pLat&&pLng&&lat&&lng?await hitungJarakRuteJalanKm(pLat,pLng,lat,lng):null;
+        info={nama:m.nama||m.namaToko||m.namaUsaha||info.nama,alamat:m.alamatToko||m.alamat||'',lat,lng,jarak:km,ongkir:km==null?5000:hitungOngkirFinal(km)};
       }catch(e){}
     }
     const kurirRadius=(info.lat&&info.lng&&pLat&&pLng)?await cariKurirDalamRadius(info.lat,info.lng):[];
@@ -513,7 +529,7 @@ async function hitungJarakDanOngkir(){
     jarak=0; ongkirSiapAntar=5000;
   } else {
     jarak=mitra.jarak; ongkirSiapAntar=hitungOngkirFinal(jarak);
-    document.getElementById('saDetail').innerHTML=`✅ Mitra terdekat: <b>${mitra.nama}</b><br>Jarak garis lurus: ${jarak.toFixed(2)} km (Pelanggan → Mitra)<br>Ongkir Siap Antar: ${rupiah(ongkirSiapAntar)}<br>Alamat Mitra: ${mitra.alamat||'-'}<br>Catatan: estimasi garis lurus, bukan jarak jalan. Kurir akan cek jarak real sebelum ambil.`;
+    document.getElementById('saDetail').innerHTML=`✅ Mitra berdasarkan rute jalan terdekat: <b>${mitra.nama}</b><br>Jarak rute kendaraan (Pelanggan → Mitra): ${jarak.toFixed(2)} km<br>Ongkir Siap Antar: ${rupiah(ongkirSiapAntar)}<br>Alamat Mitra: ${mitra.alamat||'-'}<br>Jarak dihitung mengikuti jalan kendaraan (OSRM).`;
     document.getElementById('saJarakBadge').textContent=jarak.toFixed(1)+' km';
   }
   renderPerToko();
