@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="id"><head><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#00a85a">
+<title>E-Wallet Kurir - Live GPS 40km + Saldo COD</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4fff7;font:14px system-ui;padding:12px;max-width:480px;margin:auto}
+.card{background:#fff;border:1px solid #dceee5;border-radius:16px;padding:14px;margin:10px 0;box-shadow:0 2px 8px #0001}
+.btn{width:100%;border:0;border-radius:12px;padding:14px;font-weight:900;color:#fff;background:linear-gradient(90deg,#00a85a,#00c8d7);cursor:pointer;margin:6px 0}
+.btn.secondary{background:#eef4ef;color:#087b45}
+.btn.danger{background:#ffe9e6;color:#b42318}
+.badge{display:inline-block;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:800}
+.badge.on{background:#00a85a;color:#fff}
+.badge.off{background:#ffe9e6;color:#b42318}
+.muted{color:#66756f;font-size:12px}
+.ok{background:#e5fff0;color:#087b45;border:1px solid #a7e8c5;padding:10px;border-radius:10px;margin:8px 0}
+.err{background:#fff0ed;color:#b42318;border:1px solid #f5c6c1;padding:10px;border-radius:10px;margin:8px 0}
+.row{display:flex;justify-content:space-between;padding:6px 0}
+input{width:100%;padding:10px;border:1px solid #cfe5d8;border-radius:10px;margin:6px 0}
+</style>
+</head><body>
+<h2>🛵 E-Wallet Kurir - Live GPS</h2>
+<div id="msg"></div>
+
+<div class="card">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div><div class="muted">Login sebagai</div><b id="kurirNama">Memuat...</b><div class="muted" id="kurirUid" style="font-size:10px;word-break:break-all"></div></div>
+<span id="statusBadge" class="badge off">OFFLINE</span>
+</div>
+<div style="margin-top:10px">
+<div class="row"><span>Saldo E-Wallet (untuk talang COD)</span><b id="saldoText">Rp 0</b></div>
+<div class="row"><span>GPS Terakhir</span><b id="gpsText">Belum ada</b></div>
+<div class="row"><span>Update Terakhir</span><b id="timeText">-</b></div>
+<div class="row"><span>Jangkauan COD</span><b>40km + saldo ≥ total pesanan</b></div>
+</div>
+<button id="btnOnline" class="btn">🟢 Aktifkan Online + GPS Live</button>
+<button id="btnOffline" class="btn secondary" style="display:none">🔴 Set Offline</button>
+<button id="btnLogout" class="btn danger">Keluar</button>
+<div class="muted" style="margin-top:8px">Saat online, lokasi akan kirim otomatis tiap 20 detik ke Firestore (lat, lng, gpsUpdatedAt). Checkout akan baca ini untuk tampilkan Siap Antar & COD dalam 40km.</div>
+</div>
+
+<div class="card">
+<h3>📍 Peta Lokasi Saya</h3>
+<div id="mapInfo" class="muted">GPS belum aktif</div>
+<div style="margin-top:8px">
+<button id="btnAmbilGPS" class="btn secondary">📍 Ambil GPS Sekali</button>
+</div>
+</div>
+
+<div class="card">
+<h3>💰 Update Saldo Manual (opsional)</h3>
+<input id="saldoInput" type="number" placeholder="Contoh: 150000">
+<button id="btnSimpanSaldo" class="btn secondary">Simpan Saldo</button>
+<div class="muted">Field saldo dibaca checkout sebagai: saldo, saldoCOD, balance, eWallet, dll. Minimal harus ≥ total pesanan COD.</div>
+</div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import {getAuth,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+import {getFirestore,doc,getDoc,setDoc,serverTimestamp,updateDoc} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+const firebaseConfig={apiKey:"AIzaSyBxqZhl6t3RwrXMwVdJeIkg0NzGfwvlweM",authDomain:"toko-siap-antar-9a7bb.firebaseapp.com",projectId:"toko-siap-antar-9a7bb",storageBucket:"toko-siap-antar-9a7bb.firebasestorage.app",messagingSenderId:"351335838712",appId:"1:351335838712:web:14cc2c7b91bb0c9e1b5c0d"};
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+let kurirUid=null, watchId=null, intervalId=null;
+const $=id=>document.getElementById(id);
+const rupiah=n=>'Rp '+(Number(n)||0).toLocaleString('id-ID');
+
+function msg(t,type='ok'){ $('msg').innerHTML=`<div class="${type}">${t}</div>` }
+
+function getGPSOnce(){
+  return new Promise((res,rej)=>{
+    if(!navigator.geolocation) return rej('Browser tidak support GPS');
+    navigator.geolocation.getCurrentPosition(p=>res({lat:p.coords.latitude,lng:p.coords.longitude,acc:p.coords.accuracy}), e=>rej(e.message), {enableHighAccuracy:true,timeout:15000,maximumAge:0});
+  });
+}
+
+async function updateLokasi(lat,lng){
+  if(!kurirUid) return;
+  const now=new Date();
+  $('gpsText').textContent=`${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+  $('timeText').textContent=now.toLocaleTimeString('id-ID');
+  $('mapInfo').textContent=`Lat ${lat.toFixed(6)} Lng ${lng.toFixed(6)} - ${now.toLocaleString('id-ID')}`;
+  try{
+    await setDoc(doc(db,'users',kurirUid),{
+      lat, lng,
+      latitude:lat, longitude:lng,
+      currentLat:lat, currentLng:lng,
+      lokasi:{lat,lng},
+      gps:{lat,lng},
+      latMitra:lat, lngMitra:lng,
+      gpsUpdatedAt:serverTimestamp(),
+      locationUpdatedAt:serverTimestamp(),
+      lastLocationAt:serverTimestamp(),
+      updatedAt:serverTimestamp()
+    },{merge:true});
+  }catch(e){console.error(e); msg('Gagal update GPS: '+e.message,'err')}
+}
+
+async function setOnline(on){
+  if(!kurirUid) return;
+  try{
+    await setDoc(doc(db,'users',kurirUid),{
+      online:on,
+      isOnline:on,
+      statusOnline:on?'online':'offline',
+      status:on?'online':'offline',
+      aktif:on,
+      role:'kurir',
+      onlineAt: on?serverTimestamp():null,
+      offlineAt: !on?serverTimestamp():null,
+      updatedAt:serverTimestamp()
+    },{merge:true});
+    $('statusBadge').textContent=on?'ONLINE':'OFFLINE';
+    $('statusBadge').className='badge '+(on?'on':'off');
+    if(on){
+      $('btnOnline').style.display='none';
+      $('btnOffline').style.display='block';
+      msg(`✅ Kurir ONLINE - GPS live tiap 20 detik aktif. Radius 40km & saldo akan dibaca checkout untuk Siap Antar & COD.`,'ok');
+    } else {
+      $('btnOnline').style.display='block';
+      $('btnOffline').style.display='none';
+      msg('🔴 Kurir OFFLINE - Tidak akan muncul di checkout','err');
+    }
+  }catch(e){msg('Gagal set online: '+e.message,'err')}
+}
+
+async function startLive(){
+  if(!kurirUid) return alert('Belum login');
+  await setOnline(true);
+  try{
+    const pos=await getGPSOnce();
+    await updateLokasi(pos.lat,pos.lng);
+  }catch(e){msg('Gagal ambil GPS awal: '+e,'err')}
+  // watch position
+  if(watchId!==null) navigator.geolocation.clearWatch(watchId);
+  watchId=navigator.geolocation.watchPosition(async p=>{
+    await updateLokasi(p.coords.latitude,p.coords.longitude);
+  }, err=>{console.warn(err)}, {enableHighAccuracy:true,maximumAge:0,timeout:15000});
+  // backup interval tiap 20 detik ambil lagi
+  if(intervalId) clearInterval(intervalId);
+  intervalId=setInterval(async()=>{
+    try{
+      const p=await getGPSOnce();
+      await updateLokasi(p.lat,p.lng);
+    }catch{}
+  },20000);
+}
+
+async function stopLive(){
+  if(watchId!==null) navigator.geolocation.clearWatch(watchId);
+  if(intervalId) clearInterval(intervalId);
+  watchId=null; intervalId=null;
+  await setOnline(false);
+}
+
+$('btnOnline').onclick=startLive;
+$('btnOffline').onclick=stopLive;
+$('btnAmbilGPS').onclick=async()=>{
+  try{
+    const p=await getGPSOnce();
+    await updateLokasi(p.lat,p.lng);
+    msg(`📍 GPS sekali: ${p.lat.toFixed(6)}, ${p.lng.toFixed(6)} ±${Math.round(p.acc)}m`,'ok');
+  }catch(e){msg('Gagal GPS: '+e,'err')}
+};
+$('btnSimpanSaldo').onclick=async()=>{
+  const val=Number($('saldoInput').value);
+  if(!kurirUid) return;
+  if(!Number.isFinite(val)) return alert('Isi saldo angka');
+  try{
+    await setDoc(doc(db,'users',kurirUid),{
+      saldo:val,
+      saldoCOD:val,
+      balance:val,
+      eWallet:val,
+      updatedAt:serverTimestamp()
+    },{merge:true});
+    $('saldoText').textContent=rupiah(val);
+    msg(`✅ Saldo disimpan ${rupiah(val)} - akan dipakai untuk cek COD (harus ≥ total pesanan)`,'ok');
+  }catch(e){msg('Gagal simpan saldo: '+e.message,'err')}
+};
+$('btnLogout').onclick=async()=>{
+  await stopLive().catch(()=>{});
+  await signOut(auth);
+  location.href='profil.html';
+};
+
+onAuthStateChanged(auth, async user=>{
+  if(!user){location.href='profil.html';return}
+  kurirUid=user.uid;
+  $('kurirNama').textContent=user.email||user.displayName||'Kurir';
+  $('kurirUid').textContent=kurirUid;
+  try{
+    const snap=await getDoc(doc(db,'users',kurirUid));
+    if(snap.exists()){
+      const d=snap.data();
+      const saldo=d.saldo||d.saldoCOD||d.balance||d.eWallet||0;
+      $('saldoText').textContent=rupiah(saldo);
+      const lat=d.lat||d.lokasi?.lat;
+      const lng=d.lng||d.lokasi?.lng;
+      if(lat&&lng){
+        $('gpsText').textContent=`${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)}`;
+        $('mapInfo').textContent=`Last saved: ${lat}, ${lng}`;
+      }
+      const online=d.online===true||d.isOnline===true;
+      $('statusBadge').textContent=online?'ONLINE':'OFFLINE';
+      $('statusBadge').className='badge '+(online?'on':'off');
+      if(online){
+        $('btnOnline').style.display='none';
+        $('btnOffline').style.display='block';
+      }
+      const ts=d.gpsUpdatedAt||d.locationUpdatedAt;
+      if(ts){
+        const ms=ts.toMillis?ts.toMillis():Number(ts);
+        if(ms) $('timeText').textContent=new Date(ms).toLocaleTimeString('id-ID');
+      }
+    }
+  }catch(e){console.error(e)}
+});
+
+// auto offline saat tab ditutup
+window.addEventListener('beforeunload',()=>{
+  if(kurirUid){
+    // best effort, tidak await
+    setDoc(doc(db,'users',kurirUid),{online:false,statusOnline:'offline',updatedAt:serverTimestamp()},{merge:true}).catch(()=>{});
+  }
+});
+</script>
+<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
