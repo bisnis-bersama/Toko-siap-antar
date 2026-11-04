@@ -369,7 +369,7 @@ function updateTotals(){
 }
 
 async function cariKurirDalamRadius(mitraLat,mitraLng){
-  // Kurir harus berada maksimal 25 km dari pelanggan DAN maksimal 25 km dari mitra.
+  // Kurir harus berada maksimal 40 km dari pelanggan DAN maksimal 40 km dari mitra.
   if(!Number.isFinite(Number(pLat))||!Number.isFinite(Number(pLng))||!Number.isFinite(Number(mitraLat))||!Number.isFinite(Number(mitraLng))) return [];
   try{
     const snap=await getDocs(collection(db,'users'));
@@ -385,7 +385,7 @@ async function cariKurirDalamRadius(mitraLat,mitraLng){
       if(!Number.isFinite(lat)||!Number.isFinite(lng)||!lat||!lng) return;
       const jarakPelanggan=hitungJarakKm(lat,lng,Number(pLat),Number(pLng));
       const jarakMitra=hitungJarakKm(lat,lng,Number(mitraLat),Number(mitraLng));
-      if(jarakPelanggan!==null && jarakMitra!==null && jarakPelanggan<=25 && jarakMitra<=25){
+      if(jarakPelanggan!==null && jarakMitra!==null && jarakPelanggan<=40 && jarakMitra<=40){
         hasil.push({uid:d.id,nama:k.nama||k.namaLengkap||k.displayName||'Kurir',jarakPelanggan,jarakMitra});
       }
     });
