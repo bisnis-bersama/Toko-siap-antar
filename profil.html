@@ -25,7 +25,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#00a85a">
-<title>Profil Akun | Toko Siap Antar</title>
+<title>Profil Akun - Auto Online Kurir + GPS 40km | Toko Siap Antar</title>
 <style>
 :root{--g:#00a85a;--c:#00c8a0;--y:#ffd400;--ink:#18312b;--muted:#66756f;--line:#dceee5}
 *{box-sizing:border-box}body{margin:0;background:#f4fff7;color:var(--ink);font:15px Arial,sans-serif;padding-bottom:82px}
@@ -44,10 +44,10 @@ label{font-weight:700;font-size:13px}.note{padding:12px;border-radius:10px;backg
 </style>
 </head>
 <body>
-<header><img src="logo3.png" alt="Logo Toko Siap Antar"><div><strong>Toko Siap Antar</strong><small>Belanja sparepart dan aksesori HP lebih mudah</small></div></header>
+<header><img src="logo3.png" alt="Logo Toko Siap Antar"><div><strong>Toko Siap Antar</strong><small>Auto Online Kurir + GPS 40km</small></div></header>
 <main>
 <h1 class="title">👤 Profil Akun</h1>
-<p class="sub">Login atau buat akun untuk checkout, menyimpan alamat, dan melihat pesanan.</p>
+<p class="sub">Login kurir akan langsung auto ONLINE + GPS live untuk radius 40km COD.</p>
 <div id="msg" aria-live="polite"></div>
 
 <div id="signedOut" class="card">
@@ -89,44 +89,63 @@ label{font-weight:700;font-size:13px}.note{padding:12px;border-radius:10px;backg
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut,updateProfile} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-import {getFirestore,doc,getDoc,setDoc,serverTimestamp,collection,query,where,getDocs,updateDoc} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import {getFirestore,doc,getDoc,setDoc,serverTimestamp,collection,query,where,getDocs} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 const firebaseConfig={apiKey:"AIzaSyBxqZhl6t3RwrXMwVdJeIkg0NzGfwvlweM",authDomain:"toko-siap-antar-9a7bb.firebaseapp.com",projectId:"toko-siap-antar-9a7bb",storageBucket:"toko-siap-antar-9a7bb.firebasestorage.app",messagingSenderId:"351335838712",appId:"1:351335838712:web:14cc2c7b91bb0c9e1b5c0d"};
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let user=null,currentProfile={},authReady=false;
 const rolePages={pelanggan:'ewallet-pelanggan.html',mitra_usaha:'ewallet-mitra.html',kurir:'ewallet-kurir.html',admin:'ewallet-admin.html'};
+
+function note(msg,type='info'){$('msg').innerHTML=`<div class="note ${type}">${esc(msg)}</div>`}
+
 function getGPSOnce(){
   return new Promise((res,rej)=>{
-    if(!navigator.geolocation) return rej('GPS tidak didukung browser');
-    navigator.geolocation.getCurrentPosition(p=>res({lat:p.coords.latitude,lng:p.coords.longitude,acc:p.coords.accuracy}), e=>rej(e.message), {enableHighAccuracy:true,timeout:15000,maximumAge:0});
+    if(!navigator.geolocation) return rej('GPS tidak didukung');
+    navigator.geolocation.getCurrentPosition(p=>res({lat:p.coords.latitude,lng:p.coords.longitude}), e=>rej(e.message), {enableHighAccuracy:true,timeout:15000,maximumAge:0});
   });
 }
-async function setKurirOnlineLive(uid){
+
+// AUTO ONLINE KURIR PAS LOGIN - INTI FITUR YANG DIMINTA
+async function autoOnlineKurir(uid){
+  // 1. Langsung set online tanpa tunggu GPS (biar cepat kebaca checkout)
+  try{
+    await setDoc(doc(db,'users',uid),{
+      online:true, isOnline:true, statusOnline:'online', status:'online', aktif:true,
+      onlineAt:serverTimestamp(), updatedAt:serverTimestamp(), role:'kurir'
+    },{merge:true});
+  }catch(e){console.warn('Gagal set online awal',e)}
+
+  // 2. Ambil GPS terbaru di background
   try{
     const pos=await getGPSOnce();
     await setDoc(doc(db,'users',uid),{
-      online:true, isOnline:true, statusOnline:'online', status:'online', aktif:true,
-      lat:pos.lat, lng:pos.lng, latitude:pos.lat, longitude:pos.lng,
+      lat:pos.lat, lng:pos.lng,
+      latitude:pos.lat, longitude:pos.lng,
       currentLat:pos.lat, currentLng:pos.lng,
-      lokasi:{lat:pos.lat,lng:pos.lng}, gps:{lat:pos.lat,lng:pos.lng},
-      gpsUpdatedAt:serverTimestamp(), locationUpdatedAt:serverTimestamp(),
-      lastLocationAt:serverTimestamp(), onlineAt:serverTimestamp(),
-      role:'kurir', updatedAt:serverTimestamp()
+      lokasi:{lat:pos.lat,lng:pos.lng},
+      gps:{lat:pos.lat,lng:pos.lng},
+      gpsUpdatedAt:serverTimestamp(),
+      locationUpdatedAt:serverTimestamp(),
+      lastLocationAt:serverTimestamp(),
+      updatedAt:serverTimestamp()
     },{merge:true});
     return true;
   }catch(e){
-    // jika gagal GPS, tetap set online tanpa GPS
-    try{
-      await setDoc(doc(db,'users',uid),{
-        online:true, isOnline:true, statusOnline:'online', status:'online', aktif:true,
-        onlineAt:serverTimestamp(), updatedAt:serverTimestamp()
-      },{merge:true});
-    }catch{}
+    console.warn('GPS gagal, tapi online tetap true',e);
     return false;
   }
 }
-function note(msg,type='info'){$('msg').innerHTML=`<div class="note ${type}">${esc(msg)}</div>`}
+
+async function setOfflineKurir(uid){
+  try{
+    await setDoc(doc(db,'users',uid),{
+      online:false, isOnline:false, statusOnline:'offline', status:'offline', aktif:false,
+      offlineAt:serverTimestamp(), updatedAt:serverTimestamp()
+    },{merge:true});
+  }catch(e){console.warn(e)}
+}
+
 async function getUserProfile(uid){
  const snap=await getDoc(doc(db,'users',uid));
  if(snap.exists()){
@@ -172,10 +191,11 @@ $('authForm').addEventListener('submit',async e=>{
  try{
   const cred=await signInWithEmailAndPassword(auth,email,password);
   const {role}=await getUserProfile(cred.user.uid);
+  // AUTO ONLINE JIKA KURIR - LANGSUNG PAS LOGIN
   if(String(role).toLowerCase()==='kurir'){
-    btn.textContent='Mengaktifkan GPS kurir...';
-    note('Kurir terdeteksi, mengaktifkan lokasi terbaru untuk radius 40km...','ok');
-    await setKurirOnlineLive(cred.user.uid);
+    btn.textContent='Mengaktifkan online & GPS...';
+    note('Login kurir berhasil, mengaktifkan status ONLINE otomatis + GPS 40km...','ok');
+    await autoOnlineKurir(cred.user.uid);
   }
   redirectByRole(role);
  }catch(err){
@@ -195,13 +215,13 @@ onAuthStateChanged(auth,async u=>{
  }
  $('signedOut').hidden=true;
  $('signedIn').hidden=true;
- $('msg').innerHTML=`<div class="note ok">Sesi aktif, memeriksa role & GPS...</div>`;
+ $('msg').innerHTML='<div class="note ok">Sesi aktif, memeriksa role...</div>';
  try{
   const result=await getUserProfile(u.uid);
   currentProfile=result.data;
   if(String(result.role).toLowerCase()==='kurir'){
-    $('msg').innerHTML=`<div class="note ok">Kurir terdeteksi, mengaktifkan GPS live 40km...</div>`;
-    await setKurirOnlineLive(u.uid);
+    $('msg').innerHTML='<div class="note ok">Kurir terdeteksi, auto ONLINE + GPS live...</div>';
+    await autoOnlineKurir(u.uid);
   }
   redirectByRole(result.role);
  }catch(err){
@@ -224,11 +244,21 @@ $('profileForm').addEventListener('submit',async e=>{
  }catch(err){note('Gagal menyimpan profil: '+(err.message||'Kesalahan tidak diketahui.'),'err')}
 });
 $('changeAccount').addEventListener('click',async()=>{
- try{await signOut(auth);currentProfile={};$('password').value='';showLogin();note('Silakan masukkan email dan password akun lain.','ok');$('email').focus();}
+ try{
+  if(user && String(currentProfile.role||'').toLowerCase()==='kurir'){
+    await setOfflineKurir(user.uid);
+  }
+  await signOut(auth);currentProfile={};$('password').value='';showLogin();note('Silakan masukkan email dan password akun lain.','ok');$('email').focus();
+ }
  catch(err){note('Tidak dapat mengganti akun: '+(err.message||''),'err')}
 });
 $('logout').addEventListener('click',async()=>{
- try{await signOut(auth);location.href='profil.html';}
+ try{
+  if(user && String(currentProfile.role||'').toLowerCase()==='kurir'){
+    await setOfflineKurir(user.uid);
+  }
+  await signOut(auth);location.href='profil.html';
+ }
  catch(err){note('Gagal keluar dari akun: '+(err.message||''),'err')}
 });
 </script>
