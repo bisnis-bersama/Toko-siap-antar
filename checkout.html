@@ -22,7 +22,7 @@
 }
 </style>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#00a85a">
-<title>Checkout Kelompok Mitra - COD Bersyarat 40km + Saldo</title>
+<title>Checkout Kelompok Mitra - COD 40km + Online 8 Jam Kerja</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{margin:0;background:#f4fff7;color:#18312b;font:14px/1.5 system-ui,sans-serif;padding-bottom:110px}
@@ -75,7 +75,7 @@ main{max-width:840px;margin:auto;padding:12px}
 .mitra-header b{font-size:15px}
 .select-ship{width:100%;padding:10px;border:1px solid #cfe5d8;border-radius:10px;margin:6px 0;background:#fff;font-weight:600}
 </style></head><body>
-<header><img src="logo3.png" alt="logo"><div><strong>Checkout Kelompok Mitra</strong><small>COD bersyarat 40km + saldo kurir • Siap Antar hanya jika ada kurir</small></div><a href="keranjang.html" style="margin-left:auto;text-decoration:none;background:#e8f5e9;color:#00a85a;border-radius:20px;padding:6px 12px;font-weight:700;font-size:12px">← Keranjang</a></header>
+<header><img src="logo3.png" alt="logo"><div><strong>Checkout Kelompok Mitra</strong><small>COD 40km + Online 8 Jam Kerja + Saldo • Siap Antar hanya jika ada kurir</small></div><a href="keranjang.html" style="margin-left:auto;text-decoration:none;background:#e8f5e9;color:#00a85a;border-radius:20px;padding:6px 12px;font-weight:700;font-size:12px">← Keranjang</a></header>
 <main>
 <div id="msg"></div>
 
@@ -174,10 +174,12 @@ function getKurirSaldo(k){
 function kurirOnlineDanGPSValid(k){
   const online=k.online===true||k.isOnline===true||k.statusOnline===true||['online','aktif','tersedia'].includes(String(k.statusOnline||k.status||'').trim().toLowerCase());
   if(!online||k.aktif===false||String(k.status||'').trim().toLowerCase()==='nonaktif') return false;
-  const ts=k.gpsUpdatedAt||k.locationUpdatedAt||k.updatedLocationAt||k.lastLocationAt||k.lastSeenAt;
-  if(!ts) return false;
+  const ts=k.gpsUpdatedAt||k.locationUpdatedAt||k.updatedLocationAt||k.lastLocationAt||k.lastSeenAt||k.onlineAt||k.lastLoginAt;
+  if(!ts) return false; // harus ada timestamp GPS atau login
   const ms=typeof ts.toMillis==='function'?ts.toMillis():(ts instanceof Date?ts.getTime():Number(ts));
-  return Number.isFinite(ms)&&Date.now()-ms<=600000&&Date.now()-ms>=-60000; // 10 menit toleransi untuk demo, bisa 5 menit di prod
+  const JAM_KERJA_MS = 8 * 60 * 60 * 1000; // 8 jam kerja minimal
+  // toleransi 8 jam, bukan 10 menit
+  return Number.isFinite(ms)&&Date.now()-ms<=JAM_KERJA_MS && Date.now()-ms>=-60000;
 }
 
 function produkBisaKirim(item, metode){
