@@ -300,7 +300,7 @@ async function hitungJarakRuteJalanKm(lat1,lng1,lat2,lng2){
 }
 
 function hitungOngkirFinal(jarakKm){
-  if(jarakKm==null || jarakKm<0.05) return 5000;
+  if(jarakKm==null || !Number.isFinite(jarakKm)) return null;\n  if(jarakKm<0.05) return 5000;
   if(jarakKm <= 3) return 5000;
   if(jarakKm <= 7) return 10000;
   if(jarakKm <= 12) return 15000;
@@ -374,7 +374,7 @@ function updateTotals(){
     const subtotal=items.reduce((a,x)=>a+(Number(x.price)||0)*(Number(x.qty)||1),0);
     const info=checkoutByOwner.get(uid)||{};
     const service=expeditionOptions.find(x=>x.id===cfg.service)||expeditionOptions[0];
-    const shipCost=cfg.shipping==='expedisi'?service.cost:(info.ongkir||5000);
+    const shipCost=cfg.shipping==='expedisi'?service.cost:(Number.isFinite(info.ongkir)?info.ongkir:0);
     grand+=subtotal+shipCost;
     const el=document.querySelector(`[data-owner-total="${CSS.escape(uid)}"]`);
     if(el) el.textContent=rupiah(subtotal+shipCost);
@@ -420,7 +420,7 @@ async function renderPerToko(){
         const lat=Number(m.tokoLat||m.toko_lat||m.lat||m.latitude||m.latToko||m.alamatToko?.lat||m.alamatPengiriman?.lat||m.lokasi?.lat||m.gps?.lat)||null;
         const lng=Number(m.tokoLng||m.toko_lng||m.lng||m.longitude||m.lngToko||m.alamatToko?.lng||m.alamatPengiriman?.lng||m.lokasi?.lng||m.gps?.lng)||null;
         const km=pLat&&pLng&&lat&&lng?await hitungJarakRuteJalanKm(pLat,pLng,lat,lng):null;
-        info={nama:m.nama||m.namaToko||m.namaUsaha||info.nama,alamat:m.alamatToko||m.alamat||'',lat,lng,jarak:km,ongkir:km==null?5000:hitungOngkirFinal(km)};
+        info={nama:m.nama||m.namaToko||m.namaUsaha||info.nama,alamat:m.alamatToko||m.alamat||'',lat,lng,jarak:km,ongkir:km==null?null:hitungOngkirFinal(km)};
       }catch(e){}
     }
     const kurirRadius=(info.lat&&info.lng&&pLat&&pLng)?await cariKurirDalamRadius(info.lat,info.lng):[];
@@ -442,7 +442,7 @@ async function renderPerToko(){
     const shipOpts=(canCourier?'<option value="siap_antar">Siap Antar (Kurir Toko)</option>':'')+(canExp?'<option value="expedisi">Ekspedisi</option>':'');
     const statusKurir=canCourier?`<div class="muted" style="margin:6px 0;color:#087b45">✅ Produk mengizinkan Siap Antar${adaKurirRadius?` • ${kurirRadius.length} kurir tersedia dalam radius maksimal 25 km`:' • Kurir belum terdeteksi; opsi tetap ditampilkan sesuai pengaturan produk'}.</div>`:'<div class="muted" style="margin:6px 0;color:#b42318">ℹ️ Siap Antar tidak tersedia untuk produk ini. Silakan gunakan Ekspedisi.</div>'; 
     const statusEkspedisi=!canExp?'<div class="muted" style="margin:6px 0;color:#b42318">ℹ️ Ekspedisi disembunyikan karena ada produk yang tidak mengizinkan metode ini.</div>':'';
-    rows.push(`<section style="border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin:10px 0;background:#fff"><div style="display:flex;justify-content:space-between;gap:8px"><b>🏪 ${info.nama}</b><span class="muted">${items.length} jenis produk</span></div><div class="muted" style="font-size:11px;margin:5px 0 10px">${items.map(x=>`${x.name} × ${x.qty||1}`).join('<br>')}</div>${statusKurir}${statusEkspedisi}<label>Pilih Pengiriman</label><select data-owner-ship="${uid}" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px" ${!canCourier&&!canExp?'disabled':''}>${shipOpts||'<option value="">Tidak ada metode pengiriman tersedia</option>'}</select><div style="margin-top:8px" data-owner-service-wrap="${uid}"><label>Pilih Ekspedisi</label><select data-owner-service="${uid}" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px">${expeditionOptions.map(o=>`<option value="${o.id}">${o.name} - ${rupiah(o.cost)}</option>`).join('')}</select></div><div class="row"><span>Subtotal</span><b>${rupiah(subtotal)}</b></div><div class="row"><span>Ongkir</span><b data-owner-ongkir="${uid}">${rupiah(cfg.shipping==='expedisi'?9000:info.ongkir)}</b></div><div class="row total"><b>Total toko</b><b data-owner-total="${uid}">${rupiah(subtotal+(cfg.shipping==='expedisi'?9000:info.ongkir))}</b></div></section>`);
+    rows.push(`<section style="border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin:10px 0;background:#fff"><div style="display:flex;justify-content:space-between;gap:8px"><b>🏪 ${info.nama}</b><span class="muted">${items.length} jenis produk</span></div><div class="muted" style="font-size:11px;margin:5px 0 10px">${items.map(x=>`${x.name} × ${x.qty||1}`).join('<br>')}</div>${statusKurir}${statusEkspedisi}<label>Pilih Pengiriman</label><select data-owner-ship="${uid}" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px" ${!canCourier&&!canExp?'disabled':''}>${shipOpts||'<option value="">Tidak ada metode pengiriman tersedia</option>'}</select><div style="margin-top:8px" data-owner-service-wrap="${uid}"><label>Pilih Ekspedisi</label><select data-owner-service="${uid}" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px">${expeditionOptions.map(o=>`<option value="${o.id}">${o.name} - ${rupiah(o.cost)}</option>`).join('')}</select></div><div class="row"><span>Subtotal</span><b>${rupiah(subtotal)}</b></div><div class="row"><span>Ongkir</span><b data-owner-ongkir="${uid}">${rupiah(cfg.shipping==='expedisi'?9000:(Number.isFinite(info.ongkir)?info.ongkir:0))}</b></div><div class="row total"><b>Total toko</b><b data-owner-total="${uid}">${rupiah(subtotal+(cfg.shipping==='expedisi'?9000:(Number.isFinite(info.ongkir)?info.ongkir:0)))}</b></div></section>`);
   }
   document.getElementById('perTokoList').innerHTML=rows.join('');
   updateGlobalPayment();
@@ -654,7 +654,8 @@ async function buatPesanan(){
       // hanya karena pengaturan metode pengiriman produk tidak ditemukan.
       if(selectedPay==='cod'&&!itemsForOwnerCodAllowed(uid))throw new Error('COD hanya tersedia jika semua produk di keranjang mengizinkan COD.');
       const service=cfg.shipping==='expedisi'?(expeditionOptions.find(x=>x.id===cfg.service)||expeditionOptions[0]):null;
-      const ongkir=cfg.shipping==='expedisi'?service.cost:(cfg.info?.ongkir||5000);
+      const ongkir=cfg.shipping==='expedisi'?service.cost:cfg.info?.ongkir;
+      if(cfg.shipping==='siap_antar'&&!Number.isFinite(ongkir))throw new Error('Ongkir Siap Antar belum bisa dihitung karena GPS pelanggan/mitra atau rute jalan tidak tersedia. Perbarui GPS dan coba lagi.');
       const key=[uid,cfg.shipping,ongkir,service?.id||''].join('::');
       if(!groups.has(key))groups.set(key,{uid,shipping:cfg.shipping,payment:selectedPay,shippingCost:ongkir,service:service?.id||'',info:cfg.info||{},items:[]});
       groups.get(key).items.push(item);
