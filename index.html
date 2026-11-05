@@ -41,10 +41,7 @@ header{position:sticky;top:0;z-index:20;background:linear-gradient(100deg,#009b4
 .head-actions{display:flex;gap:8px}
 .head-actions button{border:1px solid #ffffff80;background:#ffffff20;color:#fff;border-radius:12px;padding:8px 11px;font-size:20px}
 .promo{margin:8px 0 0;border-block:2px solid var(--yellow);background:linear-gradient(90deg,#00a85a,#00c8d7,#d8e500);padding:4px 0}
-
-/* FIX MODE BERSIH SLIDE - selalu jalan walau dark mode */
-.promo-window{overflow:hidden;background:#fff;border-radius:10px;min-height:135px;display:block!important}
-.promo-window{overflow:hidden;background:#fff;border-radius:10px;min-height:135px;display:block!important}
+.promo-window{overflow:hidden;background:#fff;border-radius:10px;min-height:135px}
 .promo-track{display:flex;align-items:center;width:max-content;animation:promoGeser 24s linear infinite;will-change:transform}
 .promo-track:hover{animation-play-state:paused}
 .promo-track img{display:block;flex:0 0 clamp(250px,42vw,520px);width:clamp(250px,42vw,520px);height:clamp(135px,22vw,220px);object-fit:contain;background:#fff;margin-right:8px}
@@ -171,14 +168,6 @@ body.dark-mode .menu-drawer-head strong{color:#70e6a4}
 body.dark-mode .menu-close{background:#26382f;color:#e7f2ec}
 body.dark-mode .menu-item{background:#1f3028;border-color:#34483e;color:#e7f2ec}
 body.dark-mode .menu-item:active{background:#294a37}
-
-/* FIX MODE BERSIH SLIDE - selalu jalan walau dark mode */
-.promo-window{overflow:hidden;background:#fff;border-radius:10px;min-height:135px;display:block!important}
-.promo-track{display:flex;align-items:center;width:max-content;animation:promoGeser 24s linear infinite!important;will-change:transform}
-.promo-track img{display:block;flex:0 0 clamp(250px,42vw,520px);width:clamp(250px,42vw,520px);height:clamp(135px,22vw,220px);object-fit:cover;background:#fff;margin-right:8px;border-radius:10px}
-body.dark-mode .promo-window{background:#111}
-body.dark-mode .promo-track{background:#111}
-
 </style>
 </head>
 <body>
@@ -326,44 +315,88 @@ function flagEnabled(value){
 }
 function deliveryLabels(p){
   const labels=[];
-  if(flagEnabled(p.cod)) labels.push('COD');
   if(flagEnabled(p.kurir)) labels.push('Kurir');
   if(flagEnabled(p.expedisi)) labels.push('Ekspedisi');
-  return labels.length ? labels.join(' · ') : 'Belum tersedia';
+  return labels.length ? labels.join(' · ') : 'Siap Antar';
 }
 
-/* SLIDE SPONSOR FIX: kolom N sponsor, kalau kosong pakai foto produk atau banner default biar slide tetap jalan */
-/* SLIDE SPONSOR - KHUSUS KOLOM N (SPONSOR) - GAMBAR SLIDE PAKAI KOLOM SPONSOR */
+/* SLIDE SPONSOR: kolom N sponsor (index 13) - HANYA KOLOM SPONSOR */
+function renderSponsorSlides(rows) {
+  const section = document.getElementById('sponsorPromo');
+  const track = document.getElementById('promoTrack');
+  if (!section || !track) return;
 
-function renderSponsorSlides(rows){
-  const section=document.getElementById('sponsorPromo');
-  const track=document.getElementById('promoTrack');
-  if(!section||!track)return;
-  console.log('[SLIDE] total rows',rows.length);
-  const raw = rows.map(r=>{
-    const c=r.c||[];
-    const v = String(c[13]?.v ?? c[13]?.f ?? '').trim();
-    return v;
-  });
-  console.log('[SLIDE] raw sponsor col N',raw.slice(0,10));
-  let links = [...new Set(raw.filter(u=>u && /^https?:\/\//i.test(u)))];
-  console.log('[SLIDE] links after filter',links);
-  let images = links.map(convertImage).filter(Boolean);
-  console.log('[SLIDE] images after convert',images);
-  if(!images.length){
-    section.style.display='block';
-    track.style.animation='none';
-    track.style.width='100%';
-    track.innerHTML=`<div style="padding:16px;background:#fffbe6;border:1px dashed #ffcc00;border-radius:10px;font-size:11px">Kolom N sponsor kosong. Isi dengan https:// link gambar. Saat ini terbaca: ${raw.slice(0,3).join(' | ')||'kosong'}</div>`;
+  const sponsorLinks = [...new Set(
+    rows.map(row => {
+      const cells = row.c || [];
+      return String(cells[13]?.v ?? cells[13]?.f ?? '').trim();
+    }).filter(url => /^https?:\/\//i.test(url))
+  )];
+
+  const images = sponsorLinks.map(convertImage).filter(Boolean);
+
+  if (!images.length) {
+    section.style.display = 'block';
+    track.style.animation = 'none';
+    track.style.width = '100%';
+    track.innerHTML = '<div style="padding:18px;text-align:center;color:#008b4c;font-weight:700;font-size:11px">Isi kolom N (sponsor) dengan link gambar https:// biar slide promo jalan</div>';
     return;
   }
-  section.style.display='block';
-  const rep = [...images,...images,...images];
-  track.innerHTML=rep.map((url,i)=>`<img src="${url}" alt="sponsor" loading="${i<6?'eager':'lazy'}" onerror="this.style.display='none'" style="flex:0 0 78vw;width:78vw;height:140px;object-fit:cover;border-radius:10px;margin-right:8px;background:#fff">`).join('');
-  track.style.width='max-content';
-  track.style.animation='promoGeser 24s linear infinite';
+
+  section.style.display = 'block';
+  const repeatedSlides = [...images, ...images, ...images];
+  track.innerHTML = repeatedSlides.map((url, index) => `
+    <img
+      src="${escapeHtml(url)}"
+      alt="Sponsor Toko Siap Antar"
+      loading="${index < images.length ? 'eager' : 'lazy'}"
+      onerror="this.style.display='none'"
+    >
+  `).join('');
+
+  track.style.animation = 'promoGeser 24s linear infinite';
+  track.style.width = 'max-content';
 }
 
+function renderProducts() {
+function renderProducts() {
+  const q = searchInput.value.trim().toLowerCase();
+  let filtered = allProducts.filter(p => {
+    const matchesText = !q || p.searchText.includes(q);
+    let matchesCat = true;
+    if(activeCategory==='MitraSaya' && mitraUid){
+      matchesCat = p.mitraUid===mitraUid;
+    } else if(activeCategory!=='Semua' && activeCategory!=='__menu'){
+      matchesCat = (String(p.category||'').toLowerCase().includes(activeCategory.toLowerCase()) || (p.name + ' ' + p.description).toLowerCase().includes(activeCategory.toLowerCase()));
+    }
+    return matchesText && matchesCat;
+  });
+  if (!filtered.length) {
+    productsEl.innerHTML = '<div class="notice" style="grid-column:1/-1">Produk tidak ditemukan. Kategori: '+escapeHtml(activeCategory)+'</div>';
+    return;
+  }
+  productsEl.innerHTML = filtered.map(p => `
+    <article class="product" data-product-id="${escapeHtml(p.id)}">
+      <div class="product-photo">${p.image ? `<img loading="lazy" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" onerror="this.style.display='none'">` : '<span>📦</span>'}<span class="mitra-tag">🏪 ${escapeHtml(ownerInitials(p.mitraNama))}</span></div>
+      <div class="product-info">
+        <div class="product-name">${escapeHtml(p.name)}</div>
+        <div class="product-desc">${escapeHtml(p.description || 'Pesanan siap antar ±1 jam').slice(0,80)}</div>
+        <div class="price">${escapeHtml(formatPrice(p.price))}</div>
+        <div class="product-meta"><strong>Pengiriman:</strong> ${escapeHtml(deliveryLabels(p))}</div>
+        <div class="actions">
+          <button class="wa" data-action="wa" data-id="${escapeHtml(p.id)}" aria-label="Tanya WhatsApp">☏</button>
+          <button class="cart" data-action="cart" data-id="${escapeHtml(p.id)}" aria-label="Tambah keranjang">🛒</button>
+          <button class="buy" data-action="buy" data-id="${escapeHtml(p.id)}">Beli</button>
+        </div>
+      </div>
+    </article>`).join('');
+
+  productsEl.querySelectorAll('.product').forEach((card, idx)=>{
+    const p=filtered[idx];
+    const imgEl=card.querySelector('.product-photo img');
+    if(imgEl && p.image) imgEl.src=p.image;
+  });
+}
 
 function updateCart() {
   document.getElementById('cartCount').textContent = cart.reduce((sum,item)=>sum+(Number(item.qty)||0),0);
