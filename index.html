@@ -41,9 +41,9 @@ main{padding:10px 12px 18px;min-height:150px}
 .product{min-width:0;background:var(--card);border:1px solid var(--line);border-radius:15px;overflow:hidden;box-shadow:0 2px 5px #18312b12;display:flex;flex-direction:column}
 .product-photo{height:112px;background:linear-gradient(135deg,#e4fff2,#fafff0);display:flex;align-items:center;justify-content:center;padding:6px;position:relative}
 .product-photo img{width:100%;height:100%;object-fit:contain}
-.mitra-tag{position:absolute;top:5px;left:5px;bottom:auto;background:#111;color:#ffd400;font-size:9px;font-weight:900;padding:4px 7px;border-radius:999px;max-width:82%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;z-index:2}.product-name{font-size:14px;font-weight:800;line-height:1.35;min-height:36px;overflow-wrap:anywhere}
+.mitra-tag{position:absolute;top:5px;left:5px;background:#111;color:#ffd400;font-size:8px;font-weight:800;padding:3px 6px;border-radius:999px;max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .product-info{padding:8px 7px 9px;display:flex;flex-direction:column;flex:1;text-align:center;gap:6px}
-.product-name{font-size:11px;line-height:1.35;min-height:29px;overflow-wrap:anywhere}
+.product-name{font-size:13px;font-weight:800;line-height:1.35;min-height:34px;overflow-wrap:anywhere}
 .product-desc{font-size:9px;line-height:1.35;color:var(--muted);min-height:25px}
 .price{font-weight:800;color:#008b4c;font-size:12px}
 .actions{display:grid;grid-template-columns:30px 30px minmax(0,1fr);gap:4px;margin-top:auto}
@@ -58,7 +58,7 @@ footer h3{margin:0 0 16px;color:#009c54}
 .bottom-nav button{background:none;border:0;color:#777;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px}
 .bottom-nav .ico{font-size:22px;line-height:1.2}
 .bottom-nav button:first-child{color:#009c54}
-@media(max-width:520px){.products{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.product-photo{height:145px}.product-name{font-size:14px;font-weight:800}.product-desc{font-size:10px}.price{font-size:13px}.quick-wrap{top:58px}.promo-track img{height:125px}}
+@media(max-width:520px){.products{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.product-photo{height:125px}.product-name{font-size:14px;font-weight:800}.product-desc{font-size:10px}.price{font-size:13px}.quick-wrap{top:58px}.promo-track img{height:125px}}
 @media(max-width:600px){.promo-window{min-height:145px;padding:6px 0}.promo-track img{height:133px;margin-top:0;margin-bottom:0}}
 @media(max-width:360px){.products{grid-template-columns:repeat(2,minmax(0,1fr))}.product-photo{height:105px}.cat{padding:9px 11px;font-size:13px}}
 body{background:#f4fff7;color:var(--ink)}
@@ -109,7 +109,7 @@ header::before{top:0}header::after{bottom:0}
     <img class="brand-logo-left" src="logo3.png" alt="Logo">
     <div class="welcome-text">
       <strong>Selamat Datang di Toko Siap Antar!</strong>
-      <span id="welcomeSub">Marketplace Toko Siap Antar • Produk mitra dari Spreadsheet</span>
+      <span id="welcomeSub">Marketplace - Produk mitra dari Spreadsheet tampil di sini. Input produk melalui halaman khusus mitra. Ongkir berdasarkan GPS pemilik produk.</span>
     </div>
   </div>
   <div class="head-actions"><button id="refresh" aria-label="Muat ulang">↻</button><button id="loginBtn" aria-label="Login">👤</button></div>
@@ -120,42 +120,6 @@ header::before{top:0}header::after{bottom:0}
     <img src="silde1.png" alt="Promo 1" aria-hidden="true"><img src="silde2.png" alt="Promo 2" aria-hidden="true"><img src="silde3.png" alt="Promo 3" aria-hidden="true"><img src="silde4.png" alt="Promo 4" aria-hidden="true"><img src="silde5.png" alt="Promo 5" aria-hidden="true"><img src="silde6.png" alt="Promo 6" aria-hidden="true">
   </div></div>
 </section>
-
-<!-- Input produk dipindahkan ke halaman khusus mitra; panel Index disembunyikan. -->
-<div class="mitra-card" id="mitraInputCard" style="display:none!important">
-  <div class="label">🏪 Input Produk Mitra (Spreadsheet) <span id="mitraBadge" style="background:#111;color:#ffd400;padding:4px 8px;border-radius:999px;font-size:10px">Mitra</span></div>
-  <div class="hint">✅ Penyimpanan di Google Sheet - GRATIS, ga butuh Firebase Storage. Gambar di-compress otomatis (30-50KB) lalu masuk ke kolom Image di Sheet.<br>
-  Produk kamu akan muncul di index (semua produk) + di toko.html?mitraUid=UID_KAMU + di produk-ayudithea.html?mitraUid=UID_KAMU<br>
-  Ongkir nanti = jarak GPS akun kamu (users/{uid}) → GPS pelanggan.</div>
-  <div id="mitraInfo" style="font-size:11px;color:#666;margin-bottom:8px">UID: -</div>
-  
-  <input class="input-mitra" id="pName" placeholder="Nama produk, contoh: Ayam Geprek A Yudi Thea">
-  <input class="input-mitra" id="pPrice" type="number" placeholder="Harga, contoh: 15000">
-  <textarea class="input-mitra" id="pDesc" rows="2" placeholder="Deskripsi produk"></textarea>
-  <input class="input-mitra" id="pCat" placeholder="Kategori: Makanan / Minuman / Sembako">
-  
-  <label style="font-weight:800;font-size:12px">📸 Foto Produk (dari HP - auto kompres):</label>
-  <input class="input-mitra" type="file" id="pFile" accept="image/*" capture="environment">
-  <img id="preview" class="preview">
-  <div id="fileInfo" style="font-size:10px;color:#888;margin-bottom:8px"></div>
-  
-  <label style="font-weight:800;font-size:12px">Atau Link Gambar (opsional):</label>
-  <input class="input-mitra" id="pImage" placeholder="https://... (kosongkan kalau upload file)">
-  
-  <button class="btn-mitra btn-y" id="btnSave">💾 Simpan ke Spreadsheet - Masuk Index</button>
-  <div id="msg" style="margin-top:8px;font-size:12px"></div>
-  
-  <div style="margin-top:10px;padding:8px;background:#f8f8f8;border-radius:8px;font-size:10px;color:#666">
-    Link Toko Kamu: <span id="tokoLink" style="font-family:monospace;word-break:break-all;color:#111">-</span><br>
-    <button class="btn-mitra btn-dark" style="padding:6px 10px;font-size:11px;margin-top:6px" id="btnCopy">📋 Salin Link Toko</button>
-    <button class="btn-mitra btn-dark" style="padding:6px 10px;font-size:11px;margin-top:6px" id="btnBuka">👁️ Buka Toko Saya</button>
-  </div>
-</div>
-
-<div class="mitra-card" id="authBox" style="display:none!important;border:1px solid #e0e0e0">
-  <div style="font-size:12px;color:#666">Status: <span id="authStatus">Memeriksa login...</span></div>
-  <div style="font-size:10px;color:#888">Kalau kamu mitra, login dulu biar bisa input produk di index ini. Produk dari Spreadsheet semua tampil di bawah.</div>
-</div>
 
 <section class="quick-wrap">
   <nav class="categories" id="categories" aria-label="Kategori">
@@ -221,9 +185,14 @@ const formatPrice = value => {
 function convertImage(url) {
   if (!url) return '';
   const s = String(url).trim();
-  if(s.startsWith('data:image')) return s;
+  if (/^data:image\//i.test(s)) return s;
+  // Sheet dapat menyimpan gambar sebagai Base64 tanpa awalan MIME.
+  if (/^\/9j\//.test(s)) return 'data:image/jpeg;base64,' + s;
+  if (/^iVBORw0KGgo/.test(s)) return 'data:image/png;base64,' + s;
+  if (/^R0lGOD/.test(s)) return 'data:image/gif;base64,' + s;
   const id = s.match(/(?:id=|\/d\/)([A-Za-z0-9_-]{15,})/);
-  if (id && /drive\.google\.com/.test(s)) return 'https://drive.google.com/thumbnail?id=' + id[1] + '&sz=w600';
+  if (id && /drive\.google\.com/.test(s)) return 'https://drive.google.com/thumbnail?id=' + id[1] + '&sz=w1000';
+  // Jangan potong URL/Base64 karena membuat sumber gambar tidak valid.
   return s;
 }
 function escapeHtml(value) {
@@ -255,14 +224,6 @@ function compressImage(file, maxWidth=500, quality=0.6){
   });
 }
 
-function mitraSingkat(nama){
-  const n=String(nama||'Mitra').trim();
-  if(!n) return 'M';
-  const words=n.split(/\s+/).filter(Boolean);
-  if(words.length===1) return words[0].slice(0,3).toUpperCase();
-  return words.slice(0,3).map(w=>w[0]).join('').toUpperCase();
-}
-
 function renderProducts() {
   const q = searchInput.value.trim().toLowerCase();
   let filtered = allProducts.filter(p => {
@@ -281,11 +242,12 @@ function renderProducts() {
   }
   productsEl.innerHTML = filtered.map(p => `
     <article class="product" data-product-id="${escapeHtml(p.id)}">
-      <div class="product-photo">${p.image ? `<img loading="lazy" src="" alt="${escapeHtml(p.name)}">` : '<span>📦</span>'}<span class="mitra-tag">${escapeHtml(mitraSingkat(p.mitraNama||'Mitra'))}</span></div>
+      <div class="product-photo">${p.image ? `<img loading="lazy" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" onerror="this.onerror=null;this.style.display='none';this.parentElement.classList.add('image-missing');this.parentElement.insertAdjacentHTML('afterbegin','<span class=\"image-fallback\">🖼️</span>')">` : '<span>📦</span>'}<span class="mitra-tag">${escapeHtml((p.mitraNama||'Mitra').trim().split(/\s+/).map(x=>x[0]||'').join('').toUpperCase().slice(0,4))}</span></div>
       <div class="product-info">
         <div class="product-name">${escapeHtml(p.name)}</div>
         <div class="product-desc">${escapeHtml(p.description || 'Pesanan siap antar ±1 jam').slice(0,80)}</div>
         <div class="price">${escapeHtml(formatPrice(p.price))}</div>
+        <div style="font-size:8px;color:#888">UID: ${(p.mitraUid||'').slice(0,6)}... • ${escapeHtml((p.category||''))}</div>
         <div class="actions">
           <button class="wa" data-action="wa" data-id="${escapeHtml(p.id)}" aria-label="Tanya WhatsApp">☏</button>
           <button class="cart" data-action="cart" data-id="${escapeHtml(p.id)}" aria-label="Tambah keranjang">🛒</button>
@@ -298,7 +260,6 @@ function renderProducts() {
     const p=filtered[idx];
     const imgEl=card.querySelector('.product-photo img');
     if(imgEl && p.image){
-      imgEl.onerror=()=>{imgEl.style.display='none';};
       imgEl.src=p.image;
     }
   });
@@ -315,19 +276,13 @@ function addProductToCart(p) {
 }
 async function openWhatsApp(p, intro='Halo, saya ingin pesan: ') {
   const message = intro + p.name + ' — ' + formatPrice(p.price) + ' (Mitra: '+(p.mitraNama||'Mitra')+')';
-  let phone=String(p.whatsapp||p.phone||p.noWa||p.telepon||'').replace(/\D/g,'');
+  let phone=String(p.mitraWa||p.mitraPhone||p.teleponMitra||'').replace(/\D/g,'');
   if(!phone && p.mitraUid){
-    try{
-      const ownerSnap=await getDoc(doc(db,'users',p.mitraUid));
-      if(ownerSnap.exists()){
-        const owner=ownerSnap.data();
-        phone=String(owner.whatsapp||owner.noWa||owner.nomorWa||owner.telepon||owner.phone||owner.no_hp||owner.nomorHP||'').replace(/\D/g,'');
-      }
-    }catch(err){console.warn('Tidak dapat membaca nomor WhatsApp pemilik',err);}
+    try{const snap=await getDoc(doc(db,'users',p.mitraUid)); if(snap.exists()){const d=snap.data(); phone=String(d.whatsapp||d.wa||d.noWa||d.telepon||d.phone||'').replace(/\D/g,'');}}catch(err){console.warn('Nomor WhatsApp mitra tidak terbaca:',err.message);}
   }
-  if(!phone){alert('Nomor WhatsApp pemilik produk belum tersedia pada data mitra.');return;}
-  const normalized=phone.startsWith('0')?'62'+phone.slice(1):phone;
-  window.open('https://wa.me/'+normalized+'?text='+encodeURIComponent(message), '_blank', 'noopener');
+  if(!phone){alert('Nomor WhatsApp pemilik produk belum tersedia di profil mitra.');return;}
+  if(phone.startsWith('0')) phone='62'+phone.slice(1);
+  window.open('https://wa.me/'+phone+'?text='+encodeURIComponent(message), '_blank', 'noopener');
 }
 
 productsEl.addEventListener('click', e => {
@@ -404,7 +359,6 @@ async function loadProductsFromSheet(){
         mitraUid:String(mUid).trim(),
         mitraNama:String(mNama).trim()||'Mitra',
         category:String(cat).trim()||'Makanan',
-        whatsapp:String(getVal(14)||getVal(15)||getVal(16)||'').trim(),
         searchText:(String(name)+' '+String(desc)+' '+String(mNama)+' '+String(mUid)).toLowerCase()
       };
     }).filter(Boolean);
@@ -415,89 +369,18 @@ async function loadProductsFromSheet(){
   }
 }
 
-// AUTH & MITRA INPUT LOGIC
+// Auth hanya dipakai untuk konteks pengguna dan fitur Produk Saya.
 onAuthStateChanged(auth, async u=>{
-  const authStatus=document.getElementById('authStatus');
-  if(!u){
-    authStatus.textContent='Belum login - login sebagai mitra untuk input produk di index';
-    loadProductsFromSheet();
-    return;
+  currentUser=u||null;
+  mitraUid=u?.uid||'';
+  mitraNama='';
+  if(u){
+    try{const snap=await getDoc(doc(db,'users',u.uid)); if(snap.exists()){const d=snap.data(); mitraNama=d.nama||d.namaToko||u.email||'Mitra'; currentRole=d.role||'';}}catch(e){console.warn('Profil mitra tidak terbaca:',e.message);}
   }
-  currentUser=u; mitraUid=u.uid;
-  try{
-    const snap=await getDoc(doc(db,'users',u.uid));
-    if(snap.exists()){
-      const d=snap.data();
-      currentRole=d.role||'';
-      mitraNama=d.nama||d.namaToko||u.email;
-      authStatus.innerHTML='Login: <b>'+escapeHtml(mitraNama)+'</b> • UID: '+u.uid.slice(0,8)+'... • Role: '+(d.role||'-')+' • GPS: '+(d.lat? d.lat.toFixed(4) : 'belum ada');
-      if((currentRole.toLowerCase().includes('mitra') || true)){ // tampilkan untuk semua user yang login, biar bisa input
-        document.getElementById('mitraInputCard').style.display='block';
-        document.getElementById('mitraInfo').textContent='UID: '+u.uid+' • Nama: '+mitraNama+' • Alamat: '+(d.alamat||'-')+' • GPS akun ini dipakai ongkir';
-        document.getElementById('tokoLink').textContent=location.origin+location.pathname.replace('index.html','toko.html')+'?mitraUid='+u.uid;
-        document.getElementById('btnCopy').onclick=()=>{navigator.clipboard.writeText(document.getElementById('tokoLink').textContent); alert('Link toko disalin!');};
-        document.getElementById('btnBuka').onclick=()=>{window.open(document.getElementById('tokoLink').textContent,'_blank');};
-      }
-    } else {
-      authStatus.textContent='Login: '+u.email+' (users doc belum ada, tapi tetap bisa input)';
-      document.getElementById('mitraInputCard').style.display='block';
-      mitraNama=u.email;
-      document.getElementById('mitraInfo').textContent='UID: '+u.uid+' • Email: '+u.email;
-    }
-  }catch(e){authStatus.textContent='Error: '+e.message;}
   loadProductsFromSheet();
 });
 
-document.getElementById('pFile').addEventListener('change', async (e)=>{
-  const file=e.target.files[0];
-  if(!file) return;
-  document.getElementById('fileInfo').textContent='⏳ Kompres '+Math.round(file.size/1024)+'KB → ...';
-  try{
-    const base64=await compressImage(file, 500, 0.6);
-    compressedBase64=base64;
-    const sizeKB=Math.round(base64.length*0.75/1024);
-    document.getElementById('preview').src=base64;
-    document.getElementById('preview').style.display='block';
-    document.getElementById('fileInfo').innerHTML='✅ Terkompres: '+sizeKB+'KB • Masuk Sheet (max 50KB per cell, aman)';
-    document.getElementById('pImage').value='';
-  }catch(err){document.getElementById('fileInfo').textContent='❌ Gagal: '+err.message;}
-});
-
-document.getElementById('btnSave').addEventListener('click', async()=>{
-  const name=document.getElementById('pName').value.trim();
-  const price=document.getElementById('pPrice').value.trim();
-  const desc=document.getElementById('pDesc').value.trim();
-  const cat=document.getElementById('pCat').value.trim();
-  const linkImage=document.getElementById('pImage').value.trim();
-  if(!name||!price){alert('Nama & harga wajib'); return;}
-  if(!mitraUid){alert('Login dulu sebagai mitra'); return;}
-  if(APPS_SCRIPT_URL.includes('YOUR_ID')){alert('⚠️ Ganti APPS_SCRIPT_URL dulu di index.html dengan URL deploy Apps Script kamu.\n\nCara:\n1. Buka Sheet → Extensions → Apps Script\n2. Paste code dari apps-script-sheet.js\n3. Deploy → Web App → Anyone\n4. Copy URL → paste di index.html'); return;}
-  const finalImage = compressedBase64 || linkImage || '';
-  if(finalImage.length>45000){if(!confirm('Gambar agak besar ('+Math.round(finalImage.length/1024)+'KB). Sheet max 50KB, bisa gagal. Lanjut?')) return;}
-  const btn=document.getElementById('btnSave'); btn.disabled=true; btn.textContent='⏳ Simpan ke Spreadsheet...';
-  try{
-    const payload={
-      action:'addProduct',
-      name, price, description:desc, category:cat||'Makanan',
-      image:finalImage,
-      mitraUid:mitraUid,
-      mitraNama:mitraNama
-    };
-    const res=await fetch(APPS_SCRIPT_URL, {method:'POST', body:JSON.stringify(payload)});
-    const json=await res.json();
-    if(json.success){
-      document.getElementById('msg').innerHTML='✅ Masuk Spreadsheet! ID: '+json.id+'<br>• Muncul di index (semua produk)<br>• Muncul di toko.html?mitraUid='+mitraUid.slice(0,8)+'...<br>• Ongkir dari GPS akun kamu';
-      document.getElementById('pName').value=''; document.getElementById('pPrice').value=''; document.getElementById('pDesc').value=''; document.getElementById('pImage').value=''; document.getElementById('pFile').value=''; compressedBase64=''; document.getElementById('preview').style.display='none'; document.getElementById('fileInfo').textContent='';
-      setTimeout(()=>loadProductsFromSheet(),1500);
-    } else {
-      document.getElementById('msg').textContent='❌ Gagal: '+(json.error||'unknown');
-    }
-  }catch(e){document.getElementById('msg').textContent='❌ Error: '+e.message+' - Pastikan Apps Script deploy Anyone';}
-  btn.disabled=false; btn.textContent='💾 Simpan ke Spreadsheet - Masuk Index';
-});
-
 updateCart();
-loadProductsFromSheet();
 
 /* Popup foto produk */
 const productZoom = document.getElementById('productZoom');
