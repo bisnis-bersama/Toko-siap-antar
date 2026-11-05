@@ -1,6 +1,5 @@
 <!doctype html>
-<html lang="id">
-<head><style>
+<html lang="id"><head><style>
 @font-face {
   font-family: "Optimistic";
   font-style: normal;
@@ -21,404 +20,257 @@
 :where(code, pre, kbd, samp) {
   font-family: "Optimistic Mono", ui-monospace, monospace;
 }
-</style>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin - Semua Pesanan Pending & Verifikasi Keuangan</title>
+</style><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Pending - Fix Tidak Tampil - Mode Bersih</title>
 <style>
-:root{--yellow:#ffcc00;--bg:#f1f2f4;--muted:#64756f}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);font:14px/1.5 system-ui,sans-serif}
-.top{background:#111;color:#fff;padding:12px 16px 32px;border-radius:0 0 24px 24px}
-.topline{max-width:1100px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:10px}
+:root{--yellow:#ffcc00;--bg:#f8f9fa;--card:#fff;--line:#eef0f2;--muted:#8b8f97;--black:#111}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font:14px/1.5 system-ui}
+.top{background:var(--black);color:#fff;padding:14px 16px 28px;border-radius:0 0 24px 24px}
+.topline{max-width:1100px;margin:auto;display:flex;justify-content:space-between;align-items:center}
 .brand{color:var(--yellow);font-weight:900;font-size:16px}
 .sub{color:#c7cbd0;font-size:11px}
-.sub-yellow{color:var(--yellow);font-size:12px;font-weight:800}
-main{max-width:1100px;margin:-18px auto 0;padding:0 12px 80px}
-.panel{background:#fff;border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 8px 20px #0001}
-.btn{border:0;border-radius:10px;background:var(--yellow);padding:9px 12px;font-weight:800;cursor:pointer;font-size:12px;display:inline-flex;align-items:center;gap:4px}
-.btn.dark{background:#111;color:var(--yellow)}
-.btn.green{background:#25d366;color:#fff}
-.btn.red{background:#fee;color:#b42318;border:1px solid #f5c6c1}
-.btn:disabled{opacity:.55;cursor:not-allowed}
-.tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
-.tabs button{border:1px solid #e5e7eb;border-radius:12px;padding:12px 8px;font-weight:800;font-size:12px;background:#f9f9f9;cursor:pointer}
-.tabs button.active{background:#111;color:var(--yellow);border-color:var(--yellow)}
+main{max-width:1100px;margin:-16px auto 0;padding:0 12px 80px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;margin-bottom:12px;box-shadow:0 8px 20px #0001}
+.btn{border:0;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer;font-size:12px}
+.btn.yellow{background:var(--yellow);color:var(--black)}
+.btn.black{background:var(--black);color:var(--yellow)}
+.btn.green{background:#111;color:var(--yellow);border:1px solid var(--yellow)}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.tabs button{border:1px solid var(--line);border-radius:14px;padding:12px;font-weight:800;background:#f9f9f9;cursor:pointer}
+.tabs button.active{background:var(--black);color:var(--yellow);border-color:var(--yellow)}
 .list{display:grid;gap:10px}
-.item{border:1px solid #e5e7eb;border-radius:14px;padding:12px;background:#fff}
+.item{border:1px solid var(--line);border-radius:16px;padding:12px;background:#fff}
 .meta{font-size:11px;color:var(--muted)}
-.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.hidden{display:none!important}
-.err{color:#b42318;background:#fdecea;border:1px solid #f5c6c1;border-radius:8px;padding:8px;font-size:12px}
-.ok{color:#087443;background:#e6f7ef;border:1px solid #c3ead7;border-radius:8px;padding:8px}
-.log{font-size:11px;background:#111;color:#0f0;padding:8px;border-radius:8px;white-space:pre-wrap;max-height:100px;overflow:auto}
-.status-badge{font-size:10px;font-weight:800;border-radius:999px;padding:4px 8px;background:#fff4c2;color:#6d5700}
-.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;font-size:12px}
-.detail-grid div{background:#f9f9f9;border:1px solid #eee;border-radius:8px;padding:6px}
-.detail-grid span{font-size:10px;color:var(--muted);display:block}
-</style>
-</head>
-<body>
-<div class="top"><div class="topline">
-  <div><div class="brand">TOKO SIAP ANTAR</div><div class="sub-yellow">Admin • Pending & Verifikasi Keuangan</div><div class="sub">Pending → Disetujui → Selesai dari Mitra/Kurir → Verifikasi Admin → Bagi Saldo</div></div>
-  <a href="./admin-dashboard-rapi-v3-logo-header.html" style="color:var(--yellow);text-decoration:none;font-weight:700;font-size:13px">← Menu Admin</a>
-</div></div>
+.badge{font-size:10px;font-weight:800;border-radius:999px;padding:4px 8px;background:#fff4c2}
+.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.err{color:#b42318;background:#fdecea;border:1px solid #f5c6c1;border-radius:12px;padding:10px;font-size:12px}
+.ok{color:#087443;background:#e6f7ef;border:1px solid #c3ead7;border-radius:12px;padding:10px}
+.log{font-size:10px;background:#111;color:#0f0;padding:8px;border-radius:10px;white-space:pre-wrap;max-height:120px;overflow:auto}
+</style></head><body>
+<div class="top"><div class="topline"><div><div class="brand">TOKO SIAP ANTAR</div><div style="color:var(--yellow);font-weight:800;font-size:13px">Admin • Pending & Verifikasi Keuangan</div><div class="sub">Pending → Disetujui → Selesai dari Mitra/Kurir → Verifikasi Admin → Bagi Saldo (5% dari kurir & mitra)</div></div><a href="./index.html" style="color:var(--yellow);text-decoration:none;font-weight:800">← Menu Admin</a></div></div>
 <main>
-  <div class="panel">
-    <h1 style="margin:0 0 6px">Semua Pesanan</h1>
-    <p style="margin:0;font-size:11px;color:var(--muted)">Flow: Semua pesanan masuk <b>pending</b> → Admin setujui → Mitra/Kurir selesaikan → Menunggu <b>verifikasi admin</b> untuk pembagian keuangan (Mitra 95% produk, Admin 5% produk, Kurir 100% ongkir)</p>
-    <div id="log" class="log"></div>
-    <div class="tabs">
-      <button id="tabPending" class="active" onclick="loadPending()"><span>🟡 Pending</span> <small id="countPending">0</small></button>
-      <button id="tabVerifikasi" onclick="loadVerifikasi()"><span>🟠 Selesai - Verifikasi Keuangan</span> <small id="countVerifikasi">0</small></button>
-    </div>
-  </div>
-  <div id="content" class="panel">Memuat...</div>
+<div class="panel">
+<h2 style="margin:0">Semua Pesanan</h2>
+<p class="meta" style="margin:4px 0">Flow: Semua pesanan masuk <b>pending</b> → Admin setujui → Mitra/Kurir selesaikan → Menunggu verifikasi admin → Bagi saldo Mitra 95% produk + Kurir 95% ongkir + Admin 5%+5%</p>
+<div id="log" class="log" style="display:none"></div>
+<div class="tabs">
+<button id="tabPending" class="active" onclick="loadPending()">🟡 Pending <small id="countPending">0</small></button>
+<button id="tabVerifikasi" onclick="loadVerifikasi()">🟠 Verifikasi Keuangan <small id="countVerifikasi">0</small></button>
+</div>
+<div style="display:flex;gap:6px"><button class="btn yellow" onclick="loadPending()">🔄 Muat Ulang Pending</button><button class="btn black" onclick="toggleLog()">📋 Log</button></div>
+</div>
+<div id="content" class="panel">Memuat...</div>
 </main>
-
 <script type="module">
 import {auth,db} from "./firebase-config.js";
 import {onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-import {doc,getDoc,collection,getDocs,query,where,limit,updateDoc,serverTimestamp,runTransaction} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import {doc,getDoc,collection,getDocs,query,where,limit,updateDoc,serverTimestamp,runTransaction,addDoc} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
 const $=id=>document.getElementById(id);
-const esc=v=>String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function log(m){const el=$("log"); el.style.display='block'; el.textContent+=`\n[${new Date().toLocaleTimeString()}] ${m}`; console.log(m);}
 function rupiah(n){return "Rp "+(Number(n)||0).toLocaleString("id-ID");}
-function log(m){const el=$("log");if(el)el.textContent+="\n"+m;}
-function valFrom(obj,paths){for(const path of paths){const v=path.split(".").reduce((a,k)=>a?.[k],obj);if(v!==undefined&&v!==null&&v!=="")return v;}return null;}
-function gpsOf(obj){
-  const lat=valFrom(obj,["lat","latitude","gps.lat","lokasi.lat","alamatPengiriman.lat","alamatToko.lat"]);
-  const lng=valFrom(obj,["lng","long","longitude","gps.lng","lokasi.lng","alamatPengiriman.lng","alamatToko.lng"]);
-  const a=Number(lat),b=Number(lng);
-  return Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a)<=90&&Math.abs(b)<=180?{lat:a,lng:b}:null;
-}
-function gpsHtml(obj,label){
-  const g=gpsOf(obj||{});
-  if(!g)return `<div class="meta">GPS ${esc(label)}: Belum tersedia</div>`;
-  const url=`https://www.google.com/maps?q=${g.lat},${g.lng}`;
-  return `<div class="meta">GPS ${esc(label)}: ${g.lat.toFixed(6)}, ${g.lng.toFixed(6)}</div><a class="meta" style="display:inline-block;color:#087443;font-weight:800;margin-top:3px" href="${url}" target="_blank" rel="noopener">📍 ${esc(label)}</a>`;
-}
-const RADIUS_KM_ADMIN = 40;
-const JAM_KERJA_MS_ADMIN = 8*60*60*1000;
-function hitungJarakKmAdmin(lat1,lng1,lat2,lng2){
-  const R=6371;
-  const dLat=(lat2-lat1)*Math.PI/180;
-  const dLng=(lng2-lng1)*Math.PI/180;
-  const a=Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
-  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
-async function cekKurirRadius40km(pelangganGPS, mitraGPS){
-  try{
-    const snap=await getDocs(collection(db,'users'));
-    let count=0, denganSaldo=0, list=[];
-    const now=Date.now();
-    snap.forEach(d=>{
-      const u=d.data();
-      const role=String(u.role||'').toLowerCase();
-      if(!['kurir','mitra_pengantaran','kurir_pengantaran'].includes(role)) return;
-      if(u.aktif===false) return;
-      const online=u.online===true||u.isOnline===true||String(u.statusOnline||'').toLowerCase()==='online';
-      if(!online) return;
-      const ts=u.gpsUpdatedAt||u.locationUpdatedAt||u.onlineAt;
-      let ms=null;
-      if(ts){
-        if(typeof ts.toMillis==='function') ms=ts.toMillis();
-        else if(typeof ts.seconds==='number') ms=ts.seconds*1000;
-      }
-      if(ms===null|| now-ms > JAM_KERJA_MS_ADMIN) return;
-      const lat=Number(u.lat||u.lokasi?.lat||u.gps?.lat||u.currentLat);
-      const lng=Number(u.lng||u.lokasi?.lng||u.gps?.lng||u.currentLng);
-      if(!lat||!lng) return;
-      if(!pelangganGPS||!mitraGPS) return;
-      const j1=hitungJarakKmAdmin(lat,lng,pelangganGPS.lat,pelangganGPS.lng);
-      const j2=hitungJarakKmAdmin(lat,lng,mitraGPS.lat,mitraGPS.lng);
-      if(j1!==null&&j2!==null&&j1<=RADIUS_KM_ADMIN&&j2<=RADIUS_KM_ADMIN){
-        count++;
-        const saldo=Number(u.saldo||u.saldoCOD||u.balance||u.saldoEwallet||0);
-        if(saldo>0) denganSaldo++;
-        if(list.length<3) list.push({nama:u.nama||'Kurir', jarakMitra:j2, saldo});
-      }
-    });
-    return {count, denganSaldo, list};
-  }catch(e){ return {count:0,denganSaldo:0,list:[]}; }
-}
+function toggleLog(){ const el=$("log"); el.style.display= el.style.display==='none'?'block':'none'; }
+window.toggleLog=toggleLog;
 
-let authReady=false, currentUser=null;
+let currentUser=null;
 onAuthStateChanged(auth, async u=>{
-  authReady=true; currentUser=u;
-  if(!u){ $("content").innerHTML='<div class="err">Login admin dulu via E-Wallet Admin</div>'; return; }
+  if(!u){ $("content").innerHTML='<div class="err">Login admin dulu. Buka /admin-login.html atau login via E-Wallet Admin. User belum login.</div>'; return; }
+  currentUser=u;
+  log(`Login sebagai ${u.uid} ${u.email||''}`);
+  // Cek role admin
+  try{
+    const usnap=await getDoc(doc(db,'users',u.uid));
+    if(usnap.exists()){
+      const role=usnap.data().role||'';
+      log(`Role kamu: ${role} (harus admin/superadmin biar bisa list semua orders). Jika bukan admin, set role manual di Firestore users/${u.uid} => role=admin`);
+      if(!['admin','superadmin'].includes(role)){
+        $("content").innerHTML=`<div class="err">Akun kamu role=${esc(role)} bukan admin, jadi query orders pending bisa terblokir rules. <br><br>Solusi cepat:<br>1. Buka Firebase Console → Firestore → users/${u.uid}<br>2. Set field role=admin, status=aktif, aktif=true<br>3. Reload halaman ini.<br><br>Atau saya sudah buat fallback: tetap coba baca orders tanpa filter role.</div>`;
+        // tetap coba load
+      }
+    } else {
+      log('User doc tidak ada di users collection - buat role admin manual');
+    }
+  }catch(e){ log('Cek role gagal: '+e.message); }
   loadPending();
 });
 
-function get(obj, paths, def=null){ for(let p of paths){ let v=obj; let ok=true; for(let k of p.split('.')){ if(v && k in v) v=v[k]; else {ok=false; break;} } if(ok && v!=='' && v!=null) return v; } return def; }
-function num(v){ const n=Number(v); return isNaN(n)||v===null?null:n; }
-
-// FIX TERBARU SESUAI REQUEST: harga 100 modal 80 ongkir 10 admin 20
+function getField(o, paths){ for(let p of paths){ let v=o; let ok=true; for(let k of p.split('.')){ if(v && k in v) v=v[k]; else {ok=false;break;} } if(ok && v!=='' && v!=null) return v; } return null; }
+function num(v){ const n=Number(v); return isNaN(n)?0:n; }
 function parseSplit(o){
-  const totalBayar = num(get(o, ['total','totalBayar'],0))||0;
-  let ongkirFull = num(get(o, ['ongkir','ongkosKirim','biayaOngkir'],0))||0;
-  let subtotal = num(get(o, ['subtotal','totalBelanja','totalBarang'],0))||0;
-  if(subtotal===0 && totalBayar>0 && ongkirFull>0){ subtotal = totalBayar - ongkirFull; }
-  if(subtotal===0){ subtotal = totalBayar; }
-  let modalAsli = num(get(o, ['modalMitra','hargaMitra','hargaModal','modal'],0))||0;
-  // ATURAN BARU: Potongan dari kurir dan mitra / dari ongkir dan harga produk - admin 5% aja dulu
-  // 5% dari produk (mitra) + 5% dari ongkir (kurir)
-  const adminPct = 0.05;
-  let mitraPct = 0.95;
-  let kurirPct = 0.95;
-  // Jika harga modal asli ada, gunakan itu untuk hitung base, tapi tetap potong 5%
-  let modalMitraBase = modalAsli>0 ? Math.round(modalAsli * mitraPct) : Math.round(subtotal * mitraPct); // 95% produk ke mitra
-  let ongkirKurir = Math.round(ongkirFull * kurirPct); // 95% ongkir ke kurir
-  let labaDariProduk = modalAsli>0 ? Math.round(modalAsli * adminPct) : Math.round(subtotal * adminPct); // 5% produk ke admin
-  let labaDariOngkir = Math.round(ongkirFull * adminPct); // 5% ongkir ke admin
-  let labaAdmin = labaDariProduk + labaDariOngkir; // total admin = 5% produk + 5% ongkir
-  if(labaAdmin<0) labaAdmin=0;
-  const metodePenyerahan = String(get(o, ['metodePenyerahan','metodePenyerahanKurir'], '')).toLowerCase();
-  const isProsesSendiri = ['mitra_kirim_sendiri','via_expedisi','proses_sendiri'].includes(metodePenyerahan);
-  // Jika proses sendiri: semua ongkir + produk masuk ke mitra setelah potong 5% dari keduanya
-  const modalProsesSendiri = Math.round((subtotal + ongkirFull) * mitraPct); // 95% dari total (produk+ongkir) ke mitra proses sendiri
-  const labaProsesSendiri = Math.round((subtotal + ongkirFull) * adminPct); // 5% dari total ke admin
-  return {
-    total: totalBayar,
-    subtotal,
-    modal: modalMitraBase, // 95% produk
-    ongkir: ongkirFull,
-    ongkirKurir: ongkirKurir, // 95% ongkir
-    laba: labaAdmin, // 5% produk + 5% ongkir
-    labaProduk: labaDariProduk,
-    labaOngkir: labaDariOngkir,
-    ongkirFull,
-    modalAsli,
-    isProsesSendiri,
-    metodePenyerahan,
-    modalProsesSendiri,
-    labaProsesSendiri,
-    adminPct, mitraPct, kurirPct
-  };
+  const total=num(getField(o, ['total','totalBayar'])||0);
+  let ongkir=num(getField(o, ['ongkir','ongkosKirim','biayaOngkir'])||0);
+  let subtotal=num(getField(o, ['subtotal','totalBelanja'])||0);
+  if(subtotal===0 && total>0 && ongkir>0) subtotal=total-ongkir;
+  if(subtotal===0) subtotal=total;
+  const adminPct=0.05, mitraPct=0.95, kurirPct=0.95;
+  const mitra=Math.round(subtotal*mitraPct);
+  const kurir=Math.round(ongkir*kurirPct);
+  const adminProd=Math.round(subtotal*adminPct);
+  const adminOngkir=Math.round(ongkir*adminPct);
+  const admin=adminProd+adminOngkir;
+  const metode=String(o.metodePenyerahan||'').toLowerCase();
+  const isSendiri=['mitra_kirim_sendiri','via_expedisi','proses_sendiri'].includes(metode);
+  const mitraSendiri=Math.round((subtotal+ongkir)*mitraPct);
+  const adminSendiri=Math.round((subtotal+ongkir)*adminPct);
+  return {total,subtotal,ongkir,mitra,kurir,admin,adminProd,adminOngkir,mitraSendiri,adminSendiri,isSendiri,metode};
 }
 
 async function loadPending(){
   $("tabPending").classList.add("active"); $("tabVerifikasi").classList.remove("active");
   $("content").innerHTML='Memuat pending...';
+  log('loadPending() mulai');
   try{
-    const snap=await getDocs(query(collection(db,'orders'),where('status','==','pending'),limit(100)));
-    const docs=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    let docs=[];
+    // Coba 1: query where status == pending
+    try{
+      log('Coba query where status==pending');
+      const q=query(collection(db,'orders'), where('status','==','pending'), limit(100));
+      const snap=await getDocs(q);
+      docs=snap.docs.map(d=>({id:d.id,...d.data()}));
+      log(`Query status==pending dapat ${docs.length} docs`);
+    }catch(e){
+      log(`Query status==pending gagal: ${e.message} - fallback get all`);
+      const all=await getDocs(collection(db,'orders'));
+      docs=all.docs.map(d=>({id:d.id,...d.data()})).filter(o=>String(o.status||'').toLowerCase()==='pending');
+      log(`Fallback get all → filter pending dapat ${docs.length}`);
+    }
+    // Jika masih 0, coba case-insensitive dan field lain
+    if(docs.length===0){
+      log('Pending 0, coba cari dengan statusPemenuhan pending_admin atau pending');
+      const all=await getDocs(collection(db,'orders'));
+      const allDocs=all.docs.map(d=>({id:d.id,...d.data()}));
+      log(`Total orders di DB: ${allDocs.length}`);
+      if(allDocs.length>0){
+        log(`Sample status: ${allDocs.slice(0,5).map(o=>String(o.status||o.statusPemenuhan||'no-status')).join(', ')}`);
+      }
+      docs=allDocs.filter(o=>{
+        const s=String(o.status||'').toLowerCase();
+        const sp=String(o.statusPemenuhan||'').toLowerCase();
+        return s==='pending' || sp==='pending' || sp==='pending_admin' || s.includes('pending');
+      });
+      log(`Filter pending (incl pending_admin) dapat ${docs.length}`);
+    }
+    docs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     $("countPending").textContent=docs.length;
-    if(!docs.length){ $("content").innerHTML='<div class="ok">Tidak ada pesanan pending. Semua sudah disetujui ✅</div>'; return; }
+    if(!docs.length){
+      $("content").innerHTML='<div class="ok">Tidak ada pesanan pending. Jika kamu baru checkout tapi tidak muncul, cek log di bawah. Kemungkinan: (1) role bukan admin, (2) status bukan pending tapi pending_admin, (3) orders dibuat di collection lain.</div><div class="err" style="margin-top:8px">Buka Firebase Console → Firestore → collection orders → lihat ada data dengan status apa. Screenshot kirim ke saya.</div>';
+      return;
+    }
     $("content").innerHTML=`<div class="list">${docs.map(o=>{
-      const split=parseSplit(o);
-      const isCOD=String(o.metodePembayaran||'').toLowerCase().includes('cod');
-      const penyerahanLabel=split.isProsesSendiri ? (String(o.metodePenyerahan).includes('expedisi')?'Diproses Sendiri via Expedisi':'Diproses Sendiri oleh Mitra (Siap Antar Sendiri)') : 'Diserahkan ke Kurir (Siap Antar)';
-      const isProsesSendiri=split.isProsesSendiri;
-      return `<div class="item" style="border:2px solid #ffcc00"><div style="display:flex;justify-content:space-between"><b>#${esc(o.nomorPesanan||o.id.slice(0,6))} - ${esc(o.status)}</b><span class="status-badge" style="background:#111;color:#ffcc00">VERIFIKASI KEUANGAN 5%</span></div>
-      <div class="meta">Selesai dari: ${esc(o.selesaiOleh||o.kurirNama||o.mitraNama||'-')} • Penyerahan: <b>${esc(penyerahanLabel)}</b> • COD: ${isCOD?'Ya':'Bukan'} • Pelanggan: ${esc(o.namaPelanggan||'-')}</div>
-      <div class="detail-grid">
-        <div><span>Total Bayar</span><strong>${rupiah(split.total)}</strong></div>
-        <div><span>Subtotal Produk (100%)</span><strong>${rupiah(split.subtotal)}</strong></div>
-        <div><span>Ongkir Full (100%)</span><strong>${rupiah(split.ongkir)}</strong></div>
-        ${isProsesSendiri?`
-        <div style="background:#e6f7ef;border-color:#a7e8c5;grid-column:span 2"><span>Mitra Dapat 95% (Produk+Ongkir) - Proses Sendiri</span><strong>${rupiah(split.modalProsesSendiri)}</strong></div>
-        <div style="background:#111;color:#ffcc00;border-color:#111;grid-column:span 2"><span style="color:#ffcc00">Admin Dapat 5% (Produk+Ongkir) = 5% produk (${rupiah(split.labaProduk)}) + 5% ongkir (${rupiah(split.labaOngkir)})</span><strong>${rupiah(split.labaProsesSendiri)}</strong></div>
-        `:`
-        <div style="background:#e6f7ef;border-color:#a7e8c5"><span>Mitra Dapat 95% Produk (potong 5%)</span><strong>${rupiah(split.modal)}</strong></div>
-        <div style="background:#e8f5e9;border-color:#a8d5b5"><span>Kurir Dapat 95% Ongkir (potong 5%)</span><strong>${rupiah(split.ongkirKurir)}</strong></div>
-        <div style="background:#111;color:#ffcc00;border-color:#111;grid-column:span 2"><span style="color:#ffcc00">Admin Dapat 5% Produk + 5% Ongkir = ${rupiah(split.labaProduk)} + ${rupiah(split.labaOngkir)} = ${rupiah(split.laba)}</span><strong>${rupiah(split.laba)}</strong></div>
-        `}
-      </div>
-      <div style="margin-top:8px;background:#fff8d8;border:1px solid #f4df80;border-radius:8px;padding:8px;font-size:11px">
-        <b>Aturan Baru - Potongan dari kurir dan mitra / dari ongkir dan harga produk (5% aja dulu):</b><br>
-        ${isProsesSendiri?
-          `• <b>Proses Sendiri oleh Mitra:</b> Semua masuk ke mitra setelah potong 5%<br>→ Mitra: 95% x (produk+ongkir) = 95% x (${rupiah(split.subtotal)}+${rupiah(split.ongkir)}) = <b>${rupiah(split.modalProsesSendiri)}</b><br>→ Admin: 5% x (produk+ongkir) = 5% produk (${rupiah(split.labaProduk)}) + 5% ongkir (${rupiah(split.labaOngkir)}) = <b>${rupiah(split.labaProsesSendiri)}</b>`
-          :
-          `• <b>Pakai Kurir:</b> Potongan dari keduanya<br>→ Mitra: 95% produk = ${rupiah(split.subtotal)} x 95% = <b>${rupiah(split.modal)}</b> (admin potong ${rupiah(split.labaProduk)})<br>→ Kurir: 95% ongkir = ${rupiah(split.ongkir)} x 95% = <b>${rupiah(split.ongkirKurir)}</b> (admin potong ${rupiah(split.labaOngkir)})<br>→ Admin total: 5% produk + 5% ongkir = ${rupiah(split.labaProduk)} + ${rupiah(split.labaOngkir)} = <b>${rupiah(split.laba)}</b>`
-        }<br>
-        Total: ${rupiah(split.total)} → Mitra+Kurir+Admin = ${isProsesSendiri?`${rupiah(split.modalProsesSendiri)} + ${rupiah(split.labaProsesSendiri)}`:`${rupiah(split.modal)} + ${rupiah(split.ongkirKurir)} + ${rupiah(split.laba)}`} = ${rupiah(isProsesSendiri?split.modalProsesSendiri+split.labaProsesSendiri:split.modal+split.ongkirKurir+split.laba)}
-      </div>
-      <div class="actions"><button class="btn green" onclick="verifikasiKeuangan('${o.id}')">${isProsesSendiri?'✅ Verifikasi & Bagi (Mitra 95% total + Admin 5% total)':'✅ Verifikasi & Bagi (Mitra 95% produk + Kurir 95% ongkir + Admin 5%+5%)'}</button></div></div>`;
-    }).join('')}</div>`;;
+      const s=parseSplit(o);
+      const pelanggan=o.namaPelanggan||o.alamatPengiriman?.nama||'-';
+      const alamat=o.alamat||o.alamatPengiriman?.alamat||'-';
+      const wa=o.noWA||o.alamatPengiriman?.telepon||'-';
+      const lat=o.lat||o.alamatPengiriman?.lat||o.lokasi?.lat;
+      const lng=o.lng||o.alamatPengiriman?.lng||o.lokasi?.lng;
+      const gps=lat&&lng?`<a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" style="color:#087443;font-weight:800">📍 ${lat.toFixed?lat.toFixed(5):lat},${lng.toFixed?lng.toFixed(5):lng}</a>`:'GPS belum ada';
+      return `<div class="item"><div style="display:flex;justify-content:space-between"><b>#${esc(o.nomorPesanan||o.id.slice(0,6))}</b><span class="badge">PENDING</span></div>
+      <div class="meta">Pelanggan: ${esc(pelanggan)} • WA: ${esc(wa)} • Total: ${rupiah(s.total)} • Bayar: ${esc(o.metodePembayaran||'-')} • Kirim: ${esc(o.metodePengiriman||'-')}</div>
+      <div class="meta">Alamat: ${esc(alamat)}</div>
+      <div class="meta">${gps}</div>
+      <div class="meta">Mitra: ${esc(o.mitraUid||'-')} • Produk: ${(o.items||[]).length||1} item</div>
+      <div class="actions"><button class="btn yellow" onclick="approveOrder('${o.id}')">✅ Setujui - Masuk ke Mitra</button><button class="btn black" onclick="detailOrder('${o.id}')">👁️ Detail</button></div></div>`;
     }).join('')}</div>`;
-  }catch(e){ $("content").innerHTML=`<div class="err">Gagal load pending: ${e.message}</div>`; }
+  }catch(e){
+    log('loadPending error: '+e.message);
+    $("content").innerHTML=`<div class="err">Gagal load pending: ${esc(e.message)}<br><br>Cek:<br>1. Login sebagai admin? Role harus admin di users/${currentUser?.uid||''}<br>2. Firestore Rules FIX6 sudah deploy?<br>3. Collection orders ada isinya?</div>`;
+  }
 }
+window.loadPending=loadPending;
 
 async function loadVerifikasi(){
   $("tabPending").classList.remove("active"); $("tabVerifikasi").classList.add("active");
-  $("content").innerHTML='Memuat verifikasi keuangan...';
+  $("content").innerHTML='Memuat verifikasi...';
   try{
-    // Pesanan selesai dari mitra/kurir tapi belum bagi saldo
-    const q1=query(collection(db,'orders'),where('status','in',['selesai_mitra','selesai_kurir','selesai','menunggu_verifikasi','diterima_pelanggan']),limit(100));
-    let snap;
-    try{ snap=await getDocs(q1); }catch(e){
-      // fallback tanpa in query
+    let docs=[];
+    try{
+      const q=query(collection(db,'orders'), where('status','in',['selesai_mitra','selesai_kurir','selesai','menunggu_verifikasi']), limit(100));
+      const snap=await getDocs(q);
+      docs=snap.docs.map(d=>({id:d.id,...d.data()})).filter(o=>o.saldoDibagi!==true);
+    }catch{
       const all=await getDocs(collection(db,'orders'));
-      snap={docs: all.docs.filter(d=>{
-        const s=(d.data().status||'').toLowerCase();
-        return ['selesai_mitra','selesai_kurir','selesai','menunggu_verifikasi','diterima_pelanggan'].some(k=>s.includes(k)) && d.data().saldoDibagi!==true;
-      })};
+      docs=all.docs.map(d=>({id:d.id,...d.data()})).filter(o=>['menunggu_verifikasi','selesai_mitra','selesai_kurir','selesai'].includes(String(o.status||'').toLowerCase()) && o.saldoDibagi!==true);
     }
-    const docs=snap.docs.map(d=>({id:d.id,...d.data()})).filter(o=>o.saldoDibagi!==true).sort((a,b)=>(b.selesaiAt?.seconds||b.updatedAt?.seconds||0)-(a.selesaiAt?.seconds||a.updatedAt?.seconds||0));
     $("countVerifikasi").textContent=docs.length;
-    if(!docs.length){ $("content").innerHTML='<div class="ok">Tidak ada pesanan menunggu verifikasi keuangan. Semua saldo sudah dibagi ✅</div>'; return; }
+    if(!docs.length){ $("content").innerHTML='<div class="ok">Tidak ada pesanan menunggu verifikasi keuangan ✅</div>'; return; }
     $("content").innerHTML=`<div class="list">${docs.map(o=>{
-      const split=parseSplit(o);
-      const isCOD=String(o.metodePembayaran||'').toLowerCase().includes('cod');
-      const penyerahanLabel=split.isProsesSendiri ? (String(o.metodePenyerahan).includes('expedisi')?'Diproses Sendiri via Expedisi':'Diproses Sendiri oleh Mitra (Siap Antar Sendiri)') : 'Diserahkan ke Kurir (Siap Antar)';
-      const isProsesSendiri=split.isProsesSendiri;
-      return `<div class="item" style="border:2px solid #ffcc00"><div style="display:flex;justify-content:space-between"><b>#${esc(o.nomorPesanan||o.id.slice(0,6))} - ${esc(o.status)}</b><span class="status-badge" style="background:#111;color:#ffcc00">VERIFIKASI KEUANGAN</span></div>
-      <div class="meta">Selesai dari: ${esc(o.selesaiOleh||o.kurirNama||o.mitraNama||'-')} • Penyerahan: <b>${esc(penyerahanLabel)}</b> • COD: ${isCOD?'Ya - Potong saldo kurir saat verifikasi':'Bukan COD'} • Pelanggan: ${esc(o.namaPelanggan||'-')}</div>
-      <div class="detail-grid">
-        <div><span>Total Bayar</span><strong>${rupiah(split.total)}</strong></div>
-        <div><span>Subtotal Produk (100%)</span><strong>${rupiah(split.subtotal)}</strong></div>
-        ${isProsesSendiri?`
-        <div style="background:#e6f7ef;border-color:#a7e8c5;grid-column:span 2"><span>Mitra Dapat 95% (Produk+Ongkir) - Proses Sendiri (potong 5%)</span><strong>${rupiah(split.modal)} + ${rupiah(split.ongkir)} = ${rupiah(split.modalProsesSendiri)}</strong></div>
-        `:`
-        <div style="background:#e6f7ef;border-color:#a7e8c5"><span>Mitra Dapat 95% Produk (potong 5%)</span><strong>${rupiah(split.modal)}</strong></div>
-        <div style="background:#e8f5e9;border-color:#a8d5b5"><span>Kurir Dapat 95% Ongkir (potong 5% buat admin) (potong 5%)</span><strong>${rupiah(split.ongkirKurir)}</strong></div>
-        `}
-        <div style="background:#111;color:#ffcc00;border-color:#111"><span style="color:#ffcc00">Admin Dapat 5% Produk + 5% Ongkir</span><strong>${rupiah(split.laba)}</strong></div>
-        <div><span>Metode Kirim</span><strong>${esc(o.metodePengiriman||'-')}</strong></div>
-        <div><span>Ongkir</span><strong>${rupiah(split.ongkir)}</strong></div>
+      const s=parseSplit(o);
+      const isSendiri=s.isSendiri;
+      return `<div class="item" style="border:2px solid var(--yellow)"><b>#${esc(o.nomorPesanan||o.id.slice(0,6))} - ${esc(o.status)}</b><div class="meta">${esc(o.namaPelanggan||'-')} • ${rupiah(s.total)}</div>
+      <div style="margin-top:8px;background:#fffbe6;border:1px solid #f4df80;border-radius:10px;padding:8px;font-size:11px">
+      ${isSendiri?`Mitra 95% (produk+ongkir) = ${rupiah(s.mitraSendiri)} | Admin 5% = ${rupiah(s.adminSendiri)}`:`Mitra 95% produk=${rupiah(s.mitra)} + Kurir 95% ongkir=${rupiah(s.kurir)} + Admin 5%+5%=${rupiah(s.admin)}`}
       </div>
-      <div style="margin-top:8px;background:#fff8d8;border:1px solid #f4df80;border-radius:8px;padding:8px;font-size:11px">
-        <b>Flow Keuangan Sesuai Aturan Baru:</b><br>
-        ${isProsesSendiri?
-          `• <b>Proses Sendiri oleh Mitra:</b> Semua ongkir + harga produk masuk ke mitra setelah dipotong admin<br>→ Mitra: 95% produk (${rupiah(split.modal)}) + 100% ongkir (${rupiah(split.ongkir)}) = <b>${rupiah(split.modalProsesSendiri)}</b><br>→ Admin: 5% produk = ${rupiah(split.laba)}`
-          :
-          `• <b>Pakai Kurir:</b> Ongkir buat kurir, harga produk buat mitra setelah dipotong admin<br>→ Mitra: 95% produk = ${rupiah(split.modal)}<br>→ Kurir: 100% ongkir = ${rupiah(split.ongkirKurir)}<br>→ Admin: 5% produk = ${rupiah(split.laba)}`
-        }<br>
-        Total: ${rupiah(split.total)}<br>
-        ${isCOD?`• COD: Saldo kurir akan dipotong ${rupiah(split.total)} saat verifikasi ini (jika pakai kurir & belum dipotong saat selesai). Kalau saldo kurang, buat tagihan.`:'• Transfer/QRIS: Tidak potong saldo kurir, hanya bagi hasil'}
-      </div>
-      <div class="actions"><button class="btn green" onclick="verifikasiKeuangan('${o.id}')">${isProsesSendiri?'✅ Verifikasi & Bagi Saldo (Mitra 95%+Ongkir + Admin 20%)':'✅ Verifikasi & Bagi Saldo (Mitra 95% + Kurir Ongkir + Admin 20%)'}</button></div></div>`;
+      <div class="actions"><button class="btn yellow" onclick="verifikasiKeuangan('${o.id}')">✅ Verifikasi & Bagi Saldo</button></div></div>`;
     }).join('')}</div>`;
-  }catch(e){ $("content").innerHTML=`<div class="err">Gagal load verifikasi: ${e.message}</div>`; }
+  }catch(e){ $("content").innerHTML=`<div class="err">Gagal load verifikasi: ${esc(e.message)}</div>`; }
 }
+window.loadVerifikasi=loadVerifikasi;
 
 window.approveOrder=async id=>{
-  if(!authReady||!currentUser){alert("Login admin dulu");return;}
+  if(!confirm('Setujui pesanan ini? Akan masuk ke Pesan Mitra sesuai produknya.')) return;
   try{
-    const snap=await getDoc(doc(db,"orders",id));
-    if(snap.exists()){
-      const o=snap.data();
-      const pGPS=gpsOf({lat:o.lat||o.lokasi?.lat||o.alamatPengiriman?.lat, lng:o.lng||o.lokasi?.lng||o.alamatPengiriman?.lng});
-      const mGPS=gpsOf({lat:o.mitraLat||o.tokoLat, lng:o.mitraLng||o.tokoLng});
-      if(pGPS&&mGPS){
-        const cek=await cekKurirRadius40km(pGPS,mGPS);
-        if(cek.count===0){
-          if(!confirm(`⚠️ TIDAK ADA KURIR ONLINE 40km (8 jam). Order akan WAJIB PROSES SENDIRI oleh mitra. Lanjut setujui?`)) return;
-        } else {
-          if(!confirm(`✅ ${cek.count} kurir online 40km, ${cek.denganSaldo} punya saldo. Setujui masuk ke mitra?`)) return;
-        }
-      }
-    }
-  }catch(e){}
+    const ref=doc(db,'orders',id);
+    await updateDoc(ref,{status:'disetujui',disetujuiAt:serverTimestamp(),disetujuiOleh:currentUser.uid, updatedAt:serverTimestamp()});
+    alert('Disetujui ✅');
+    loadPending();
+  }catch(e){ alert('Gagal setujui: '+e.message); log('approve error: '+e.message); }
+};
+
+window.detailOrder=async id=>{
   try{
-    const ref=doc(db,"orders",id),s=await getDoc(ref);
-    if(!s.exists()||s.data().status!=="pending"){alert("Status sudah berubah");loadPending();return;}
-    await updateDoc(ref,{status:"disetujui",disetujuiAt:serverTimestamp(),disetujuiOleh:currentUser.uid});
-    alert("Disetujui - masuk ke Pesan Mitra");loadPending();
-  }catch(e){alert("Gagal: "+e.message);}
+    const snap=await getDoc(doc(db,'orders',id));
+    if(!snap.exists()){ alert('Tidak ada'); return; }
+    const o=snap.data();
+    alert(JSON.stringify(o,null,2).slice(0,2000));
+  }catch(e){ alert(e.message); }
 };
 
 window.verifikasiKeuangan=async id=>{
-  const btn=event?.target;
-  if(btn) btn.disabled=true;
+  if(!confirm('Verifikasi & bagi saldo? Mitra 95% produk + Kurir 95% ongkir + Admin 5%+5% (atau mitra 95% total jika proses sendiri)')) return;
   try{
-    const orderRef=doc(db,"orders",id);
-    const snap=await getDoc(orderRef);
-    if(!snap.exists()) throw Error("Order tidak ditemukan");
-    const order=snap.data();
-    if(order.saldoDibagi===true) throw Error("Sudah dibagi sebelumnya");
-    const split=parseSplit(order);
-    const isCOD=String(order.metodePembayaran||'').toLowerCase().includes('cod');
-    const mitraUid=get(order,['mitraUid','tokoId','ownerToko'],null);
-    const kurirUid=get(order,['kurirUid','kurirId','assignedKurirUid'],null);
-
-    let lines=[];
-    lines.push(`Mitra (${mitraUid||'?'}) 80% produk: ${rupiah(split.modal)}`);
-    if(kurirUid) lines.push(`Kurir (${kurirUid}) 100% ongkir: ${rupiah(split.ongkirKurir)}`);
-    lines.push(`Admin 5% produk: ${rupiah(split.laba)}`);
-    if(isCOD) lines.push(`\nCOD: Potong saldo kurir ${rupiah(split.total)} saat verifikasi (jika belum)`);
-
-    if(!confirm(`Verifikasi keuangan pesanan ${order.nomorPesanan||id}?\n\n${lines.join("\n")}\n\nSaldo akan dibagi sekarang dan tidak bisa diulang.`)) {
-      if(btn) btn.disabled=false;
-      return;
-    }
-
+    const ref=doc(db,'orders',id);
+    const snap=await getDoc(ref);
+    if(!snap.exists()) throw Error('Order tidak ada');
+    const o=snap.data();
+    const s=parseSplit(o);
+    const mitraUid=o.mitraUid, kurirUid=o.kurirUid;
     await runTransaction(db, async tx=>{
-      const fresh=await tx.get(orderRef);
-      if(!fresh.exists()) throw Error("Order hilang");
-      if(fresh.data().saldoDibagi===true) throw Error("Sudah dibagi");
-      const now=serverTimestamp();
-      // Ambil user refs
+      const orderSnap=await tx.get(ref);
+      if(!orderSnap.exists()) throw Error('Order hilang');
+      if(orderSnap.data().saldoDibagi===true) throw Error('Saldo sudah dibagi');
       const refs=[];
       if(mitraUid){
-        const r=doc(db,"users",mitraUid);
-        const s=await tx.get(r);
-        if(!s.exists()) throw Error("Mitra tidak ditemukan "+mitraUid);
-        // ATURAN BARU: jika proses sendiri, semua ongkir + harga produk masuk ke mitra setelah potong admin
-        const creditMitra = split.isProsesSendiri ? split.modalProsesSendiri : split.modal; // proses sendiri 95% total, pakai kurir 95% produk
-        refs.push({uid:mitraUid,ref:r,snap:s,credit:creditMitra,role:'mitra',isProsesSendiri:split.isProsesSendiri});
+        const r=doc(db,'users',mitraUid); const rs=await tx.get(r); if(!rs.exists()) throw Error('Mitra tidak ada'); 
+        const credit=s.isSendiri?s.mitraSendiri:s.mitra;
+        refs.push({ref:r,snap:rs,credit});
       }
-      if(kurirUid && !split.isProsesSendiri){
-        // Hanya bagi ke kurir jika pakai kurir (bukan proses sendiri)
-        const r=doc(db,"users",kurirUid);
-        const s=await tx.get(r);
-        if(!s.exists()) throw Error("Kurir tidak ditemukan "+kurirUid);
-        refs.push({uid:kurirUid,ref:r,snap:s,credit:split.ongkirKurir,role:'kurir'});
-      }
-      // Update saldo masing-masing - SESUAI ATURAN BARU
-      // Jika pakai kurir: ongkir buat kurir, harga produk buat mitra setelah potong admin
-      // Jika proses sendiri: semua ongkir dan harga produk masuk ke mitra setelah potong admin
-      for(const u of refs){
-        const oldBal=Number(u.snap.data().saldoEwallet??u.snap.data().saldoWallet??u.snap.data().saldo??0)||0;
-        const oldInc=Number(u.snap.data().totalPendapatan||0)||0;
-        let finalCredit=u.credit;
-        let newBal=oldBal+finalCredit;
-        if(isCOD && u.role==='kurir' && !split.isProsesSendiri){
-          // COD pakai kurir: potong total sebagai talangan, lalu dapat ongkir
-          const potongTotal=split.total;
-          newBal=oldBal - potongTotal + u.credit;
-          finalCredit=newBal-oldBal;
-        }
-        // Jika proses sendiri, mitra sudah dapat modalProsesSendiri (80% produk + 100% ongkir)
-        tx.update(u.ref,{saldoEwallet:newBal,saldoWallet:newBal,saldo:newBal,totalPendapatan:oldInc+finalCredit,updatedAt:now});
+      if(kurirUid && !s.isSendiri){
+        const r=doc(db,'users',kurirUid); const rs=await tx.get(r); if(!rs.exists()) throw Error('Kurir tidak ada'); 
+        refs.push({ref:r,snap:rs,credit:s.kurir});
       }
       // Admin saldo
-      const adminRef=doc(db,"admin_saldo","total");
-      const adminSnap=await tx.get(adminRef);
-      const adminData=adminSnap.exists()?adminSnap.data():{};
-      tx.set(adminRef,{saldo:(Number(adminData.saldo)||0)+split.laba,totalPendapatanPesanan:(Number(adminData.totalPendapatanPesanan)||0)+split.laba,updatedAt:now},{merge:true});
-      // Ledger
-      for(const u of refs){
-        const ledgerRef=doc(db,"ewallet_transaksi",`${id}_${u.role}_${u.uid}`);
-        const oldSnap=await tx.get(ledgerRef);
-        if(oldSnap.exists()) throw Error("Ledger sudah ada, cegah ganda");
-        const oldBal=Number(u.snap.data().saldoEwallet??0);
-        const isKurirCOD=isCOD && u.role==='kurir';
-        const desc=isKurirCOD?`COD selesai: potong total ${rupiah(split.total)} + ongkir ${rupiah(split.ongkirKurir)} = net ${rupiah((Number(u.snap.data().saldoEwallet||0) - split.total + split.ongkirKurir) - oldBal)}`:`Pembagian ${u.role} ${rupiah(u.credit)}`;
-        tx.set(ledgerRef,{uid:u.uid,type:"masuk",kategori:u.role==='mitra'?'penjualan_mitra':'ongkir_kurir',orderId:id,jumlah:u.role==='kurir'&&isCOD?(oldBal - split.total + split.ongkirKurir)-oldBal:u.credit,saldoSebelum:oldBal,saldoSesudah:u.role==='kurir'&&isCOD?oldBal - split.total + u.credit:oldBal+u.credit,subtotal:split.subtotal,ongkirFull:split.ongkir,potonganAdmin:split.laba,metodePembayaran:order.metodePembayaran,metodePengiriman:order.metodePengiriman,keterangan:desc,createdAt:now});
-        // Jika kurir COD dan saldo kurang, buat tagihan
-        if(isKurirCOD){
-          const saldoNow=Number(u.snap.data().saldoEwallet??u.snap.data().saldoWallet??u.snap.data().saldo??0);
-          if(saldoNow < split.total){
-            const tagihanRef=doc(collection(db,"kurir_tagihan"));
-            tx.set(tagihanRef,{kurirUid:u.uid,orderId:id,totalPesanan:split.total,saldoSaatIni:saldoNow,kekurangan:split.total-saldoNow,status:'menunggu_topup',jenis:'cod_saldo_kurang_saat_verifikasi',keterangan:`Saldo kurang saat verifikasi selesai order ${id}. Butuh ${split.total}, ada ${saldoNow}`,createdAt:now});
-          }
-        }
+      const adminId=currentUser.uid;
+      const adminRef=doc(db,'users',adminId); const adminSnap=await tx.get(adminRef);
+      const adminCredit=s.isSendiri?s.adminSendiri:s.admin;
+      // Update mitra/kurir
+      for(let u of refs){
+        const old=Number(u.snap.data().saldoEwallet??u.snap.data().saldo??0)||0;
+        tx.update(u.ref,{saldoEwallet:old+u.credit, saldo:old+u.credit, updatedAt:serverTimestamp()});
       }
-      const adminLedgerRef=doc(db,"ewallet_transaksi",`${id}_admin_admin`);
-      const adminLedgerSnap=await tx.get(adminLedgerRef);
-      if(adminLedgerSnap.exists()) throw Error("Admin ledger sudah ada");
-      tx.set(adminLedgerRef,{uid:"admin",type:"masuk",kategori:"komisi_pesanan",orderId:id,jumlah:split.laba,subtotal:split.subtotal,ongkirFull:split.ongkir,metodePembayaran:order.metodePembayaran,metodePengiriman:order.metodePengiriman,keterangan:`Komisi admin 20% produk ${rupiah(split.laba)} order ${order.nomorPesanan||id}`,createdAt:now});
-      tx.update(orderRef,{status:"selesai",statusPembayaran:"terverifikasi",selesaiAt:now,saldoDibagi:true,saldoDibagiAt:now,saldoDibagiOleh:currentUser.uid,saldoDibagiDetail:{subtotal:split.subtotal,modalMitra:split.modal,labaAdmin:split.laba,ongkirKurir:split.ongkirKurir,total:split.total,mitraUid,kurirUid,isCOD}});
+      // Admin dapat
+      if(adminSnap.exists()){
+        const oldA=Number(adminSnap.data().saldoEwallet??adminSnap.data().saldo??0)||0;
+        tx.update(adminRef,{saldoEwallet:oldA+adminCredit, saldo:oldA+adminCredit, updatedAt:serverTimestamp()});
+      }
+      // Tandai selesai bagi
+      tx.update(ref,{status:'selesai', saldoDibagi:true, diverifikasiAt:serverTimestamp(), diverifikasiOleh:currentUser.uid, updatedAt:serverTimestamp()});
+      // Ledger
+      const ledgerRef=doc(collection(db,'ewallet_transaksi'));
+      tx.set(ledgerRef,{orderId:id, total:s.total, mitra:s.mitra, kurir:s.kurir, admin:s.admin, isSendiri:s.isSendiri, createdAt:serverTimestamp()});
     });
-    alert("✅ Verifikasi keuangan berhasil. Saldo Mitra 80%, Kurir 100% ongkir (potong total jika COD), Admin 20% sudah dibagi.");
+    alert('✅ Saldo dibagi!');
     loadVerifikasi();
-  }catch(e){
-    console.error(e); alert("Gagal verifikasi: "+(e.message||e));
-    if(btn) btn.disabled=false;
-  }
+  }catch(e){ alert('Gagal verifikasi: '+e.message); log('verifikasi error: '+e.message); }
 };
-</script>
-<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
-</html>
+</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
