@@ -681,10 +681,28 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
   function conv(u){if(!u)return '';var s=String(u).trim();if(s.indexOf('data:image')===0)return s;var m=s.match(/(?:[?&]id=|\/d\/)([A-Za-z0-9_-]{15,})/);if(m&&/drive\.google\.com/i.test(s))return 'https://drive.google.com/thumbnail?id='+m[1]+'&sz=w1600';return s;}
   function flag(v){var x=String(v??'').trim().toLowerCase();return v===true||x==='1'||x==='true'||x==='ya'||x==='yes'||x==='aktif';}
   function fmt(v){var n=Number(String(v??'').replace(/[^\d,-]/g,'').replace(/\./g,'').replace(',','.'));return Number.isFinite(n)&&n?'Rp '+n.toLocaleString('id-ID'):(v?String(v):'Hubungi kami');}
-  async function ambil(){
-    var URL='https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=MEMBER';
+  async function fetchGviz(sheet){
+    var URL='https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet='+sheet;
     try{var r=await fetch(URL,{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);var raw=await r.text();var a=raw.indexOf('{'),b=raw.lastIndexOf('}');if(a<0)throw new Error('bukan JSON');return JSON.parse(raw.slice(a,b+1));}
     catch(e1){var r2=await fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(URL));var raw2=await r2.text();var a2=raw2.indexOf('{'),b2=raw2.lastIndexOf('}');return JSON.parse(raw2.slice(a2,b2+1));}
+  }
+  async function ambil(){
+    var member=await fetchGviz('MEMBER');
+    // Sponsor juga bisa di PROMO, gabungin biar ketemu walau di sheet beda
+    try{
+      var promo=await fetchGviz('PROMO');
+      if(promo&&promo.table&&promo.table.rows){
+        // Tambahin baris PROMO ke rows MEMBER biar sponsor dari PROMO ikut kebaca
+        // Tandain dengan c[13] = link pertama yang ketemu di baris PROMO
+        promo.table.rows.forEach(function(pr){
+          var cells=pr.c||[];
+          var found=null;
+          cells.forEach(function(cell){if(!cell)return;[cell.v,cell.f,cell.p].forEach(function(v){if(typeof v==='string'&&(v.match(/https?:\/\/[^\s"'<>]+/ig)||[]).length){if(!found)found=v;}});});
+          if(found) member.table.rows.push({c:[null,null,null,null,null,null,null,null,null,null,null,null,null,{v:found}]});
+        });
+      }
+    }catch(e){}
+    return member;
   }
   function tampil(json){
     var rows=(json.table&&json.table.rows)||[];
