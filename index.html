@@ -334,54 +334,36 @@ function deliveryLabels(p){
 
 /* SLIDE SPONSOR FIX: kolom N sponsor, kalau kosong pakai foto produk atau banner default biar slide tetap jalan */
 /* SLIDE SPONSOR - KHUSUS KOLOM N (SPONSOR) - GAMBAR SLIDE PAKAI KOLOM SPONSOR */
-function renderSponsorSlides(rows) {
-  const section = document.getElementById('sponsorPromo');
-  const track = document.getElementById('promoTrack');
-  if (!section || !track) return;
 
-  // Kolom N = index 13 = sponsor = link gambar banner slide
-  const sponsorLinks = [...new Set(
-    rows.map(row => {
-      const cells = row.c || [];
-      // Ambil dari kolom N (sponsor)
-      let url = String(cells[13]?.v ?? cells[13]?.f ?? '').trim();
-      // Jika kosong, cek juga kolom M kadang kepotong
-      if(!url) url = String(cells[12]?.v ?? '').trim();
-      return url;
-    }).filter(url => /^https?:\/\//i.test(url) && /\.(jpe?g|png|webp|gif|bmp)|drive\.google|via\.placeholder|imgur|cloudinary/i.test(url) || url.startsWith('https://'))
-  )];
-
-  // Filter hanya URL gambar valid
-  let images = sponsorLinks.map(convertImage).filter(Boolean);
-
-  // Jika sponsor kosong, tampilkan instruksi isi kolom N
-  if (!images.length) {
-    section.style.display = 'block';
-    track.style.animation = 'none';
-    track.style.width = '100%';
-    track.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:center;width:100%;padding:20px;background:#fffbe6;border:1px dashed #ffcc00;border-radius:10px;color:#5c4b00;font-size:11px;line-height:1.4">
-        <div>⚠️ Kolom <b>N = sponsor (Column 14)</b> masih kosong.<br>Isi dengan link gambar banner untuk slide index.<br>Contoh: <code>https://i.imgur.com/xxxx.jpg</code> atau <code>https://drive.google.com/uc?export=view&id=...</code><br><br>Setelah isi, reload index, slide akan jalan pakai gambar dari kolom sponsor.</div>
-      </div>`;
+function renderSponsorSlides(rows){
+  const section=document.getElementById('sponsorPromo');
+  const track=document.getElementById('promoTrack');
+  if(!section||!track)return;
+  console.log('[SLIDE] total rows',rows.length);
+  const raw = rows.map(r=>{
+    const c=r.c||[];
+    const v = String(c[13]?.v ?? c[13]?.f ?? '').trim();
+    return v;
+  });
+  console.log('[SLIDE] raw sponsor col N',raw.slice(0,10));
+  let links = [...new Set(raw.filter(u=>u && /^https?:\/\//i.test(u)))];
+  console.log('[SLIDE] links after filter',links);
+  let images = links.map(convertImage).filter(Boolean);
+  console.log('[SLIDE] images after convert',images);
+  if(!images.length){
+    section.style.display='block';
+    track.style.animation='none';
+    track.style.width='100%';
+    track.innerHTML=`<div style="padding:16px;background:#fffbe6;border:1px dashed #ffcc00;border-radius:10px;font-size:11px">Kolom N sponsor kosong. Isi dengan https:// link gambar. Saat ini terbaca: ${raw.slice(0,3).join(' | ')||'kosong'}</div>`;
     return;
   }
-
-  section.style.display = 'block';
-  // Duplikasi 3x untuk loop mulus
-  const repeatedSlides = [...images, ...images, ...images];
-  track.innerHTML = repeatedSlides.map((url, index) => `
-    <img
-      src="${escapeHtml(url)}"
-      alt="Sponsor"
-      loading="${index < 6 ? 'eager' : 'lazy'}"
-      onerror="this.style.display='none'"
-      style="border-radius:10px;flex:0 0 clamp(280px,45vw,520px);width:clamp(280px,45vw,520px);height:clamp(135px,22vw,220px);object-fit:cover;background:#fff;margin-right:8px"
-    >
-  `).join('');
-
-  track.style.animation = 'promoGeser 24s linear infinite';
-  track.style.width = 'max-content';
+  section.style.display='block';
+  const rep = [...images,...images,...images];
+  track.innerHTML=rep.map((url,i)=>`<img src="${url}" alt="sponsor" loading="${i<6?'eager':'lazy'}" onerror="this.style.display='none'" style="flex:0 0 78vw;width:78vw;height:140px;object-fit:cover;border-radius:10px;margin-right:8px;background:#fff">`).join('');
+  track.style.width='max-content';
+  track.style.animation='promoGeser 24s linear infinite';
 }
+
 
 function updateCart() {
   document.getElementById('cartCount').textContent = cart.reduce((sum,item)=>sum+(Number(item.qty)||0),0);
