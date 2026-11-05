@@ -333,98 +333,54 @@ function deliveryLabels(p){
 }
 
 /* SLIDE SPONSOR FIX: kolom N sponsor, kalau kosong pakai foto produk atau banner default biar slide tetap jalan */
+/* SLIDE SPONSOR - KHUSUS KOLOM N (SPONSOR) - GAMBAR SLIDE PAKAI KOLOM SPONSOR */
 function renderSponsorSlides(rows) {
   const section = document.getElementById('sponsorPromo');
   const track = document.getElementById('promoTrack');
   if (!section || !track) return;
 
+  // Kolom N = index 13 = sponsor = link gambar banner slide
   const sponsorLinks = [...new Set(
     rows.map(row => {
       const cells = row.c || [];
-      return String(cells[13]?.v ?? cells[13]?.f ?? '').trim();
-    }).filter(url => /^https?:\/\//i.test(url))
+      // Ambil dari kolom N (sponsor)
+      let url = String(cells[13]?.v ?? cells[13]?.f ?? '').trim();
+      // Jika kosong, cek juga kolom M kadang kepotong
+      if(!url) url = String(cells[12]?.v ?? '').trim();
+      return url;
+    }).filter(url => /^https?:\/\//i.test(url) && /\.(jpe?g|png|webp|gif|bmp)|drive\.google|via\.placeholder|imgur|cloudinary/i.test(url) || url.startsWith('https://'))
   )];
 
+  // Filter hanya URL gambar valid
   let images = sponsorLinks.map(convertImage).filter(Boolean);
 
-  // FALLBACK: kalau sponsor kosong, ambil foto produk dari kolom F (index 5) biar slide tetap jalan
+  // Jika sponsor kosong, tampilkan instruksi isi kolom N
   if (!images.length) {
-    const productImgs = rows.map(row=>{
-      const cells=row.c||[];
-      const img=String(cells[5]?.v ?? cells[5]?.f ?? '').trim();
-      return convertImage(img);
-    }).filter(Boolean).slice(0,8);
-    if(productImgs.length){
-      images = productImgs;
-    } else {
-      // Banner default mode bersih
-      images = [
-        'https://via.placeholder.com/520x220/ffcc00/111111?text=Siap+Antar+40km',
-        'https://via.placeholder.com/520x220/111111/ffcc00?text=Mitra+Lokal',
-        'https://via.placeholder.com/520x220/00a85a/ffffff?text=Bukti+di+Kolom+J'
-      ];
-    }
+    section.style.display = 'block';
+    track.style.animation = 'none';
+    track.style.width = '100%';
+    track.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;width:100%;padding:20px;background:#fffbe6;border:1px dashed #ffcc00;border-radius:10px;color:#5c4b00;font-size:11px;line-height:1.4">
+        <div>⚠️ Kolom <b>N = sponsor (Column 14)</b> masih kosong.<br>Isi dengan link gambar banner untuk slide index.<br>Contoh: <code>https://i.imgur.com/xxxx.jpg</code> atau <code>https://drive.google.com/uc?export=view&id=...</code><br><br>Setelah isi, reload index, slide akan jalan pakai gambar dari kolom sponsor.</div>
+      </div>`;
+    return;
   }
 
   section.style.display = 'block';
-  // Duplikasi untuk infinite loop smooth
-  const repeatedSlides = images.length > 1 ? [...images, ...images, ...images] : [...images, ...images];
+  // Duplikasi 3x untuk loop mulus
+  const repeatedSlides = [...images, ...images, ...images];
   track.innerHTML = repeatedSlides.map((url, index) => `
     <img
       src="${escapeHtml(url)}"
-      alt="Promo Toko Siap Antar"
+      alt="Sponsor"
       loading="${index < 6 ? 'eager' : 'lazy'}"
       onerror="this.style.display='none'"
-      style="border-radius:10px"
+      style="border-radius:10px;flex:0 0 clamp(280px,45vw,520px);width:clamp(280px,45vw,520px);height:clamp(135px,22vw,220px);object-fit:cover;background:#fff;margin-right:8px"
     >
   `).join('');
 
-  // FIX SLIDE: selalu animasi kalau >1 gambar, durasi disesuaikan jumlah gambar
-  if(images.length>1){
-    track.style.animation = 'promoGeser 24s linear infinite';
-    track.style.width = 'max-content';
-  } else {
-    track.style.animation = 'none';
-  }
-}
-
-function renderProducts() {
-  const q = searchInput.value.trim().toLowerCase();
-  let filtered = allProducts.filter(p => {
-    const matchesText = !q || p.searchText.includes(q);
-    let matchesCat = true;
-    if(activeCategory==='MitraSaya' && mitraUid){
-      matchesCat = p.mitraUid===mitraUid;
-    } else if(activeCategory!=='Semua' && activeCategory!=='__menu'){
-      matchesCat = (String(p.category||'').toLowerCase().includes(activeCategory.toLowerCase()) || (p.name + ' ' + p.description).toLowerCase().includes(activeCategory.toLowerCase()));
-    }
-    return matchesText && matchesCat;
-  });
-  if (!filtered.length) {
-    productsEl.innerHTML = '<div class="notice" style="grid-column:1/-1">Produk tidak ditemukan. Kategori: '+escapeHtml(activeCategory)+'</div>';
-    return;
-  }
-  productsEl.innerHTML = filtered.map(p => `
-    <article class="product" data-product-id="${escapeHtml(p.id)}">
-      <div class="product-photo">${p.image ? `<img loading="lazy" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" onerror="this.style.display='none'">` : '<span>📦</span>'}<span class="mitra-tag">🏪 ${escapeHtml(ownerInitials(p.mitraNama))}</span></div>
-      <div class="product-info">
-        <div class="product-name">${escapeHtml(p.name)}</div>
-        <div class="product-desc">${escapeHtml(p.description || 'Pesanan siap antar ±1 jam').slice(0,80)}</div>
-        <div class="price">${escapeHtml(formatPrice(p.price))}</div>
-        <div class="product-meta"><strong>Pengiriman:</strong> ${escapeHtml(deliveryLabels(p))}</div>
-        <div class="actions">
-          <button class="wa" data-action="wa" data-id="${escapeHtml(p.id)}" aria-label="Tanya WhatsApp">☏</button>
-          <button class="cart" data-action="cart" data-id="${escapeHtml(p.id)}" aria-label="Tambah keranjang">🛒</button>
-          <button class="buy" data-action="buy" data-id="${escapeHtml(p.id)}">Beli</button>
-        </div>
-      </div>
-    </article>`).join('');
-
-  productsEl.querySelectorAll('.product').forEach((card, idx)=>{
-    const p=filtered[idx];
-    const imgEl=card.querySelector('.product-photo img');
-    if(imgEl && p.image) imgEl.src=p.image;
-  });
+  track.style.animation = 'promoGeser 24s linear infinite';
+  track.style.width = 'max-content';
 }
 
 function updateCart() {
