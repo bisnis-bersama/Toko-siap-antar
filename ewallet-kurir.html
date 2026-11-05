@@ -1,27 +1,6 @@
 <!doctype html>
 <html lang="id">
-<head><style>
-@font-face {
-  font-family: "Optimistic";
-  font-style: normal;
-  font-weight: 400 600;
-  font-display: swap;
-  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Optimistic Mono";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
-}
-:where(html) {
-  font-family: "Optimistic", system-ui, sans-serif;
-}
-:where(code, pre, kbd, samp) {
-  font-family: "Optimistic Mono", ui-monospace, monospace;
-}
-</style>
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>E-Wallet Kurir | Toko Siap Antar</title>
@@ -101,39 +80,10 @@ input,select{width:100%;border:1px solid #cbd1d6;border-radius:10px;padding:10px
 </div>
 <div class="panel"><div class="section-title"><h2>Kelola Saldo</h2><span>KURIR</span></div>
 <div class="tabs"><button class="active" data-tab="topup">＋ Top-up</button><button data-tab="withdraw">↗ Pencairan</button><button data-tab="bank">🏦 Rekening</button></div>
-<section id="topupPane"><form id="topupForm"><label>Nominal top-up (Rp)</label><input id="topupAmount" type="number" min="1000" step="1000" required><label>Metode pembayaran</label><select id="method"><option value="transfer_bank">Transfer bank</option><option value="qris">QRIS</option><option value="metode_lain">Metode lain (konfirmasi admin)</option></select>
-<div id="transferBox" style="background:#f0f8ff;border:2px solid #008b5a;border-radius:12px;padding:12px;margin:8px 0">
-<b style="font-size:13px">💳 Rekening Admin - a.n. YUDI ALIYUDIN</b>
-<div style="margin-top:8px;font-size:13px;line-height:1.5">
-<div style="background:#fff;border:1px solid #dceee5;border-radius:8px;padding:8px;margin:4px 0"><b>Bank BCA:</b> 4180734771<br><span style="font-size:11px;color:#666">a.n. YUDI ALIYUDIN</span></div>
-<div style="background:#fff;border:1px solid #dceee5;border-radius:8px;padding:8px;margin:4px 0"><b>SeaBank:</b> 901341445605<br><span style="font-size:11px;color:#666">a.n. YUDI ALIYUDIN</span></div>
-<div style="background:#fff;border:1px solid #dceee5;border-radius:8px;padding:8px;margin:4px 0"><b>DANA / GoPay:</b> 082319264646<br><span style="font-size:11px;color:#666">a.n. YUDI ALIYUDIN</span></div>
-</div>
-<div style="background:#fff8d8;border:1px solid #f4df80;border-radius:8px;padding:8px;margin-top:8px;font-size:11px">⚠️ Setelah transfer, wajib upload bukti di form top-up dan klik Ajukan Top-up. Admin verifikasi 1x24 jam. Hubungi admin via WA jika butuh konfirmasi cepat.</div>
-</div>
-<div id="qrisBox" class="hidden" style="background:#fff;border:2px solid #00a85a;border-radius:12px;padding:12px;margin:8px 0;text-align:center">
-<b style="font-size:13px">📱 QRIS Admin - a.n. YUDI ALIYUDIN</b><br>
-<img src="qris.jpg" alt="QRIS Admin" style="width:100%;max-width:320px;margin:10px auto;border-radius:10px;display:block;box-shadow:0 2px 8px #0001" onerror="this.onerror=null; this.src='./qris.jpg'; this.style.border='1px solid #eee'; this.nextElementSibling.style.display='block'; this.nextElementSibling.nextElementSibling.style.display='block'">
-<div style="display:none;color:#b42318;font-size:11px;background:#fff0ed;padding:8px;border-radius:8px;margin:8px 0">File qris.jpg tidak ditemukan. Pastikan file qris.jpg ada di folder yang sama dengan html ini (toko-siap-antar.vercel.app/qris.jpg)</div>
-<div style="background:#fff8d8;border:1px solid #f4df80;border-radius:8px;padding:8px;margin:8px 0;font-size:11px;text-align:left">Jika gambar tidak muncul, file qris.jpg belum diupload ke Vercel. Upload file qris.jpg ke root folder, atau pakai transfer bank di atas: BCA 4180734771 / SeaBank 901341445605 / DANA 082319264646 a.n. YUDI ALIYUDIN</div>
-<div class="muted" style="margin-top:6px;font-size:11px">Scan pakai GoPay, OVO, DANA, LinkAja, atau mobile banking. Setelah bayar, klik Ajukan Top-up dan admin akan verifikasi saldo.</div>
-</div>
-<label>Catatan (opsional)</label><input id="topupNote" maxlength="250"><button class="submit">Ajukan Top-up</button></form></section>
-<section id="withdrawPane" class="hidden">
-<div id="withdrawAutoInfo"></div>
-<form id="withdrawForm"><label>Nominal pencairan (Rp) - Tidak boleh melebihi saldo <span id="saldoInfoInline" style="color:#0a6d2c;font-weight:700"></span></label><input id="withdrawAmount" type="number" min="1000" step="1000" required><div id="withdrawLimitInfo"></div><label>Nama bank</label><input id="bankName" required><label>Nomor rekening</label><input id="accountNumber" inputmode="numeric" required><label>Nama pemilik rekening</label><input id="accountName" required><button class="submit">Ajukan Pencairan</button></form></section>
-<section id="bankPane" class="hidden">
-<div id="rekeningInfo" class="muted">Belum ada rekening tersimpan.</div>
-<form id="bankForm"><label>Nama bank</label><input id="savedBank" required><label>Nomor rekening</label><input id="savedNumber" inputmode="numeric" required><label>Nama pemilik rekening</label><input id="savedName" required><button class="submit">Simpan Rekening</button></form>
-<div class="notice" style="margin-top:8px">Rekening ini untuk pencairan saldo. Pastikan data benar.</div>
-</section>
+<section id="topupPane"><form id="topupForm"><label>Nominal top-up (Rp)</label><input id="topupAmount" type="number" min="1000" step="1000" required><label>Metode pembayaran</label><select id="method"><option value="transfer_bank">Transfer bank</option><option value="qris">QRIS</option><option value="metode_lain">Metode lain (konfirmasi admin)</option></select><label>Catatan (opsional)</label><input id="topupNote" maxlength="250"><button class="submit">Ajukan Top-up</button></form></section>
+<section id="withdrawPane" class="hidden"><form id="withdrawForm"><label>Nominal pencairan (Rp)</label><input id="withdrawAmount" type="number" min="1000" step="1000" required><label>Nama bank</label><input id="bankName" required><label>Nomor rekening</label><input id="accountNumber" inputmode="numeric" required><label>Nama pemilik rekening</label><input id="accountName" required><button class="submit">Ajukan Pencairan</button></form></section>
+<section id="bankPane" class="hidden"><form id="bankForm"><label>Nama bank</label><input id="savedBank" required><label>Nomor rekening</label><input id="savedNumber" inputmode="numeric" required><label>Nama pemilik rekening</label><input id="savedName" required><button class="submit">Simpan Rekening</button></form></section>
 <div id="actionMsg"></div></div>
-
-<div class="panel" id="tagihanPanel" style="border:2px solid #b42318;background:#fff8f8">
-<div class="section-title"><h2>⚠️ Tagihan COD - Saldo Kurang</h2><span style="background:#b42318;color:#fff;padding:2px 8px;border-radius:999px;font-size:9px">WAJIB TOPUP</span></div>
-<div class="muted" style="margin:4px 0 8px">Jika saldo tidak cukup saat ada pembayaran COD, tagihan otomatis muncul di sini. Saldo akan dipotong saat COD, kalau kurang jadi tagihan.</div>
-<div id="tagihanList" class="list"><div class="muted">Memuat tagihan...</div></div>
-</div>
 <div class="panel"><div class="section-title"><h2>Riwayat Pendapatan Ongkir</h2><span>MUTASI KURIR</span></div><div id="transactions" class="list"><div class="muted">Memuat mutasi…</div></div></div>
 <div class="panel"><div class="section-title"><h2>Riwayat Top-up & Pencairan</h2><span>STATUS</span></div><div id="requests" class="list"><div class="muted">Belum ada pengajuan.</div></div></div>
 </section></main>
@@ -147,51 +97,7 @@ let user=null,profile={},balance=0;
 const money=n=>'Rp '+Number(n||0).toLocaleString('id-ID'),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function roleOf(p){let r=String(p.role??p.peran??p.jenisAkun??p.tipeAkun??'').toLowerCase().replace(/[\s-]+/g,'_');return ({customer:'pelanggan',user:'pelanggan',pembeli:'pelanggan',mitra:'mitra_usaha',merchant:'mitra_usaha',seller:'mitra_usaha',courier:'kurir',driver:'kurir',administrator:'admin',super_admin:'superadmin'})[r]||r;}
 function msg(s,ok=false){$('actionMsg').className=ok?'ok':'err';$('actionMsg').textContent=s;setTimeout(()=>{$('actionMsg').textContent='';},5000);}
-let userDocRef=null;
-async function getProfile(u){
-  // coba doc id = uid
-  try{
-    const s=await getDoc(doc(db,'users',u.uid));
-    if(s.exists()){ userDocRef=s.ref; return s.data(); }
-  }catch{}
-  // cari via email
-  let q=await getDocs(query(collection(db,'users'),where('email','==',u.email||''),limit(1)));
-  if(!q.empty){ userDocRef=q.docs[0].ref; return q.docs[0].data(); }
-  // cari via uid field
-  let q2=await getDocs(query(collection(db,'users'),where('uid','==',u.uid),limit(1)));
-  if(!q2.empty){ userDocRef=q2.docs[0].ref; return q2.docs[0].data(); }
-  throw Error('Profil akun tidak ditemukan pada koleksi users.');
-}
-function updateRekeningUI(){
-  const box=document.getElementById('rekeningInfo');
-  const hasData=$('savedBank').value||$('savedNumber').value||$('savedName').value;
-  if(box){
-    if(!hasData){
-      box.innerHTML='<div class="muted">Belum ada rekening tersimpan. Silakan isi form di bawah.</div>';
-    }else{
-      const bName=$('savedBank').value||'-';
-      const bNum=$('savedNumber').value||'-';
-      const bOwner=$('savedName').value||'-';
-      box.innerHTML=`<div style="background:#f7faf8;border:1px solid #cfe5d8;border-radius:10px;padding:10px;margin-top:0"><b>✅ Rekening tersimpan:</b><div class="meta">Bank: ${esc(bName)}</div><div class="meta">No: ${esc(bNum)}</div><div class="meta">Atas nama: ${esc(bOwner)}</div><div style="margin-top:6px;font-size:11px;color:#0a6d2c">Rekening ini akan otomatis dipakai di tab Pencairan</div></div>`;
-    }
-  }
-  // AUTO-FILL ke form Pencairan
-  if(hasData){
-    const bN=$('savedBank').value;
-    const bNo=$('savedNumber').value;
-    const bOw=$('savedName').value;
-    if($('bankName') && bN) $('bankName').value=bN;
-    if($('accountNumber') && bNo) $('accountNumber').value=bNo;
-    if($('accountName') && bOw) $('accountName').value=bOw;
-    const info=document.getElementById('withdrawAutoInfo');
-    if(info) info.innerHTML=`<div style="background:#e6f4ea;border:1px solid #a8d5b5;border-radius:8px;padding:8px;margin-bottom:8px;font-size:11px">✅ Otomatis pakai rekening tersimpan: <b>${esc(bN)}</b> - ${esc(bNo)} a.n ${esc(bOw)} <span style="color:#0a6d2c">(bisa diedit kalau mau ganti)</span></div>`;
-  }else{
-    const info=document.getElementById('withdrawAutoInfo');
-    if(info) info.innerHTML='<div style="background:#fff8d8;border:1px solid #f4df80;border-radius:8px;padding:8px;margin-bottom:8px;font-size:11px">⚠️ Belum ada rekening tersimpan. Isi dulu di tab Rekening, nanti otomatis muncul di sini.</div>';
-  }
-}
-
-
+async function getProfile(u){let s=await getDoc(doc(db,'users',u.uid));if(s.exists())return s.data();let q=await getDocs(query(collection(db,'users'),where('email','==',u.email||''),limit(1)));if(!q.empty)return q.docs[0].data();throw Error('Profil akun tidak ditemukan pada koleksi users.');}
 function dateText(d){try{if(d?.toDate)return d.toDate().toLocaleString('id-ID');if(d?.seconds)return new Date(d.seconds*1000).toLocaleString('id-ID');}catch(e){}return 'Waktu belum tersedia';}
 function card(kind,d){let amount=Number(d.amount||0);return `<div class="item"><div class="itemtop"><strong>${esc(kind)} · ${money(amount)}</strong><span class="status">${esc(d.status||'menunggu')}</span></div><div class="meta">${esc(dateText(d.createdAt))} · ${esc(d.method||d.bankName||'')}</div></div>`;}
 async function own(col){let s=await getDocs(query(collection(db,col),where('uid','==',user.uid),limit(150)));return s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));}
@@ -207,39 +113,6 @@ function renderIncome(tx){
    return `<div class="item"><div class="itemtop"><strong>Ongkir pesanan · ${money(n)}</strong><span class="status">${esc(x.status||'berhasil')}</span></div><div class="meta">${esc(x.orderId||x.idPesanan||x.id||'Transaksi')} · ${esc(dateText(x.createdAt||x.tanggal))}</div><div class="detail-grid"><div><span>Ongkir bruto</span><strong>${money(g)}</strong></div><div><span>Potongan admin 5%</span><strong>${money(c)}</strong></div><div><span>Diterima kurir</span><strong class="amount-positive">${money(n)}</strong></div><div><span>Metode</span><strong>${esc(x.metodePengiriman||'-')}</strong></div></div></div>`;
  }).join(''):'<div class="muted">Belum ada pendapatan ongkir yang tercatat.</div>';
 }
-
-async function loadTagihan(){
-  const box=$('tagihanList');
-  if(!box) return;
-  try{
-    const q=query(collection(db,'kurir_tagihan'),where('kurirUid','==',user.uid),orderBy('createdAt','desc'),limit(20));
-    let snap;
-    try{ snap=await getDocs(q); }catch(e){
-      const q2=query(collection(db,'kurir_tagihan'),where('kurirUid','==',user.uid),limit(20));
-      snap=await getDocs(q2);
-    }
-    const docs=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-    if(!docs.length){
-      box.innerHTML='<div style="background:#e6f4ea;border:1px solid #a8d5b5;border-radius:8px;padding:10px;font-size:12px;color:#0a6d2c">✅ Tidak ada tagihan. Saldo cukup untuk semua COD.</div>';
-      $('tagihanPanel').style.display='none';
-      return;
-    }
-    $('tagihanPanel').style.display='block';
-    box.innerHTML=docs.map(d=>{
-      const statusColor=d.status==='lunas'?'#0a6d2c':d.status==='menunggu_topup'?'#b42318':'#667085';
-      const statusBg=d.status==='lunas'?'#e6f4ea':d.status==='menunggu_topup'?'#fff0ed':'#f2f4f7';
-      return `<div class="item" style="border:1px solid #f5b5a8;background:#fff"><div class="itemtop"><strong>Tagihan COD ${money(d.kekurangan||d.totalPesanan||0)}</strong><span class="status" style="background:${statusBg};color:${statusColor}">${esc(d.status||'menunggu_topup')}</span></div>
-      <div class="meta">Order: ${esc(d.orderId||'-')} • ${esc(dateText(d.createdAt))}</div>
-      <div class="detail-grid" style="margin-top:6px"><div><span>Total COD</span><strong>${money(d.totalPesanan||0)}</strong></div><div><span>Saldo saat itu</span><strong>${money(d.saldoSaatIni||0)}</strong></div><div><span>Kekurangan</span><strong style="color:#b42318">${money(d.kekurangan||0)}</strong></div></div>
-      <div class="meta" style="margin-top:6px">${esc(d.keterangan||'')}</div>
-      ${d.status!=='lunas'?`<div style="margin-top:8px"><a href="#" onclick="document.querySelector('[data-tab=\'topup\']').click(); window.scrollTo({top:0,behavior:'smooth'}); return false;" style="background:#b42318;color:#fff;padding:6px 12px;border-radius:8px;text-decoration:none;font-size:12px;font-weight:700">💳 Top-up Sekarang (BCA 4180734771)</a></div>`:''}
-      </div>`;
-    }).join('');
-  }catch(e){
-    box.innerHTML=`<div class="err">Gagal load tagihan: ${e.message}</div>`;
-  }
-}
-
 async function refresh(){
  const [tx,t,w]=await Promise.all([own('ewallet_transaksi').catch(()=>[]),own('ewallet_topups').catch(()=>[]),own('ewallet_withdrawals').catch(()=>[])]);
  renderIncome(tx);
@@ -247,105 +120,10 @@ async function refresh(){
 }
 $('loginForm').onsubmit=async e=>{e.preventDefault();$('loginMsg').textContent='Memeriksa akun…';$('loginMsg').classList.remove('hidden');try{await signInWithEmailAndPassword(auth,$('email').value.trim(),$('password').value);}catch(x){$('loginMsg').textContent='Login gagal: '+x.message;}};
 $('logoutBtn').onclick=async()=>{try{await signOut(auth);}catch(err){}finally{window.location.assign(new URL('./index.html',window.location.href).href);}};
-document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));
-  ['topup','withdraw','bank'].forEach(k=>$(k+'Pane').classList.toggle('hidden',k!==b.dataset.tab));
-  updateRekeningUI(); // auto-fill rekening ke pencairan & tampilkan info
-});
-function togglePaymentBox(){
-  const m=$('method').value;
-  const qBox=$('qrisBox');
-  const tBox=$('transferBox');
-  if(qBox) qBox.classList.toggle('hidden', m!=='qris');
-  if(tBox) tBox.classList.toggle('hidden', m==='qris');
-}
-$('method').addEventListener('change', togglePaymentBox);
-togglePaymentBox();
-
-// Validasi pencairan tidak boleh melebihi saldo - live saat ketik
-$('withdrawAmount')?.addEventListener('input',()=>{
-  const val=Number($('withdrawAmount').value||0);
-  const info=document.getElementById('withdrawLimitInfo');
-  if(!info) return;
-  if(val>balance){
-    info.innerHTML=`<div style="background:#fff0ed;border:1px solid #f5b5a8;border-radius:8px;padding:6px;margin-top:4px;font-size:11px;color:#b42318">❌ Melebihi saldo! Saldo: ${money(balance)} - Mau cair: ${money(val)} - Kurang: ${money(val-balance)}</div>`;
-    $('withdrawAmount').style.borderColor='#b42318';
-  }else if(val>0){
-    info.innerHTML=`<div style="background:#e6f4ea;border:1px solid #a8d5b5;border-radius:8px;padding:6px;margin-top:4px;font-size:11px;color:#0a6d2c">✅ Saldo cukup. Sisa saldo setelah cair: ${money(balance-val)}</div>`;
-    $('withdrawAmount').style.borderColor='#0a6d2c';
-  }else{
-    info.innerHTML='';
-    $('withdrawAmount').style.borderColor='';
-  }
-});
-
-
-$('topupForm').onsubmit=async e=>{e.preventDefault();let amount=Number($('topupAmount').value);if(amount<1000)return msg('Minimum top-up Rp1.000.');try{await addDoc(collection(db,'ewallet_topups'),{uid:user.uid,email:user.email||'',role:ROLE,amount,method:$('method').value,note:$('topupNote').value.trim(),status:'menunggu',createdAt:serverTimestamp()});e.target.reset();msg('Pengajuan top-up tersimpan dan menunggu verifikasi. Saldo belum bertambah.',true);await refresh(); await loadTagihan();}catch(x){msg('Gagal mengajukan top-up: '+x.message);}};
-$('withdrawForm').onsubmit=async e=>{
-  e.preventDefault();
-  let amount=Number($('withdrawAmount').value);
-  if(amount<1000) return msg('Minimum pencairan Rp1.000.');
-  // Ambil saldo terbaru langsung dari Firestore biar tidak bisa diakali dengan saldo lama
-  try{
-    const freshRef=userDocRef||doc(db,'users',user.uid);
-    const freshSnap=await getDoc(freshRef);
-    if(freshSnap.exists()){
-      const p=freshSnap.data();
-      const freshBal=Number(p.saldoEwallet??p.saldoWallet??p.saldo??0);
-      balance=freshBal;
-      $('balance').textContent=money(balance);
-    }
-  }catch(err){ console.warn('cek saldo fresh gagal', err); }
-  if(amount>balance){
-    return msg(`❌ Saldo tidak cukup! Saldo kamu ${money(balance)}, tapi mau cair ${money(amount)}. Pencairan tidak boleh melebihi saldo yang ada.`, false);
-  }
-  if(!$('bankName').value.trim()||!$('accountNumber').value.trim()||!$('accountName').value.trim()){
-    return msg('Lengkapi rekening dulu di tab Rekening - nanti auto isi di sini.', false);
-  }
-  try{
-    await addDoc(collection(db,'ewallet_withdrawals'),{
-      uid:user.uid,email:user.email||'',role:ROLE,amount,
-      bankName:$('bankName').value.trim(),
-      accountNumber:$('accountNumber').value.trim(),
-      accountName:$('accountName').value.trim(),
-      status:'menunggu',
-      saldoSaatAjukan: balance,
-      createdAt:serverTimestamp()
-    });
-    // jangan reset bank fields, hanya reset nominal
-    $('withdrawAmount').value='';
-    msg(`✅ Permintaan pencairan ${money(amount)} tersimpan. Saldo kamu ${money(balance)} akan dipotong setelah admin cek saldo & transfer ke rekening ${$('bankName').value} ${$('accountNumber').value}.`,true);
-    await refresh(); await loadTagihan();
-  }catch(x){msg('Gagal mengajukan pencairan: '+x.message, false);}};
-$('bankForm').onsubmit=async e=>{
-  e.preventDefault();
-  try{
-    const ref=userDocRef||doc(db,'users',user.uid);
-    const bN=$('savedBank').value.trim();
-    const bNo=$('savedNumber').value.trim();
-    const bOw=$('savedName').value.trim();
-    if(!bN||!bNo||!bOw) return msg('Lengkapi semua field rekening.');
-    await updateDoc(ref,{
-      bankName:bN,
-      bankAccountNumber:bNo,
-      bankAccountName:bOw,
-      savedBank:bN,
-      savedNumber:bNo,
-      savedName:bOw,
-      rekeningBank:bN,
-      rekeningNumber:bNo,
-      rekeningName:bOw,
-      updatedAt:serverTimestamp()
-    });
-    profile.bankName=bN; profile.bankAccountNumber=bNo; profile.bankAccountName=bOw;
-    msg('✅ Data rekening tersimpan. Sekarang buka tab Pencairan, rekening otomatis terisi.',true);
-    updateRekeningUI();
-    // auto focus ke pencairan after 1s optional
-    setTimeout(()=>{
-      document.querySelector('[data-tab="withdraw"]')?.click();
-      window.scrollTo({top:0,behavior:'smooth'});
-    },800);
-  }catch(x){msg('Rekening belum tersimpan. Periksa Firestore Rules FIX3: '+x.message,false);}};
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));['topup','withdraw','bank'].forEach(k=>$(k+'Pane').classList.toggle('hidden',k!==b.dataset.tab));});
+$('topupForm').onsubmit=async e=>{e.preventDefault();let amount=Number($('topupAmount').value);if(amount<1000)return msg('Minimum top-up Rp1.000.');try{await addDoc(collection(db,'ewallet_topups'),{uid:user.uid,email:user.email||'',role:ROLE,amount,method:$('method').value,note:$('topupNote').value.trim(),status:'menunggu',createdAt:serverTimestamp()});e.target.reset();msg('Pengajuan top-up tersimpan dan menunggu verifikasi. Saldo belum bertambah.',true);await refresh();}catch(x){msg('Gagal mengajukan top-up: '+x.message);}};
+$('withdrawForm').onsubmit=async e=>{e.preventDefault();let amount=Number($('withdrawAmount').value);if(amount<1000)return msg('Minimum pencairan Rp1.000.');if(amount>balance)return msg('Saldo yang terbaca tidak mencukupi.');try{await addDoc(collection(db,'ewallet_withdrawals'),{uid:user.uid,email:user.email||'',role:ROLE,amount,bankName:$('bankName').value.trim(),accountNumber:$('accountNumber').value.trim(),accountName:$('accountName').value.trim(),status:'menunggu',createdAt:serverTimestamp()});e.target.reset();msg('Permintaan pencairan tersimpan dan menunggu pemeriksaan. Saldo belum dipotong otomatis.',true);await refresh();}catch(x){msg('Gagal mengajukan pencairan: '+x.message);}};
+$('bankForm').onsubmit=async e=>{e.preventDefault();try{await updateDoc(doc(db,'users',user.uid),{bankName:$('savedBank').value.trim(),bankAccountNumber:$('savedNumber').value.trim(),bankAccountName:$('savedName').value.trim()});msg('Data rekening tersimpan.',true);}catch(x){msg('Rekening belum tersimpan. Periksa Firestore Rules: '+x.message);}};
 onAuthStateChanged(auth,async u=>{
  if(!u){$('loginPanel').classList.remove('hidden');$('dashboard').classList.add('hidden');$('logoutBtn').classList.add('hidden');$('bottomNav').classList.add('hidden');return;}
  try{
@@ -353,18 +131,13 @@ onAuthStateChanged(auth,async u=>{
   if(actual!==ROLE)throw Error('Halaman ini khusus role Kurir; role akun Anda '+(actual||'belum disetel')+'.');
   balance=Number(profile.saldoEwallet??profile.saldoWallet??profile.saldo??profile.walletBalance??0)||0;
   $('balance').textContent=money(balance);
-  const inline=$('saldoInfoInline');
-  if(inline) inline.textContent=`(Saldo: ${money(balance)})`;
   $('withdrawn').textContent=money(profile.totalDicairkan??profile.totalPenarikanBerhasil??0);
   const name=profile.nama||profile.namaUsaha||profile.name||u.email||'Kurir';
   $('welcomeTop').textContent='Halo, Kak, '+name;$('welcomeTop').style.display='block';
-  $('savedBank').value=profile.bankName||profile.savedBank||profile.rekeningBank||'';$('savedNumber').value=profile.bankAccountNumber||profile.savedNumber||profile.rekeningNumber||'';$('savedName').value=profile.bankAccountName||profile.savedName||profile.rekeningName||'';
+  $('savedBank').value=profile.bankName||'';$('savedNumber').value=profile.bankAccountNumber||'';$('savedName').value=profile.bankAccountName||'';
   $('loginPanel').classList.add('hidden');$('dashboard').classList.remove('hidden');$('logoutBtn').classList.remove('hidden');$('bottomNav').classList.remove('hidden');
-  updateRekeningUI();
-  togglePaymentBox();
   await refresh();
-  await loadTagihan(); await loadTagihan();
  }catch(x){$('loginPanel').classList.remove('hidden');$('dashboard').classList.add('hidden');$('loginMsg').textContent='Dashboard gagal dibuka: '+x.message;$('loginMsg').classList.remove('hidden');}
 });
 </script>
-<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
+</body></html>
