@@ -321,42 +321,42 @@ function deliveryLabels(p){
   return labels.length ? labels.join(' · ') : 'Belum tersedia';
 }
 
-/* SPONSOR: BACA KOLOM N (indeks 13) MURNI, TAMPILKAN SEMUA */
+/* SLIDE SPONSOR: mengambil link gambar dari kolom N (indeks 13). */
 function renderSponsorSlides(rows) {
   const section = document.getElementById('sponsorPromo');
   const track = document.getElementById('promoTrack');
   if (!section || !track) return;
-  const links = [];
-  (rows || []).forEach(row => {
-    const cells = row?.c || [];
-    const cell = cells[13];
-    if (!cell) return;
-    [cell.v, cell.f, cell.p].forEach(val => {
-      if (val == null) return;
-      if (typeof val === 'object') { Object.values(val).forEach(v2 => { if (typeof v2 === 'string') (v2.match(/https?:\/\/[^\s"'<>,
-]+/ig) || []).forEach(u => links.push(u)); }); return; }
-      if (typeof val !== 'string') return;
-      (val.replace(/&amp;/g, '&').match(/https?:\/\/[^\s"'<>,
-]+/ig) || []).forEach(u => {
-        u = u.replace(/[),.;]+$/, '');
-        if (/docs\.google\.com\/spreadsheets/i.test(u)) return;
-        if (u.toLowerCase() === 'column 14') return;
-        links.push(u);
-      });
-    });
-  });
-  const images = [...new Set(links.map(convertImage))].filter(Boolean);
-  section.style.display = 'block';
-  track.replaceChildren();
+
+  const sponsorLinks = [...new Set(
+    rows.map(row => {
+      const cells = row.c || [];
+      return String(cells[13]?.v ?? cells[13]?.f ?? '').trim();
+    }).filter(url => /^https?:\/\//i.test(url))
+  )];
+
+  const images = sponsorLinks.map(convertImage).filter(Boolean);
+
   if (!images.length) {
-    track.innerHTML = '<div style="padding:18px;text-align:center;color:#008b4c;font-weight:700">Belum ada sponsor di kolom N</div>';
+    // Tetap tampilkan area slide promo; isi akan muncul saat link sponsor kolom N tersedia.
+    section.style.display = 'block';
+    track.replaceChildren();
+    track.innerHTML = '<div style="padding:18px;text-align:center;color:#008b4c;font-weight:700">Slide promo</div>';
     track.style.animation = 'none';
     return;
   }
-  const slides = images.length === 1 ? [images[0], images[0], images[0], images[0]] : [...images, ...images];
-  track.innerHTML = slides.map((url, index) => `
-    <img src="${escapeHtml(url)}" alt="Sponsor Toko Siap Antar" loading="${index < images.length ? 'eager' : 'lazy'}" referrerpolicy="no-referrer" onerror="this.style.display='none'">
+
+  section.style.display = 'block';
+  const repeatedSlides = images.length === 1 ? [images[0], images[0], images[0], images[0]] : images.length > 1 ? [...images, ...images] : images;
+  track.innerHTML = repeatedSlides.map((url, index) => `
+    <img
+      src="${escapeHtml(url)}"
+      alt="Sponsor Toko Siap Antar"
+      loading="${index < images.length ? 'eager' : 'lazy'}"
+      onerror="this.style.display='none'"
+    >
   `).join('');
+
+  // Jika hanya satu sponsor, hentikan animasi agar gambar tidak bergeser ke ruang kosong.
   track.style.animation = '';
 }
 
@@ -528,13 +528,11 @@ function parseGviz(raw) {
   return JSON.parse(raw.slice(start,end+1));
 }
 
-let productsLoaded=false;
 async function loadProductsFromSheet(){
-  if(productsLoaded) return;
   try{
-    let raw='';
-    try { const res=await fetch(SHEET_URL, {cache:'no-store'}); if(!res.ok) throw new Error('HTTP '+res.status); raw=await res.text(); }
-    catch(e1) { const res2=await fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(SHEET_URL), {cache:'no-store'}); if(!res2.ok) throw e1; raw=await res2.text(); }
+    const res=await fetch(SHEET_URL, {cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const raw=await res.text();
     const json=parseGviz(raw);
     const rows=json.table && json.table.rows;
     if(!rows) throw new Error('Sheet tidak ada data');
@@ -574,7 +572,6 @@ async function loadProductsFromSheet(){
     }).filter(Boolean);
 
     if(!allProducts.length) throw new Error('Tidak ada produk');
-    productsLoaded=true;
     renderProducts();
   }catch(err){
     productsEl.innerHTML='<div class="notice" style="grid-column:1/-1;color:#b42318">Produk gagal dimuat: '+escapeHtml(err.message)+'<br><span style="font-size:11px">Pastikan Sheet ID benar & Sheet dipublish publik. Sheet lama masih bisa dibaca, tapi untuk input mitra butuh Apps Script.</span></div>';
@@ -587,7 +584,6 @@ onAuthStateChanged(auth, u=>{
   mitraUid = u ? u.uid : '';
   loadProductsFromSheet();
 });
-setTimeout(()=>{ if(!productsLoaded) loadProductsFromSheet(); }, 2500);
 
 updateCart();
 
@@ -657,23 +653,27 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
 </script>
 
 <script>
+/* PENYELAMAT - pake cara baca lama: cells[13].v -> convertImage -> thumbnail, kalau modul mati */
 (function(){
+  function conv(u){if(!u)return '';var s=String(u).trim();if(s.indexOf('data:image')===0)return s;var m=s.match(/(?:id=|\/d\/)([A-Za-z0-9_-]{15,})/);if(m&&/drive\.google\.com/i.test(s))return 'https://drive.google.com/thumbnail?id='+m[1]+'&sz=w1200';return s;}
   function esc(v){return String(v??'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-  function conv(u){if(!u)return '';var s=String(u).trim();if(s.indexOf('data:image')===0)return s;var m=s.match(/(?:[?&]id=|\/d\/)([A-Za-z0-9_-]{15,})/);if(m&&/drive\.google\.com/i.test(s))return 'https://drive.google.com/thumbnail?id='+m[1]+'&sz=w1600';return s;}
-  async function ambil(){var URL='https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=MEMBER';try{var r=await fetch(URL,{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);var raw=await r.text();var a=raw.indexOf('{'),b=raw.lastIndexOf('}');return JSON.parse(raw.slice(a,b+1));}catch(e1){var r2=await fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(URL));var raw2=await r2.text();var a2=raw2.indexOf('{'),b2=raw2.lastIndexOf('}');return JSON.parse(raw2.slice(a2,b2+1));}}
-  function tampil(json){
-    var rows=(json.table&&json.table.rows)||[];
-    var track=document.getElementById('promoTrack');if(track){
-      var links=[];rows.forEach(function(row){var c=row.c||[];var cell=c[13];if(!cell)return;[cell.v,cell.f,cell.p].forEach(function(val){if(!val)return;if(typeof val==='object'){Object.values(val).forEach(function(v2){if(typeof v2==='string')(v2.match(/https?:\/\/[^\s"'<>,\n]+/ig)||[]).forEach(function(u){links.push(u);});});return;}if(typeof val!=='string')return;(val.replace(/&amp;/g,'&').match(/https?:\/\/[^\s"'<>,\n]+/ig)||[]).forEach(function(u){u=u.replace(/[),.;]+$/,'');if(/docs\.google\.com\/spreadsheets/i.test(u))return;if(u.toLowerCase()==='column 14')return;links.push(u);});});});
-      var imgs=[...new Set(links.map(conv))].filter(Boolean);
-      if(imgs.length){var slides=imgs.length===1?[imgs[0],imgs[0],imgs[0],imgs[0]]:[...imgs,...imgs];track.innerHTML=slides.map(function(u){return '<img src="'+esc(u)+'" alt="Sponsor" loading="eager" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">';}).join('');track.style.animation='';}
-    }
+  async function ambil(){var URL='https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=MEMBER';try{var r=await fetch(URL,{cache:'no-store'});var raw=await r.text();var a=raw.indexOf('{'),b=raw.lastIndexOf('}');return JSON.parse(raw.slice(a,b+1));}catch(e1){var r2=await fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(URL));var raw2=await r2.text();var a2=raw2.indexOf('{'),b2=raw2.lastIndexOf('}');return JSON.parse(raw2.slice(a2,b2+1));}}
+  setTimeout(function(){
     var el=document.getElementById('products');if(!el)return;
-    var prods=rows.map(function(row,idx){var c=row.c||[];var g=function(i){return (c[i]&&c[i].v)??'';};var name=String(g(2)||'').trim();if(!name)return null;return {name:name,desc:String(g(3)||''),price:g(4),img:conv(String(g(5)||'')),mitra:String(g(7)||'')||'Mitra'};}).filter(Boolean);
-    if(!prods.length)return;
-    el.innerHTML=prods.map(function(pr){return '<article class="product"><div class="product-photo">'+(pr.img?'<img src="'+esc(pr.img)+'" alt="'+esc(pr.name)+'" onerror="this.style.display=\'none\'">':'<span>📦</span>')+'</div><div class="product-info"><div class="product-name">'+esc(pr.name)+'</div><div class="product-desc">'+esc(pr.desc).slice(0,80)+'</div><div class="price">'+esc(pr.price)+'</div></div></article>';}).join('');
-  }
-  setTimeout(function(){var el=document.getElementById('products');if(!el)return;if(/Memuat|gagal/i.test(el.textContent||'')||!el.querySelector('.product')){ambil().then(tampil).catch(function(){});}},4000);
+    if(/Memuat|gagal/i.test(el.textContent||'')||!el.querySelector('.product')){
+      ambil().then(function(json){
+        var rows=(json.table&&json.table.rows)||[];
+        var track=document.getElementById('promoTrack');
+        if(track){
+          var links=[...new Set(rows.map(function(row){var c=row.c||[];return String(c[13]?.v ?? c[13]?.f ?? '').trim();}).filter(function(u){return /^https?:\/\//i.test(u);}))];
+          var imgs=links.map(conv).filter(Boolean);
+          if(imgs.length){var slides=imgs.length===1?[imgs[0],imgs[0],imgs[0],imgs[0]]:[...imgs,...imgs];track.innerHTML=slides.map(function(u){return '<img src="'+esc(u)+'" alt="Sponsor" loading="eager" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">';}).join('');track.style.animation='';}
+        }
+        var prods=rows.map(function(row,idx){var c=row.c||[];var g=function(i){return (c[i]&&c[i].v)??'';};var name=String(g(2)||'').trim();if(!name)return null;return {name:name,desc:String(g(3)||''),price:g(4),img:conv(String(g(5)||''))};}).filter(Boolean);
+        if(prods.length) el.innerHTML=prods.map(function(pr){return '<article class="product"><div class="product-photo">'+(pr.img?'<img src="'+esc(pr.img)+'" alt="'+esc(pr.name)+'">':'')+'</div><div class="product-info"><div class="product-name">'+esc(pr.name)+'</div><div class="product-desc">'+esc(pr.desc).slice(0,80)+'</div><div class="price">'+esc(pr.price)+'</div></div></article>';}).join('');
+      }).catch(function(){});
+    }
+  },4000);
 })();
 </script>
 
