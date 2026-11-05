@@ -714,7 +714,11 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
     var stuck=/Memuat|gagal/i.test(el.textContent||'');
     // Kalau produk masih stuck / kosong, ambil alih
     if(stuck||!el.querySelector('.product')){
-      ambil().then(tampil).catch(function(){});
+      ambil().then(tampil).catch(function(err){
+        var el2=document.getElementById('products');
+        if(el2) el2.innerHTML='<div class="notice" style="grid-column:1/-1;color:#b42318">Gagal nyambung ke Sheets: '+esc(err&&err.message?err.message:String(err))+'<br><span style="font-size:11px">Cek: 1) Buka link gviz di Incognito, kalau minta login berarti Sheets belum Publish / Anyone with link. 2) Buka dari Chrome via https Vercel, jangan dari preview.</span><br><button onclick="location.reload()" style="margin-top:10px;padding:10px 16px;border:0;border-radius:10px;background:#00a85a;color:#fff;font-weight:800">Coba Lagi</button></div>';
+        var tr=document.getElementById('promoTrack'); if(tr) tr.innerHTML='<div style="padding:18px;text-align:center;color:#b42318">Sponsor gagal: Sheets ga bisa dibuka</div>';
+      });
     }
   }, 4000);
 })();
