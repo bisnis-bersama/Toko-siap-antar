@@ -272,10 +272,10 @@ function convertImage(url) {
   if (/^R0lGOD/.test(s)) return 'data:image/gif;base64,' + s;
   if (/^UklGR/.test(s)) return 'data:image/webp;base64,' + s;
 
-  // Google Drive: dukung link /file/d/, open?id=, uc?id= dan thumbnail.
+  // Link Google Drive biasa diubah menjadi URL thumbnail agar bisa dimuat sebagai gambar.
   const driveId = s.match(/(?:[?&]id=|\/d\/)([A-Za-z0-9_-]{15,})/);
   if (driveId && /drive\.google\.com/i.test(s)) {
-    return 'https://drive.google.com/thumbnail?id=' + driveId[1] + '&sz=w1600';
+    return 'https://drive.google.com/uc?export=view&id=' + driveId[1];
   }
   return s;
 }
@@ -305,44 +305,32 @@ function renderSponsorSlides(rows) {
   const section = document.getElementById('sponsorPromo');
   const track = document.getElementById('promoTrack');
   if (!section || !track) return;
-
-  // Kolom N = indeks 13. Ambil nilai maupun format cell karena link sponsor
-  // kadang tersimpan sebagai teks/formula pada Google Visualization.
-  const sponsorLinks = [...new Set(
-    rows.map(row => {
-      const cells = row.c || [];
-      const cell = cells[13];
-      if (!cell) return '';
-      const candidates = [cell.v, cell.f, cell.p?.link, cell.p?.url]
-        .filter(value => typeof value === 'string')
-        .map(value => value.trim());
-      return candidates.find(value => /^https?:\/\//i.test(value)) || '';
-    }).filter(Boolean)
-  )];
-
-  const images = sponsorLinks.map(convertImage).filter(Boolean);
-
+  const links = [];
+  for (const row of (rows || [])) {
+    const cell = (row?.c || [])[13]; // N = sponsor
+    if (!cell) continue;
+    for (const value of [cell.v, cell.f, cell.h, cell.p?.link, cell.p?.url]) {
+      if (typeof value !== 'string') continue;
+      for (let url of (value.match(/https?:\/\/[^\s"'<>]+/ig) || [])) {
+        url = url.replace(/[),.;]+$/, '');
+        if (/drive\.google\.com|docs\.google\.com/i.test(url) ||
+            /^https?:\/\/.*\.(png|jpe?g|gif|webp)(?:[?#].*)?$/i.test(url)) links.push(url);
+      }
+    }
+  }
+  const images = [...new Set(links)].map(convertImage).filter(Boolean);
+  section.style.display = 'block';
   if (!images.length) {
-    // Tetap tampilkan area slide promo; isi akan muncul saat link sponsor kolom N tersedia.
-    section.style.display = 'block';
     track.replaceChildren();
-    track.innerHTML = '<div style="padding:18px;text-align:center;color:#008b4c;font-weight:700">Slide promo</div>';
+    track.innerHTML = '<div style="padding:18px;text-align:center;color:#008b4c;font-weight:700">Sponsor belum terbaca dari kolom N</div>';
     track.style.animation = 'none';
     return;
   }
-
-  section.style.display = 'block';
-  const repeatedSlides = images.length > 1 ? [...images, ...images] : images;
-  track.innerHTML = repeatedSlides.map((url, index) => `
-    <img
-      src="${escapeHtml(url)}"
-      alt="Sponsor Toko Siap Antar"
-      loading="${index < images.length ? 'eager' : 'lazy'}"
-      onerror="if(!this.dataset.fallback){this.dataset.fallback='1';const m=this.src.match(/[?&]id=([A-Za-z0-9_-]{15,})/);if(m){this.src='https://drive.google.com/uc?export=view&id='+m[1];}else{this.style.display='none';}}else{this.style.display='none';}"
-    >
+  track.innerHTML = images.map(url => `
+    <img src="${escapeHtml(url)}" alt="Sponsor Toko Siap Antar" loading="eager"
+      style="display:block;max-width:100%;height:100%;object-fit:contain"
+      onerror="if(!this.dataset.try2){this.dataset.try2='1';const m=this.src.match(/[?&]id=([A-Za-z0-9_-]{15,})/);if(m){this.src='https://drive.google.com/thumbnail?id='+m[1]+'&sz=w1600';}else{this.style.display='none';}}else{this.style.display='none';}">
   `).join('');
-
-  // Jika hanya satu sponsor, hentikan animasi agar gambar tidak bergeser ke ruang kosong.
   track.style.animation = images.length > 1 ? '' : 'none';
 }
 
