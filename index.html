@@ -696,6 +696,13 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
       var imgs=[...new Set(links.map(conv))].filter(Boolean);
       var info=document.getElementById('sponsorInfo');if(!info){info=document.createElement('div');info.id='sponsorInfo';info.style.cssText='text-align:center;font-size:11px;color:#008b4c;padding:4px';var sec=document.getElementById('sponsorPromo');if(sec&&sec.parentNode)sec.parentNode.insertBefore(info,sec.nextSibling);}
       if(info)info.textContent='Kolom N kebaca: '+imgs.length+' gambar beda';
+      // DEBUG: tampilkan isi mentah kolom N biar ketauan format hyperlink-nya
+      var dbg=document.getElementById('sponsorDebug');
+      if(!dbg){dbg=document.createElement('div');dbg.id='sponsorDebug';dbg.style.cssText='font-size:10px;word-break:break-all;background:#fff;padding:8px;margin:0 10px;border:1px solid #eee';var sec2=document.getElementById('sponsorPromo');if(sec2&&sec2.parentNode)sec2.parentNode.insertBefore(dbg,sec2.nextSibling.nextSibling);}
+      try{
+        var sample=rows.slice(0,6).map(function(r,i){var c=r.c||[];return 'baris '+(i+1)+' N='+JSON.stringify(c[13]);}).join('<br>');
+        dbg.innerHTML='<b>Isi mentah kolom N (debug):</b><br>'+sample;
+      }catch(e){dbg.textContent='debug gagal: '+e.message;}
       if(imgs.length){
         var slides=imgs.length===1?[imgs[0],imgs[0],imgs[0],imgs[0]]:[...imgs,...imgs];
         track.innerHTML=slides.map(function(u){return '<img src="'+esc(u)+'" alt="Sponsor" loading="eager" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">';}).join('');
@@ -714,11 +721,7 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
     var stuck=/Memuat|gagal/i.test(el.textContent||'');
     // Kalau produk masih stuck / kosong, ambil alih
     if(stuck||!el.querySelector('.product')){
-      ambil().then(tampil).catch(function(err){
-        var el2=document.getElementById('products');
-        if(el2) el2.innerHTML='<div class="notice" style="grid-column:1/-1;color:#b42318">Gagal nyambung ke Sheets: '+esc(err&&err.message?err.message:String(err))+'<br><span style="font-size:11px">Cek: 1) Buka link gviz di Incognito, kalau minta login berarti Sheets belum Publish / Anyone with link. 2) Buka dari Chrome via https Vercel, jangan dari preview.</span><br><button onclick="location.reload()" style="margin-top:10px;padding:10px 16px;border:0;border-radius:10px;background:#00a85a;color:#fff;font-weight:800">Coba Lagi</button></div>';
-        var tr=document.getElementById('promoTrack'); if(tr) tr.innerHTML='<div style="padding:18px;text-align:center;color:#b42318">Sponsor gagal: Sheets ga bisa dibuka</div>';
-      });
+      ambil().then(tampil).catch(function(){});
     }
   }, 4000);
 })();
