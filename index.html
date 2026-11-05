@@ -272,10 +272,10 @@ function convertImage(url) {
   if (/^R0lGOD/.test(s)) return 'data:image/gif;base64,' + s;
   if (/^UklGR/.test(s)) return 'data:image/webp;base64,' + s;
 
-  // Link Google Drive biasa diubah menjadi URL thumbnail agar bisa dimuat sebagai gambar.
-  const driveId = s.match(/(?:id=|\/d\/)([A-Za-z0-9_-]{15,})/);
+  // Google Drive: dukung link /file/d/, open?id=, uc?id= dan thumbnail.
+  const driveId = s.match(/(?:[?&]id=|\/d\/)([A-Za-z0-9_-]{15,})/);
   if (driveId && /drive\.google\.com/i.test(s)) {
-    return 'https://drive.google.com/thumbnail?id=' + driveId[1] + '&sz=w1200';
+    return 'https://drive.google.com/thumbnail?id=' + driveId[1] + '&sz=w1600';
   }
   return s;
 }
@@ -294,7 +294,7 @@ function flagEnabled(value){
 }
 function deliveryLabels(p){
   const labels=[];
-  // COD tidak ditampilkan pada katalog index.
+  if(flagEnabled(p.cod)) labels.push('COD');
   if(flagEnabled(p.kurir)) labels.push('Kurir');
   if(flagEnabled(p.expedisi)) labels.push('Ekspedisi');
   return labels.length ? labels.join(' · ') : 'Belum tersedia';
@@ -306,11 +306,18 @@ function renderSponsorSlides(rows) {
   const track = document.getElementById('promoTrack');
   if (!section || !track) return;
 
+  // Kolom N = indeks 13. Ambil nilai maupun format cell karena link sponsor
+  // kadang tersimpan sebagai teks/formula pada Google Visualization.
   const sponsorLinks = [...new Set(
     rows.map(row => {
       const cells = row.c || [];
-      return String(cells[13]?.v ?? cells[13]?.f ?? '').trim();
-    }).filter(url => /^https?:\/\//i.test(url))
+      const cell = cells[13];
+      if (!cell) return '';
+      const candidates = [cell.v, cell.f, cell.p?.link, cell.p?.url]
+        .filter(value => typeof value === 'string')
+        .map(value => value.trim());
+      return candidates.find(value => /^https?:\/\//i.test(value)) || '';
+    }).filter(Boolean)
   )];
 
   const images = sponsorLinks.map(convertImage).filter(Boolean);
@@ -331,7 +338,7 @@ function renderSponsorSlides(rows) {
       src="${escapeHtml(url)}"
       alt="Sponsor Toko Siap Antar"
       loading="${index < images.length ? 'eager' : 'lazy'}"
-      onerror="this.style.display='none'"
+      onerror="if(!this.dataset.fallback){this.dataset.fallback='1';const m=this.src.match(/[?&]id=([A-Za-z0-9_-]{15,})/);if(m){this.src='https://drive.google.com/uc?export=view&id='+m[1];}else{this.style.display='none';}}else{this.style.display='none';}"
     >
   `).join('');
 
@@ -520,8 +527,7 @@ async function loadProductsFromSheet(){
     renderSponsorSlides(rows);
 
     // Kolom Spreadsheet: tanggal(0), kode produk(1), nama(2), deskripsi(3),
-    // harga(4), foto(5), uid(6), nama mitra(7), kategori(8),
-    // cod(9) tetap untuk proses keranjang, tidak ditampilkan di index;
+    // harga(4), foto(5), uid(6), nama mitra(7), kategori(8), cod(9),
     // kurir(10), ekspedisi(11), stock(12), sponsor(13).
     allProducts=rows.map((row,index)=>{
       const c=row.c||[];
