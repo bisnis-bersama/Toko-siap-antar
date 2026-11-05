@@ -1,27 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
-<head><style>
-@font-face {
-  font-family: "Optimistic";
-  font-style: normal;
-  font-weight: 400 600;
-  font-display: swap;
-  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Optimistic Mono";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
-}
-:where(html) {
-  font-family: "Optimistic", system-ui, sans-serif;
-}
-:where(code, pre, kbd, samp) {
-  font-family: "Optimistic Mono", ui-monospace, monospace;
-}
-</style>
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#00a85a">
@@ -62,7 +41,7 @@ main{padding:10px 12px 18px;min-height:150px}
 .product{min-width:0;background:var(--card);border:1px solid var(--line);border-radius:15px;overflow:hidden;box-shadow:0 2px 5px #18312b12;display:flex;flex-direction:column}
 .product-photo{height:112px;background:linear-gradient(135deg,#e4fff2,#fafff0);display:flex;align-items:center;justify-content:center;padding:6px;position:relative}
 .product-photo img{width:100%;height:100%;object-fit:contain}
-.mitra-tag{position:absolute;top:4px;left:4px;right:auto;background:#111;color:#ffd400;font-size:8px;font-weight:800;padding:3px 6px;border-radius:999px;max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mitra-tag{position:absolute;top:4px;left:4px;background:#111;color:#ffd400;font-size:8px;font-weight:800;padding:3px 6px;border-radius:999px;max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .product-info{padding:8px 7px 9px;display:flex;flex-direction:column;flex:1;text-align:center;gap:6px}
 .product-name{font-size:12px;font-weight:800;line-height:1.4;min-height:29px;overflow-wrap:anywhere;color:#18312b}
 .product-desc{font-size:9px;line-height:1.35;color:var(--muted);min-height:25px}
@@ -226,11 +205,11 @@ body.dark-mode .menu-item:active{background:#294a37}
   <aside class="menu-drawer" role="dialog" aria-modal="true" aria-label="Menu Toko Siap Antar">
     <div class="menu-drawer-head"><strong>Menu Toko Siap Antar</strong><button class="menu-close" id="closeMenu" type="button" aria-label="Tutup menu">×</button></div>
     <nav class="menu-items">
-      <a class="menu-item" href="data-gojek-elit.html"><span class="menu-icon">🛵</span>Gojek Elit</a>
+      <a class="menu-item" href="gojek-elit.html"><span class="menu-icon">🛵</span>Gojek Elit</a>
       <a class="menu-item" href="https://fixzi-global.vercel.app" target="_blank" rel="noopener"><span class="menu-icon">📊</span>Fixzy Business</a>
-      <a class="menu-item" href="daftar-mitra-usaha.html"><span class="menu-icon">🏪</span>Daftar Jadi Penjual</a>
-      <a class="menu-item" href="daftar-mitra-pengantaran.html"><span class="menu-icon">🚴</span>Daftar Jadi Kurir</a>
-      <a class="menu-item" href="daftar-mitra-pengantaran.html"><span class="menu-icon">🚕</span>Daftar Jadi Gojek Elit</a>
+      <a class="menu-item" href="daftar-penjual.html"><span class="menu-icon">🏪</span>Daftar Jadi Penjual</a>
+      <a class="menu-item" href="daftar-kurir.html"><span class="menu-icon">🚴</span>Daftar Jadi Kurir</a>
+      <a class="menu-item" href="daftar-gojek-elit.html"><span class="menu-icon">🚕</span>Daftar Jadi Gojek Elit</a>
       <a class="menu-item" href="https://wa.me/62895707182299" target="_blank" rel="noopener"><span class="menu-icon">💬</span>Chat Admin</a>
       <a class="menu-item" href="page.html"><span class="menu-icon">ℹ️</span>About Toko Siap Antar</a>
     </nav>
@@ -315,12 +294,13 @@ function flagEnabled(value){
 }
 function deliveryLabels(p){
   const labels=[];
+  if(flagEnabled(p.cod)) labels.push('COD');
   if(flagEnabled(p.kurir)) labels.push('Kurir');
   if(flagEnabled(p.expedisi)) labels.push('Ekspedisi');
-  return labels.length ? labels.join(' · ') : 'Siap Antar';
+  return labels.length ? labels.join(' · ') : 'Belum tersedia';
 }
 
-/* SLIDE SPONSOR: kolom N sponsor (index 13) - HANYA KOLOM SPONSOR */
+/* SLIDE SPONSOR: mengambil link gambar dari kolom N (indeks 13). */
 function renderSponsorSlides(rows) {
   const section = document.getElementById('sponsorPromo');
   const track = document.getElementById('promoTrack');
@@ -336,15 +316,13 @@ function renderSponsorSlides(rows) {
   const images = sponsorLinks.map(convertImage).filter(Boolean);
 
   if (!images.length) {
-    section.style.display = 'block';
-    track.style.animation = 'none';
-    track.style.width = '100%';
-    track.innerHTML = '<div style="padding:18px;text-align:center;color:#008b4c;font-weight:700;font-size:11px">Isi kolom N (sponsor) dengan link gambar https:// biar slide promo jalan</div>';
+    section.style.display = 'none';
+    track.replaceChildren();
     return;
   }
 
   section.style.display = 'block';
-  const repeatedSlides = [...images, ...images, ...images];
+  const repeatedSlides = images.length > 1 ? [...images, ...images] : images;
   track.innerHTML = repeatedSlides.map((url, index) => `
     <img
       src="${escapeHtml(url)}"
@@ -354,11 +332,10 @@ function renderSponsorSlides(rows) {
     >
   `).join('');
 
-  track.style.animation = 'promoGeser 24s linear infinite';
-  track.style.width = 'max-content';
+  // Jika hanya satu sponsor, hentikan animasi agar gambar tidak bergeser ke ruang kosong.
+  track.style.animation = images.length > 1 ? '' : 'none';
 }
 
-function renderProducts() {
 function renderProducts() {
   const q = searchInput.value.trim().toLowerCase();
   let filtered = allProducts.filter(p => {
@@ -382,7 +359,7 @@ function renderProducts() {
         <div class="product-name">${escapeHtml(p.name)}</div>
         <div class="product-desc">${escapeHtml(p.description || 'Pesanan siap antar ±1 jam').slice(0,80)}</div>
         <div class="price">${escapeHtml(formatPrice(p.price))}</div>
-        <div class="product-meta"><strong>Pengiriman:</strong> ${escapeHtml(deliveryLabels(p))}</div>
+        <div class="product-meta"><strong>Pemilik:</strong> ${escapeHtml(ownerInitials(p.mitraNama))} · ${escapeHtml(p.category||'')}<br><strong>Pengiriman:</strong> ${escapeHtml(deliveryLabels(p))}</div>
         <div class="actions">
           <button class="wa" data-action="wa" data-id="${escapeHtml(p.id)}" aria-label="Tanya WhatsApp">☏</button>
           <button class="cart" data-action="cart" data-id="${escapeHtml(p.id)}" aria-label="Tambah keranjang">🛒</button>
@@ -404,8 +381,8 @@ function updateCart() {
 }
 function addProductToCart(p) {
   const existing = cart.find(item => item.id === p.id);
-  if (existing) { existing.qty = (Number(existing.qty) || 0) + 1; existing.mitraUid=p.mitraUid||existing.mitraUid||''; existing.mitraNama=p.mitraNama||existing.mitraNama||'Mitra'; existing.cod=p.cod; existing.kurir=p.kurir; existing.expedisi=p.expedisi; existing.stock=p.stock; existing.category=p.category; }
-  else cart.push({id:p.id,name:p.name,price:p.price,qty:1,mitraUid:p.mitraUid||'',mitraNama:p.mitraNama||'Mitra',image:p.image,cod:p.cod,kurir:p.kurir,expedisi:p.expedisi,stock:p.stock,category:p.category});
+  if (existing) existing.qty = (Number(existing.qty) || 0) + 1;
+  else cart.push({id:p.id,name:p.name,price:p.price,qty:1,mitraUid:p.mitraUid||'',mitraNama:p.mitraNama||'Mitra',image:p.image});
   updateCart();
 }
 function normalizeWhatsAppNumber(value) {
@@ -418,45 +395,37 @@ function normalizeWhatsAppNumber(value) {
 // Nomor WhatsApp pemilik diambil dari dokumen Firestore users/{UID},
 // sesuai halaman daftar-mitra-usaha.html: field noWA.
 async function openOwnerWhatsApp(p, intro='Halo, saya ingin bertanya tentang produk: ') {
-  // UID pemilik produk berasal dari kolom G spreadsheet dan menjadi ID dokumen mitra_public.
-  const ownerUid = String(p?.mitraUid || p?.ownerUid || p?.tokoId || '').trim();
-  if (!ownerUid) {
-    alert('UID pemilik produk pada kolom G spreadsheet masih kosong.');
-    return;
-  }
-
-  // Buka tab saat klik berlangsung agar tidak diblokir browser HP.
+  // UID mitra pada katalog spreadsheet menjadi penghubung ke dokumen users/{UID}.
+  const ownerUid = String(p.mitraUid || p.ownerUid || p.tokoId || '').trim();
   const waTab = window.open('about:blank', '_blank');
 
   try {
-    // Nomor WhatsApp publik mitra disimpan pada mitra_public/{UID}, field noWA.
-    const ownerSnap = await getDoc(doc(db, 'mitra_public', ownerUid));
-    if (!ownerSnap.exists()) {
-      throw new Error('Data mitra tidak ditemukan di mitra_public/' + ownerUid + '. Pastikan dokumen publik mitra sudah dibuat.');
-    }
+    if (!ownerUid) throw new Error('UID pemilik produk tidak tersedia pada data produk.');
+
+    const ownerSnap = await getDoc(doc(db, 'users', ownerUid));
+    if (!ownerSnap.exists()) throw new Error('Data mitra tidak ditemukan di Firestore users/' + ownerUid + '.');
 
     const ownerData = ownerSnap.data() || {};
-    const ownerNumber = normalizeWhatsAppNumber(ownerData.noWA || ownerData.whatsapp || ownerData.nomorWA || '');
+    // Nama field ini mengikuti struktur pendaftaran mitra: noWA.
+    const ownerNumber = normalizeWhatsAppNumber(ownerData.noWA || '');
+
     if (!ownerNumber || ownerNumber.length < 10) {
-      throw new Error('Nomor WhatsApp mitra belum valid. Periksa field noWA pada dokumen mitra_public/' + ownerUid + '.');
+      throw new Error('Nomor WhatsApp mitra belum diisi pada field noWA di Firestore.');
     }
 
-    const ownerName = String(p.mitraNama || ownerData.nama || 'Mitra').trim();
-    const message = intro + String(p.name || 'produk') +
-      ' — ' + formatPrice(p.price) + ' (Mitra: ' + ownerName + ')';
+    const message = intro + p.name + ' — ' + formatPrice(p.price) +
+      ' (Mitra: ' + (p.mitraNama || ownerData.nama || 'Mitra') + ')';
     const waUrl = 'https://wa.me/' + ownerNumber + '?text=' + encodeURIComponent(message);
 
     if (waTab && !waTab.closed) {
       waTab.opener = null;
       waTab.location.href = waUrl;
     } else {
-      // Cadangan jika browser tidak mengizinkan tab baru.
       window.location.href = waUrl;
     }
   } catch (error) {
     if (waTab && !waTab.closed) waTab.close();
-    console.error('Gagal membuka WhatsApp pemilik produk:', error);
-    alert(error.message || 'Tidak dapat membuka WhatsApp pemilik produk. Periksa koneksi dan izin Firestore.');
+    alert(error.message || 'Tidak dapat membuka WhatsApp pemilik produk.');
   }
 }
 
@@ -636,19 +605,5 @@ productZoom.addEventListener('click', function(e) {
 document.getElementById('productZoomClose').addEventListener('click', closeProductZoom);
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeProductZoom(); });
 </script>
-<script>
-/* REFRESH INDEX SAAT KEMBALI DARI HALAMAN LAIN */
-(function () {
-  let isReloading = false;
-
-  window.addEventListener('pageshow', function (event) {
-    // Halaman dipulihkan dari Back/Forward Cache.
-    if (event.persisted && !isReloading) {
-      isReloading = true;
-      window.location.reload();
-    }
-  });
-})();
-</script>
-<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
+</body>
 </html>
