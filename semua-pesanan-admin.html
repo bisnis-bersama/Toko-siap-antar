@@ -21,256 +21,220 @@
   font-family: "Optimistic Mono", ui-monospace, monospace;
 }
 </style><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin Pending - Fix Tidak Tampil - Mode Bersih</title>
+<title>Admin Pending - Hilang Setelah Disetujui - Mode Bersih Fix</title>
 <style>
 :root{--yellow:#ffcc00;--bg:#f8f9fa;--card:#fff;--line:#eef0f2;--muted:#8b8f97;--black:#111}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);font:14px/1.5 system-ui}
-.top{background:var(--black);color:#fff;padding:14px 16px 28px;border-radius:0 0 24px 24px}
+.top{background:var(--black);color:#fff;padding:14px 16px 24px;border-radius:0 0 24px 24px}
 .topline{max-width:1100px;margin:auto;display:flex;justify-content:space-between;align-items:center}
-.brand{color:var(--yellow);font-weight:900;font-size:16px}
-.sub{color:#c7cbd0;font-size:11px}
-main{max-width:1100px;margin:-16px auto 0;padding:0 12px 80px}
+.brand{color:var(--yellow);font-weight:900}
+main{max-width:1100px;margin:-14px auto 0;padding:0 12px 80px}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;margin-bottom:12px;box-shadow:0 8px 20px #0001}
 .btn{border:0;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer;font-size:12px}
 .btn.yellow{background:var(--yellow);color:var(--black)}
 .btn.black{background:var(--black);color:var(--yellow)}
-.btn.green{background:#111;color:var(--yellow);border:1px solid var(--yellow)}
-.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
-.tabs button{border:1px solid var(--line);border-radius:14px;padding:12px;font-weight:800;background:#f9f9f9;cursor:pointer}
+.tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:12px 0}
+.tabs button{border:1px solid var(--line);border-radius:14px;padding:10px;font-weight:800;background:#f9f9f9;cursor:pointer;font-size:11px}
 .tabs button.active{background:var(--black);color:var(--yellow);border-color:var(--yellow)}
 .list{display:grid;gap:10px}
 .item{border:1px solid var(--line);border-radius:16px;padding:12px;background:#fff}
 .meta{font-size:11px;color:var(--muted)}
 .badge{font-size:10px;font-weight:800;border-radius:999px;padding:4px 8px;background:#fff4c2}
-.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
-.err{color:#b42318;background:#fdecea;border:1px solid #f5c6c1;border-radius:12px;padding:10px;font-size:12px}
 .ok{color:#087443;background:#e6f7ef;border:1px solid #c3ead7;border-radius:12px;padding:10px}
+.err{color:#b42318;background:#fdecea;border:1px solid #f5c6c1;border-radius:12px;padding:10px}
 .log{font-size:10px;background:#111;color:#0f0;padding:8px;border-radius:10px;white-space:pre-wrap;max-height:120px;overflow:auto}
+@keyframes fadeOut{from{opacity:1;transform:translateY(0)} to{opacity:0;transform:translateY(-10px)}}
+.item.hiding{animation:fadeOut .4s forwards}
 </style></head><body>
-<div class="top"><div class="topline"><div><div class="brand">TOKO SIAP ANTAR</div><div style="color:var(--yellow);font-weight:800;font-size:13px">Admin • Pending & Verifikasi Keuangan</div><div class="sub">Pending → Disetujui → Selesai dari Mitra/Kurir → Verifikasi Admin → Bagi Saldo (5% dari kurir & mitra)</div></div><a href="./index.html" style="color:var(--yellow);text-decoration:none;font-weight:800">← Menu Admin</a></div></div>
+<div class="top"><div class="topline"><div><div class="brand">TOKO SIAP ANTAR</div><div style="color:var(--yellow);font-weight:800;font-size:12px">Admin • Pending & Verifikasi Keuangan</div><div style="color:#c7cbd0;font-size:10px">Pending → Disetujui (hilang dari pending) → Di Proses Mitra/Kurir → Selesai → Verifikasi Admin → Bagi Saldo 5%</div></div><a href="./index.html" style="color:var(--yellow);text-decoration:none;font-weight:800">← Menu</a></div></div>
 <main>
 <div class="panel">
 <h2 style="margin:0">Semua Pesanan</h2>
-<p class="meta" style="margin:4px 0">Flow: Semua pesanan masuk <b>pending</b> → Admin setujui → Mitra/Kurir selesaikan → Menunggu verifikasi admin → Bagi saldo Mitra 95% produk + Kurir 95% ongkir + Admin 5%+5%</p>
+<p class="meta">Setelah disetujui, status jadi <b>disetujui</b> → hilang dari tab Pending (karena tidak terbaca sama query pending) → muncul di tab <b>Di Proses</b> → muncul di Pesanan Masuk Mitra sesuai mitraUid. Setelah Mitra/Kurir selesai upload bukti ke Kolom J, baru muncul di Verifikasi Keuangan.</p>
 <div id="log" class="log" style="display:none"></div>
 <div class="tabs">
 <button id="tabPending" class="active" onclick="loadPending()">🟡 Pending <small id="countPending">0</small></button>
-<button id="tabVerifikasi" onclick="loadVerifikasi()">🟠 Verifikasi Keuangan <small id="countVerifikasi">0</small></button>
+<button id="tabProses" onclick="loadProses()">🔵 Di Proses <small id="countProses">0</small></button>
+<button id="tabVerifikasi" onclick="loadVerifikasi()">🟠 Verifikasi <small id="countVerifikasi">0</small></button>
 </div>
-<div style="display:flex;gap:6px"><button class="btn yellow" onclick="loadPending()">🔄 Muat Ulang Pending</button><button class="btn black" onclick="toggleLog()">📋 Log</button></div>
+<div style="display:flex;gap:6px"><button class="btn yellow" onclick="loadPending()">🔄 Muat Pending</button><button class="btn black" onclick="document.getElementById('log').style.display=document.getElementById('log').style.display==='none'?'block':'none'">📋 Log</button></div>
 </div>
 <div id="content" class="panel">Memuat...</div>
 </main>
 <script type="module">
 import {auth,db} from "./firebase-config.js";
 import {onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-import {doc,getDoc,collection,getDocs,query,where,limit,updateDoc,serverTimestamp,runTransaction,addDoc} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
-
+import {doc,getDoc,collection,getDocs,query,where,limit,updateDoc,serverTimestamp,runTransaction} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-function log(m){const el=$("log"); el.style.display='block'; el.textContent+=`\n[${new Date().toLocaleTimeString()}] ${m}`; console.log(m);}
+function log(m){const el=$("log"); el.style.display='block'; el.textContent+=`\n${new Date().toLocaleTimeString()} ${m}`; console.log(m);}
 function rupiah(n){return "Rp "+(Number(n)||0).toLocaleString("id-ID");}
-function toggleLog(){ const el=$("log"); el.style.display= el.style.display==='none'?'block':'none'; }
-window.toggleLog=toggleLog;
-
 let currentUser=null;
 onAuthStateChanged(auth, async u=>{
-  if(!u){ $("content").innerHTML='<div class="err">Login admin dulu. Buka /admin-login.html atau login via E-Wallet Admin. User belum login.</div>'; return; }
+  if(!u){ $("content").innerHTML='<div class="err">Belum login admin. Login dulu di login-fix-session-persist.html</div>'; return; }
   currentUser=u;
-  log(`Login sebagai ${u.uid} ${u.email||''}`);
-  // Cek role admin
   try{
-    const usnap=await getDoc(doc(db,'users',u.uid));
-    if(usnap.exists()){
-      const role=usnap.data().role||'';
-      log(`Role kamu: ${role} (harus admin/superadmin biar bisa list semua orders). Jika bukan admin, set role manual di Firestore users/${u.uid} => role=admin`);
-      if(!['admin','superadmin'].includes(role)){
-        $("content").innerHTML=`<div class="err">Akun kamu role=${esc(role)} bukan admin, jadi query orders pending bisa terblokir rules. <br><br>Solusi cepat:<br>1. Buka Firebase Console → Firestore → users/${u.uid}<br>2. Set field role=admin, status=aktif, aktif=true<br>3. Reload halaman ini.<br><br>Atau saya sudah buat fallback: tetap coba baca orders tanpa filter role.</div>`;
-        // tetap coba load
-      }
-    } else {
-      log('User doc tidak ada di users collection - buat role admin manual');
+    const snap=await getDoc(doc(db,'users',u.uid));
+    const role=snap.exists()?snap.data().role:'';
+    log(`Login ${u.email} role=${role}`);
+    if(!['admin','superadmin'].includes(role)){
+      log(`⚠️ Role bukan admin, tapi tetap coba load (fallback)`);
     }
-  }catch(e){ log('Cek role gagal: '+e.message); }
+  }catch(e){ log('cek role error '+e.message); }
   loadPending();
 });
 
-function getField(o, paths){ for(let p of paths){ let v=o; let ok=true; for(let k of p.split('.')){ if(v && k in v) v=v[k]; else {ok=false;break;} } if(ok && v!=='' && v!=null) return v; } return null; }
-function num(v){ const n=Number(v); return isNaN(n)?0:n; }
+function getField(o,paths){for(let p of paths){let v=o; for(let k of p.split('.')){ if(v&&k in v) v=v[k]; else {v=undefined;break;} } if(v!==undefined&&v!==null&&v!=='') return v;} return null;}
+function num(v){const n=Number(v); return isNaN(n)?0:n;}
 function parseSplit(o){
-  const total=num(getField(o, ['total','totalBayar'])||0);
-  let ongkir=num(getField(o, ['ongkir','ongkosKirim','biayaOngkir'])||0);
-  let subtotal=num(getField(o, ['subtotal','totalBelanja'])||0);
-  if(subtotal===0 && total>0 && ongkir>0) subtotal=total-ongkir;
-  if(subtotal===0) subtotal=total;
+  const total=num(getField(o,['total'])||0);
+  let ongkir=num(getField(o,['ongkir','ongkosKirim'])||0);
+  let sub=num(getField(o,['subtotal'])||0);
+  if(sub===0&&total>0&&ongkir>0) sub=total-ongkir;
+  if(sub===0) sub=total;
   const adminPct=0.05, mitraPct=0.95, kurirPct=0.95;
-  const mitra=Math.round(subtotal*mitraPct);
-  const kurir=Math.round(ongkir*kurirPct);
-  const adminProd=Math.round(subtotal*adminPct);
-  const adminOngkir=Math.round(ongkir*adminPct);
-  const admin=adminProd+adminOngkir;
-  const metode=String(o.metodePenyerahan||'').toLowerCase();
-  const isSendiri=['mitra_kirim_sendiri','via_expedisi','proses_sendiri'].includes(metode);
-  const mitraSendiri=Math.round((subtotal+ongkir)*mitraPct);
-  const adminSendiri=Math.round((subtotal+ongkir)*adminPct);
-  return {total,subtotal,ongkir,mitra,kurir,admin,adminProd,adminOngkir,mitraSendiri,adminSendiri,isSendiri,metode};
+  return {total,subtotal:sub,ongkir,mitra:Math.round(sub*mitraPct),kurir:Math.round(ongkir*kurirPct),admin:Math.round(sub*adminPct)+Math.round(ongkir*adminPct)};
+}
+
+async function fetchOrdersByStatus(statuses){
+  // statuses array lowercase
+  try{
+    const all=await getDocs(collection(db,'orders'));
+    const docs=all.docs.map(d=>({id:d.id,...d.data()})).filter(o=>{
+      const s=String(o.status||'').toLowerCase();
+      return statuses.includes(s);
+    });
+    return docs;
+  }catch(e){ log('fetch error '+e.message); return []; }
 }
 
 async function loadPending(){
-  $("tabPending").classList.add("active"); $("tabVerifikasi").classList.remove("active");
+  $("tabPending").classList.add("active"); $("tabProses").classList.remove("active"); $("tabVerifikasi").classList.remove("active");
   $("content").innerHTML='Memuat pending...';
-  log('loadPending() mulai');
+  log('loadPending mulai');
   try{
     let docs=[];
-    // Coba 1: query where status == pending
     try{
-      log('Coba query where status==pending');
       const q=query(collection(db,'orders'), where('status','==','pending'), limit(100));
       const snap=await getDocs(q);
       docs=snap.docs.map(d=>({id:d.id,...d.data()}));
-      log(`Query status==pending dapat ${docs.length} docs`);
+      log(`query pending dapat ${docs.length}`);
     }catch(e){
-      log(`Query status==pending gagal: ${e.message} - fallback get all`);
-      const all=await getDocs(collection(db,'orders'));
-      docs=all.docs.map(d=>({id:d.id,...d.data()})).filter(o=>String(o.status||'').toLowerCase()==='pending');
-      log(`Fallback get all → filter pending dapat ${docs.length}`);
+      log(`query pending gagal ${e.message}, fallback all`);
+      docs=await fetchOrdersByStatus(['pending','pending_admin']);
     }
-    // Jika masih 0, coba case-insensitive dan field lain
+    // fallback jika 0, coba pending_admin juga
     if(docs.length===0){
-      log('Pending 0, coba cari dengan statusPemenuhan pending_admin atau pending');
-      const all=await getDocs(collection(db,'orders'));
-      const allDocs=all.docs.map(d=>({id:d.id,...d.data()}));
-      log(`Total orders di DB: ${allDocs.length}`);
-      if(allDocs.length>0){
-        log(`Sample status: ${allDocs.slice(0,5).map(o=>String(o.status||o.statusPemenuhan||'no-status')).join(', ')}`);
-      }
-      docs=allDocs.filter(o=>{
-        const s=String(o.status||'').toLowerCase();
-        const sp=String(o.statusPemenuhan||'').toLowerCase();
-        return s==='pending' || sp==='pending' || sp==='pending_admin' || s.includes('pending');
-      });
-      log(`Filter pending (incl pending_admin) dapat ${docs.length}`);
+      const more=await fetchOrdersByStatus(['pending','pending_admin']);
+      docs=more;
+      log(`fallback pending_admin dapat ${docs.length}`);
     }
     docs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     $("countPending").textContent=docs.length;
-    if(!docs.length){
-      $("content").innerHTML='<div class="ok">Tidak ada pesanan pending. Jika kamu baru checkout tapi tidak muncul, cek log di bawah. Kemungkinan: (1) role bukan admin, (2) status bukan pending tapi pending_admin, (3) orders dibuat di collection lain.</div><div class="err" style="margin-top:8px">Buka Firebase Console → Firestore → collection orders → lihat ada data dengan status apa. Screenshot kirim ke saya.</div>';
-      return;
-    }
+    if(!docs.length){ $("content").innerHTML='<div class="ok">Tidak ada pending ✅ (setelah disetujui akan hilang dari sini karena status jadi disetujui)</div>'; return; }
     $("content").innerHTML=`<div class="list">${docs.map(o=>{
       const s=parseSplit(o);
-      const pelanggan=o.namaPelanggan||o.alamatPengiriman?.nama||'-';
-      const alamat=o.alamat||o.alamatPengiriman?.alamat||'-';
-      const wa=o.noWA||o.alamatPengiriman?.telepon||'-';
-      const lat=o.lat||o.alamatPengiriman?.lat||o.lokasi?.lat;
-      const lng=o.lng||o.alamatPengiriman?.lng||o.lokasi?.lng;
-      const gps=lat&&lng?`<a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" style="color:#087443;font-weight:800">📍 ${lat.toFixed?lat.toFixed(5):lat},${lng.toFixed?lng.toFixed(5):lng}</a>`:'GPS belum ada';
-      return `<div class="item"><div style="display:flex;justify-content:space-between"><b>#${esc(o.nomorPesanan||o.id.slice(0,6))}</b><span class="badge">PENDING</span></div>
-      <div class="meta">Pelanggan: ${esc(pelanggan)} • WA: ${esc(wa)} • Total: ${rupiah(s.total)} • Bayar: ${esc(o.metodePembayaran||'-')} • Kirim: ${esc(o.metodePengiriman||'-')}</div>
-      <div class="meta">Alamat: ${esc(alamat)}</div>
-      <div class="meta">${gps}</div>
-      <div class="meta">Mitra: ${esc(o.mitraUid||'-')} • Produk: ${(o.items||[]).length||1} item</div>
-      <div class="actions"><button class="btn yellow" onclick="approveOrder('${o.id}')">✅ Setujui - Masuk ke Mitra</button><button class="btn black" onclick="detailOrder('${o.id}')">👁️ Detail</button></div></div>`;
+      const lat=o.lat||o.alamatPengiriman?.lat, lng=o.lng||o.alamatPengiriman?.lng;
+      const gps=lat&&lng?`<a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" style="color:#087443;font-weight:800">📍 ${Number(lat).toFixed(5)},${Number(lng).toFixed(5)}</a>`:'GPS -';
+      return `<div class="item" id="order_${o.id}"><div style="display:flex;justify-content:space-between"><b>#${esc(o.nomorPesanan||o.id.slice(0,6))}</b><span class="badge">PENDING</span></div>
+      <div class="meta">Pelanggan: ${esc(o.namaPelanggan||'-')} • Total: ${rupiah(s.total)} • Bayar: ${esc(o.metodePembayaran||'-')}</div>
+      <div class="meta">Alamat: ${esc(o.alamat||o.alamatPengiriman?.alamat||'-')}</div>
+      <div class="meta">${gps} • Mitra: ${esc(o.mitraUid||'-').slice(0,8)}</div>
+      <div style="margin-top:8px;display:flex;gap:6px"><button class="btn yellow" onclick="approveOrder('${o.id}')">✅ Setujui - Hilang dari Pending → Masuk Mitra</button><button class="btn black" onclick="detailOrder('${o.id}')">Detail</button></div></div>`;
     }).join('')}</div>`;
-  }catch(e){
-    log('loadPending error: '+e.message);
-    $("content").innerHTML=`<div class="err">Gagal load pending: ${esc(e.message)}<br><br>Cek:<br>1. Login sebagai admin? Role harus admin di users/${currentUser?.uid||''}<br>2. Firestore Rules FIX6 sudah deploy?<br>3. Collection orders ada isinya?</div>`;
-  }
+  }catch(e){ $("content").innerHTML=`<div class="err">Gagal: ${esc(e.message)}</div>`; }
 }
 window.loadPending=loadPending;
 
-async function loadVerifikasi(){
-  $("tabPending").classList.remove("active"); $("tabVerifikasi").classList.add("active");
-  $("content").innerHTML='Memuat verifikasi...';
+async function loadProses(){
+  $("tabPending").classList.remove("active"); $("tabProses").classList.add("active"); $("tabVerifikasi").classList.remove("active");
+  $("content").innerHTML='Memuat di proses...';
   try{
-    let docs=[];
-    try{
-      const q=query(collection(db,'orders'), where('status','in',['selesai_mitra','selesai_kurir','selesai','menunggu_verifikasi']), limit(100));
-      const snap=await getDocs(q);
-      docs=snap.docs.map(d=>({id:d.id,...d.data()})).filter(o=>o.saldoDibagi!==true);
-    }catch{
-      const all=await getDocs(collection(db,'orders'));
-      docs=all.docs.map(d=>({id:d.id,...d.data()})).filter(o=>['menunggu_verifikasi','selesai_mitra','selesai_kurir','selesai'].includes(String(o.status||'').toLowerCase()) && o.saldoDibagi!==true);
-    }
-    $("countVerifikasi").textContent=docs.length;
-    if(!docs.length){ $("content").innerHTML='<div class="ok">Tidak ada pesanan menunggu verifikasi keuangan ✅</div>'; return; }
+    const docs=await fetchOrdersByStatus(['disetujui','diterima_mitra','dikemas','menunggu_kurir','siap_antar','dalam_pengiriman','dikirim']);
+    $("countProses").textContent=docs.length;
+    if(!docs.length){ $("content").innerHTML='<div class="ok">Tidak ada pesanan di proses mitra/kurir</div>'; return; }
     $("content").innerHTML=`<div class="list">${docs.map(o=>{
       const s=parseSplit(o);
-      const isSendiri=s.isSendiri;
-      return `<div class="item" style="border:2px solid var(--yellow)"><b>#${esc(o.nomorPesanan||o.id.slice(0,6))} - ${esc(o.status)}</b><div class="meta">${esc(o.namaPelanggan||'-')} • ${rupiah(s.total)}</div>
-      <div style="margin-top:8px;background:#fffbe6;border:1px solid #f4df80;border-radius:10px;padding:8px;font-size:11px">
-      ${isSendiri?`Mitra 95% (produk+ongkir) = ${rupiah(s.mitraSendiri)} | Admin 5% = ${rupiah(s.adminSendiri)}`:`Mitra 95% produk=${rupiah(s.mitra)} + Kurir 95% ongkir=${rupiah(s.kurir)} + Admin 5%+5%=${rupiah(s.admin)}`}
-      </div>
-      <div class="actions"><button class="btn yellow" onclick="verifikasiKeuangan('${o.id}')">✅ Verifikasi & Bagi Saldo</button></div></div>`;
+      return `<div class="item"><b>#${esc(o.nomorPesanan||o.id.slice(0,6))} - ${esc(o.status)}</b><div class="meta">${esc(o.namaPelanggan||'-')} • ${rupiah(s.total)} • Mitra: ${esc(o.mitraUid||'').slice(0,8)} • Kurir: ${esc(o.kurirUid||'').slice(0,8)||'-'}</div>
+      <div class="meta">Metode Penyerahan: ${esc(o.metodePenyerahan||'-')} • Bukti Kolom J: ${o.buktiGambarDiSpreadsheet?'✅ Sudah di Sheet':o.buktiFotoUrl||o.buktiPenyerahanOcr?'Ada OCR':'Belum'}</div></div>`;
     }).join('')}</div>`;
-  }catch(e){ $("content").innerHTML=`<div class="err">Gagal load verifikasi: ${esc(e.message)}</div>`; }
+  }catch(e){ $("content").innerHTML=`<div class="err">${esc(e.message)}</div>`; }
+}
+window.loadProses=loadProses;
+
+async function loadVerifikasi(){
+  $("tabPending").classList.remove("active"); $("tabProses").classList.remove("active"); $("tabVerifikasi").classList.add("active");
+  $("content").innerHTML='Memuat verifikasi...';
+  try{
+    const docs=await fetchOrdersByStatus(['menunggu_verifikasi','selesai_mitra','selesai_kurir','selesai']).filter(o=>o.saldoDibagi!==true);
+    $("countVerifikasi").textContent=docs.length;
+    if(!docs.length){ $("content").innerHTML='<div class="ok">Tidak ada menunggu verifikasi keuangan ✅</div>'; return; }
+    $("content").innerHTML=`<div class="list">${docs.map(o=>{
+      const s=parseSplit(o);
+      return `<div class="item" style="border:2px solid var(--yellow)"><b>#${esc(o.nomorPesanan||o.id.slice(0,6))} - ${esc(o.status)}</b><div class="meta">OCR: ${esc((o.buktiPenyerahanOcr||o.buktiResiOcr||'').slice(0,80))}... | Foto Sheet Kolom J: ${o.buktiGambarDiSpreadsheet?'✅':'-'}</div>
+      <div style="margin-top:6px"><button class="btn yellow" onclick="verifikasiKeuangan('${o.id}')">✅ Verifikasi & Bagi (Mitra 95% + Kurir 95% + Admin 5%+5%)</button></div></div>`;
+    }).join('')}</div>`;
+  }catch(e){ $("content").innerHTML=`<div class="err">${esc(e.message)}</div>`; }
 }
 window.loadVerifikasi=loadVerifikasi;
 
 window.approveOrder=async id=>{
-  if(!confirm('Setujui pesanan ini? Akan masuk ke Pesan Mitra sesuai produknya.')) return;
+  const el=document.getElementById('order_'+id);
+  if(!confirm('Setujui? Status jadi disetujui → hilang dari Pending → muncul di Pesanan Masuk Mitra.')) return;
   try{
+    // Optimistic: langsung hilangkan dari UI dulu biar terasa hilang
+    if(el){ el.classList.add('hiding'); setTimeout(()=>{ el.style.display='none'; const c=Number($("countPending").textContent||1); $("countPending").textContent=Math.max(0,c-1); }, 350); }
+    log(`Menyetujui ${id}...`);
     const ref=doc(db,'orders',id);
-    await updateDoc(ref,{status:'disetujui',disetujuiAt:serverTimestamp(),disetujuiOleh:currentUser.uid, updatedAt:serverTimestamp()});
-    alert('Disetujui ✅');
-    loadPending();
-  }catch(e){ alert('Gagal setujui: '+e.message); log('approve error: '+e.message); }
+    await updateDoc(ref,{status:'disetujui',disetujuiAt:serverTimestamp(),disetujuiOleh:currentUser.uid,updatedAt:serverTimestamp()});
+    log(`✅ ${id} disetujui - status jadi disetujui, hilang dari pending`);
+    // Tampilkan toast
+    setTimeout(()=>{ alert('✅ Disetujui! Order hilang dari Pending (karena status jadi disetujui) → sekarang ada di tab Di Proses dan di Pesanan Masuk Mitra.'); loadPending(); loadProses(); }, 500);
+  }catch(e){ log('approve gagal '+e.message); alert('Gagal setujui: '+e.message); if(el){ el.classList.remove('hiding'); el.style.display=''; } }
 };
 
 window.detailOrder=async id=>{
-  try{
-    const snap=await getDoc(doc(db,'orders',id));
-    if(!snap.exists()){ alert('Tidak ada'); return; }
-    const o=snap.data();
-    alert(JSON.stringify(o,null,2).slice(0,2000));
-  }catch(e){ alert(e.message); }
+  const snap=await getDoc(doc(db,'orders',id));
+  alert(JSON.stringify(snap.data(),null,2).slice(0,3000));
 };
 
 window.verifikasiKeuangan=async id=>{
-  if(!confirm('Verifikasi & bagi saldo? Mitra 95% produk + Kurir 95% ongkir + Admin 5%+5% (atau mitra 95% total jika proses sendiri)')) return;
+  if(!confirm('Verifikasi & bagi saldo 95%+95%+5%?')) return;
   try{
     const ref=doc(db,'orders',id);
     const snap=await getDoc(ref);
-    if(!snap.exists()) throw Error('Order tidak ada');
-    const o=snap.data();
-    const s=parseSplit(o);
-    const mitraUid=o.mitraUid, kurirUid=o.kurirUid;
+    const o=snap.data(); const s=parseSplit(o);
     await runTransaction(db, async tx=>{
       const orderSnap=await tx.get(ref);
       if(!orderSnap.exists()) throw Error('Order hilang');
-      if(orderSnap.data().saldoDibagi===true) throw Error('Saldo sudah dibagi');
-      const refs=[];
+      if(orderSnap.data().saldoDibagi===true) throw Error('Sudah dibagi');
+      const mitraUid=o.mitraUid, kurirUid=o.kurirUid;
+      const isSendiri=['mitra_kirim_sendiri','via_expedisi','proses_sendiri'].includes(String(o.metodePenyerahan||'').toLowerCase());
       if(mitraUid){
-        const r=doc(db,'users',mitraUid); const rs=await tx.get(r); if(!rs.exists()) throw Error('Mitra tidak ada'); 
-        const credit=s.isSendiri?s.mitraSendiri:s.mitra;
-        refs.push({ref:r,snap:rs,credit});
+        const r=doc(db,'users',mitraUid); const rs=await tx.get(r);
+        if(rs.exists()){
+          const old=Number(rs.data().saldoEwallet??rs.data().saldo??0)||0;
+          const credit=isSendiri?Math.round((s.subtotal+s.ongkir)*0.95):s.mitra;
+          tx.update(r,{saldoEwallet:old+credit, saldo:old+credit, updatedAt:serverTimestamp()});
+        }
       }
-      if(kurirUid && !s.isSendiri){
-        const r=doc(db,'users',kurirUid); const rs=await tx.get(r); if(!rs.exists()) throw Error('Kurir tidak ada'); 
-        refs.push({ref:r,snap:rs,credit:s.kurir});
+      if(kurirUid && !isSendiri){
+        const r=doc(db,'users',kurirUid); const rs=await tx.get(r);
+        if(rs.exists()){
+          const old=Number(rs.data().saldoEwallet??rs.data().saldo??0)||0;
+          tx.update(r,{saldoEwallet:old+s.kurir, saldo:old+s.kurir, updatedAt:serverTimestamp()});
+        }
       }
-      // Admin saldo
-      const adminId=currentUser.uid;
-      const adminRef=doc(db,'users',adminId); const adminSnap=await tx.get(adminRef);
-      const adminCredit=s.isSendiri?s.adminSendiri:s.admin;
-      // Update mitra/kurir
-      for(let u of refs){
-        const old=Number(u.snap.data().saldoEwallet??u.snap.data().saldo??0)||0;
-        tx.update(u.ref,{saldoEwallet:old+u.credit, saldo:old+u.credit, updatedAt:serverTimestamp()});
-      }
-      // Admin dapat
+      const adminRef=doc(db,'users',currentUser.uid); const adminSnap=await tx.get(adminRef);
       if(adminSnap.exists()){
-        const oldA=Number(adminSnap.data().saldoEwallet??adminSnap.data().saldo??0)||0;
-        tx.update(adminRef,{saldoEwallet:oldA+adminCredit, saldo:oldA+adminCredit, updatedAt:serverTimestamp()});
+        const old=Number(adminSnap.data().saldoEwallet??adminSnap.data().saldo??0)||0;
+        const adminCredit=isSendiri?Math.round((s.subtotal+s.ongkir)*0.05):s.admin;
+        tx.update(adminRef,{saldoEwallet:old+adminCredit, saldo:old+adminCredit, updatedAt:serverTimestamp()});
       }
-      // Tandai selesai bagi
-      tx.update(ref,{status:'selesai', saldoDibagi:true, diverifikasiAt:serverTimestamp(), diverifikasiOleh:currentUser.uid, updatedAt:serverTimestamp()});
-      // Ledger
-      const ledgerRef=doc(collection(db,'ewallet_transaksi'));
-      tx.set(ledgerRef,{orderId:id, total:s.total, mitra:s.mitra, kurir:s.kurir, admin:s.admin, isSendiri:s.isSendiri, createdAt:serverTimestamp()});
+      tx.update(ref,{status:'selesai', saldoDibagi:true, diverifikasiAt:serverTimestamp(), updatedAt:serverTimestamp()});
     });
     alert('✅ Saldo dibagi!');
     loadVerifikasi();
-  }catch(e){ alert('Gagal verifikasi: '+e.message); log('verifikasi error: '+e.message); }
+  }catch(e){ alert('Gagal: '+e.message); }
 };
 </script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
