@@ -323,20 +323,7 @@ function updateCart() {
 function addProductToCart(p) {
   const existing = cart.find(item => item.id === p.id);
   if (existing) existing.qty = (Number(existing.qty) || 0) + 1;
-  else cart.push({
-    id:p.id,
-    name:p.name,
-    price:p.price,
-    qty:1,
-    mitraUid:p.mitraUid||'',
-    mitraNama:p.mitraNama||'Mitra',
-    image:p.image,
-    viaKurir:p.viaKurir||'true',
-    butuhKurir: p.butuhKurir!==false,
-    mode:p.mode||'',
-    kategori:p.category||'',
-    prosesSendiri: p.butuhKurir===false
-  });
+  else cart.push({id:p.id,name:p.name,price:p.price,qty:1,mitraUid:p.mitraUid||'',mitraNama:p.mitraNama||'Mitra',image:p.image});
   updateCart();
 }
 function openWhatsApp(p, intro='Halo, saya ingin pesan: ') {
@@ -396,26 +383,19 @@ async function loadProductsFromSheet(){
     const json=parseGviz(raw);
     const rows=json.table && json.table.rows;
     if(!rows) throw new Error('Sheet tidak ada data');
-    // Kolom: Timestamp(0), ID(1), Nama(2), Deskripsi(3), Harga(4), Image(5), MitraUid(6), MitraNama(7), Kategori(8), ViaKurir(9), Mode(10), Lat(11), Lng(12) - support via kurir
+    // Kolom: Timestamp(0), ID(1), Nama(2), Deskripsi(3), Harga(4), Image(5), MitraUid(6), MitraNama(7), Kategori(8), Lat(9), Lng(10) - flexible
     allProducts=rows.map((row,index)=>{
       const c=row.c||[];
       const getVal = (i)=>c[i]?.v??'';
       let id=getVal(1)||String(index);
-      let name='', desc='', price='', image='', mUid='', mNama='', cat='', viaKurir='', mode='';
+      let name='', desc='', price='', image='', mUid='', mNama='', cat='';
       if(c.length>=9){
         name=getVal(2); desc=getVal(3); price=getVal(4); image=getVal(5); mUid=getVal(6); mNama=getVal(7); cat=getVal(8);
-        viaKurir=getVal(9); mode=getVal(10);
       } else {
+        // format lama
         name=getVal(1)||getVal(0); desc=getVal(2); price=getVal(3); image=getVal(4);
       }
       if(!String(name).trim()) return null;
-      // Normalisasi viaKurir
-      const viaKurirStr = String(viaKurir).toLowerCase().trim();
-      let butuhKurir = true; // default Toko Siap Antar = pakai kurir
-      if(['false','0','tidak','no','mandiri','sendiri','proses sendiri','tidak pakai kurir'].includes(viaKurirStr)) butuhKurir = false;
-      if(['true','1','ya','yes','kurir','lempar kurir','pakai kurir'].includes(viaKurirStr)) butuhKurir = true;
-      if(String(mode).toLowerCase().includes('mandiri') || String(mode).toLowerCase().includes('sendiri')) butuhKurir = false;
-      
       return {
         id:String(id).trim(),
         name:String(name).trim(),
@@ -425,9 +405,6 @@ async function loadProductsFromSheet(){
         mitraUid:String(mUid).trim(),
         mitraNama:String(mNama).trim()||'Mitra',
         category:String(cat).trim()||'Makanan',
-        viaKurir:viaKurir,
-        butuhKurir:butuhKurir,
-        mode:mode,
         searchText:(String(name)+' '+String(desc)+' '+String(mNama)+' '+String(mUid)).toLowerCase()
       };
     }).filter(Boolean);
@@ -499,15 +476,12 @@ document.getElementById('btnSave').addEventListener('click', async()=>{
   if(finalImage.length>45000){if(!confirm('Gambar agak besar ('+Math.round(finalImage.length/1024)+'KB). Sheet max 50KB, bisa gagal. Lanjut?')) return;}
   const btn=document.getElementById('btnSave'); btn.disabled=true; btn.textContent='⏳ Simpan ke Spreadsheet...';
   try{
-    const viaKurirVal = document.getElementById('pViaKurir')?.value || 'true';
     const payload={
       action:'addProduct',
       name, price, description:desc, category:cat||'Makanan',
       image:finalImage,
       mitraUid:mitraUid,
-      mitraNama:mitraNama,
-      viaKurir: viaKurirVal,
-      butuhKurir: viaKurirVal === 'true'
+      mitraNama:mitraNama
     };
     const res=await fetch(APPS_SCRIPT_URL, {method:'POST', body:JSON.stringify(payload)});
     const json=await res.json();
@@ -571,5 +545,58 @@ productZoom.addEventListener('click', function(e) {
 document.getElementById('productZoomClose').addEventListener('click', closeProductZoom);
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeProductZoom(); });
 </script>
+
+<script>
+/* SPONSOR SAJA - TERPISAH TOTAL DARI PRODUK.
+   Baca kolom N (indeks 13) dari Sheets MEMBER.
+   Kalau gagal / kolom N kosong, DIAM, biarin promo lama silde*.png, JANGAN sentuh produk. */
+(function(){
+  try{
+    var SHEET = 'https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=MEMBER';
+    function esc(v){ return String(v ?? '').replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+    function conv(url){
+      if(!url) return '';
+      var s = String(url).trim();
+      if(s.indexOf('data:image') === 0) return s;
+      var m = s.match(/(?:[?&]id=|\/d\/|thumbnail\?id=)([A-Za-z0-9_-]{15,})/);
+      if(m && /drive\.google\.com/i.test(s)) return 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w1600';
+      return s;
+    }
+    fetch(SHEET, {cache: 'no-store'}).then(function(r){
+      if(!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    }).then(function(raw){
+      var a = raw.indexOf('{'), b = raw.lastIndexOf('}');
+      if(a < 0) return;
+      var json = JSON.parse(raw.slice(a, b+1));
+      var rows = (json.table && json.table.rows) || [];
+      var links = [];
+      rows.forEach(function(row){
+        var cells = (row && row.c) || [];
+        var cell = cells[13]; // kolom N
+        if(!cell) return;
+        [cell.v, cell.f, cell.p].forEach(function(val){
+          if(!val) return;
+          if(typeof val === 'object'){ Object.values(val).forEach(function(v2){ if(typeof v2 === 'string'){ (v2.match(/https?:\/\/[^\s"'<>,\n]+/ig) || []).forEach(function(u){ links.push(u); }); } }); return; }
+          if(typeof val !== 'string') return;
+          (val.replace(/&amp;/g,'&').match(/https?:\/\/[^\s"'<>,\n]+/ig) || []).forEach(function(u){
+            u = u.replace(/[),.;]+$/,'');
+            if(!/docs\.google\.com\/spreadsheets/i.test(u)) links.push(u);
+          });
+        });
+      });
+      var images = Array.from(new Set(links.map(conv))).filter(Boolean);
+      if(!images.length) return; // kolom N kosong -> biarin promo lama, jangan dihapus
+      var track = document.getElementById('promoTrack');
+      if(!track) return;
+      var slides = images.length > 1 ? images.concat(images) : images;
+      track.innerHTML = slides.map(function(u){
+        return '<img src="' + esc(u) + '" alt="Sponsor" loading="eager" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">';
+      }).join('');
+    }).catch(function(){ /* sponsor gagal -> biarin promo lama, produk jangan keganggu */ });
+  }catch(e){ /* jangan pernah ganggu produk */ }
+})();
+</script>
+
 <script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
 </html>
