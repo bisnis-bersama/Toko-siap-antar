@@ -300,33 +300,52 @@ function deliveryLabels(p){
   return labels.length ? labels.join(' · ') : 'Belum tersedia';
 }
 
-/* SLIDE SPONSOR: mengambil link gambar dari kolom N (indeks 13). */
+/* SLIDE SPONSOR: membaca URL dari kolom N (indeks 13), termasuk hyperlink rich-text. */
 function renderSponsorSlides(rows) {
   const section = document.getElementById('sponsorPromo');
   const track = document.getElementById('promoTrack');
   if (!section || !track) return;
+
   const links = [];
+  const addUrls = value => {
+    if (typeof value !== 'string' || !value.trim()) return;
+    const candidates = value.match(/https?:\/\/[^\s"'<>]+/ig) || [];
+    for (let url of candidates) {
+      url = url.replace(/[),.;]+$/, '').replace(/&amp;/g, '&');
+      if (/drive\.google\.com|docs\.google\.com/i.test(url) ||
+          /^https?:\/\/.*\.(png|jpe?g|gif|webp)(?:[?#].*)?$/i.test(url)) links.push(url);
+    }
+  };
+
   for (const row of (rows || [])) {
-    const cell = (row?.c || [])[13]; // N = sponsor
+    const cells = row?.c || [];
+    const cell = cells[13]; // Kolom N: sponsor
     if (!cell) continue;
-    for (const value of [cell.v, cell.f, cell.h, cell.p?.link, cell.p?.url]) {
-      if (typeof value !== 'string') continue;
-      for (let url of (value.match(/https?:\/\/[^\s"'<>]+/ig) || [])) {
-        url = url.replace(/[),.;]+$/, '');
-        if (/drive\.google\.com|docs\.google\.com/i.test(url) ||
-            /^https?:\/\/.*\.(png|jpe?g|gif|webp)(?:[?#].*)?$/i.test(url)) links.push(url);
+    addUrls(cell.v);
+    addUrls(cell.f);
+    addUrls(cell.h);
+    addUrls(cell.p?.link);
+    addUrls(cell.p?.url);
+    // Beberapa publikasi GViz mengembalikan hyperlink sebagai objek properti.
+    if (cell.p && typeof cell.p === 'object') {
+      for (const [key, value] of Object.entries(cell.p)) {
+        if (/link|url|href/i.test(key)) addUrls(value);
       }
     }
   }
+
   const images = [...new Set(links)].map(convertImage).filter(Boolean);
   section.style.display = 'block';
+  track.replaceChildren();
   if (!images.length) {
-    track.replaceChildren();
     track.innerHTML = '<div style="padding:18px;text-align:center;color:#008b4c;font-weight:700">Sponsor belum terbaca dari kolom N</div>';
     track.style.animation = 'none';
     return;
   }
-  track.innerHTML = images.map(url => `
+
+  // Duplikasi gambar agar animasi loop tidak memiliki jeda saat berpindah.
+  const slides = images.length > 1 ? images.concat(images) : images;
+  track.innerHTML = slides.map(url => `
     <img src="${escapeHtml(url)}" alt="Sponsor Toko Siap Antar" loading="eager"
       style="display:block;max-width:100%;height:100%;object-fit:contain"
       onerror="if(!this.dataset.try2){this.dataset.try2='1';const m=this.src.match(/[?&]id=([A-Za-z0-9_-]{15,})/);if(m){this.src='https://drive.google.com/thumbnail?id='+m[1]+'&sz=w1600';}else{this.style.display='none';}}else{this.style.display='none';}">
