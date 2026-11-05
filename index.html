@@ -321,48 +321,51 @@ function deliveryLabels(p){
   return labels.length ? labels.join(' · ') : 'Belum tersedia';
 }
 
-/* SLIDE SPONSOR: mengambil link gambar dari kolom N (indeks 13). */
+/* SPONSOR: BACA KOLOM N (indeks 13), TAMPILKAN SEMUA GAMBAR BEDA */
 function renderSponsorSlides(rows) {
   const section = document.getElementById('sponsorPromo');
   const track = document.getElementById('promoTrack');
   if (!section || !track) return;
   const links = [];
-  const addUrls = (val) => {
-    if (val == null) return;
-    if (typeof val === 'object') { Object.values(val).forEach(addUrls); return; }
-    if (typeof val !== 'string' || !val.trim()) return;
-    const txt = val.replace(/&amp;/g, '&');
-    (txt.match(/https?:\/\/[^\s"'<>,\n]+/ig) || []).forEach(u => {
-      u = u.replace(/[),.;]+$/, '');
-      if (/docs\.google\.com\/spreadsheets/i.test(u)) return;
-      links.push(u);
-    });
-    const bare = txt.trim().match(/^[A-Za-z0-9_-]{25,}$/);
-    if (bare && !links.length) links.push('https://drive.google.com/thumbnail?id=' + bare[0] + '&sz=w1600');
-  };
   (rows || []).forEach(row => {
     const cells = row?.c || [];
     const cell = cells[13]; // kolom N
     if (!cell) return;
-    addUrls(cell.v); addUrls(cell.f); addUrls(cell.p);
+    [cell.v, cell.f, cell.p].forEach(val => {
+      if (val == null) return;
+      if (typeof val === 'object') { Object.values(val).forEach(v2 => { if (typeof v2 === 'string') (v2.match(/https?:\/\/[^\s"'<>,
+]+/ig) || []).forEach(u => links.push(u)); }); return; }
+      if (typeof val !== 'string') return;
+      (val.replace(/&amp;/g, '&').match(/https?:\/\/[^\s"'<>,
+]+/ig) || []).forEach(u => {
+        u = u.replace(/[),.;]+$/, '');
+        if (/docs\.google\.com\/spreadsheets/i.test(u)) return;
+        if (u.toLowerCase() === 'column 14') return;
+        links.push(u);
+      });
+    });
   });
   const images = [...new Set(links.map(convertImage))].filter(Boolean);
   section.style.display = 'block';
   track.replaceChildren();
-  let finalImages = images;
-  if (!finalImages.length) {
-    // Cadangan: file Drive yang lu kirim, biar sponsor ga blank kalau kolom N kosong
-    finalImages = ['https://drive.google.com/thumbnail?id=1Wgp3s4s6bG-HxN87Q1HEtFW7j7bWXAVe&sz=w1600'];
+  // Info debug biar keliatan berapa yang kebaca dari kolom N
+  let info = document.getElementById('sponsorInfo');
+  if (!info) {
+    info = document.createElement('div');
+    info.id = 'sponsorInfo';
+    info.style.cssText = 'text-align:center;font-size:11px;color:#008b4c;padding:4px';
+    section.parentNode.insertBefore(info, section.nextSibling);
   }
-  const images2 = finalImages;
-  if (!images2.length) {
-    track.innerHTML = '<div style="padding:18px;text-align:center;color:#008b4c;font-weight:700">Slide promo</div>';
+  info.textContent = 'Kolom N kebaca: ' + images.length + ' gambar beda';
+  if (!images.length) {
+    track.innerHTML = '<div style="padding:18px;text-align:center;color:#008b4c;font-weight:700">Belum ada sponsor di kolom N</div>';
     track.style.animation = 'none';
     return;
   }
-  const repeatedSlides = images2.length === 1 ? [images2[0], images2[0], images2[0], images2[0]] : images2.length > 1 ? [...images2, ...images2] : images2;
-  track.innerHTML = repeatedSlides.map((url, index) => `
-    <img src="${escapeHtml(url)}" alt="Sponsor Toko Siap Antar" loading="${index < images2.length ? 'eager' : 'lazy'}" referrerpolicy="no-referrer" onerror="this.style.display='none'">
+  // Kalau cuma 1 gambar beda, gandain biar jalan. Kalau 3 gambar beda, tampil 3 beda + ulang, jangan disamain.
+  const slides = images.length === 1 ? [images[0], images[0], images[0], images[0]] : [...images, ...images];
+  track.innerHTML = slides.map((url, index) => `
+    <img src="${escapeHtml(url)}" alt="Sponsor Toko Siap Antar" loading="${index < images.length ? 'eager' : 'lazy'}" referrerpolicy="no-referrer" onerror="this.style.display='none'">
   `).join('');
   track.style.animation = '';
 }
@@ -535,20 +538,19 @@ function parseGviz(raw) {
   return JSON.parse(raw.slice(start,end+1));
 }
 
-let productsLoaded = false;
+let productsLoaded=false;
 async function loadProductsFromSheet(){
-  if (productsLoaded) return;
+  if(productsLoaded) return;
   try{
-    let raw = '';
+    let raw='';
     try {
-      const res = await fetch(SHEET_URL, {cache:'no-store'});
+      const res=await fetch(SHEET_URL, {cache:'no-store'});
       if(!res.ok) throw new Error('HTTP '+res.status);
-      raw = await res.text();
+      raw=await res.text();
     } catch(e1) {
-      // Failed to fetch di gviz langsung -> coba lewat proxy, biar tetap tampil
-      const res2 = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(SHEET_URL), {cache:'no-store'});
+      const res2=await fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(SHEET_URL), {cache:'no-store'});
       if(!res2.ok) throw e1;
-      raw = await res2.text();
+      raw=await res2.text();
     }
     const json=parseGviz(raw);
     const rows=json.table && json.table.rows;
@@ -589,7 +591,7 @@ async function loadProductsFromSheet(){
     }).filter(Boolean);
 
     if(!allProducts.length) throw new Error('Tidak ada produk');
-    productsLoaded = true;
+    productsLoaded=true;
     renderProducts();
   }catch(err){
     productsEl.innerHTML='<div class="notice" style="grid-column:1/-1;color:#b42318">Produk gagal dimuat: '+escapeHtml(err.message)+'<br><span style="font-size:11px">Pastikan Sheet ID benar & Sheet dipublish publik. Sheet lama masih bisa dibaca, tapi untuk input mitra butuh Apps Script.</span></div>';
@@ -602,7 +604,6 @@ onAuthStateChanged(auth, u=>{
   mitraUid = u ? u.uid : '';
   loadProductsFromSheet();
 });
-// Kalau auth lama / firebase-config gagal, jangan tunggu, load produk langsung biar tampil
 setTimeout(()=>{ if(!productsLoaded) loadProductsFromSheet(); }, 2500);
 
 updateCart();
