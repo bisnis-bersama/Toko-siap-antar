@@ -321,42 +321,56 @@ function deliveryLabels(p){
   return labels.length ? labels.join(' · ') : 'Belum tersedia';
 }
 
-/* SPONSOR: BACA KOLOM N (indeks 13), TAMPILKAN SEMUA GAMBAR BEDA - TANPA FALLBACK YANG NIMPA PRODUK */
+/* SLIDE SPONSOR: mengambil link gambar dari kolom N (indeks 13). */
 function renderSponsorSlides(rows) {
   const section = document.getElementById('sponsorPromo');
   const track = document.getElementById('promoTrack');
   if (!section || !track) return;
-  const links = [];
-  (rows || []).forEach(row => {
-    const cells = row?.c || [];
-    const cell = cells[13];
-    if (!cell) return;
-    [cell.v, cell.f, cell.p].forEach(val => {
-      if (val == null) return;
-      if (typeof val === 'object') { Object.values(val).forEach(v2 => { if (typeof v2 === 'string') (v2.match(/https?:\/\/[^\s"'<>,
-]+/ig) || []).forEach(u => links.push(u)); }); return; }
-      if (typeof val !== 'string') return;
-      (val.replace(/&amp;/g, '&').match(/https?:\/\/[^\s"'<>,
+
+  const sponsorLinks = [...new Set(
+    rows.flatMap(row => {
+      const cells = row.c || [];
+      const cell = cells[13];
+      if (!cell) return [];
+      const out = [];
+      [cell.v, cell.f, cell.p].forEach(val => {
+        if (val == null) return;
+        if (typeof val === 'object') { Object.values(val).forEach(v2 => { if (typeof v2 === 'string') (v2.match(/https?:\/\/[^\s"'<>,
+]+/ig) || []).forEach(u => out.push(u)); }); return; }
+        if (typeof val !== 'string') return;
+        (val.replace(/&amp;/g, '&').match(/https?:\/\/[^\s"'<>,
 ]+/ig) || []).forEach(u => {
-        u = u.replace(/[),.;]+$/, '');
-        if (/docs\.google\.com\/spreadsheets/i.test(u)) return;
-        if (u.toLowerCase() === 'column 14') return;
-        links.push(u);
+          u = u.replace(/[),.;]+$/, '');
+          if (/docs\.google\.com\/spreadsheets/i.test(u)) return;
+          if (u.toLowerCase() === 'column 14') return;
+          out.push(u);
+        });
       });
-    });
-  });
-  const images = [...new Set(links.map(convertImage))].filter(Boolean);
-  section.style.display = 'block';
-  track.replaceChildren();
+      return out;
+    }).filter(url => /^https?:\/\//i.test(url))
+  )];
+
+  const images = sponsorLinks.map(convertImage).filter(Boolean);
+
   if (!images.length) {
-    track.innerHTML = '<div style="padding:18px;text-align:center;color:#008b4c;font-weight:700">Belum ada sponsor di kolom N</div>';
+    section.style.display = 'block';
+    track.replaceChildren();
+    track.innerHTML = '<div style="padding:18px;text-align:center;color:#008b4c;font-weight:700">Slide promo</div>';
     track.style.animation = 'none';
     return;
   }
-  const slides = images.length === 1 ? [images[0], images[0], images[0], images[0]] : [...images, ...images];
-  track.innerHTML = slides.map((url, index) => `
-    <img src="${escapeHtml(url)}" alt="Sponsor Toko Siap Antar" loading="${index < images.length ? 'eager' : 'lazy'}" referrerpolicy="no-referrer" onerror="this.style.display='none'">
+
+  section.style.display = 'block';
+  const repeatedSlides = images.length === 1 ? [images[0], images[0], images[0], images[0]] : [...images, ...images];
+  track.innerHTML = repeatedSlides.map((url, index) => `
+    <img
+      src="${escapeHtml(url)}"
+      alt="Sponsor Toko Siap Antar"
+      loading="${index < images.length ? 'eager' : 'lazy'}"
+      onerror="this.style.display='none'"
+    >
   `).join('');
+
   track.style.animation = '';
 }
 
@@ -584,8 +598,6 @@ onAuthStateChanged(auth, u=>{
   mitraUid = u ? u.uid : '';
   loadProductsFromSheet();
 });
-// Kalau auth lama, load juga pake fungsi asli yang sama, bukan fallback simpel
-setTimeout(()=>{ if(!allProducts.length) loadProductsFromSheet(); }, 3000);
 
 updateCart();
 
