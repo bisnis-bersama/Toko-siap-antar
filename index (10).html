@@ -1,3 +1,4 @@
+<!-- TSA v2026-11-06-navigasi-fix -->
 <!DOCTYPE html>
 <html lang="id">
 <head><style>
@@ -715,6 +716,75 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
       saveCart(getCart());
     }).catch(function(){});
   },4000);
+})();
+</script>
+
+
+<script>
+/* PENYELAMAT NAVIGASI SAJA - kategori, menu, navigasi bawah, header. Tidak sentuh sponsor & produk. */
+(function(){
+  function esc(v){return String(v??'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function fmt(v){var n=Number(String(v??'').replace(/[^\d,-]/g,'').replace(/\./g,'').replace(',','.'));return Number.isFinite(n)&&n?'Rp '+n.toLocaleString('id-ID'):(v?String(v):'Hubungi kami');}
+  function initials(name){var w=String(name||'Mitra').trim().split(/\s+/).filter(Boolean);return w.map(function(x){return Array.from(x)[0].toUpperCase();}).join('').slice(0,5)||'M';}
+  function flag(v){var x=String(v??'').trim().toLowerCase();return v===true||x==='1'||x==='true'||x==='ya'||x==='yes'||x==='aktif';}
+  function labels(pr){var l=[];if(flag(pr.cod))l.push('COD');if(flag(pr.kurir))l.push('Kurir');if(flag(pr.expedisi))l.push('Ekspedisi');return l.length?l.join(' · '):'Belum tersedia';}
+  var activeCat='Semua';
+  function getProds(){return window.__fallbackProds||[];}
+  function renderFiltered(){
+    var el=document.getElementById('products');if(!el)return;
+    var prods=getProds();if(!prods.length)return;
+    var q=(document.getElementById('searchInput')?.value||'').trim().toLowerCase();
+    var list=prods.filter(function(pr){
+      var okText=!q||(pr.name+' '+pr.description+' '+pr.mitraNama).toLowerCase().includes(q);
+      var okCat=true;
+      if(activeCat!=='Semua'&&activeCat!=='__menu'&&activeCat!=='MitraSaya'){okCat=(String(pr.category||'').toLowerCase().includes(activeCat.toLowerCase())||(pr.name+' '+pr.description).toLowerCase().includes(activeCat.toLowerCase()));}
+      return okText&&okCat;
+    });
+    if(!list.length){el.innerHTML='<div class="notice" style="grid-column:1/-1">Produk tidak ditemukan. Kategori: '+esc(activeCat)+'</div>';return;}
+    el.innerHTML=list.map(function(pr){return '<article class="product" data-product-id="'+esc(pr.id)+'"><div class="product-photo">'+(pr.image?'<img loading="lazy" src="'+esc(pr.image)+'" alt="'+esc(pr.name)+'" onerror="this.style.display=\'none\'">':'<span>📦</span>')+'<span class="mitra-tag">🏪 '+esc(initials(pr.mitraNama))+'</span></div><div class="product-info"><div class="product-name">'+esc(pr.name)+'</div><div class="product-desc">'+esc(pr.description||'Pesanan siap antar ±1 jam').slice(0,80)+'</div><div class="price">'+esc(fmt(pr.price))+'</div><div class="product-meta"><strong>Pengiriman:</strong> '+esc(labels(pr))+'</div><div class="actions"><button class="wa" data-action="wa" data-id="'+esc(pr.id)+'">☏</button><button class="cart" data-action="cart" data-id="'+esc(pr.id)+'">🛒</button><button class="buy" data-action="buy" data-id="'+esc(pr.id)+'">Beli</button></div></div></article>';}).join('');
+  }
+  // Kategori - tunggu sampai produk fallback ke-load, cek tiap detik sampai ada
+  var catTries=0;
+  var catTimer=setInterval(function(){
+    var wrap=document.getElementById('categories');if(!wrap)return;
+    if(!getProds().length){catTries++;if(catTries>15)clearInterval(catTimer);return;}
+    clearInterval(catTimer);
+    wrap.addEventListener('click',function(e){
+      var btn=e.target.closest('[data-cat]');if(!btn)return;
+      activeCat=btn.dataset.cat;
+      wrap.querySelectorAll('.cat[data-cat]').forEach(function(el){el.classList.toggle('active',el===btn);});
+      renderFiltered();
+    });
+    var search=document.getElementById('searchInput');
+    if(search){search.addEventListener('input',function(){renderFiltered();});}
+  },1000);
+  // Menu hamburger
+  var backdrop=document.getElementById('menuBackdrop');
+  function openMenu(){if(!backdrop)return;backdrop.classList.add('show');backdrop.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';}
+  function closeMenu(){if(!backdrop)return;backdrop.classList.remove('show');backdrop.setAttribute('aria-hidden','true');document.body.style.overflow='';}
+  document.getElementById('openMenu')?.addEventListener('click',openMenu);
+  document.getElementById('closeMenu')?.addEventListener('click',closeMenu);
+  backdrop?.addEventListener('click',function(e){if(e.target===backdrop)closeMenu();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeMenu();});
+  // Header
+  document.getElementById('refresh')?.addEventListener('click',function(){location.reload();});
+  var themeBtn=document.getElementById('themeToggle');
+  function applyTheme(dark){document.body.classList.toggle('dark-mode',dark);if(themeBtn){themeBtn.textContent=dark?'☀️':'🌙';}try{localStorage.setItem('tsa_dark_mode',dark?'1':'0');}catch(e){}}
+  try{applyTheme(localStorage.getItem('tsa_dark_mode')==='1');}catch(e){}
+  themeBtn?.addEventListener('click',function(){applyTheme(!document.body.classList.contains('dark-mode'));});
+  // Navigasi bawah
+  document.getElementById('homeBtn')?.addEventListener('click',function(){location.href='index.html';});
+  document.getElementById('historyBtn')?.addEventListener('click',function(){location.href='riwayat-pelanggan.html';});
+  document.getElementById('cartBtn')?.addEventListener('click',function(){
+    var cart=[];try{cart=JSON.parse(localStorage.getItem('tsa_cart')||'[]');}catch(e){}
+    if(!cart.length){alert('Keranjang masih kosong.');return;}
+    location.href='keranjang.html';
+  });
+  document.getElementById('profileBtn')?.addEventListener('click',function(){location.href='profil.html';});
+  // Footer sosial
+  document.getElementById('facebook')?.addEventListener('click',function(e){e.preventDefault();alert('Tambahkan tautan Facebook toko pada HTML.');});
+  document.getElementById('instagram')?.addEventListener('click',function(e){e.preventDefault();alert('Tambahkan tautan Instagram toko pada HTML.');});
+  document.getElementById('whatsapp')?.addEventListener('click',function(e){e.preventDefault();window.open('https://wa.me/62895707182299','_blank','noopener');});
 })();
 </script>
 
