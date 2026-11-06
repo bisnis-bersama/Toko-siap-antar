@@ -20,29 +20,8 @@
 :where(code, pre, kbd, samp) {
   font-family: "Optimistic Mono", ui-monospace, monospace;
 }
-</style><style>
-@font-face {
-  font-family: "Optimistic";
-  font-style: normal;
-  font-weight: 400 600;
-  font-display: swap;
-  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Optimistic Mono";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
-}
-:where(html) {
-  font-family: "Optimistic", system-ui, sans-serif;
-}
-:where(code, pre, kbd, samp) {
-  font-family: "Optimistic Mono", ui-monospace, monospace;
-}
 </style><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Pesanan Masuk Mitra - Radius 40km + Proses Sendiri 8 Jam</title>
+<title>Pesanan Masuk Mitra - Toko Siap Antar</title>
 <style>
 :root{--yellow:#ffcc00;--ink:#171717;--green:#008b5a;--muted:#64756f;--bg:#f1f2f4;--line:#e6e7e8}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:#171717;font:14px/1.4 system-ui,sans-serif;padding-bottom:80px}
@@ -143,9 +122,9 @@ function isVisibleToMitra(x){
   // diterima/diproses oleh mitra tetap tampil pada daftar pesanan miliknya.
   const approved=status==='disetujui';
   const alreadyOwned=x.acceptedByMitraUid===userNow?.uid
-    || ['diterima_mitra','dikemas','menunggu_kurir','dikirim','dalam_pengiriman','menunggu_verifikasi','selesai'].includes(status)
+    || ['diterima_mitra','dikemas','menunggu_kurir','dikirim','dalam_pengiriman','selesai'].includes(status)
        && (x.mitraUsahaUid===userNow?.uid || x.mitraUid===userNow?.uid);
-  const progressed=['diterima_mitra','dikemas','menunggu_kurir','dikirim','dalam_pengiriman','menunggu_verifikasi','selesai'].includes(pemenuhan)
+  const progressed=['diterima_mitra','dikemas','menunggu_kurir','dikirim','dalam_pengiriman','selesai'].includes(pemenuhan)
     && (x.acceptedByMitraUid===userNow?.uid || x.mitraUsahaUid===userNow?.uid || x.mitraUid===userNow?.uid);
   return approved || alreadyOwned || progressed;
 }
@@ -174,57 +153,14 @@ function coordsFrom(obj){
 function distanceKm(a,b){const rad=n=>n*Math.PI/180,dLat=rad(b.lat-a.lat),dLng=rad(b.lng-a.lng),h=Math.sin(dLat/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLng/2)**2;return 6371*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h));}
 async function ordersWithCourierAvailability(orders){
   let users=[];
-  try{const snap=await getDocs(collection(db,'users'));users=snap.docs.map(d=>({uid:d.id,...d.data()}));}catch(e){return orders.map(o=>({...o,_kurirRadius40:false,_kurirRadius25:false, _kurirInfo:'Gagal load kurir'}));}
-  const RADIUS_KM = 40;
-  const JAM_KERJA_MS = 8*60*60*1000;
-  const now=Date.now();
-  const couriersAll=users.filter(u=>{
-    const role=norm(u.role);
-    if(!['kurir','mitra_pengantaran','kurir_pengantaran','kurir_toko'].includes(role)) return false;
-    if(u.aktif===false) return false;
-    if(String(u.status||'').toLowerCase()==='nonaktif') return false;
-    // cek online flag
-    const online = u.online===true || u.isOnline===true || String(u.statusOnline||'').toLowerCase()==='online' || String(u.status||'').toLowerCase()==='online';
-    if(!online) return false;
-    // cek GPS timestamp max 8 jam kerja
-    const ts = u.gpsUpdatedAt || u.locationUpdatedAt || u.lastLocationAt || u.onlineAt;
-    let ms=null;
-    if(ts){
-      if(typeof ts.toMillis==='function') ms=ts.toMillis();
-      else if(typeof ts.seconds==='number') ms=ts.seconds*1000;
-      else if(ts instanceof Date) ms=ts.getTime();
-      else if(typeof ts==='number') ms=ts;
-      else if(typeof ts==='string'){ const d=new Date(ts); if(!isNaN(d.getTime())) ms=d.getTime(); }
-    }
-    if(ms===null) return false;
-    if(now - ms > JAM_KERJA_MS) return false;
-    if(now - ms < -60000) return false;
-    return true;
-  }).map(u=>{
-    const c=coordsFrom(u);
-    if(!c) return null;
-    // ambil saldo untuk COD
-    const saldo = Number(u.saldo||u.saldoCOD||u.saldo_cod||u.balance||u.eWallet||u.ewallet||0)||0;
-    return {...c, saldo, uid:u.uid, nama:u.nama||u.namaLengkap||'Kurir'};
-  }).filter(Boolean);
-
+  try{const snap=await getDocs(collection(db,'users'));users=snap.docs.map(d=>({uid:d.id,...d.data()}));}catch(e){return orders.map(o=>({...o,_kurirRadius25:false}));}
+  const couriers=users.filter(u=>['kurir','mitra_pengantaran','kurir_pengantaran'].includes(norm(u.role))&&(!u.status||String(u.status).toLowerCase()==='aktif')&&u.aktif!==false).map(u=>coordsFrom(u)).filter(Boolean);
   return orders.map(o=>{
     const alamat=o.alamatPengiriman||{};
     const customer=coordsFrom({lat:o.lat??alamat.lat??o.lokasi?.lat,lng:o.lng??alamat.lng??o.lokasi?.lng});
     const mitra=coordsFrom({lat:o.mitraLat??o.tokoLat??profile?.mitraLat??profile?.tokoLat??profile?.lat,lng:o.mitraLng??o.tokoLng??profile?.mitraLng??profile?.tokoLng??profile?.lng});
-    if(!customer || !mitra){
-      return {...o,_kurirRadius40:false,_kurirRadius25:false,_kurirInfo:'GPS pelanggan/mitra belum lengkap'};
-    }
-    const dalamRadius = couriersAll.filter(c=>distanceKm(c,customer)<=RADIUS_KM && distanceKm(c,mitra)<=RADIUS_KM);
-    const adaSaldo = dalamRadius.filter(c=>c.saldo>0);
-    const available = dalamRadius.length>0;
-    let info='';
-    if(!available){
-      info=`Tidak ada kurir online dalam ${RADIUS_KM}km dari pelanggan & mitra (online 8 jam). Wajib proses sendiri sesuai metode checkout.`;
-    } else {
-      info=`${dalamRadius.length} kurir online dalam ${RADIUS_KM}km (8 jam kerja) - ${adaSaldo.length} punya saldo COD. Terdekat: ${dalamRadius.slice(0,2).map(c=>`${c.nama} ${distanceKm(c,mitra).toFixed(1)}km saldo Rp${Number(c.saldo).toLocaleString('id-ID')}`).join(', ')}`;
-    }
-    return {...o,_kurirRadius40:available,_kurirRadius25:available,_kurirInfo:info,_kurirDalamRadius:dalamRadius};
+    const available=!!(customer&&mitra&&couriers.some(c=>distanceKm(c,customer)<=25&&distanceKm(c,mitra)<=25));
+    return {...o,_kurirRadius25:available};
   });
 }
 
@@ -259,26 +195,22 @@ function renderOrderRecord(x){
   const menungguKurir=statusRaw==='menunggu_kurir';
   const sudahDikirim=statusRaw==='dikirim'||statusRaw==='dalam_pengiriman';
   const sudahSelesai=statusRaw==='selesai';
-  const menungguVerifikasi=statusRaw==='menunggu_verifikasi';
   const milikSaya=x.acceptedByMitraUid===userNow?.uid||x.mitraUsahaUid===userNow?.uid||x.mitraUid===userNow?.uid;
   const metodeSerah=String(x.metodePenyerahan||'');
   const diprosesSendiri=metodeSerah==='mitra_kirim_sendiri'||metodeSerah==='via_expedisi';
   let pilihanProses='';
   if(milikSaya && statusRaw==='disetujui'){
-    const radiusOk = x._kurirRadius40 || x._kurirRadius25;
-    const infoKurir = x._kurirInfo || '';
-    pilihanProses=`<div class="notice" style="margin-top:8px;background:#f0faf4;border-color:#a8d5b8"><b>📍 Cek Kurir Online Radius 40km (8 Jam Kerja):</b><br>${esc(infoKurir)}</div>
-    <div class="actions" style="margin-top:10px"><button class="btn" type="button" data-order-action="pack-self" data-id="${esc(x.id)}">📦 ${isExpedisi?'Dikemas & Proses Ekspedisi':'Dikemas & Kirim Sendiri (Wajib Proses Sendiri jika tidak ada kurir 40km)'}</button>${!isExpedisi&&radiusOk?`<button class="btn dark" type="button" data-order-action="pack-courier" data-id="${esc(x.id)}">📦 Dikemas & Serahkan ke Kurir (40km)</button>`:''}</div>${!isExpedisi&&!radiusOk?`<div class="meta" style="margin-top:7px;color:#b42318;padding:8px;background:#fff0ed;border:1px solid #f5c6c1;border-radius:8px">⚠️ Kurir tidak tersedia dalam radius 40km dari pelanggan & mitra (online 8 jam). <b>Wajib proses sendiri</b> sesuai metode pengiriman di checkout: <b>${isExpedisi?'via Expedisi':'Siap Antar = antar sendiri oleh mitra'}</b>. Opsi serahkan ke kurir disembunyikan.</div>`:''}<div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
+    pilihanProses=`<div class="actions" style="margin-top:10px"><button class="btn" type="button" data-order-action="pack-self" data-id="${esc(x.id)}">📦 ${isExpedisi?'Dikemas & Proses Ekspedisi':'Dikemas & Kirim Sendiri'}</button>${!isExpedisi&&x._kurirRadius25?`<button class="btn dark" type="button" data-order-action="pack-courier" data-id="${esc(x.id)}">📦 Dikemas & Serahkan ke Kurir</button>`:''}</div>${!isExpedisi&&!x._kurirRadius25?`<div class="meta" style="margin-top:7px;color:#b42318">Kurir tidak tersedia dalam radius 25 km dari pelanggan dan mitra. Opsi serahkan ke kurir disembunyikan.</div>`:''}<div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
   } else if(milikSaya && sudahDikemas && diprosesSendiri){
     pilihanProses=`<div class="actions" style="margin-top:10px"><button class="btn" type="button" data-order-action="mark-shipped" data-id="${esc(x.id)}">🚚 Dikirim</button></div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
   } else if(milikSaya && sudahDikirim && diprosesSendiri){
-    pilihanProses=`<div class="actions" style="margin-top:10px"><button class="btn" type="button" data-order-action="finish-with-receipt" data-id="${esc(x.id)}">📤 Simpan Hasil OCR</button></div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
+    pilihanProses=`<div class="actions" style="margin-top:10px"><button class="btn" type="button" data-order-action="finish-with-receipt" data-id="${esc(x.id)}">✅ Selesai</button></div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
   }
   const resiInfo=sudahSelesai && x.resiOcrText?`<div class="ok" style="margin-top:8px"><b>Resi tersimpan (hasil OCR)</b><div class="meta" style="white-space:pre-wrap;margin-top:5px">${esc(x.resiOcrText)}</div><div class="meta">Berkas: ${esc(x.resiNamaFile||'-')}</div></div>`:'';
   const metodeLabel=x.metodePenyerahan==='mitra_kirim_sendiri'?'Dikirim sendiri oleh mitra':x.metodePenyerahan==='serahkan_ke_kurir'?'Diserahkan ke kurir':x.metodePenyerahan==='via_expedisi'?'Diproses melalui ekspedisi':'';
   const infoPenyerahan=metodeLabel?`<div class="meta">Penyerahan: <b>${metodeLabel}</b></div>`:'';
   const infoMenungguKurir=menungguKurir?'<div class="notice" style="margin-top:8px">Pesanan sudah diserahkan ke antrean kurir. Mitra hanya dapat memantau status; tidak ada aksi pengiriman lagi.</div>':'';
-  return `<article class="item order-collapse" data-id="${esc(x.id)}"><div class="itemtop"><strong style="font-size:13px">${no}</strong><span class="status">${esc(status)}</span></div><div class="meta">ID: ${shortId}...</div>${infoCheckout}<div style="margin-top:10px;padding:10px;background:#f7faf8;border:1px solid #e2eee7;border-radius:10px"><strong style="font-size:12px">👤 DATA PELANGGAN</strong><div style="margin-top:6px"><b>${esc(namaPelanggan)}</b></div><div class="meta">WhatsApp: <a href="https://wa.me/${esc(String(noWa).replace(/\D/g,''))}" target="_blank" rel="noopener" style="color:#087443;font-weight:800">${esc(noWa)}</a></div><div class="meta" style="margin-top:5px">Alamat: ${esc(alamat)}</div><div class="meta" style="margin-top:5px">GPS: ${gpsInfo}</div>${gpsHtml}</div><div style="margin-top:10px;padding:10px;background:#fff;border:1px solid #e6e7e8;border-radius:10px"><strong style="font-size:12px">📦 DATA PESANAN (${items.length} produk)</strong>${itemRows}${x.catatan?`<div class="meta">Catatan pelanggan: ${esc(x.catatan)}</div>`:''}</div>${infoPenyerahan}${infoMenungguKurir}${sudahDikemas?'<div class="ok" style="margin-top:8px">Pesanan sudah dikemas.</div>':''}${sudahDikirim?'<div class="ok" style="margin-top:8px">Pesanan sudah dikirim.</div>':''}${menungguVerifikasi?'<div class="notice" style="margin-top:8px">Bukti sudah dikirim ke Admin. Pesanan menunggu pemeriksaan dan verifikasi saldo.</div>':''}${sudahSelesai?'<div class="ok" style="margin-top:8px">Pesanan sudah diverifikasi Admin dan selesai.</div>':''}${resiInfo}${pilihanProses}</article>`;
+  return `<article class="item order-collapse" data-id="${esc(x.id)}"><div class="itemtop"><strong style="font-size:13px">${no}</strong><span class="status">${esc(status)}</span></div><div class="meta">ID: ${shortId}...</div>${infoCheckout}<div style="margin-top:10px;padding:10px;background:#f7faf8;border:1px solid #e2eee7;border-radius:10px"><strong style="font-size:12px">👤 DATA PELANGGAN</strong><div style="margin-top:6px"><b>${esc(namaPelanggan)}</b></div><div class="meta">WhatsApp: <a href="https://wa.me/${esc(String(noWa).replace(/\D/g,''))}" target="_blank" rel="noopener" style="color:#087443;font-weight:800">${esc(noWa)}</a></div><div class="meta" style="margin-top:5px">Alamat: ${esc(alamat)}</div><div class="meta" style="margin-top:5px">GPS: ${gpsInfo}</div>${gpsHtml}</div><div style="margin-top:10px;padding:10px;background:#fff;border:1px solid #e6e7e8;border-radius:10px"><strong style="font-size:12px">📦 DATA PESANAN (${items.length} produk)</strong>${itemRows}${x.catatan?`<div class="meta">Catatan pelanggan: ${esc(x.catatan)}</div>`:''}</div>${infoPenyerahan}${infoMenungguKurir}${sudahDikemas?'<div class="ok" style="margin-top:8px">Pesanan sudah dikemas.</div>':''}${sudahDikirim?'<div class="ok" style="margin-top:8px">Pesanan sudah dikirim.</div>':''}${resiInfo}${pilihanProses}</article>`;
 }
 async function handleOrderPacking(id, mode, card){
   if(mode==='finish-with-receipt'){
@@ -330,61 +262,12 @@ function loadTesseract(){
   });
   return tesseractLoader;
 }
-async function compressReceiptImage(file){
-  if(!file || !file.type.startsWith('image/')) throw new Error('Pilih foto bukti berformat gambar.');
-  if(!('createImageBitmap' in window)) return file;
-  let bitmap;
-  try{ bitmap=await createImageBitmap(file); }catch(e){ return file; }
-  try{
-    const maxSide=1800, scale=Math.min(1,maxSide/Math.max(bitmap.width,bitmap.height));
-    const canvas=document.createElement('canvas');
-    canvas.width=Math.max(1,Math.round(bitmap.width*scale));
-    canvas.height=Math.max(1,Math.round(bitmap.height*scale));
-    const ctx=canvas.getContext('2d',{alpha:false});
-    ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
-    const blob=await new Promise((resolve,reject)=>{
-      canvas.toBlob(b=>b?resolve(b):reject(new Error('Gagal mengompres foto.')),'image/jpeg',0.84);
-    });
-    if(blob.size>=file.size && scale===1) return file;
-    return new File([blob],(file.name||'bukti').replace(/\.[^.]+$/,'')+'.jpg',{type:'image/jpeg',lastModified:Date.now()});
-  }finally{bitmap.close?.();}
-}
-function uploadReceiptWithProgress(ref,file,metadata,onProgress){
-  return new Promise((resolve,reject)=>{
-    const task=uploadBytesResumable(ref,file,metadata);
-    let settled=false;
-    const timer=setTimeout(()=>{
-      if(settled)return;
-      settled=true;task.cancel();
-      reject(new Error('Upload melewati 90 detik. Periksa koneksi internet dan Firebase Storage Rules, lalu coba lagi.'));
-    },90000);
-    task.on('state_changed',
-      snap=>{
-        const pct=snap.totalBytes?Math.round(snap.bytesTransferred/snap.totalBytes*100):0;
-        onProgress?.(pct,snap.bytesTransferred,snap.totalBytes);
-      },
-      error=>{
-        if(settled)return;settled=true;clearTimeout(timer);
-        const code=error?.code||'';
-        const msg=code==='storage/unauthorized'
-          ?'Firebase Storage menolak upload. Periksa Storage Rules untuk folder bukti-pengiriman.'
-          :code==='storage/canceled'
-          ?'Upload dibatalkan.'
-          :`Upload gagal${code?' ('+code+')':''}: ${error?.message||'Periksa koneksi dan konfigurasi Firebase Storage.'}`;
-        reject(new Error(msg));
-      },
-      ()=>{
-        if(settled)return;settled=true;clearTimeout(timer);resolve(task.snapshot);
-      }
-    );
-  });
-}
 function openReceiptModal(orderId){
   let modal=document.getElementById('receiptModal');
   if(!modal){
     modal=document.createElement('div');modal.id='receiptModal';
     modal.style.cssText='position:fixed;inset:0;background:#0009;z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
-    modal.innerHTML=`<div style="background:#fff;border-radius:16px;padding:16px;width:min(100%,480px);max-height:90vh;overflow:auto"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>Upload Resi Pengiriman</b><button type="button" id="closeReceipt" class="btn dark">Tutup</button></div><p class="meta">Unggah foto bukti pengiriman atau resi. Foto hanya digunakan untuk membaca resi dengan OCR. Yang disimpan ke database hanya teks hasil OCR, bukan foto. Pesanan menunggu verifikasi Admin.</p><label for="receiptFile">Foto resi</label><input id="receiptFile" type="file" accept="image/*" capture="environment"><div id="receiptPreview" style="margin-top:8px"></div><div id="ocrProgress" class="meta" style="margin-top:8px"></div><label for="ocrText">Hasil pembacaan OCR (boleh diperiksa)</label><textarea id="ocrText" rows="6" placeholder="Hasil OCR akan tampil di sini"></textarea><div id="receiptError" class="err" style="display:none"></div><div class="actions"><button type="button" class="btn dark" id="runOcrBtn">Baca Resi (OCR)</button><button type="button" class="btn" id="saveReceiptBtn" disabled>Simpan Hasil OCR</button></div></div>`;
+    modal.innerHTML=`<div style="background:#fff;border-radius:16px;padding:16px;width:min(100%,480px);max-height:90vh;overflow:auto"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>Upload Resi Pengiriman</b><button type="button" id="closeReceipt" class="btn dark">Tutup</button></div><p class="meta">Pilih foto resi yang jelas. Sistem akan mengambil tulisan menggunakan OCR, lalu menyimpan teksnya.</p><label for="receiptFile">Foto resi</label><input id="receiptFile" type="file" accept="image/*" capture="environment"><div id="receiptPreview" style="margin-top:8px"></div><div id="ocrProgress" class="meta" style="margin-top:8px"></div><label for="ocrText">Hasil pembacaan OCR (boleh diperiksa)</label><textarea id="ocrText" rows="6" placeholder="Hasil OCR akan tampil di sini"></textarea><div id="receiptError" class="err" style="display:none"></div><div class="actions"><button type="button" class="btn dark" id="runOcrBtn">Baca Resi (OCR)</button><button type="button" class="btn" id="saveReceiptBtn" disabled>Simpan & Selesaikan Pesanan</button></div></div>`;
     document.body.appendChild(modal);
     document.getElementById('closeReceipt').onclick=()=>modal.remove();
     document.getElementById('receiptFile').onchange=e=>{
@@ -405,65 +288,21 @@ function openReceiptModal(orderId){
       finally{runBtn.disabled=false;}
     };
     document.getElementById('saveReceiptBtn').onclick=async()=>{
-      const originalFile=document.getElementById('receiptFile').files?.[0];
-      const textOcr=document.getElementById('ocrText').value.trim();
-      const saveBtn=document.getElementById('saveReceiptBtn');
-      const err=document.getElementById('receiptError');
-      const progress=document.getElementById('ocrProgress');
-      if(!originalFile||!textOcr){err.textContent='Foto resi untuk dibaca dan hasil OCR wajib tersedia.';err.style.display='block';return;}
-      saveBtn.disabled=true;saveBtn.textContent='Menyimpan OCR…';err.style.display='none';
+      const file=document.getElementById('receiptFile').files?.[0];const textOcr=document.getElementById('ocrText').value.trim();const saveBtn=document.getElementById('saveReceiptBtn');const err=document.getElementById('receiptError');
+      if(!file||!textOcr){err.textContent='Foto resi dan hasil OCR wajib tersedia.';err.style.display='block';return;}
+      saveBtn.disabled=true;saveBtn.textContent='Menyimpan…';err.style.display='none';
       try{
-        const uid=userNow.uid;
-        const orderRef=doc(db,'orders',orderId);
+        const ref=doc(db,'orders',orderId);
         await runTransaction(db,async tx=>{
-          const snap=await tx.get(orderRef);
-          if(!snap.exists())throw new Error('Pesanan tidak ditemukan.');
-          const x=snap.data();
+          const snap=await tx.get(ref);if(!snap.exists())throw new Error('Pesanan tidak ditemukan.');
+          const x=snap.data(),uid=userNow.uid;
           if(x.acceptedByMitraUid!==uid&&x.mitraUsahaUid!==uid&&x.mitraUid!==uid)throw new Error('Pesanan ini bukan milik akun mitra Anda.');
           const statusNow=String(x.status||x.statusPemenuhan||'').toLowerCase();
-          if(statusNow!=='dikirim'&&statusNow!=='dalam_pengiriman')throw new Error('Pesanan harus berstatus dikirim sebelum hasil OCR diserahkan.');
-          const oldFulfillments=x.fulfillments&&typeof x.fulfillments==='object'?x.fulfillments:{};
-          const oldPart=oldFulfillments[uid]&&typeof oldFulfillments[uid]==='object'?oldFulfillments[uid]:{};
-          const now=serverTimestamp();
-          const fulfillment={
-            ...oldPart,
-            namaMitra:profile?.namaUsaha||profile?.nama||'Mitra',
-            status:'menunggu_verifikasi',
-            kurirUid:String(x.kurirUid||oldPart.kurirUid||''),
-            bukti:{
-              ...(oldPart.bukti||{}),
-              ocrText:textOcr,
-              namaFile:originalFile.name,
-              mimeType:originalFile.type||'image',
-              ukuranBytes:originalFile.size,
-              uploadedByUid:uid,
-              uploadedAt:now,
-              jenis:'teks_ocr_saja'
-            },
-            updatedAt:now
-          };
-          tx.update(orderRef,{
-            fulfillments:{...oldFulfillments,[uid]:fulfillment},
-            status:'menunggu_verifikasi',
-            statusPemenuhan:'menunggu_verifikasi',
-            resiOcrText:textOcr,
-            resiNamaFile:originalFile.name,
-            resiDibacaOlehUid:uid,
-            resiDibacaAt:now,
-            diserahkanUntukVerifikasiAt:now,
-            updatedAt:now
-          });
+          if(statusNow!=='dikirim'&&statusNow!=='dalam_pengiriman')throw new Error('Pesanan harus berstatus dikirim sebelum diselesaikan.');
+          tx.update(ref,{status:'selesai',statusPemenuhan:'selesai',statusPembayaran:'menunggu_verifikasi',statusPembayaranAt:serverTimestamp(),resiOcrText:textOcr,resiNamaFile:file.name,resiMimeType:file.type||'image',resiUkuranBytes:file.size,resiDibacaOlehUid:uid,resiDibacaAt:serverTimestamp(),selesaiOlehUid:uid,selesaiAt:serverTimestamp(),updatedAt:serverTimestamp()});
         });
-        progress.textContent='Hasil OCR berhasil disimpan. Foto tidak diunggah.';
-        modal.remove();
-        await loadRecords();
-      }catch(e){
-        err.textContent=e.message||'Gagal menyimpan hasil OCR.';
-        err.style.display='block';
-        progress.textContent='Penyimpanan belum berhasil.';
-        saveBtn.disabled=false;
-        saveBtn.textContent='Coba Simpan Lagi';
-      }
+        modal.remove();await loadRecords();
+      }catch(e){err.textContent=e.message||'Gagal menyimpan resi.';err.style.display='block';saveBtn.disabled=false;saveBtn.textContent='Simpan & Selesaikan Pesanan';}
     };
   }
 }
@@ -489,4 +328,4 @@ $("reloadBtn")?.addEventListener("click",()=>loadRecords());$("filter")?.addEven
 
 // AUTO REFRESH pas balik
 window.addEventListener('pageshow', (e)=>{ if(e.persisted) location.reload(); });
-</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
+</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
