@@ -718,5 +718,74 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
 })();
 </script>
 
+
+<script>
+/* PENYELAMAT NAVIGASI SAJA - kategori, menu, navigasi bawah, header. Tidak sentuh sponsor & produk. */
+(function(){
+  function esc(v){return String(v??'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function fmt(v){var n=Number(String(v??'').replace(/[^\d,-]/g,'').replace(/\./g,'').replace(',','.'));return Number.isFinite(n)&&n?'Rp '+n.toLocaleString('id-ID'):(v?String(v):'Hubungi kami');}
+  function initials(name){var w=String(name||'Mitra').trim().split(/\s+/).filter(Boolean);return w.map(function(x){return Array.from(x)[0].toUpperCase();}).join('').slice(0,5)||'M';}
+  function flag(v){var x=String(v??'').trim().toLowerCase();return v===true||x==='1'||x==='true'||x==='ya'||x==='yes'||x==='aktif';}
+  function labels(pr){var l=[];if(flag(pr.cod))l.push('COD');if(flag(pr.kurir))l.push('Kurir');if(flag(pr.expedisi))l.push('Ekspedisi');return l.length?l.join(' · '):'Belum tersedia';}
+  var activeCat='Semua';
+  function getProds(){return window.__fallbackProds||[];}
+  function renderFiltered(){
+    var el=document.getElementById('products');if(!el)return;
+    var prods=getProds();if(!prods.length)return;
+    var q=(document.getElementById('searchInput')?.value||'').trim().toLowerCase();
+    var list=prods.filter(function(pr){
+      var okText=!q||(pr.name+' '+pr.description+' '+pr.mitraNama).toLowerCase().includes(q);
+      var okCat=true;
+      if(activeCat!=='Semua'&&activeCat!=='__menu'&&activeCat!=='MitraSaya'){okCat=(String(pr.category||'').toLowerCase().includes(activeCat.toLowerCase())||(pr.name+' '+pr.description).toLowerCase().includes(activeCat.toLowerCase()));}
+      return okText&&okCat;
+    });
+    if(!list.length){el.innerHTML='<div class="notice" style="grid-column:1/-1">Produk tidak ditemukan. Kategori: '+esc(activeCat)+'</div>';return;}
+    el.innerHTML=list.map(function(pr){return '<article class="product" data-product-id="'+esc(pr.id)+'"><div class="product-photo">'+(pr.image?'<img loading="lazy" src="'+esc(pr.image)+'" alt="'+esc(pr.name)+'" onerror="this.style.display=\'none\'">':'<span>📦</span>')+'<span class="mitra-tag">🏪 '+esc(initials(pr.mitraNama))+'</span></div><div class="product-info"><div class="product-name">'+esc(pr.name)+'</div><div class="product-desc">'+esc(pr.description||'Pesanan siap antar ±1 jam').slice(0,80)+'</div><div class="price">'+esc(fmt(pr.price))+'</div><div class="product-meta"><strong>Pengiriman:</strong> '+esc(labels(pr))+'</div><div class="actions"><button class="wa" data-action="wa" data-id="'+esc(pr.id)+'">☏</button><button class="cart" data-action="cart" data-id="'+esc(pr.id)+'">🛒</button><button class="buy" data-action="buy" data-id="'+esc(pr.id)+'">Beli</button></div></div></article>';}).join('');
+  }
+  // Kategori - tunggu sampai produk fallback ke-load, cek tiap detik sampai ada
+  var catTries=0;
+  var catTimer=setInterval(function(){
+    var wrap=document.getElementById('categories');if(!wrap)return;
+    if(!getProds().length){catTries++;if(catTries>15)clearInterval(catTimer);return;}
+    clearInterval(catTimer);
+    wrap.addEventListener('click',function(e){
+      var btn=e.target.closest('[data-cat]');if(!btn)return;
+      activeCat=btn.dataset.cat;
+      wrap.querySelectorAll('.cat[data-cat]').forEach(function(el){el.classList.toggle('active',el===btn);});
+      renderFiltered();
+    });
+    var search=document.getElementById('searchInput');
+    if(search){search.addEventListener('input',function(){renderFiltered();});}
+  },1000);
+  // Menu hamburger
+  var backdrop=document.getElementById('menuBackdrop');
+  function openMenu(){if(!backdrop)return;backdrop.classList.add('show');backdrop.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';}
+  function closeMenu(){if(!backdrop)return;backdrop.classList.remove('show');backdrop.setAttribute('aria-hidden','true');document.body.style.overflow='';}
+  document.getElementById('openMenu')?.addEventListener('click',openMenu);
+  document.getElementById('closeMenu')?.addEventListener('click',closeMenu);
+  backdrop?.addEventListener('click',function(e){if(e.target===backdrop)closeMenu();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeMenu();});
+  // Header
+  document.getElementById('refresh')?.addEventListener('click',function(){location.reload();});
+  var themeBtn=document.getElementById('themeToggle');
+  function applyTheme(dark){document.body.classList.toggle('dark-mode',dark);if(themeBtn){themeBtn.textContent=dark?'☀️':'🌙';}try{localStorage.setItem('tsa_dark_mode',dark?'1':'0');}catch(e){}}
+  try{applyTheme(localStorage.getItem('tsa_dark_mode')==='1');}catch(e){}
+  themeBtn?.addEventListener('click',function(){applyTheme(!document.body.classList.contains('dark-mode'));});
+  // Navigasi bawah
+  document.getElementById('homeBtn')?.addEventListener('click',function(){location.href='index.html';});
+  document.getElementById('historyBtn')?.addEventListener('click',function(){location.href='riwayat-pelanggan.html';});
+  document.getElementById('cartBtn')?.addEventListener('click',function(){
+    var cart=[];try{cart=JSON.parse(localStorage.getItem('tsa_cart')||'[]');}catch(e){}
+    if(!cart.length){alert('Keranjang masih kosong.');return;}
+    location.href='keranjang.html';
+  });
+  document.getElementById('profileBtn')?.addEventListener('click',function(){location.href='profil.html';});
+  // Footer sosial
+  document.getElementById('facebook')?.addEventListener('click',function(e){e.preventDefault();alert('Tambahkan tautan Facebook toko pada HTML.');});
+  document.getElementById('instagram')?.addEventListener('click',function(e){e.preventDefault();alert('Tambahkan tautan Instagram toko pada HTML.');});
+  document.getElementById('whatsapp')?.addEventListener('click',function(e){e.preventDefault();window.open('https://wa.me/62895707182299','_blank','noopener');});
+})();
+</script>
+
 <script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
 </html>
