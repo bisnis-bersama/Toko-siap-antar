@@ -1,4 +1,4 @@
-<!-- TSA v2026-11-06-navigasi-fix -->
+<!-- TSA v2026-11-06-enteng -->
 <!DOCTYPE html>
 <html lang="id">
 <head><style>
@@ -297,7 +297,7 @@ function convertImage(url) {
   // Link Google Drive biasa diubah menjadi URL thumbnail agar bisa dimuat sebagai gambar.
   const driveId = s.match(/(?:id=|\/d\/)([A-Za-z0-9_-]{15,})/);
   if (driveId && /drive\.google\.com/i.test(s)) {
-    return 'https://drive.google.com/thumbnail?id=' + driveId[1] + '&sz=w1200';
+    return 'https://drive.google.com/thumbnail?id=' + driveId[1] + '&sz=w800';
   }
   return s;
 }
@@ -656,7 +656,7 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
 <script>
 /* PENYELAMAT SPONSOR SAJA - tidak sentuh produk sama sekali. Hanya isi promoTrack dari kolom N. */
 (function(){
-  function conv(u){if(!u)return '';var s=String(u).trim();if(s.indexOf('data:image')===0)return s;var m=s.match(/(?:[?&]id=|\/d\/)([A-Za-z0-9_-]{15,})/);if(m&&/drive\.google\.com/i.test(s))return 'https://drive.google.com/thumbnail?id='+m[1]+'&sz=w1200';return s;}
+  function conv(u){if(!u)return '';var s=String(u).trim();if(s.indexOf('data:image')===0)return s;var m=s.match(/(?:[?&]id=|\/d\/)([A-Za-z0-9_-]{15,})/);if(m&&/drive\.google\.com/i.test(s))return 'https://drive.google.com/thumbnail?id='+m[1]+'&sz=w800';return s;}
   function esc(v){return String(v??'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   setTimeout(function(){
     var track=document.getElementById('promoTrack');if(!track)return;
@@ -670,7 +670,7 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
         if(imgs.length){var slides=imgs.length===1?[imgs[0],imgs[0],imgs[0],imgs[0]]:[...imgs,...imgs];track.innerHTML=slides.map(function(u){return '<img src="'+esc(u)+'" alt="Sponsor" loading="eager" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">';}).join('');track.style.animation='';}
       }).catch(function(){});
     }
-  },4000);
+  },1200);
 })();
 </script>
 
@@ -695,7 +695,7 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
     fetchSheet().then(function(raw){
       var j;try{j=JSON.parse(raw.substring(47).slice(0,-2));}catch(e){var a=raw.indexOf('{'),b=raw.lastIndexOf('}');j=JSON.parse(raw.slice(a,b+1));}
       var rows=(j.table&&j.table.rows)||[];
-      var prods=rows.map(function(row,idx){var c=row.c||[];var g=function(i){return (c[i]&&c[i].v)??'';};var name=String(g(2)||'').trim();if(!name)return null;return {id:String(g(1)||idx).trim(),name:name,description:String(g(3)||'').trim(),price:g(4),image:conv(String(g(5)||'').trim()),mitraUid:String(g(6)||'').trim(),mitraNama:String(g(7)||'').trim()||'Mitra',category:String(g(8)||'').trim()||'Makanan',cod:g(9),kurir:g(10),expedisi:g(11),stock:g(12)};}).filter(Boolean);
+      var prods=rows.map(function(row,idx){var c=row.c||[];var g=function(i){return (c[i]&&c[i].v)??'';};var name=String(g(2)||'').trim();if(!name)return null;return {id:String(g(1)||idx).trim(),name:name,description:String(g(3)||'').trim(),price:g(4),image:conv(String(g(5)||'').trim()),mitraUid:String(g(6)||'').trim(),mitraNama:String(g(7)||'').trim()||'Mitra',category:String(g(8)||'').trim()||'Makanan',cod:g(9),kurir:g(10),expedisi:g(11),stock:g(12)};}).filter(Boolean).filter(function(pr, i, arr){return arr.findIndex(function(x){return x.id===pr.id;})===i;});
       if(!prods.length) return;
       window.__fallbackProds=prods;
       el.innerHTML=prods.map(function(pr){return '<article class="product" data-product-id="'+esc(pr.id)+'"><div class="product-photo">'+(pr.image?'<img loading="lazy" src="'+esc(pr.image)+'" alt="'+esc(pr.name)+'" onerror="this.style.display=\'none\'">':'<span>📦</span>')+'<span class="mitra-tag">🏪 '+esc(initials(pr.mitraNama))+'</span></div><div class="product-info"><div class="product-name">'+esc(pr.name)+'</div><div class="product-desc">'+esc(pr.description||'Pesanan siap antar ±1 jam').slice(0,80)+'</div><div class="price">'+esc(fmt(pr.price))+'</div><div class="product-meta"><strong>Pengiriman:</strong> '+esc(labels(pr))+'</div><div class="actions"><button class="wa" data-action="wa" data-id="'+esc(pr.id)+'">☏</button><button class="cart" data-action="cart" data-id="'+esc(pr.id)+'">🛒</button><button class="buy" data-action="buy" data-id="'+esc(pr.id)+'">Beli</button></div></div></article>';}).join('');
@@ -715,7 +715,7 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
       if(search){search.addEventListener('input',function(){var q=search.value.trim().toLowerCase();var list=prods.filter(function(pr){return !q||(pr.name+' '+pr.description+' '+pr.mitraNama).toLowerCase().includes(q);});if(!list.length){el.innerHTML='<div class="notice" style="grid-column:1/-1">Produk tidak ditemukan.</div>';return;}el.innerHTML=list.map(function(pr){return '<article class="product" data-product-id="'+esc(pr.id)+'"><div class="product-photo">'+(pr.image?'<img loading="lazy" src="'+esc(pr.image)+'" alt="'+esc(pr.name)+'" onerror="this.style.display=\'none\'">':'<span>📦</span>')+'<span class="mitra-tag">🏪 '+esc(initials(pr.mitraNama))+'</span></div><div class="product-info"><div class="product-name">'+esc(pr.name)+'</div><div class="product-desc">'+esc(pr.description||'Pesanan siap antar ±1 jam').slice(0,80)+'</div><div class="price">'+esc(fmt(pr.price))+'</div><div class="product-meta"><strong>Pengiriman:</strong> '+esc(labels(pr))+'</div><div class="actions"><button class="wa" data-action="wa" data-id="'+esc(pr.id)+'">☏</button><button class="cart" data-action="cart" data-id="'+esc(pr.id)+'">🛒</button><button class="buy" data-action="buy" data-id="'+esc(pr.id)+'">Beli</button></div></div></article>';}).join('');});}
       saveCart(getCart());
     }).catch(function(){});
-  },4000);
+  },1200);
 })();
 </script>
 
