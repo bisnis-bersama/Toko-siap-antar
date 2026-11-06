@@ -1,6 +1,27 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
+<head><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#00a85a">
@@ -300,43 +321,43 @@ function deliveryLabels(p){
   return labels.length ? labels.join(' · ') : 'Belum tersedia';
 }
 
-/* SLIDE SPONSOR: mengambil link gambar dari kolom N (indeks 13). */
+/* SLIDE SPONSOR: baca kolom N (indeks 13) - termasuk baris yang cuma ada kolom N doang (baris 3-5) */
 function renderSponsorSlides(rows) {
   const section = document.getElementById('sponsorPromo');
   const track = document.getElementById('promoTrack');
   if (!section || !track) return;
-
-  const sponsorLinks = [...new Set(
-    rows.map(row => {
-      const cells = row.c || [];
-      return String(cells[13]?.v ?? cells[13]?.f ?? '').trim();
-    }).filter(url => /^https?:\/\//i.test(url))
-  )];
-
-  const images = sponsorLinks.map(convertImage).filter(Boolean);
-
+  const links = [];
+  (rows || []).forEach(row => {
+    const cells = row?.c || [];
+    const cell = cells[13];
+    if (!cell) return;
+    [cell.v, cell.f, cell.p].forEach(val => {
+      if (val == null) return;
+      if (typeof val === 'object') { Object.values(val).forEach(v2 => { if (typeof v2 === 'string') (v2.match(/https?:\/\/[^\s"'<>,
+]+/ig) || []).forEach(u => links.push(u)); }); return; }
+      if (typeof val !== 'string') return;
+      (val.replace(/&amp;/g, '&').match(/https?:\/\/[^\s"'<>,
+]+/ig) || []).forEach(u => {
+        u = u.replace(/[),.;]+$/, '');
+        if (/docs\.google\.com\/spreadsheets/i.test(u)) return;
+        if (u.toLowerCase() === 'column 14') return;
+        links.push(u);
+      });
+    });
+  });
+  const images = [...new Set(links.map(convertImage))].filter(Boolean);
+  section.style.display = 'block';
+  track.replaceChildren();
   if (!images.length) {
-    // Tetap tampilkan area slide promo; isi akan muncul saat link sponsor kolom N tersedia.
-    section.style.display = 'block';
-    track.replaceChildren();
     track.innerHTML = '<div style="padding:18px;text-align:center;color:#008b4c;font-weight:700">Slide promo</div>';
     track.style.animation = 'none';
     return;
   }
-
-  section.style.display = 'block';
-  const repeatedSlides = images.length > 1 ? [...images, ...images] : images;
-  track.innerHTML = repeatedSlides.map((url, index) => `
-    <img
-      src="${escapeHtml(url)}"
-      alt="Sponsor Toko Siap Antar"
-      loading="${index < images.length ? 'eager' : 'lazy'}"
-      onerror="this.style.display='none'"
-    >
+  const slides = images.length === 1 ? [images[0], images[0], images[0], images[0]] : [...images, ...images];
+  track.innerHTML = slides.map((url, index) => `
+    <img src="${escapeHtml(url)}" alt="Sponsor Toko Siap Antar" loading="${index < images.length ? 'eager' : 'lazy'}" referrerpolicy="no-referrer" onerror="this.style.display='none'">
   `).join('');
-
-  // Jika hanya satu sponsor, hentikan animasi agar gambar tidak bergeser ke ruang kosong.
-  track.style.animation = images.length > 1 ? '' : 'none';
+  track.style.animation = '';
 }
 
 function renderProducts() {
@@ -630,5 +651,72 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
   });
 })();
 </script>
-</body>
+
+<script>
+/* PENYELAMAT SPONSOR SAJA - tidak sentuh produk sama sekali. Hanya isi promoTrack dari kolom N. */
+(function(){
+  function conv(u){if(!u)return '';var s=String(u).trim();if(s.indexOf('data:image')===0)return s;var m=s.match(/(?:[?&]id=|\/d\/)([A-Za-z0-9_-]{15,})/);if(m&&/drive\.google\.com/i.test(s))return 'https://drive.google.com/thumbnail?id='+m[1]+'&sz=w1200';return s;}
+  function esc(v){return String(v??'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  setTimeout(function(){
+    var track=document.getElementById('promoTrack');if(!track)return;
+    // Kalau promo masih tulisan Slide promo / kosong, ambil alih sponsor aja
+    if(!track.querySelector('img')){
+      var URL='https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=MEMBER';
+      fetch(URL,{cache:'no-store'}).then(function(r){return r.text();}).catch(function(){return fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(URL)).then(function(r2){return r2.text();});}).then(function(raw){
+        var a=raw.indexOf('{'),b=raw.lastIndexOf('}');var j=JSON.parse(raw.slice(a,b+1));var rows=(j.table&&j.table.rows)||[];
+        var links=[];rows.forEach(function(row){var c=row.c||[];var cell=c[13];if(!cell)return;[cell.v,cell.f,cell.p].forEach(function(val){if(!val)return;if(typeof val==='object'){Object.values(val).forEach(function(v2){if(typeof v2==='string')(v2.match(/https?:\/\/[^\s"'<>,\n]+/ig)||[]).forEach(function(u){links.push(u);});});return;}if(typeof val!=='string')return;(val.replace(/&amp;/g,'&').match(/https?:\/\/[^\s"'<>,\n]+/ig)||[]).forEach(function(u){u=u.replace(/[),.;]+$/,'');if(/docs\.google\.com\/spreadsheets/i.test(u))return;if(u.toLowerCase()==='column 14')return;links.push(u);});});});
+        var imgs=[...new Set(links.map(conv))].filter(Boolean);
+        if(imgs.length){var slides=imgs.length===1?[imgs[0],imgs[0],imgs[0],imgs[0]]:[...imgs,...imgs];track.innerHTML=slides.map(function(u){return '<img src="'+esc(u)+'" alt="Sponsor" loading="eager" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">';}).join('');track.style.animation='';}
+      }).catch(function(){});
+    }
+  },4000);
+})();
+</script>
+
+
+<script>
+/* PENYELAMAT PRODUK SAJA - tidak sentuh sponsor sama sekali. Hanya isi #products kalau masih stuck Memuat. */
+(function(){
+  function esc(v){return String(v??'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function fmt(v){var n=Number(String(v??'').replace(/[^\d,-]/g,'').replace(/\./g,'').replace(',','.'));return Number.isFinite(n)&&n?'Rp '+n.toLocaleString('id-ID'):(v?String(v):'Hubungi kami');}
+  function conv(u){if(!u)return '';var s=String(u).trim();if(/^data:image\//i.test(s))return s;if(/^\/9j\//i.test(s))return 'data:image/jpeg;base64,'+s;if(/^iVBORw0KGgo/.test(s))return 'data:image/png;base64,'+s;var m=s.match(/(?:[?&]id=|\/d\/)([A-Za-z0-9_-]{15,})/);if(m&&/drive\.google\.com/i.test(s))return 'https://drive.google.com/uc?export=view&id='+m[1];return s;}
+  function initials(name){var w=String(name||'Mitra').trim().split(/\s+/).filter(Boolean);return w.map(function(x){return Array.from(x)[0].toUpperCase();}).join('').slice(0,5)||'M';}
+  function flag(v){var x=String(v??'').trim().toLowerCase();return v===true||x==='1'||x==='true'||x==='ya'||x==='yes'||x==='aktif';}
+  function labels(pr){var l=[];if(flag(pr.cod))l.push('COD');if(flag(pr.kurir))l.push('Kurir');if(flag(pr.expedisi))l.push('Ekspedisi');return l.length?l.join(' · '):'Belum tersedia';}
+  function getCart(){try{var c=JSON.parse(localStorage.getItem('tsa_cart')||'[]');return Array.isArray(c)?c:[];}catch(e){return [];}}
+  function saveCart(c){try{localStorage.setItem('tsa_cart',JSON.stringify(c));}catch(e){} var el=document.getElementById('cartCount');if(el)el.textContent=c.reduce(function(s,it){return s+(Number(it.qty)||0);},0);}
+  setTimeout(function(){
+    var el=document.getElementById('products');if(!el)return;
+    var stuck=/Memuat|gagal/i.test(el.textContent||'')||!el.querySelector('.product');
+    if(!stuck) return;
+    var URL='https://docs.google.com/spreadsheets/d/1H23wsTKmR1grQgSAqULbUCM9wQdfx5u6RHJwrrbROG0/gviz/tq?sheet=MEMBER';
+    function fetchSheet(){return fetch(URL,{cache:'no-store'}).then(function(r){return r.text();}).catch(function(){return fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(URL)).then(function(r2){return r2.text();});});}
+    fetchSheet().then(function(raw){
+      var j;try{j=JSON.parse(raw.substring(47).slice(0,-2));}catch(e){var a=raw.indexOf('{'),b=raw.lastIndexOf('}');j=JSON.parse(raw.slice(a,b+1));}
+      var rows=(j.table&&j.table.rows)||[];
+      var prods=rows.map(function(row,idx){var c=row.c||[];var g=function(i){return (c[i]&&c[i].v)??'';};var name=String(g(2)||'').trim();if(!name)return null;return {id:String(g(1)||idx).trim(),name:name,description:String(g(3)||'').trim(),price:g(4),image:conv(String(g(5)||'').trim()),mitraUid:String(g(6)||'').trim(),mitraNama:String(g(7)||'').trim()||'Mitra',category:String(g(8)||'').trim()||'Makanan',cod:g(9),kurir:g(10),expedisi:g(11),stock:g(12)};}).filter(Boolean);
+      if(!prods.length) return;
+      window.__fallbackProds=prods;
+      el.innerHTML=prods.map(function(pr){return '<article class="product" data-product-id="'+esc(pr.id)+'"><div class="product-photo">'+(pr.image?'<img loading="lazy" src="'+esc(pr.image)+'" alt="'+esc(pr.name)+'" onerror="this.style.display=\'none\'">':'<span>📦</span>')+'<span class="mitra-tag">🏪 '+esc(initials(pr.mitraNama))+'</span></div><div class="product-info"><div class="product-name">'+esc(pr.name)+'</div><div class="product-desc">'+esc(pr.description||'Pesanan siap antar ±1 jam').slice(0,80)+'</div><div class="price">'+esc(fmt(pr.price))+'</div><div class="product-meta"><strong>Pengiriman:</strong> '+esc(labels(pr))+'</div><div class="actions"><button class="wa" data-action="wa" data-id="'+esc(pr.id)+'">☏</button><button class="cart" data-action="cart" data-id="'+esc(pr.id)+'">🛒</button><button class="buy" data-action="buy" data-id="'+esc(pr.id)+'">Beli</button></div></div></article>';}).join('');
+      // Klik WA / Keranjang / Beli - versi fallback tanpa Firestore, WA ke admin
+      el.addEventListener('click',function(e){
+        var btn=e.target.closest('button[data-action]');if(!btn)return;
+        var pr=prods.find(function(x){return x.id===btn.dataset.id;});if(!pr)return;
+        if(btn.dataset.action==='wa'){window.open('https://wa.me/62895707182299?text='+encodeURIComponent('Halo, saya mau tanya produk: '+pr.name+' - '+fmt(pr.price)+' (Mitra: '+pr.mitraNama+')'),'_blank');return;}
+        var cart=getCart();var ex=cart.find(function(x){return x.id===pr.id;});
+        if(ex){ex.qty=(Number(ex.qty)||0)+1;}else{cart.push({id:pr.id,name:pr.name,price:pr.price,qty:1,mitraUid:pr.mitraUid,mitraNama:pr.mitraNama,image:pr.image,cod:pr.cod,kurir:pr.kurir,expedisi:pr.expedisi,stock:pr.stock,category:pr.category});}
+        saveCart(cart);
+        if(btn.dataset.action==='buy'){location.href='keranjang.html';return;}
+        btn.textContent='✓';setTimeout(function(){if(btn.isConnected)btn.textContent='🛒';},700);
+      });
+      // Search + kategori di fallback
+      var search=document.getElementById('searchInput');
+      if(search){search.addEventListener('input',function(){var q=search.value.trim().toLowerCase();var list=prods.filter(function(pr){return !q||(pr.name+' '+pr.description+' '+pr.mitraNama).toLowerCase().includes(q);});if(!list.length){el.innerHTML='<div class="notice" style="grid-column:1/-1">Produk tidak ditemukan.</div>';return;}el.innerHTML=list.map(function(pr){return '<article class="product" data-product-id="'+esc(pr.id)+'"><div class="product-photo">'+(pr.image?'<img loading="lazy" src="'+esc(pr.image)+'" alt="'+esc(pr.name)+'" onerror="this.style.display=\'none\'">':'<span>📦</span>')+'<span class="mitra-tag">🏪 '+esc(initials(pr.mitraNama))+'</span></div><div class="product-info"><div class="product-name">'+esc(pr.name)+'</div><div class="product-desc">'+esc(pr.description||'Pesanan siap antar ±1 jam').slice(0,80)+'</div><div class="price">'+esc(fmt(pr.price))+'</div><div class="product-meta"><strong>Pengiriman:</strong> '+esc(labels(pr))+'</div><div class="actions"><button class="wa" data-action="wa" data-id="'+esc(pr.id)+'">☏</button><button class="cart" data-action="cart" data-id="'+esc(pr.id)+'">🛒</button><button class="buy" data-action="buy" data-id="'+esc(pr.id)+'">Beli</button></div></div></article>';}).join('');});}
+      saveCart(getCart());
+    }).catch(function(){});
+  },4000);
+})();
+</script>
+
+<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
 </html>
