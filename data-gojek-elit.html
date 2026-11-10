@@ -72,23 +72,24 @@ nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(520px,
  const satellite=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles © Esri',maxZoom:19});
  road.addTo(map); L.control.zoom({position:'bottomright'}).addTo(map);
  marker=L.marker(map.getCenter(),{draggable:true}).addTo(map); pickupPoint=map.getCenter();
- let routeLine=null,routeBusy=false,routeGeometry=null;
+ let routeLine=null,routeGeometry=null,routeDistanceKm=null,routeRequestId=0;
  async function drawRoute(){
-   if(!pickupPoint||!destinationPoint){if(routeLine){map.removeLayer(routeLine);routeLine=null}routeGeometry=null;update();return}
-   if(routeBusy)return;routeBusy=true;
+   const requestId=++routeRequestId;routeDistanceKm=null;routeGeometry=null;
+   if(routeLine){map.removeLayer(routeLine);routeLine=null}
+   if(!pickupPoint||!destinationPoint){update();return}
+   const validPoint=p=>Number.isFinite(Number(p.lat))&&Number.isFinite(Number(p.lng))&&Math.abs(Number(p.lat))<=90&&Math.abs(Number(p.lng))<=180&&!(Number(p.lat)===0&&Number(p.lng)===0);
+   if(!validPoint(pickupPoint)||!validPoint(destinationPoint)){update();toast('Koordinat jemput atau tujuan tidak valid.');return}
+   update();
    try{
-     const url=`https://router.project-osrm.org/route/v1/driving/${pickupPoint.lng},${pickupPoint.lat};${destinationPoint.lng},${destinationPoint.lat}?overview=full&geometries=geojson`;
-     const response=await fetch(url);const data=await response.json();
-     if(!data.routes||!data.routes[0])throw new Error('route unavailable');
-     const r=data.routes[0];routeGeometry=r.geometry.coordinates;
-     const latlngs=routeGeometry.map(c=>[c[1],c[0]]);
-     if(routeLine)map.removeLayer(routeLine);
-     routeLine=L.polyline(latlngs,{color:'#00a86b',weight:5,opacity:.9,lineCap:'round'}).addTo(map);
-     map.fitBounds(routeLine.getBounds(),{padding:[35,35]});
-     $('distance').textContent=(r.distance/1000).toFixed(1)+' km';
-     update(r.distance/1000);
-   }catch(e){routeGeometry=null;toast('Rute jalan gagal dimuat. Periksa koneksi atau coba lagi.');update()}
-   finally{routeBusy=false}
+     const a=pickupPoint,b=destinationPoint;
+     const response=await fetch(`https://router.project-osrm.org/route/v1/driving/${a.lng},${a.lat};${b.lng},${b.lat}?overview=full&geometries=geojson`);
+     if(!response.ok)throw new Error('route service error');
+     const data=await response.json();if(requestId!==routeRequestId)return;
+     if(!data.routes||!data.routes[0]||!Number.isFinite(data.routes[0].distance)||!Array.isArray(data.routes[0].geometry?.coordinates))throw new Error('route unavailable');
+     const r=data.routes[0];routeGeometry=r.geometry.coordinates;routeDistanceKm=r.distance/1000;
+     routeLine=L.polyline(routeGeometry.map(c=>[c[1],c[0]]),{color:'#00a86b',weight:5,opacity:.9,lineCap:'round'}).addTo(map);
+     map.fitBounds(routeLine.getBounds(),{padding:[35,35]});update();
+   }catch(e){if(requestId!==routeRequestId)return;routeDistanceKm=null;routeGeometry=null;toast('Rute jalan gagal dimuat. Order belum bisa dibuat; coba hitung rute lagi.');update()}
  }
  marker.on('dragend',()=>{pickupPoint=marker.getLatLng();update();drawRoute()});
  map.on('click',e=>{pickupPoint=e.latlng;marker.setLatLng(e.latlng);update();drawRoute()});
@@ -104,13 +105,14 @@ nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(520px,
  $('destination').addEventListener('blur',()=>{if($('destination').value.trim()&&!destinationPoint)searchDestination()});
  $('pickup').addEventListener('change',async()=>{const p=await geo($('pickup').value);if(p){pickupPoint=p;marker.setLatLng(p);map.setView(p,15);update();drawRoute()}else toast('Lokasi jemput tidak ditemukan.')});
  function distanceKm(a,b){const R=6371,dLat=(b.lat-a.lat)*Math.PI/180,dLon=(b.lng-a.lng)*Math.PI/180;const x=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLon/2)**2;return 2*R*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))}
- function update(routeKm){const valid=pickupPoint&&destinationPoint;let km=valid?(Number.isFinite(routeKm)?routeKm:distanceKm(pickupPoint,destinationPoint)):0;let motor=valid?7000+Math.max(0,km-2)*2500:0,car=valid?12000+Math.max(0,km-2)*4500:0;
- $('distance').textContent=valid?km.toFixed(1)+' km':'— km';$('motorPrice').textContent=valid?money(motor):'Estimasi Rp —';$('carPrice').textContent=valid?money(car):'Estimasi Rp —';$('fare').textContent=valid?money(selected==='motor'?motor:car):'Rp —';$('orderBtn').disabled=!valid||km>40;
- if(km>40) $('orderBtn').textContent='Di luar radius 40 km';else $('orderBtn').textContent='Cari kurir';
+ function update(){const valid=!!(pickupPoint&&destinationPoint);const hasRoute=valid&&Number.isFinite(routeDistanceKm)&&routeDistanceKm>0;const km=hasRoute?routeDistanceKm:0;
+   const motor=hasRoute?7000+Math.max(0,km-2)*2500:0,car=hasRoute?12000+Math.max(0,km-2)*4500:0;
+   $('distance').textContent=hasRoute?km.toFixed(1)+' km':'Menunggu rute';$('motorPrice').textContent=hasRoute?money(motor):'Hitung rute dahulu';$('carPrice').textContent=hasRoute?money(car):'Hitung rute dahulu';$('fare').textContent=hasRoute?money(selected==='motor'?motor:car):'Rp —';
+   $('orderBtn').disabled=!hasRoute||km>40;if(hasRoute&&km>40)$('orderBtn').textContent='Di luar radius 40 km';else if(!hasRoute)$('orderBtn').textContent='Menunggu rute';else $('orderBtn').textContent='Cari kurir';
  }
  document.querySelectorAll('.vehicle').forEach(btn=>btn.onclick=()=>{selected=btn.dataset.type;document.querySelectorAll('.vehicle').forEach(b=>b.classList.toggle('active',b===btn));update()});
- $('orderBtn').onclick=()=>{if(!pickupPoint||!destinationPoint)return;const km=distanceKm(pickupPoint,destinationPoint);if(km>40)return toast('Tujuan di luar radius pencarian kurir 40 km.');const fare=(selected==='motor'?7000+Math.max(0,km-2)*2500:12000+Math.max(0,km-2)*4500);const order={service:selected,fare,estimated_fare:fare,pickup:$('pickup').value||`${pickupPoint.lat.toFixed(5)}, ${pickupPoint.lng.toFixed(5)}`,destination:$('destination').value,distance_km:+km.toFixed(2),pickup_coordinates:{lat:pickupPoint.lat,lng:pickupPoint.lng},destination_coordinates:{lat:destinationPoint.lat,lng:destinationPoint.lng},route_coordinates:routeGeometry,status:'searching',created_at:new Date().toISOString()};localStorage.setItem('gojek_elit_last_order',JSON.stringify(order));window.dispatchEvent(new CustomEvent('gojek-order-request',{detail:order}))};
- $('historyBtn').onclick=()=>toast(localStorage.getItem('gojek_elit_last_order')?'Pesanan terakhir tersimpan di perangkat.':'Belum ada pesanan.');$('helpBtn').onclick=()=>toast('Hubungi layanan bantuan melalui kanal resmi.');$('profileBtn').onclick=()=>toast('Profil pelanggan');
+ $('orderBtn').onclick=()=>{if(!pickupPoint||!destinationPoint)return toast('Lengkapi lokasi jemput dan tujuan.');if(!Number.isFinite(routeDistanceKm)||!Array.isArray(routeGeometry))return toast('Rute jalan belum selesai dihitung.');const km=routeDistanceKm;if(km>40)return toast('Tujuan di luar radius pencarian kurir 40 km.');const fare=(selected==='motor'?7000+Math.max(0,km-2)*2500:12000+Math.max(0,km-2)*4500);const order={service:selected,fare,estimated_fare:fare,pickup:$('pickup').value||`${pickupPoint.lat.toFixed(5)}, ${pickupPoint.lng.toFixed(5)}`,destination:$('destination').value,distance_km:+km.toFixed(2),pickup_coordinates:{lat:pickupPoint.lat,lng:pickupPoint.lng},destination_coordinates:{lat:destinationPoint.lat,lng:destinationPoint.lng},route_coordinates:routeGeometry,status:'searching',created_at:new Date().toISOString()};localStorage.setItem('gojek_elit_last_order',JSON.stringify(order));window.dispatchEvent(new CustomEvent('gojek-order-request',{detail:order}))};
+$('historyBtn').onclick=()=>toast(localStorage.getItem('gojek_elit_last_order')?'Pesanan terakhir tersimpan di perangkat.':'Belum ada pesanan.');$('helpBtn').onclick=()=>toast('Hubungi layanan bantuan melalui kanal resmi.');$('profileBtn').onclick=()=>toast('Profil pelanggan');
  update();
 })();
 </script>
