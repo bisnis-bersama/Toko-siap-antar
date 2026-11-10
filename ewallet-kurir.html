@@ -97,14 +97,14 @@ import {doc,getDoc,collection,query,where,getDocs,addDoc,updateDoc,serverTimesta
 const $=id=>document.getElementById(id),ROLE='kurir';
 let user=null,profile={},profileDocId=null,balance=0;
 // Isi data rekening admin sesuai rekening penerima top-up.
-const ADMIN_PAYMENT={bankName:'BCA / SeaBank / DANA / GoPay',accountNumber:'BCA: 4180734771 · SeaBank: 901341445605 · DANA / GoPay: 082319264646',accountName:'YUDI ALIYUDIN'};
+const ADMIN_PAYMENT={accounts:[{bank:'BCA',number:'4180734771'},{bank:'SeaBank',number:'901341445605'},{bank:'DANA / GoPay',number:'082319264646'}],accountName:'YUDI ALIYUDIN'};
 function renderPaymentInfo(){
  const box=$('paymentInfo'),method=$('method').value;
  box.classList.remove('hidden');
  if(method==='qris'){
    box.innerHTML='<strong>Pembayaran QRIS</strong><div style="margin-top:8px;text-align:center"><img src="./qris.jpg" alt="QRIS admin" style="max-width:100%;width:280px;height:auto;object-fit:contain" onerror="this.parentElement.innerHTML=\'<span class=muted>File qris.jpg belum ditemukan. Letakkan qris.jpg di folder yang sama dengan halaman ini.</span>\'"></div><div class="meta">Scan QRIS untuk pembayaran top-up.</div>';
  }else if(method==='transfer_bank'){
-   box.innerHTML='<strong>Transfer ke rekening admin</strong><div class="detail-grid"><div><span>Bank</span><strong>'+esc(ADMIN_PAYMENT.bankName||'Belum diatur')+'</strong></div><div><span>Nomor rekening</span><strong>'+esc(ADMIN_PAYMENT.accountNumber||'Belum diatur')+'</strong></div><div style="grid-column:1/-1"><span>Nama pemilik</span><strong>'+esc(ADMIN_PAYMENT.accountName||'Belum diatur')+'</strong></div></div><div class="meta">Konfirmasi pembayaran setelah transfer.</div>';
+   box.innerHTML='<strong>Transfer ke rekening admin</strong><div class="detail-grid">'+ADMIN_PAYMENT.accounts.map(a=>'<div><span>'+esc(a.bank)+'</span><strong>'+esc(a.number)+'</strong></div>').join('')+'<div style="grid-column:1/-1"><span>Nama pemilik</span><strong>'+esc(ADMIN_PAYMENT.accountName)+'</strong></div></div><div class="meta">Konfirmasi pembayaran setelah transfer.</div>';
  }else{box.innerHTML='<strong>Metode lain</strong><div class="meta">Silakan konfirmasi metode pembayaran kepada admin.</div>';}
 }
 function getSavedAccounts(){return [1,2,3].map(i=>({bank:profile['bankName'+(i===1?'':i)]||'',number:profile['bankAccountNumber'+(i===1?'':i)]||'',name:profile['bankAccountName'+(i===1?'':i)]||''})).filter(a=>a.bank&&a.number&&a.name);}
