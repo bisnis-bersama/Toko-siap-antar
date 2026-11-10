@@ -88,18 +88,19 @@ Lokasi Saya (Lat)</label>
 
 </div>
 
+<div class="panel" id="orderAktifPanel" style="display:none"><h3 style="margin:0">Pengantaran Aktif</h3><div id="orderAktif"></div></div>
 <div class="panel">
 <h3 style="margin:0">Orderan Masuk Untuk Kamu</h3>
 <p class="muted" style="margin:4px 0">Dipisah per akun login. Kurir lain tidak bisa lihat orderan kamu.</p>
 <div id="infoOrder" style="font-size:12px;color:#666;margin-bottom:6px"></div><div id="listOrder"><div class="muted">Belum ada order. Tekan Refresh.</div></div>
 </div>
 </main>
+<div id="popupSelesai" style="display:none;position:fixed;inset:0;background:#0008;z-index:999;align-items:center;justify-content:center;padding:18px"><div style="background:#fff;border-radius:16px;padding:20px;width:100%;max-width:420px"><h3 style="margin-top:0">Apakah pelanggan sudah diantar?</h3><p>Pastikan pelanggan sudah menerima pesanan. Admin 5% dipotong dari saldo kurir setelah konfirmasi.</p><div class="row"><button class="btn btn-yellow" onclick="window.konfirmasiSelesai(true)">✅ Sudah</button><button class="btn btn-red" onclick="window.konfirmasiSelesai(false)">❌ Belum</button></div></div></div>
 <nav class="bottom"><a href="./index.html">🏠<br>Beranda</a><a href="./ewallet-kurir.html">💳<br>E-Wallet</a><a href="./orderan-kurir.html" class="active">📦<br>Orderan<span class="dot-nav" id="dotNav"></span></a><a href="./profil.html">👤<br>Profil</a></nav>
 
 <script type="module">
 import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-import {getAuth,function bacaSesiEwallet(){ try{ const keys=['fixzy_user','fixzy_session','ewallet_user','user','pelanggan']; for(const k of keys){ const raw=localStorage.getItem(k)||sessionStorage.getItem(k); if(!raw) continue; try{ const o=JSON.parse(raw); if(o&&(o.email||o.uid||o.nama)) return {uid:o.uid||o.id||o.email, email:o.email||'', displayName:o.nama||o.email?.split('@')[0]}; }catch(e){} } }catch(e){} return null; }
-onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import {getFirestore,collection,query,where,getDocs,doc,getDoc,updateDoc,runTransaction,serverTimestamp,arrayRemove} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 const firebaseConfig={apiKey:"AIzaSyBxqZhl6t3RwrXMwVdJeIkg0NzGfwvlweM",authDomain:"toko-siap-antar-9a7bb.firebaseapp.com",projectId:"toko-siap-antar-9a7bb",storageBucket:"toko-siap-antar-9a7bb.firebasestorage.app",messagingSenderId:"351335838712",appId:"1:351335838712:web:6e2b3e0b0e0b0e0b0e0b0e0b"};
 const app=getApps().length?getApp():initializeApp(firebaseConfig);
@@ -140,7 +141,7 @@ $("btnRefresh").onclick=()=>loadOrder();
 async function loadOrder(){
   if(!currentUser) return alert("Login dulu lewat e-wallet");
   myLat=parseFloat($("myLat").value)||myLat; myLng=parseFloat($("myLng").value)||myLng;
-  if(!myLat || !myLng){ $("listOrder").innerHTML='<div class="muted">Isi dulu Lat/Lng kamu atau tekan Pakai GPS Saya.</div>'; return; }
+  if(!Number.isFinite(myLat) || !Number.isFinite(myLng)){ $("listOrder").innerHTML='<div class="muted">Isi dulu Lat/Lng kamu atau tekan Pakai GPS Saya.</div>'; return; }
   $("listOrder").innerHTML='<div class="muted">Mencari orderan untuk kamu...</div>';
   try{
     // Ambil order status mencari_kurir. Filter per-kurir + jarak + saldo dilakukan di sini biar tidak kena permission yang aneh.
@@ -153,6 +154,9 @@ async function loadOrder(){
     const infoEl = document.getElementById('infoOrder');
     if(infoEl) infoEl.textContent = `Total order di Firestore: ${totalOrderFirestore} • yang status mencari_kurir: ${totalMencari}`;
     orderList=[];
+    const active=qs.docs.map(d=>({id:d.id,...d.data()})).filter(o=>o.status==='sedang_diantar' && o.kurirUid===currentUser.uid);
+    const activePanel=document.getElementById('orderAktifPanel'), activeBox=document.getElementById('orderAktif');
+    if(active.length){ activePanel.style.display='block'; activeBox.innerHTML=active.map(o=>`<div class="order"><b>${o.pelangganNama||o.pelangganEmail||'Pelanggan'}</b><div class="muted">Status: sedang_diantar • COD ${rupiah(o.total??o.ongkir)}</div><button class="btn btn-yellow" style="margin-top:8px" onclick="window.selesaiOrder('${o.id}')">✅ Selesai</button></div>`).join(''); } else {activePanel.style.display='none';activeBox.innerHTML='';}
     qs.forEach(d=>{
       const o={id:d.id, ...d.data()};
       if(o.status!=='mencari_kurir') return; // cuma tampilkan yang mencari_kurir, yang lain cuma dihitung di info atas
@@ -219,18 +223,20 @@ window.terimaOrder=async(id)=>{
       const oData=oSnap.data();
       if(oData.status!=='mencari_kurir') throw new Error("Order sudah diambil kurir lain");
       const kData=kSnap.exists()?kSnap.data():{};
-      const saldo=Number(kData.saldo ?? kData.saldoEwallet ?? 0)||0;
+      const saldo=Number(kData.saldo ?? kData.saldoEwallet ?? kData.deposit ?? 0)||0;
       const total=Number(oData.total ?? oData.ongkir ?? 0)||0;
-      const adminFeeTx=Math.round(total*0.05); if(saldo < adminFeeTx) throw new Error(`Saldo kurang. Butuh 5% = ${rupiah(adminFeeTx)}, kamu punya ${rupiah(saldo)}`);
       const adminFee=Math.round(total*0.05);
-      // Tahan deposit: saldo berkurang, saldoDitahan bertambah
-      tx.update(kurirRef,{ saldo: saldo - adminFeeTx, saldoDitahan: (Number(kData.saldoDitahan)||0)+adminFeeTx }); // Hanya potong 5% admin, bukan full total. Dipotong saat terima, dihitung sebagai selesai.
-      tx.update(orderRef,{ status:'diterima_kurir', kurirUid: currentUser.uid, kurirNama: myData.nama||currentUser.email, diterimaAt: serverTimestamp(), depositDitahan: total, adminFee, kurirTerima: total-adminFee });
+      if(saldo < adminFee) throw new Error(`Saldo kurang. Butuh admin 5% = ${rupiah(adminFee)}, kamu punya ${rupiah(saldo)}`);
+      tx.update(orderRef,{ status:'sedang_diantar', kurirUid: currentUser.uid, kurirNama: myData.nama||currentUser.email, diterimaAt: serverTimestamp(), adminFee, kurirTerima: total-adminFee });
     });
-    alert("✅ Order diterima! Deposit ditahan. Sekarang jemput & antar.");
+    alert("✅ Order diterima! Status sedang_diantar. Saldo belum dipotong.");
     loadOrder();
   }catch(e){ alert("Gagal terima: "+e.message); log("Gagal terima: "+e.message); }
 };
+
+let pendingSelesai=null;
+window.selesaiOrder=(id)=>{pendingSelesai=id;const p=document.getElementById('popupSelesai');p.style.display='flex';};
+window.konfirmasiSelesai=async(sudah)=>{const id=pendingSelesai;pendingSelesai=null;document.getElementById('popupSelesai').style.display='none';if(!id)return;if(!sudah){alert('Pengantaran belum selesai. Order tetap aktif dan saldo tidak berubah.');return;}try{await runTransaction(db,async(tx)=>{const orderRef=doc(db,'orders',id),kurirRef=doc(db,'users',currentUser.uid),adminRef=doc(db,'admin_wallets','main');const os=await tx.get(orderRef),ks=await tx.get(kurirRef),as=await tx.get(adminRef);if(!os.exists())throw new Error('Order tidak ditemukan');const o=os.data();if(o.status!=='sedang_diantar'||o.kurirUid!==currentUser.uid)throw new Error('Order bukan milik kamu atau sudah diproses');const k=ks.exists()?ks.data():{};const total=Number(o.total??o.ongkir??0)||0,fee=Math.round(total*.05),saldo=Number(k.saldo??k.saldoEwallet??k.deposit??0)||0;if(saldo<fee)throw new Error('Saldo kurir kurang untuk admin '+rupiah(fee));const a=as.exists()?as.data():{};tx.update(kurirRef,{saldo:saldo-fee,updatedAt:serverTimestamp()});if(as.exists())tx.update(adminRef,{saldo:(Number(a.saldo)||0)+fee,updatedAt:serverTimestamp()});else tx.set(adminRef,{saldo:fee,updatedAt:serverTimestamp()});tx.update(orderRef,{status:'selesai',selesaiAt:serverTimestamp(),adminFee:fee,pelangganSudahDiantar:true});});alert('Pengantaran selesai. Admin 5% dipotong dari saldo kurir dan masuk saldo admin.');const ks=await getDoc(doc(db,'users',currentUser.uid));myData=ks.exists()?ks.data():myData;mySaldo=Number(myData.saldo??myData.saldoEwallet??myData.deposit??0)||0;$('txtSaldo').textContent=rupiah(mySaldo);loadOrder();}catch(e){alert('Gagal menyelesaikan order: '+e.message);}};
 
 window.tolakOrder=async(id)=>{
   if(!confirm("Tolak order ini? Nanti dilempar ke kurir berikutnya dalam 40 km.")) return;
