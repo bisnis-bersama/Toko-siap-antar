@@ -70,9 +70,8 @@ nav.bottom a{color:#aaa;text-decoration:none;font-size:11px;position:relative} n
 <div style="display:flex;justify-content:space-between;align-items:center"><div><b id="namaKurir">Kurir...</b><div class="muted" id="emailKurir">Memuat sesi login dari e-wallet...</div></div><span style="background:#e8f8ee;color:#087443;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800" id="statusLogin">CEK LOGIN</span></div>
 
 <div class="kpi">
-<div><small>Saldo Deposit</small><b id="txtSaldo">Rp 0</b></div>
 <div><small>Order Masuk</small><b id="txtJml">0</b></div>
-<div><small>Admin</small><b>5%</b></div>
+<div><small>Potongan Admin</small><b>5%</b></div>
 </div>
 
 <label>Kendaraan Saya (biar pelanggan yang pilih Mobil bisa nemu kamu)<br><select id="myKendaraan" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;margin:6px 0">
@@ -103,7 +102,7 @@ import {onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/fire
 import {collection,query,where,getDocs,doc,getDoc,updateDoc,runTransaction,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 const $=id=>document.getElementById(id);
 const rupiah=n=>"Rp "+(Number(n)||0).toLocaleString("id-ID");
-let currentUser=null, myData={}, mySaldo=0, myLat=0, myLng=0, orderList=[];
+let currentUser=null, myData={}, mySaldo=0, saldoField="saldoEwallet", myLat=0, myLng=0, orderList=[];
 
 function log(m){ console.log(m); }
 function havKm(lat1,lng1,lat2,lng2){const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180;const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(a));}
@@ -118,8 +117,9 @@ onAuthStateChanged(auth, async (u)=>{
     const snap=await getDoc(doc(db,'users',u.uid));
     myData=snap.exists()?snap.data():{};
     $("namaKurir").textContent=myData.nama||myData.namaUsaha||u.email||"Kurir";
-    mySaldo=Number(myData.saldo ?? myData.saldoEwallet ?? myData.deposit ?? 0)||0;
-    $("txtSaldo").textContent=rupiah(mySaldo);
+    // Gunakan sumber saldo yang sama dengan halaman E-Wallet kurir.
+    saldoField = myData.saldoEwallet != null ? 'saldoEwallet' : (myData.saldoWallet != null ? 'saldoWallet' : (myData.saldo != null ? 'saldo' : 'walletBalance'));
+    mySaldo=Number(myData.saldoEwallet ?? myData.saldoWallet ?? myData.saldo ?? myData.walletBalance ?? 0)||0;
     // Lokasi kurir dari users, kalau ada
     const lat=myData.lat ?? myData.latitude ?? myData.lokasi?.lat;
     const lng=myData.lng ?? myData.longitude ?? myData.lokasi?.lng;
@@ -201,7 +201,7 @@ async function loadOrder(){
         <div style="display:flex;justify-content:space-between"><b>Pelanggan: ${o.pelangganEmail||o.pelangganNama||'Pelanggan'}</b><span style="background:#e8f8ee;color:#087443;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:800">📍 ${o.jarakKeJemput.toFixed(2)} km dari kamu</span></div>
         <div class="muted">Jemput: ${o.jemputAlamat||`GPS ${Number(o.jemputLat||0).toFixed(6)}, ${Number(o.jemputLng||0).toFixed(6)}`}<br><small>📍 GPS Jemput: ${Number(o.jemputLat||0).toFixed(6)}, ${Number(o.jemputLng||0).toFixed(6)}</small><br>Tujuan: ${o.tujuanAlamat||`GPS ${Number(o.tujuanLat||0).toFixed(6)}, ${Number(o.tujuanLng||0).toFixed(6)}`}<br><small>🎯 GPS Tujuan: ${Number(o.tujuanLat||0).toFixed(6)}, ${Number(o.tujuanLng||0).toFixed(6)}</small><br>Jenis: ${o.jenisKendaraan||'motor'} • Jarak kirim: ${(Number(o.jarakKm)||0).toFixed(2)} km<br><a href="https://www.google.com/maps/dir/?api=1&origin=${o.jemputLat},${o.jemputLng}&destination=${o.tujuanLat},${o.tujuanLng}" target="_blank" style="color:#087443;font-weight:700">🗺️ Buka Rute Jemput → Tujuan di Google Maps</a></div>
         <div class="row" style="margin-top:8px"><div style="background:#f9faf8;border:1px solid #eee;border-radius:10px;padding:8px"><small>Ongkir / Total COD</small><b>${rupiah(o.total)}</b></div><div style="background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:8px"><small>Admin 5% dipotong saat selesai</small><b>${rupiah(adminFee)}</b><br><small>Admin 5% = ${rupiah(adminFee)} • Kamu terima ${rupiah(kurirTerima)}</small></div></div>
-        <div class="muted" style="margin-top:6px">Saldo kamu ${rupiah(mySaldo)} • deposit minimum 5% = ${rupiah(Math.ceil(o.total*0.05))}. Admin 5% dipotong dari saldo kamu saat pengantaran selesai. Kamu terima ${rupiah(kurirTerima)} (95%).</div>
+        <div class="muted" style="margin-top:6px">Syarat saldo E-Wallet minimum 5% = ${rupiah(Math.ceil(o.total*0.05))}. Potongan admin 5% diproses dari E-Wallet saat order diterima. Kamu terima ${rupiah(kurirTerima)} (95%).</div>
         <div class="row" style="margin-top:8px">${terimaBtn}<button class="btn btn-red" onclick="window.tolakOrder('${o.id}')">❌ Tolak</button></div>
       </div>`;
     }).join('');
@@ -214,7 +214,7 @@ async function loadOrder(){
 
 window.terimaOrder=async(id)=>{
   const o=orderList.find(x=>x.id===id); if(!o) return;
-  if(!confirm(`Terima order ini?\nTotal COD ${rupiah(o.total)}\nAdmin 5% = ${rupiah(Math.round(o.total*0.05))} akan dipotong dari saldo kamu saat pengantaran selesai.\nAdmin 5% = ${rupiah(Math.round(o.total*0.05))}`)) return;
+  if(!confirm(`Terima order ini?\nTotal COD ${rupiah(o.total)}\nAdmin 5% = ${rupiah(Math.round(o.total*0.05))} akan dipotong dari E-Wallet saat order diterima.\nAdmin 5% = ${rupiah(Math.round(o.total*0.05))}`)) return;
   try{
     await runTransaction(db, async(tx)=>{
       const orderRef=doc(db,'orders',id);
@@ -225,12 +225,13 @@ window.terimaOrder=async(id)=>{
       const oData=oSnap.data();
       if(oData.status!=='mencari_kurir') throw new Error("Order sudah diambil kurir lain");
       const kData=kSnap.exists()?kSnap.data():{};
-      const saldo=Number(kData.saldo ?? kData.saldoEwallet ?? 0)||0;
+      const fieldSaldo = kData.saldoEwallet != null ? 'saldoEwallet' : (kData.saldoWallet != null ? 'saldoWallet' : (kData.saldo != null ? 'saldo' : 'walletBalance'));
+      const saldo=Number(kData.saldoEwallet ?? kData.saldoWallet ?? kData.saldo ?? kData.walletBalance ?? 0)||0;
       const total=Number(oData.ongkirBruto ?? oData.ongkirKurir ?? oData.estimated_fare ?? oData.estimatedFare ?? oData.fare ?? oData.totalOngkir ?? oData.ongkir ?? oData.total)||0;
       const adminFeeTx=Math.ceil(total*0.05); if(saldo < adminFeeTx) throw new Error(`Saldo kurang. Butuh 5% = ${rupiah(adminFeeTx)}, kamu punya ${rupiah(saldo)}`);
       const adminFee=Math.ceil(total*0.05);
-      // Tahan deposit: saldo berkurang, saldoDitahan bertambah
-      tx.update(kurirRef,{ saldo: saldo - adminFeeTx, saldoDitahan: (Number(kData.saldoDitahan)||0)+adminFeeTx }); // Hanya potong 5% admin, bukan full total. Dipotong saat terima, dihitung sebagai selesai.
+      // Potong dari field saldo yang sama dengan halaman E-Wallet, bukan selalu dari field 'saldo'.
+      tx.update(kurirRef,{ [fieldSaldo]: saldo - adminFeeTx, saldoDitahan: (Number(kData.saldoDitahan)||0)+adminFeeTx });
       tx.update(orderRef,{ status:'diterima_kurir', kurirUid: currentUser.uid, kurirNama: myData.nama||currentUser.email, diterimaAt: serverTimestamp(), depositDitahan: total, adminFee, kurirTerima: total-adminFee });
     });
     alert("✅ Order diterima! Deposit ditahan. Sekarang jemput & antar.");
