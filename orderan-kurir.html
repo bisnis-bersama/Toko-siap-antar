@@ -70,8 +70,9 @@ nav.bottom a{color:#aaa;text-decoration:none;font-size:11px;position:relative} n
 <div style="display:flex;justify-content:space-between;align-items:center"><div><b id="namaKurir">Kurir...</b><div class="muted" id="emailKurir">Memuat sesi login dari e-wallet...</div></div><span style="background:#e8f8ee;color:#087443;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800" id="statusLogin">CEK LOGIN</span></div>
 
 <div class="kpi">
+<div><small>Saldo Deposit</small><b id="txtSaldo">Rp 0</b></div>
 <div><small>Order Masuk</small><b id="txtJml">0</b></div>
-<div><small>Potongan Admin</small><b>5%</b></div>
+<div><small>Admin</small><b>5%</b></div>
 </div>
 
 <label>Kendaraan Saya (biar pelanggan yang pilih Mobil bisa nemu kamu)<br><select id="myKendaraan" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;margin:6px 0">
@@ -102,7 +103,7 @@ import {onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/fire
 import {collection,query,where,getDocs,doc,getDoc,updateDoc,runTransaction,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 const $=id=>document.getElementById(id);
 const rupiah=n=>"Rp "+(Number(n)||0).toLocaleString("id-ID");
-let currentUser=null, myData={}, mySaldo=0, saldoField="saldoEwallet", myLat=0, myLng=0, orderList=[];
+let currentUser=null, myData={}, mySaldo=0, myLat=0, myLng=0, orderList=[];
 
 function log(m){ console.log(m); }
 function havKm(lat1,lng1,lat2,lng2){const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180;const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(a));}
@@ -117,9 +118,8 @@ onAuthStateChanged(auth, async (u)=>{
     const snap=await getDoc(doc(db,'users',u.uid));
     myData=snap.exists()?snap.data():{};
     $("namaKurir").textContent=myData.nama||myData.namaUsaha||u.email||"Kurir";
-    // Gunakan sumber saldo yang sama dengan halaman E-Wallet kurir.
-    saldoField = myData.saldoEwallet != null ? 'saldoEwallet' : (myData.saldoWallet != null ? 'saldoWallet' : (myData.saldo != null ? 'saldo' : 'walletBalance'));
-    mySaldo=Number(myData.saldoEwallet ?? myData.saldoWallet ?? myData.saldo ?? myData.walletBalance ?? 0)||0;
+    mySaldo=Number(myData.saldo ?? myData.saldoEwallet ?? myData.deposit ?? 0)||0;
+    $("txtSaldo").textContent=rupiah(mySaldo);
     // Lokasi kurir dari users, kalau ada
     const lat=myData.lat ?? myData.latitude ?? myData.lokasi?.lat;
     const lng=myData.lng ?? myData.longitude ?? myData.lokasi?.lng;
@@ -133,6 +133,23 @@ $("btnGps").onclick=()=>{
   navigator.geolocation.getCurrentPosition(p=>{ myLat=p.coords.latitude; myLng=p.coords.longitude; $("myLat").value=myLat.toFixed(6); $("myLng").value=myLng.toFixed(6); log("GPS kurir: "+myLat+","+myLng); loadOrder(); },e=>alert("Gagal GPS: "+e.message),{enableHighAccuracy:true,timeout:10000});
 };
 $("btnRefresh").onclick=()=>loadOrder();
+
+function ambilKoordinatValid(kandidat){
+  for(const item of kandidat){
+    if(!item) continue;
+    const latRaw=item.lat ?? item.latitude;
+    const lngRaw=item.lng ?? item.longitude ?? item.lon;
+    if(latRaw==null || lngRaw==null) continue;
+    // Terima angka maupun string angka; abaikan nilai kosong dan pasangan 0,0.
+    const lat=typeof latRaw==='string'?Number(latRaw.trim().replace(',', '.')):Number(latRaw);
+    const lng=typeof lngRaw==='string'?Number(lngRaw.trim().replace(',', '.')):Number(lngRaw);
+    if(!Number.isFinite(lat)||!Number.isFinite(lng)) continue;
+    if(lat===0 && lng===0) continue;
+    if(Math.abs(lat)>90 || Math.abs(lng)>180) continue;
+    return {lat,lng};
+  }
+  return null;
+}
 
 async function loadOrder(){
   if(!currentUser) return alert("Login dulu lewat e-wallet");
@@ -161,11 +178,16 @@ async function loadOrder(){
       const targets=[...new Set([...assigned,...selected])];
       const isTarget=targets.length ? targets.includes(uid) : (!offered.length || offered.includes(uid));
       if(!isTarget) return;
-      const rawLat=o.jemputLat ?? o.pickupLat ?? o.pickup_coordinates?.lat ?? o.titikJemput?.lat;
-      const rawLng=o.jemputLng ?? o.pickupLng ?? o.pickup_coordinates?.lng ?? o.titikJemput?.lng;
-      const jLat=Number(rawLat), jLng=Number(rawLng);
-      // 0,0 / koordinat kosong bukan lokasi valid. Jangan hitung jarak palsu.
-      if(rawLat==null || rawLng==null || !Number.isFinite(jLat)||!Number.isFinite(jLng) || (jLat===0 && jLng===0) || Math.abs(jLat)>90 || Math.abs(jLng)>180) return;
+      // Pilih pasangan koordinat pertama yang benar-benar valid. Field lama bernilai 0
+      // tidak boleh menutupi koordinat baru yang tersimpan di map titikJemput.
+      const titikJemputValid=ambilKoordinatValid([
+        {lat:o.jemputLat,lng:o.jemputLng},
+        {lat:o.pickupLat,lng:o.pickupLng},
+        o.pickup_coordinates,
+        o.titikJemput
+      ]);
+      if(!titikJemputValid) return;
+      const jLat=titikJemputValid.lat, jLng=titikJemputValid.lng;
       if(!Number.isFinite(myLat)||!Number.isFinite(myLng)||(myLat===0&&myLng===0)||Math.abs(myLat)>90||Math.abs(myLng)>180) return;
       const jarak=havKm(myLat,myLng,jLat,jLng);
       const fareRaw=o.ongkirBruto ?? o.ongkirKurir ?? o.estimated_fare ?? o.estimatedFare ?? o.fare ?? o.totalOngkir ?? o.ongkir ?? o.total;
@@ -182,7 +204,20 @@ async function loadOrder(){
       if(mySaldo < butuh5) alasan='Saldo '+rupiah(mySaldo)+' kurang. Deposit minimum 5% ongkir '+rupiah(butuh5)+'. Top-up dulu.';
       const labelTarget='Untuk kamu';
       if(jarak>40) return;
-      orderList.push({...o, jemputLat:jLat, jemputLng:jLng, jarakKeJemput:jarak, total, alasan, labelTarget, isTarget:true, bisaTerima: !alasan});
+      // Field tujuan lama bisa berisi 0,0. Lewati pasangan invalid dan lanjutkan
+      // membaca destination_coordinates / titikTujuan yang benar dari Firestore.
+      const titikTujuanValid=ambilKoordinatValid([
+        {lat:o.tujuanLat,lng:o.tujuanLng},
+        {lat:o.destinationLat,lng:o.destinationLng},
+        o.destination_coordinates,
+        o.titikTujuan
+      ]);
+      const tujuanValid=!!titikTujuanValid;
+      const tLat=tujuanValid?titikTujuanValid.lat:null;
+      const tLng=tujuanValid?titikTujuanValid.lng:null;
+      const jemputAlamat=o.jemputAlamat ?? o.alamatJemput ?? o.pickup ?? '';
+      const tujuanAlamat=o.tujuanAlamat ?? o.alamatTujuan ?? o.destination ?? '';
+      orderList.push({...o, jemputLat:jLat, jemputLng:jLng, tujuanLat:tujuanValid?tLat:null, tujuanLng:tujuanValid?tLng:null, tujuanValid, jemputAlamat, tujuanAlamat, jarakKeJemput:jarak, total, alasan, labelTarget, isTarget:true, bisaTerima: !alasan});
     });
     orderList.sort((a,b)=>a.jarakKeJemput-b.jarakKeJemput);
     $("txtJml").textContent=orderList.length;
@@ -197,11 +232,12 @@ async function loadOrder(){
       const alasanHtml = o.alasan ? `<div style="background:#fff0f0;border:1px solid #f5c6c6;padding:8px;border-radius:10px;margin-top:8px;font-size:12px">⚠️ ${o.alasan} - order tetap ditampilkan biar ketahuan, tombol Terima terkunci sampai syarat terpenuhi.</div>` : '';
       const labelHtml = `<div style="margin-top:6px"><span style="background:${o.isTarget?'#e8f8ee':'#fff8d8'};color:#333;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:800">${o.labelTarget}</span> <span style="background:#f0f0f0;padding:3px 8px;border-radius:20px;font-size:11px">Jenis: ${o.jenisKendaraan||'motor'}</span></div>`;
       const terimaBtn = o.bisaTerima ? `<button class="btn btn-yellow" onclick="window.terimaOrder('${o.id}')">✅ Terima</button>` : `<button class="btn btn-yellow" disabled style="opacity:.5">🔒 Terima (terkunci)</button>`;
+      const mapsLink = o.tujuanValid ? `<a href="https://www.google.com/maps/dir/?api=1&origin=${o.jemputLat},${o.jemputLng}&destination=${o.tujuanLat},${o.tujuanLng}" target="_blank" rel="noopener" style="color:#087443;font-weight:700">🗺️ Buka Rute Jemput → Tujuan di Google Maps</a>` : `<small style="color:#b45309;font-weight:700">⚠️ Koordinat tujuan belum tersedia/valid. Periksa lokasi tujuan pelanggan sebelum membuka rute.</small>`;
       return `<div class="order">${labelHtml}${alasanHtml}
         <div style="display:flex;justify-content:space-between"><b>Pelanggan: ${o.pelangganEmail||o.pelangganNama||'Pelanggan'}</b><span style="background:#e8f8ee;color:#087443;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:800">📍 ${o.jarakKeJemput.toFixed(2)} km dari kamu</span></div>
-        <div class="muted">Jemput: ${o.jemputAlamat||`GPS ${Number(o.jemputLat||0).toFixed(6)}, ${Number(o.jemputLng||0).toFixed(6)}`}<br><small>📍 GPS Jemput: ${Number(o.jemputLat||0).toFixed(6)}, ${Number(o.jemputLng||0).toFixed(6)}</small><br>Tujuan: ${o.tujuanAlamat||`GPS ${Number(o.tujuanLat||0).toFixed(6)}, ${Number(o.tujuanLng||0).toFixed(6)}`}<br><small>🎯 GPS Tujuan: ${Number(o.tujuanLat||0).toFixed(6)}, ${Number(o.tujuanLng||0).toFixed(6)}</small><br>Jenis: ${o.jenisKendaraan||'motor'} • Jarak kirim: ${(Number(o.jarakKm)||0).toFixed(2)} km<br><a href="https://www.google.com/maps/dir/?api=1&origin=${o.jemputLat},${o.jemputLng}&destination=${o.tujuanLat},${o.tujuanLng}" target="_blank" style="color:#087443;font-weight:700">🗺️ Buka Rute Jemput → Tujuan di Google Maps</a></div>
+        <div class="muted">Jemput: ${o.jemputAlamat||`GPS ${Number(o.jemputLat||0).toFixed(6)}, ${Number(o.jemputLng||0).toFixed(6)}`}<br><small>📍 GPS Jemput: ${Number(o.jemputLat||0).toFixed(6)}, ${Number(o.jemputLng||0).toFixed(6)}</small><br>Tujuan: ${o.tujuanAlamat|| (o.tujuanValid ? `GPS ${o.tujuanLat.toFixed(6)}, ${o.tujuanLng.toFixed(6)}` : 'Koordinat tujuan belum tersedia')}<br><small>🎯 GPS Tujuan: ${o.tujuanValid ? `${o.tujuanLat.toFixed(6)}, ${o.tujuanLng.toFixed(6)}` : 'Belum tersedia'}</small><br>Jenis: ${o.jenisKendaraan||'motor'} • Jarak kirim: ${(Number(o.jarakKm)||0).toFixed(2)} km<br>${mapsLink}</div>
         <div class="row" style="margin-top:8px"><div style="background:#f9faf8;border:1px solid #eee;border-radius:10px;padding:8px"><small>Ongkir / Total COD</small><b>${rupiah(o.total)}</b></div><div style="background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:8px"><small>Admin 5% dipotong saat selesai</small><b>${rupiah(adminFee)}</b><br><small>Admin 5% = ${rupiah(adminFee)} • Kamu terima ${rupiah(kurirTerima)}</small></div></div>
-        <div class="muted" style="margin-top:6px">Syarat saldo E-Wallet minimum 5% = ${rupiah(Math.ceil(o.total*0.05))}. Potongan admin 5% diproses dari E-Wallet saat order diterima. Kamu terima ${rupiah(kurirTerima)} (95%).</div>
+        <div class="muted" style="margin-top:6px">Saldo kamu ${rupiah(mySaldo)} • deposit minimum 5% = ${rupiah(Math.ceil(o.total*0.05))}. Admin 5% dipotong dari saldo kamu saat pengantaran selesai. Kamu terima ${rupiah(kurirTerima)} (95%).</div>
         <div class="row" style="margin-top:8px">${terimaBtn}<button class="btn btn-red" onclick="window.tolakOrder('${o.id}')">❌ Tolak</button></div>
       </div>`;
     }).join('');
@@ -214,7 +250,7 @@ async function loadOrder(){
 
 window.terimaOrder=async(id)=>{
   const o=orderList.find(x=>x.id===id); if(!o) return;
-  if(!confirm(`Terima order ini?\nTotal COD ${rupiah(o.total)}\nAdmin 5% = ${rupiah(Math.round(o.total*0.05))} akan dipotong dari E-Wallet saat order diterima.\nAdmin 5% = ${rupiah(Math.round(o.total*0.05))}`)) return;
+  if(!confirm(`Terima order ini?\nTotal COD ${rupiah(o.total)}\nAdmin 5% = ${rupiah(Math.round(o.total*0.05))} akan dipotong dari saldo kamu saat pengantaran selesai.\nAdmin 5% = ${rupiah(Math.round(o.total*0.05))}`)) return;
   try{
     await runTransaction(db, async(tx)=>{
       const orderRef=doc(db,'orders',id);
@@ -225,13 +261,12 @@ window.terimaOrder=async(id)=>{
       const oData=oSnap.data();
       if(oData.status!=='mencari_kurir') throw new Error("Order sudah diambil kurir lain");
       const kData=kSnap.exists()?kSnap.data():{};
-      const fieldSaldo = kData.saldoEwallet != null ? 'saldoEwallet' : (kData.saldoWallet != null ? 'saldoWallet' : (kData.saldo != null ? 'saldo' : 'walletBalance'));
-      const saldo=Number(kData.saldoEwallet ?? kData.saldoWallet ?? kData.saldo ?? kData.walletBalance ?? 0)||0;
+      const saldo=Number(kData.saldo ?? kData.saldoEwallet ?? 0)||0;
       const total=Number(oData.ongkirBruto ?? oData.ongkirKurir ?? oData.estimated_fare ?? oData.estimatedFare ?? oData.fare ?? oData.totalOngkir ?? oData.ongkir ?? oData.total)||0;
       const adminFeeTx=Math.ceil(total*0.05); if(saldo < adminFeeTx) throw new Error(`Saldo kurang. Butuh 5% = ${rupiah(adminFeeTx)}, kamu punya ${rupiah(saldo)}`);
       const adminFee=Math.ceil(total*0.05);
-      // Potong dari field saldo yang sama dengan halaman E-Wallet, bukan selalu dari field 'saldo'.
-      tx.update(kurirRef,{ [fieldSaldo]: saldo - adminFeeTx, saldoDitahan: (Number(kData.saldoDitahan)||0)+adminFeeTx });
+      // Tahan deposit: saldo berkurang, saldoDitahan bertambah
+      tx.update(kurirRef,{ saldo: saldo - adminFeeTx, saldoDitahan: (Number(kData.saldoDitahan)||0)+adminFeeTx }); // Hanya potong 5% admin, bukan full total. Dipotong saat terima, dihitung sebagai selesai.
       tx.update(orderRef,{ status:'diterima_kurir', kurirUid: currentUser.uid, kurirNama: myData.nama||currentUser.email, diterimaAt: serverTimestamp(), depositDitahan: total, adminFee, kurirTerima: total-adminFee });
     });
     alert("✅ Order diterima! Deposit ditahan. Sekarang jemput & antar.");
