@@ -106,7 +106,7 @@ Lokasi Saya (Lat)</label>
 // Gunakan instance Firebase yang sama dengan E-Wallet kurir.
 import {auth,db} from "./firebase-config.js";
 import {onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-import {collection,query,where,getDocs,doc,getDoc,updateDoc,runTransaction,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import {collection,query,where,getDocs,doc,getDoc,updateDoc,setDoc,runTransaction,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 const $=id=>document.getElementById(id);
 const rupiah=n=>"Rp "+(Number(n)||0).toLocaleString("id-ID");
 let currentUser=null, myData={}, mySaldo=0, myLat=0, myLng=0, orderList=[], pendingSelesaiId=null;
@@ -265,15 +265,13 @@ window.tutupPopupSelesai=()=>{ pendingSelesaiId=null; $("popupSelesai").classLis
 window.konfirmasiSelesai=async(sudah)=>{
   if(!sudah){ window.tutupPopupSelesai(); return; }
   const id=pendingSelesaiId; if(!id) return;
-  const o=orderList.find(x=>x.id===id);
+  let feeUntukAdmin=0;
   try{
     await runTransaction(db, async(tx)=>{
       const orderRef=doc(db,'orders',id);
       const kurirRef=doc(db,'users',currentUser.uid);
-      const adminRef=doc(db,'admin_wallet','admin');
       const oSnap=await tx.get(orderRef);
       const kSnap=await tx.get(kurirRef);
-      const aSnap=await tx.get(adminRef);
       if(!oSnap.exists()) throw new Error("Order sudah tidak ada");
       const oData=oSnap.data();
       if(!['sedang_mengantar','diterima_kurir'].includes(oData.status)) throw new Error("Order bukan sedang mengantar");
@@ -283,19 +281,28 @@ window.konfirmasiSelesai=async(sudah)=>{
       const saldoDitahan=Number(kData.saldoDitahan||0)||0;
       const total=Number(oData.ongkirBruto ?? oData.ongkirKurir ?? oData.estimated_fare ?? oData.estimatedFare ?? oData.fare ?? oData.totalOngkir ?? oData.ongkir ?? oData.total)||0;
       const adminFee=Math.ceil(total*0.05);
+      feeUntukAdmin=adminFee;
       if(oData.depositDitahan && saldoDitahan >= adminFee){
         tx.update(kurirRef,{ saldoDitahan: saldoDitahan - adminFee });
       } else {
         if(saldo < adminFee) throw new Error(`Saldo kurang untuk admin 5% = ${rupiah(adminFee)}, kamu punya ${rupiah(saldo)}`);
         tx.update(kurirRef,{ saldo: saldo - adminFee });
       }
-      const adminSaldo=aSnap.exists()?Number(aSnap.data().saldo||0):0;
-      tx.set(adminRef,{ saldo: adminSaldo + adminFee, updatedAt: serverTimestamp(), terakhirDariKurir: currentUser.uid, terakhirOrderId: id, terakhirAdminFee: adminFee }, {merge:true});
-      tx.update(orderRef,{ status:'selesai', selesaiAt: serverTimestamp(), adminFee, kurirTerima: total-adminFee, adminDibayar: true });
+      tx.update(orderRef,{ status:'selesai', selesaiAt: serverTimestamp(), adminFee, kurirTerima: total-adminFee, adminDibayar: false, adminMasukTertunda: true });
     });
+    try{
+      const adminRef=doc(db,'admin_wallet','admin');
+      const aSnap=await getDoc(adminRef);
+      const adminSaldo=aSnap.exists()?Number(aSnap.data().saldo||0):0;
+      await setDoc(adminRef,{ saldo: adminSaldo + feeUntukAdmin, updatedAt: serverTimestamp(), terakhirDariKurir: currentUser.uid, terakhirOrderId: id, terakhirAdminFee: feeUntukAdmin }, {merge:true});
+      await updateDoc(doc(db,'orders',id),{ adminDibayar: true, adminMasukTertunda: false });
+    }catch(eAdmin){
+      log("Admin wallet gagal ditulis (Rules belum dibuka), tapi order sudah selesai: "+eAdmin.message+" - adminFee "+feeUntukAdmin+" tercatat di order sebagai adminFeeTertunda.");
+      try{ await updateDoc(doc(db,'orders',id),{ adminFeeTertunda: feeUntukAdmin }); }catch(_){}
+    }
     try{ const snap=await getDoc(doc(db,'users',currentUser.uid)); if(snap.exists()){ mySaldo=Number(snap.data().saldo ?? snap.data().saldoEwallet ?? 0)||0; $("txtSaldo").textContent=rupiah(mySaldo); } }catch(_){}
     window.tutupPopupSelesai();
-    alert("✅ Selesai! Admin 5% sudah dipotong dari saldo kamu & masuk ke e-wallet admin.");
+    alert("✅ Selesai! Admin 5% sudah dipotong dari saldo kamu. Kalau e-wallet admin belum kebuka Rules-nya, fee tercatat di order & bisa dicek nanti.");
     loadOrder();
   }catch(e){ alert("Gagal selesaikan: "+e.message); log("Gagal selesai: "+e.message); }
 };
