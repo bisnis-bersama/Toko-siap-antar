@@ -193,8 +193,8 @@ async function loadOrder(){
     }
     $("listOrder").innerHTML=orderList.map(o=>{
       // Pakai koordinat tujuan yang tersimpan; jangan arahkan Google Maps ke (0,0).
-      const tujuanLatRaw=o.tujuanLat ?? o.destinationLat ?? o.dropoffLat ?? o.tujuan?.lat;
-      const tujuanLngRaw=o.tujuanLng ?? o.destinationLng ?? o.dropoffLng ?? o.tujuan?.lng;
+      const tujuanLatRaw=o.tujuanLat ?? o.tujuanLatitude ?? o.latTujuan ?? o.destinationLat ?? o.dropoffLat ?? o.tujuan?.lat;
+      const tujuanLngRaw=o.tujuanLng ?? o.tujuanLongitude ?? o.lngTujuan ?? o.destinationLng ?? o.dropoffLng ?? o.tujuan?.lng;
       const tujuanLat=Number(tujuanLatRaw), tujuanLng=Number(tujuanLngRaw);
       const tujuanValid=tujuanLatRaw!=null && tujuanLngRaw!=null && Number.isFinite(tujuanLat) && Number.isFinite(tujuanLng) && !(tujuanLat===0 && tujuanLng===0) && Math.abs(tujuanLat)<=90 && Math.abs(tujuanLng)<=180;
       const mapsLink=tujuanValid ? `<a href="https://www.google.com/maps/dir/?api=1&origin=${o.jemputLat},${o.jemputLng}&destination=${tujuanLat},${tujuanLng}" target="_blank" rel="noopener" style="color:#087443;font-weight:700">🗺️ Buka Rute Jemput → Tujuan di Google Maps</a>` : `<span style="color:#b42318;font-weight:700">📍 GPS tujuan belum valid — periksa alamat/koordinat tujuan pelanggan</span>`;
