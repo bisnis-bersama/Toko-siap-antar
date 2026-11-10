@@ -154,133 +154,272 @@ function ambilKoordinatValid(kandidat){
 async function loadOrder(){
   if(!currentUser) return alert("Login dulu lewat e-wallet");
   myLat=parseFloat($("myLat").value)||myLat; myLng=parseFloat($("myLng").value)||myLng;
-  if(!Number.isFinite(myLat)||!Number.isFinite(myLng)||myLat===0&&myLng===0||Math.abs(myLat)>90||Math.abs(myLng)>180){ $("listOrder").innerHTML='<div class="muted">Isi dulu Lat/Lng kamu atau tekan Pakai GPS Saya.</div>'; return; }
-  $("listOrder").innerHTML='<div class="muted">Mencari orderan untuk kamu...</div>';
+  if(!Number.isFinite(myLat)||!Number.isFinite(myLng)||myLat===0&&myLng===0||Math.abs(myLat)>90||Math.abs(myLng)>180){
+    $("listOrder").innerHTML='<div class="muted">Isi dulu Lat/Lng kamu atau tekan Pakai GPS Saya.</div>'; return;
+  }
+  $("listOrder").innerHTML='<div class="muted">Memuat orderan...</div>';
   try{
-    // Ambil order status mencari_kurir. Filter per-kurir + jarak + saldo dilakukan di sini biar tidak kena permission yang aneh.
-    // Rules yang benar: allow read if request.auth != null (lihat bawah)
-    // Ambil SEMUA order, filter status di sini biar ketahuan kalau order kebuat tapi statusnya beda
-    const qs=await getDocs(query(collection(db,'orders'),where('status','==','mencari_kurir')));
-    let totalOrderFirestore = 0, totalMencari = 0;
+    const uid=String(currentUser.uid);
+    const [qs, activeQs]=await Promise.all([
+      getDocs(query(collection(db,'orders'),where('status','==','mencari_kurir'))),
+      getDocs(query(collection(db,'orders'),where('kurirUid','==',uid)))
+    ]);
+    orderList=[];
+    const activeIds=new Set();
+
+    // Order yang sudah diterima kurir tetap ditampilkan setelah halaman di-refresh.
+    activeQs.forEach(d=>{
+      const o={id:d.id,...d.data()};
+      if(!['sedang_mengantar','diterima_kurir'].includes(o.status)) return;
+      if(String(o.kurirUid)!==uid) return;
+      const pickup=ambilKoordinatValid([
+        {lat:o.jemputLat,lng:o.jemputLng},{lat:o.pickupLat,lng:o.pickupLng},
+        o.pickup_coordinates,o.titikJemput
+      ]);
+      const tujuan=ambilKoordinatValid([
+        {lat:o.tujuanLat,lng:o.tujuanLng},{lat:o.destinationLat,lng:o.destinationLng},
+        o.destination_coordinates,o.titikTujuan
+      ]);
+      const fareRaw=o.ongkirBruto ?? o.ongkirKurir ?? o.estimated_fare ?? o.estimatedFare ?? o.fare ?? o.totalOngkir ?? o.ongkir ?? o.total;
+      const total=Number(fareRaw)||0;
+      orderList.push({
+        ...o,total,
+        jemputLat:pickup?.lat ?? null, jemputLng:pickup?.lng ?? null,
+        tujuanLat:tujuan?.lat ?? null, tujuanLng:tujuan?.lng ?? null,
+        tujuanValid:!!tujuan,
+        jemputAlamat:o.jemputAlamat ?? o.alamatJemput ?? o.pickup ?? '',
+        tujuanAlamat:o.tujuanAlamat ?? o.alamatTujuan ?? o.destination ?? '',
+        jarakKeJemput:pickup?havKm(myLat,myLng,pickup.lat,pickup.lng):0,
+        labelTarget:'Order kamu',isTarget:true,bisaTerima:false
+      });
+      activeIds.add(d.id);
+    });
+
+    // Order baru hanya ditawarkan untuk diterima jika belum diambil kurir lain.
     qs.forEach(d=>{
-      const o={id:d.id, ...d.data()};
-      if(o.status!=='mencari_kurir') return;
-      // Order hanya boleh ditampilkan kepada kurir target / yang memang ditawarkan.
-      const uid=String(currentUser.uid);
+      const o={id:d.id,...d.data()};
+      if(o.status!=='mencari_kurir' || activeIds.has(d.id)) return;
       const rejected=[...(Array.isArray(o.ditolakOleh)?o.ditolakOleh:[]),...(Array.isArray(o.rejectedBy)?o.rejectedBy:[])].map(String);
-      // Kurir yang sudah menolak tidak boleh melihat order yang sama lagi.
       if(rejected.includes(uid)) return;
       const offered=Array.isArray(o.ditawarkanKe)?o.ditawarkanKe.map(String):[];
       const selected=Array.isArray(o.kurirPilihanUids)?o.kurirPilihanUids.map(String):[];
-      const assigned=[o.kurirUid,o.kurirTargetUid,o.courierUid,o.courierId,o.assignedCourierUid]
-        .filter(Boolean).map(String);
-      // Customer page mengirim kurirPilihanUids; izinkan semua kurir pilihan.
+      const assigned=[o.kurirUid,o.kurirTargetUid,o.courierUid,o.courierId,o.assignedCourierUid].filter(Boolean).map(String);
       const targets=[...new Set([...assigned,...selected])];
       const isTarget=targets.length ? targets.includes(uid) : (!offered.length || offered.includes(uid));
       if(!isTarget) return;
-      // Pilih pasangan koordinat pertama yang benar-benar valid. Field lama bernilai 0
-      // tidak boleh menutupi koordinat baru yang tersimpan di map titikJemput.
-      const titikJemputValid=ambilKoordinatValid([
-        {lat:o.jemputLat,lng:o.jemputLng},
-        {lat:o.pickupLat,lng:o.pickupLng},
-        o.pickup_coordinates,
-        o.titikJemput
+
+      const pickup=ambilKoordinatValid([
+        {lat:o.jemputLat,lng:o.jemputLng},{lat:o.pickupLat,lng:o.pickupLng},
+        o.pickup_coordinates,o.titikJemput
       ]);
-      if(!titikJemputValid) return;
-      const jLat=titikJemputValid.lat, jLng=titikJemputValid.lng;
-      if(!Number.isFinite(myLat)||!Number.isFinite(myLng)||(myLat===0&&myLng===0)||Math.abs(myLat)>90||Math.abs(myLng)>180) return;
-      const jarak=havKm(myLat,myLng,jLat,jLng);
+      if(!pickup) return;
+      const jarak=havKm(myLat,myLng,pickup.lat,pickup.lng);
       const fareRaw=o.ongkirBruto ?? o.ongkirKurir ?? o.estimated_fare ?? o.estimatedFare ?? o.fare ?? o.totalOngkir ?? o.ongkir ?? o.total;
       const total=Number(fareRaw);
-      // Ongkir yang tidak ada / <=0 tidak boleh lolos sebagai order saldo Rp0.
-      if(fareRaw==null || !Number.isFinite(total) || total<=0) return;
+      if(fareRaw==null || !Number.isFinite(total) || total<=0 || jarak>40) return;
+
       let alasan='';
-      if(jarak>40) alasan='Jarak '+jarak.toFixed(1)+' km > 40 km';
       const orderJenis=String(o.jenisKendaraan||o.kendaraan||o.service||'motor').toLowerCase();
       const myKen=String(document.getElementById('myKendaraan')?.value||myData.kendaraan||myData.jenisKendaraan||'Motor').toLowerCase();
       if(orderJenis.includes('mobil') && !myKen.includes('mobil')) alasan='Order Mobil, kendaraan kamu Motor';
       if(orderJenis.includes('motor') && !myKen.includes('motor')) alasan='Order Motor, kendaraan kamu Mobil';
-      const butuh5=Math.ceil(total*0.05);
-      if(mySaldo < butuh5) alasan='Saldo '+rupiah(mySaldo)+' kurang. Deposit minimum 5% ongkir '+rupiah(butuh5)+'. Top-up dulu.';
-      const labelTarget='Untuk kamu';
-      if(jarak>40) return;
-      // Field tujuan lama bisa berisi 0,0. Lewati pasangan invalid dan lanjutkan
-      // membaca destination_coordinates / titikTujuan yang benar dari Firestore.
-      const titikTujuanValid=ambilKoordinatValid([
-        {lat:o.tujuanLat,lng:o.tujuanLng},
-        {lat:o.destinationLat,lng:o.destinationLng},
-        o.destination_coordinates,
-        o.titikTujuan
+      const fee=Math.ceil(total*0.05);
+      if(mySaldo<fee) alasan='Saldo E-Wallet '+rupiah(mySaldo)+' kurang. Minimal '+rupiah(fee)+'. Top-up dulu.';
+
+      const tujuan=ambilKoordinatValid([
+        {lat:o.tujuanLat,lng:o.tujuanLng},{lat:o.destinationLat,lng:o.destinationLng},
+        o.destination_coordinates,o.titikTujuan
       ]);
-      const tujuanValid=!!titikTujuanValid;
-      const tLat=tujuanValid?titikTujuanValid.lat:null;
-      const tLng=tujuanValid?titikTujuanValid.lng:null;
-      const jemputAlamat=o.jemputAlamat ?? o.alamatJemput ?? o.pickup ?? '';
-      const tujuanAlamat=o.tujuanAlamat ?? o.alamatTujuan ?? o.destination ?? '';
-      orderList.push({...o, jemputLat:jLat, jemputLng:jLng, tujuanLat:tujuanValid?tLat:null, tujuanLng:tujuanValid?tLng:null, tujuanValid, jemputAlamat, tujuanAlamat, jarakKeJemput:jarak, total, alasan, labelTarget, isTarget:true, bisaTerima: !alasan});
+      orderList.push({
+        ...o,total,jemputLat:pickup.lat,jemputLng:pickup.lng,
+        tujuanLat:tujuan?.lat??null,tujuanLng:tujuan?.lng??null,tujuanValid:!!tujuan,
+        jemputAlamat:o.jemputAlamat??o.alamatJemput??o.pickup??'',
+        tujuanAlamat:o.tujuanAlamat??o.alamatTujuan??o.destination??'',
+        jarakKeJemput:jarak,alasan,labelTarget:'Untuk kamu',isTarget:true,bisaTerima:!alasan
+      });
     });
-    orderList.sort((a,b)=>a.jarakKeJemput-b.jarakKeJemput);
+
+    orderList.sort((a,b)=>{
+      const aActive=['sedang_mengantar','diterima_kurir'].includes(a.status)?0:1;
+      const bActive=['sedang_mengantar','diterima_kurir'].includes(b.status)?0:1;
+      return aActive-bActive || a.jarakKeJemput-b.jarakKeJemput;
+    });
     $("txtJml").textContent=orderList.length;
     setDot(orderList.length>0);
     if(!orderList.length){
-      $("listOrder").innerHTML='<div style="background:#fff;border:1px solid #e5e5e5;padding:10px;border-radius:10px">Belum ada order <b>mencari_kurir</b> di Firestore sama sekali. Coba order dulu dari <b>cari-kurir.html</b> sebagai pelanggan, lalu Refresh di sini. Kalau sudah order tapi tetap kosong, cek Rules sudah Publish belum.</div>';
+      $("listOrder").innerHTML='<div style="background:#fff;border:1px solid #e5e5e5;padding:10px;border-radius:10px">Belum ada order untuk kamu. Order yang sudah diterima akan tetap tampil di sini sampai selesai.</div>';
       return;
     }
+
     $("listOrder").innerHTML=orderList.map(o=>{
-      const adminFee=Math.round(o.total*0.05);
-      const kurirTerima=o.total - adminFee; // 95% untuk kurir
-      const alasanHtml = o.alasan ? `<div style="background:#fff0f0;border:1px solid #f5c6c6;padding:8px;border-radius:10px;margin-top:8px;font-size:12px">⚠️ ${o.alasan} - order tetap ditampilkan biar ketahuan, tombol Terima terkunci sampai syarat terpenuhi.</div>` : '';
-      const labelHtml = `<div style="margin-top:6px"><span style="background:${o.isTarget?'#e8f8ee':'#fff8d8'};color:#333;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:800">${o.labelTarget}</span> <span style="background:#f0f0f0;padding:3px 8px;border-radius:20px;font-size:11px">Jenis: ${o.jenisKendaraan||'motor'}</span></div>`;
-      const terimaBtn = o.bisaTerima ? `<button class="btn btn-yellow" onclick="window.terimaOrder('${o.id}')">✅ Terima</button>` : `<button class="btn btn-yellow" disabled style="opacity:.5">🔒 Terima (terkunci)</button>`;
-      const mapsLink = o.tujuanValid ? `<a href="https://www.google.com/maps/dir/?api=1&origin=${o.jemputLat},${o.jemputLng}&destination=${o.tujuanLat},${o.tujuanLng}" target="_blank" rel="noopener" style="color:#087443;font-weight:700">🗺️ Buka Rute Jemput → Tujuan di Google Maps</a>` : `<small style="color:#b45309;font-weight:700">⚠️ Koordinat tujuan belum tersedia/valid. Periksa lokasi tujuan pelanggan sebelum membuka rute.</small>`;
-      return `<div class="order">${labelHtml}${alasanHtml}
-        <div style="display:flex;justify-content:space-between"><b>Pelanggan: ${o.pelangganEmail||o.pelangganNama||'Pelanggan'}</b><span style="background:#e8f8ee;color:#087443;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:800">📍 ${o.jarakKeJemput.toFixed(2)} km dari kamu</span></div>
-        <div class="muted">Jemput: ${o.jemputAlamat||`GPS ${Number(o.jemputLat||0).toFixed(6)}, ${Number(o.jemputLng||0).toFixed(6)}`}<br><small>📍 GPS Jemput: ${Number(o.jemputLat||0).toFixed(6)}, ${Number(o.jemputLng||0).toFixed(6)}</small><br>Tujuan: ${o.tujuanAlamat|| (o.tujuanValid ? `GPS ${o.tujuanLat.toFixed(6)}, ${o.tujuanLng.toFixed(6)}` : 'Koordinat tujuan belum tersedia')}<br><small>🎯 GPS Tujuan: ${o.tujuanValid ? `${o.tujuanLat.toFixed(6)}, ${o.tujuanLng.toFixed(6)}` : 'Belum tersedia'}</small><br>Jenis: ${o.jenisKendaraan||'motor'} • Jarak kirim: ${(Number(o.jarakKm)||0).toFixed(2)} km<br>${mapsLink}</div>
-        <div class="row" style="margin-top:8px"><div style="background:#f9faf8;border:1px solid #eee;border-radius:10px;padding:8px"><small>Ongkir / Total COD</small><b>${rupiah(o.total)}</b></div><div style="background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:8px"><small>Admin 5% dipotong saat selesai</small><b>${rupiah(adminFee)}</b><br><small>Admin 5% = ${rupiah(adminFee)} • Kamu terima ${rupiah(kurirTerima)}</small></div></div>
-        <div class="muted" style="margin-top:6px">Saldo kamu ${rupiah(mySaldo)} • deposit minimum 5% = ${rupiah(Math.ceil(o.total*0.05))}. Admin 5% dipotong dari saldo kamu saat pengantaran selesai. Kamu terima ${rupiah(kurirTerima)} (95%).</div>
-        <div class="row" style="margin-top:8px">${terimaBtn}<button class="btn btn-red" onclick="window.tolakOrder('${o.id}')">❌ Tolak</button></div>
+      const adminFee=Math.ceil(o.total*0.05);
+      const kurirTerima=o.total-adminFee;
+      const active=['sedang_mengantar','diterima_kurir'].includes(o.status);
+      const statusHtml=active
+        ? '<div style="background:#e8f8ee;color:#087443;padding:8px 10px;border-radius:10px;font-weight:800;margin:8px 0">🛵 SEDANG MENGANTAR</div>'
+        : '';
+      const alasanHtml=o.alasan?`<div style="background:#fff0f0;border:1px solid #f5c6c6;padding:8px;border-radius:10px;margin-top:8px;font-size:12px">⚠️ ${o.alasan} - tombol Terima terkunci sampai syarat terpenuhi.</div>`:'';
+      const labelHtml=`<div style="margin-top:6px"><span style="background:#e8f8ee;color:#333;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:800">${o.labelTarget}</span> <span style="background:#f0f0f0;padding:3px 8px;border-radius:20px;font-size:11px">Jenis: ${o.jenisKendaraan||'motor'}</span></div>`;
+      const actionHtml=active
+        ? `<button class="btn btn-yellow" onclick="window.selesaikanOrder('${o.id}')">🏁 Selesaikan Pengantaran</button>`
+        : (o.bisaTerima
+          ? `<button class="btn btn-yellow" onclick="window.terimaOrder('${o.id}')">✅ Terima</button>`
+          : `<button class="btn btn-yellow" disabled style="opacity:.5">🔒 Terima (terkunci)</button>`);
+      const mapsLink=o.tujuanValid
+        ? `<a href="https://www.google.com/maps/dir/?api=1&origin=${o.jemputLat??''},${o.jemputLng??''}&destination=${o.tujuanLat},${o.tujuanLng}" target="_blank" rel="noopener" style="color:#087443;font-weight:700">🗺️ Buka Rute Jemput → Tujuan di Google Maps</a>`
+        : `<small style="color:#b45309;font-weight:700">⚠️ Koordinat tujuan belum tersedia/valid.</small>`;
+      return `<div class="order">${labelHtml}${statusHtml}${alasanHtml}
+        <div style="display:flex;justify-content:space-between;gap:8px"><b>Pelanggan: ${o.pelangganEmail||o.pelangganNama||'Pelanggan'}</b><span style="background:#e8f8ee;color:#087443;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:800">📍 ${Number(o.jarakKeJemput||0).toFixed(2)} km dari kamu</span></div>
+        <div class="muted">Jemput: ${o.jemputAlamat||((o.jemputLat!=null)?`GPS ${Number(o.jemputLat).toFixed(6)}, ${Number(o.jemputLng).toFixed(6)}`:'Lokasi jemput')}<br><small>📍 GPS Jemput: ${o.jemputLat!=null?`${Number(o.jemputLat).toFixed(6)}, ${Number(o.jemputLng).toFixed(6)}`:'-'}</small><br>Tujuan: ${o.tujuanAlamat||(o.tujuanValid?`GPS ${o.tujuanLat.toFixed(6)}, ${o.tujuanLng.toFixed(6)}`:'Koordinat tujuan belum tersedia')}<br><small>🎯 GPS Tujuan: ${o.tujuanValid?`${o.tujuanLat.toFixed(6)}, ${o.tujuanLng.toFixed(6)}`:'Belum tersedia'}</small><br>Jenis: ${o.jenisKendaraan||'motor'} • Jarak kirim: ${(Number(o.jarakKm)||0).toFixed(2)} km<br>${mapsLink}</div>
+        <div class="row" style="margin-top:8px"><div style="background:#f9faf8;border:1px solid #eee;border-radius:10px;padding:8px"><small>Ongkir / Total COD</small><b>${rupiah(o.total)}</b></div><div style="background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:8px"><small>Admin 5% saat selesai</small><b>${rupiah(adminFee)}</b><br><small>Kurir menerima ${rupiah(kurirTerima)} (95%)</small></div></div>
+        <div class="muted" style="margin-top:6px">Saldo E-Wallet kamu ${rupiah(mySaldo)}. Potongan admin 5% baru diproses setelah pengantaran dikonfirmasi selesai.</div>
+        <div class="row" style="margin-top:8px">${actionHtml}${active?'':`<button class="btn btn-red" onclick="window.tolakOrder('${o.id}')">❌ Tolak</button>`}</div>
       </div>`;
     }).join('');
-    log(`Order masuk: ${orderList.length} cocok (radius 40km + saldo cukup)`);
+    log(`Order tampil: ${orderList.length} (termasuk order yang sedang diantar)`);
   }catch(e){
-    $("listOrder").innerHTML='<div style="color:#b42318;background:#fff0f0;padding:10px;border-radius:10px">Gagal baca order: '+e.message+'<br><br><b>FIX RULES - copy ke Firebase Console > Firestore Database > Rules, lalu Publish:</b><br><code style="display:block;background:#111;color:#ffd400;padding:8px;border-radius:8px;margin-top:6px;white-space:pre-wrap">rules_version = \'2\';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /orders/{id} { allow read: if true; allow create: if true; allow update: if true; }\n    match /users/{id} { allow read: if true; allow update: if request.auth != null; }\n    match /{document=**} { allow read, write: if request.auth != null; }\n  }\n}</code></div>';
+    $("listOrder").innerHTML='<div style="color:#b42318;background:#fff0f0;padding:10px;border-radius:10px">Gagal baca order: '+e.message+'</div>';
     log("Gagal load order: "+e.message);
   }
 }
 
 window.terimaOrder=async(id)=>{
-  const o=orderList.find(x=>x.id===id); if(!o) return;
-  if(!confirm(`Terima order ini?\nTotal COD ${rupiah(o.total)}\nAdmin 5% = ${rupiah(Math.round(o.total*0.05))} akan dipotong dari saldo kamu saat pengantaran selesai.\nAdmin 5% = ${rupiah(Math.round(o.total*0.05))}`)) return;
+  const o=orderList.find(x=>x.id===id);
+  if(!o || !o.bisaTerima) return;
+  const fee=Math.ceil(o.total*0.05);
+  if(!confirm(`Terima order ini?\nAdmin 5% sebesar ${rupiah(fee)} hanya dipotong setelah pengantaran selesai.\nSaat ini saldo E-Wallet tidak dipotong.`)) return;
   try{
-    await runTransaction(db, async(tx)=>{
+    await runTransaction(db,async(tx)=>{
       const orderRef=doc(db,'orders',id);
-      const kurirRef=doc(db,'users',currentUser.uid);
-      const oSnap=await tx.get(orderRef);
-      const kSnap=await tx.get(kurirRef);
-      if(!oSnap.exists()) throw new Error("Order sudah tidak ada");
-      const oData=oSnap.data();
-      if(oData.status!=='mencari_kurir') throw new Error("Order sudah diambil kurir lain");
-      const kData=kSnap.exists()?kSnap.data():{};
-      const saldoEwallet=Number(kData.saldoEwallet ?? 0)||0;
-      const total=Number(oData.ongkirBruto ?? oData.ongkirKurir ?? oData.estimated_fare ?? oData.estimatedFare ?? oData.fare ?? oData.totalOngkir ?? oData.ongkir ?? oData.total)||0;
-      const adminFeeTx=Math.ceil(total*0.05); if(saldoEwallet < adminFeeTx) throw new Error(`Saldo E-Wallet kurang. Butuh 5% = ${rupiah(adminFeeTx)}, saldo E-Wallet kamu ${rupiah(saldoEwallet)}`);
+      const courierRef=doc(db,'users',currentUser.uid);
+      const [oSnap,kSnap]=await Promise.all([tx.get(orderRef),tx.get(courierRef)]);
+      if(!oSnap.exists()) throw new Error("Order tidak ditemukan");
+      if(!kSnap.exists()) throw new Error("Data kurir tidak ditemukan");
+      const data=oSnap.data();
+      if(data.status!=='mencari_kurir') throw new Error("Order sudah diambil kurir lain");
+      const courier=kSnap.data();
+      const wallet=Number(courier.saldoEwallet??0)||0;
+      const total=Number(data.ongkirBruto??data.ongkirKurir??data.estimated_fare??data.estimatedFare??data.fare??data.totalOngkir??data.ongkir??data.total)||0;
       const adminFee=Math.ceil(total*0.05);
-      // Tahan deposit 5% hanya dari E-Wallet; saldo utama tidak disentuh.
-      tx.update(kurirRef,{ saldoEwallet: saldoEwallet - adminFeeTx, saldoDitahan: (Number(kData.saldoDitahan)||0)+adminFeeTx });
-      tx.update(orderRef,{ status:'diterima_kurir', kurirUid: currentUser.uid, kurirNama: myData.nama||currentUser.email, diterimaAt: serverTimestamp(), depositDitahan: total, adminFee, kurirTerima: total-adminFee });
+      if(wallet<adminFee) throw new Error(`Saldo E-Wallet kurang. Minimal ${rupiah(adminFee)}, saldo kamu ${rupiah(wallet)}`);
+      tx.update(orderRef,{
+        status:'sedang_mengantar',
+        kurirUid:currentUser.uid,
+        kurirNama:myData.nama||currentUser.email||'Kurir',
+        diterimaAt:serverTimestamp(),
+        mulaiAntarAt:serverTimestamp(),
+        adminFee,
+        kurirTerima:total-adminFee,
+        updatedAt:serverTimestamp()
+      });
     });
-    alert("✅ Order diterima! Deposit ditahan. Sekarang jemput & antar.");
+    alert("✅ Order diterima. Status berubah menjadi SEDANG MENGANTAR.");
     loadOrder();
-  }catch(e){ alert("Gagal terima: "+e.message); log("Gagal terima: "+e.message); }
+  }catch(e){alert("Gagal menerima order: "+e.message);log("Gagal terima: "+e.message);}
 };
+
+let orderSelesaiDipilih=null;
+window.selesaikanOrder=(id)=>{
+  const o=orderList.find(x=>x.id===id);
+  if(!o || !['sedang_mengantar','diterima_kurir'].includes(o.status)) return;
+  orderSelesaiDipilih=id;
+  const fee=Math.ceil((Number(o.total)||0)*0.05);
+  const modal=document.createElement('div');
+  modal.id='konfirmasiSelesaiOrder';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML=`<div style="background:#fff;color:#17202b;border-radius:18px;padding:22px;width:100%;max-width:390px;box-shadow:0 18px 50px rgba(0,0,0,.25)">
+    <h3 style="margin:0 0 10px;font-size:19px">Konfirmasi Pengantaran</h3>
+    <p style="margin:0 0 8px">Apakah pelanggan sudah diantar?</p>
+    <p style="margin:0 0 18px;color:#667085;font-size:13px">Jika memilih <b>Sudah</b>, admin 5% (${rupiah(fee)}) akan dipotong dari E-Wallet kurir dan ditambahkan ke E-Wallet admin.</p>
+    <div style="display:flex;gap:10px">
+      <button id="btnPelangganSudah" class="btn btn-yellow" style="flex:1">✅ Sudah</button>
+      <button id="btnPelangganBelum" class="btn btn-red" style="flex:1">Belum</button>
+    </div></div>`;
+  document.body.appendChild(modal);
+  modal.querySelector('#btnPelangganBelum').onclick=()=>{orderSelesaiDipilih=null;modal.remove();};
+  modal.querySelector('#btnPelangganSudah').onclick=async()=>{
+    const btn=modal.querySelector('#btnPelangganSudah');
+    btn.disabled=true;btn.textContent='Memproses...';
+    try{
+      await prosesSelesaikanOrder(id);
+      orderSelesaiDipilih=null;modal.remove();
+      alert("✅ Pengantaran selesai. Potongan 5% sudah dipindahkan ke E-Wallet admin.");
+      await refreshSaldoKurir();
+      loadOrder();
+    }catch(e){
+      btn.disabled=false;btn.textContent='✅ Sudah';
+      alert("Gagal menyelesaikan order: "+e.message);
+      log("Gagal menyelesaikan order: "+e.message);
+    }
+  };
+};
+
+async function prosesSelesaikanOrder(id){
+  // Pastikan tujuan kredit adalah satu akun admin yang role-nya benar-benar "admin".
+  const adminSnap=await getDocs(query(collection(db,'users'),where('role','==','admin')));
+  if(adminSnap.empty) throw new Error('Akun admin dengan role "admin" tidak ditemukan di users.');
+  if(adminSnap.size!==1) throw new Error('Ditemukan lebih dari satu akun admin. Tentukan akun penerima saldo admin terlebih dahulu agar dana tidak salah masuk.');
+  const adminDoc=adminSnap.docs[0];
+  await runTransaction(db,async(tx)=>{
+    const orderRef=doc(db,'orders',id);
+    const courierRef=doc(db,'users',currentUser.uid);
+    const adminRef=doc(db,'users',adminDoc.id);
+    const [oSnap,kSnap,aSnap]=await Promise.all([tx.get(orderRef),tx.get(courierRef),tx.get(adminRef)]);
+    if(!oSnap.exists()) throw new Error('Order tidak ditemukan.');
+    if(!kSnap.exists()) throw new Error('Data kurir tidak ditemukan.');
+    if(!aSnap.exists()) throw new Error('Data admin tidak ditemukan.');
+    const order=oSnap.data();
+    if(!['sedang_mengantar','diterima_kurir'].includes(order.status)) throw new Error('Order bukan berstatus sedang mengantar atau sudah selesai diproses.');
+    if(String(order.kurirUid)!==String(currentUser.uid)) throw new Error('Order ini bukan milik akun kurir yang sedang login.');
+    if(order.adminFeeDibayar===true) throw new Error('Potongan admin untuk order ini sudah pernah diproses.');
+    const courier=kSnap.data(), admin=aSnap.data();
+    if(String(admin.role||'').toLowerCase()!=='admin') throw new Error('Dokumen penerima bukan akun admin.');
+    const total=Number(order.ongkirBruto??order.ongkirKurir??order.estimated_fare??order.estimatedFare??order.fare??order.totalOngkir??order.ongkir??order.total)||0;
+    if(!Number.isFinite(total)||total<=0) throw new Error('Nominal ongkir order tidak valid.');
+    const fee=Math.ceil(total*0.05);
+    const courierWallet=Number(courier.saldoEwallet??0)||0;
+    const adminWallet=Number(admin.saldoEwallet??0)||0;
+    if(courierWallet<fee) throw new Error(`Saldo E-Wallet kurir tidak cukup. Dibutuhkan ${rupiah(fee)}, tersedia ${rupiah(courierWallet)}.`);
+    tx.update(courierRef,{saldoEwallet:courierWallet-fee,updatedAt:serverTimestamp()});
+    tx.update(adminRef,{saldoEwallet:adminWallet+fee,updatedAt:serverTimestamp()});
+    tx.update(orderRef,{
+      status:'selesai',
+      selesaiAt:serverTimestamp(),
+      adminFee:fee,
+      adminFeeDibayar:true,
+      adminFeeDibayarAt:serverTimestamp(),
+      adminWalletUid:adminDoc.id,
+      kurirTerima:total-fee,
+      updatedAt:serverTimestamp()
+    });
+  });
+}
+
+async function refreshSaldoKurir(){
+  const snap=await getDoc(doc(db,'users',currentUser.uid));
+  if(snap.exists()){
+    myData=snap.data();
+    mySaldo=Number(myData.saldoEwallet??0)||0;
+    $("txtSaldo").textContent=rupiah(mySaldo);
+  }
+}
 
 window.tolakOrder=async(id)=>{
   if(!confirm("Tolak order ini? Nanti dilempar ke kurir berikutnya dalam 40 km.")) return;
   try{
-    await updateDoc(doc(db,'orders',id),{ ditawarkanKe: arrayUnion(currentUser.uid), ditolakOleh: arrayUnion(currentUser.uid), updatedAt: serverTimestamp() });
+    const ref=doc(db,'orders',id);
+    await runTransaction(db,async(tx)=>{
+      const snap=await tx.get(ref);
+      if(!snap.exists()) throw new Error('Order tidak ditemukan');
+      const data=snap.data();
+      if(data.status!=='mencari_kurir') throw new Error('Order sudah tidak tersedia untuk ditolak');
+      const rejected=Array.isArray(data.ditolakOleh)?data.ditolakOleh:[];
+      if(rejected.map(String).includes(String(currentUser.uid))) throw new Error('Order ini sudah pernah kamu tolak');
+      tx.update(ref,{ditawarkanKe:arrayUnion(currentUser.uid),ditolakOleh:arrayUnion(currentUser.uid),updatedAt:serverTimestamp()});
+    });
     alert("Order ditolak, dilempar ke kurir berikutnya.");
     loadOrder();
-  }catch(e){ alert("Gagal tolak: "+e.message); }
+  }catch(e){alert("Gagal tolak: "+e.message);}
 };
 
 // SIMPAN KENDARAAN KURIR - buat kurir Mobil nanti
