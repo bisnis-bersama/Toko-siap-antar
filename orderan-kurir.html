@@ -98,7 +98,8 @@ Lokasi Saya (Lat)</label>
 
 <script type="module">
 import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+import {getAuth,function bacaSesiEwallet(){ try{ const keys=['fixzy_user','fixzy_session','ewallet_user','user','pelanggan']; for(const k of keys){ const raw=localStorage.getItem(k)||sessionStorage.getItem(k); if(!raw) continue; try{ const o=JSON.parse(raw); if(o&&(o.email||o.uid||o.nama)) return {uid:o.uid||o.id||o.email, email:o.email||'', displayName:o.nama||o.email?.split('@')[0]}; }catch(e){} } }catch(e){} return null; }
+onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import {getFirestore,collection,query,where,getDocs,doc,getDoc,updateDoc,runTransaction,serverTimestamp,arrayRemove} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 const firebaseConfig={apiKey:"AIzaSyBxqZhl6t3RwrXMwVdJeIkg0NzGfwvlweM",authDomain:"toko-siap-antar-9a7bb.firebaseapp.com",projectId:"toko-siap-antar-9a7bb",storageBucket:"toko-siap-antar-9a7bb.firebasestorage.app",messagingSenderId:"351335838712",appId:"1:351335838712:web:6e2b3e0b0e0b0e0b0e0b0e0b"};
 const app=getApps().length?getApp():initializeApp(firebaseConfig);
@@ -151,8 +152,6 @@ async function loadOrder(){
     // Info debug di atas list
     const infoEl = document.getElementById('infoOrder');
     if(infoEl) infoEl.textContent = `Total order di Firestore: ${totalOrderFirestore} • yang status mencari_kurir: ${totalMencari}`;
-    const aktifKurir=[];
-    qs.forEach(d=>{ const x=d.data()||{}; if(x.kurirUid===currentUser.uid && ['diterima_kurir','sedang_mengantar'].includes(x.status)) aktifKurir.push({id:d.id,...x}); });
     orderList=[];
     qs.forEach(d=>{
       const o={id:d.id, ...d.data()};
@@ -200,10 +199,6 @@ async function loadOrder(){
         <div class="row" style="margin-top:8px">${terimaBtn}<button class="btn btn-red" onclick="window.tolakOrder('${o.id}')">❌ Tolak</button></div>
       </div>`;
     }).join('');
-    if(aktifKurir.length){
-      const aktifHtml=aktifKurir.map(x=>`<div class="order" style="border:2px solid #ffcc00"><b>🚚 Sedang Mengantar</b><div class="muted">Pelanggan: ${x.pelangganEmail||x.pelangganNama||'Pelanggan'} • ${rupiah(Number(x.total||x.ongkir||0))}</div><button class="btn btn-yellow" style="margin-top:8px" onclick="window.selesaikanOrder('${x.id}')">✅ Selesaikan Pengantaran</button></div>`).join('');
-      $('listOrder').innerHTML=aktifHtml+$('listOrder').innerHTML;
-    }
     log(`Order masuk: ${orderList.length} cocok (radius 40km + saldo cukup)`);
   }catch(e){
     $("listOrder").innerHTML='<div style="color:#b42318;background:#fff0f0;padding:10px;border-radius:10px">Gagal baca order: '+e.message+'<br><br><b>FIX RULES - copy ke Firebase Console > Firestore Database > Rules, lalu Publish:</b><br><code style="display:block;background:#111;color:#ffd400;padding:8px;border-radius:8px;margin-top:6px;white-space:pre-wrap">rules_version = \'2\';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /orders/{id} { allow read: if true; allow create: if true; allow update: if true; }\n    match /users/{id} { allow read: if true; allow update: if request.auth != null; }\n    match /{document=**} { allow read, write: if request.auth != null; }\n  }\n}</code></div>';
@@ -230,20 +225,11 @@ window.terimaOrder=async(id)=>{
       const adminFee=Math.round(total*0.05);
       // Tahan deposit: saldo berkurang, saldoDitahan bertambah
       tx.update(kurirRef,{ saldo: saldo - adminFeeTx, saldoDitahan: (Number(kData.saldoDitahan)||0)+adminFeeTx }); // Hanya potong 5% admin, bukan full total. Dipotong saat terima, dihitung sebagai selesai.
-      tx.update(orderRef,{ status:'sedang_mengantar', kurirUid: currentUser.uid, kurirNama: myData.nama||currentUser.email, diterimaAt: serverTimestamp(), depositDitahan: total, adminFee, kurirTerima: total-adminFee });
+      tx.update(orderRef,{ status:'diterima_kurir', kurirUid: currentUser.uid, kurirNama: myData.nama||currentUser.email, diterimaAt: serverTimestamp(), depositDitahan: total, adminFee, kurirTerima: total-adminFee });
     });
     alert("✅ Order diterima! Deposit ditahan. Sekarang jemput & antar.");
     loadOrder();
   }catch(e){ alert("Gagal terima: "+e.message); log("Gagal terima: "+e.message); }
-};
-
-window.selesaikanOrder=async(id)=>{
-  if(!currentUser) return alert('Login dulu');
-  if(!confirm('Apakah pengantaran benar-benar sudah selesai?\n\nPilih OK untuk menyelesaikan order.')) return;
-  try{
-    await runTransaction(db,async(tx)=>{ const ref=doc(db,'orders',id); const snap=await tx.get(ref); if(!snap.exists()) throw new Error('Order tidak ditemukan'); const data=snap.data(); if(data.kurirUid!==currentUser.uid) throw new Error('Order bukan milik akun kurir ini'); if(!['diterima_kurir','sedang_mengantar'].includes(data.status)) throw new Error('Status order tidak sedang diantar'); tx.update(ref,{status:'selesai',selesaiAt:serverTimestamp()}); });
-    alert('✅ Pengantaran selesai.'); loadOrder();
-  }catch(e){alert('Gagal menyelesaikan: '+e.message);}
 };
 
 window.tolakOrder=async(id)=>{
