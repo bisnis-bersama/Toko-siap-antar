@@ -118,7 +118,7 @@ onAuthStateChanged(auth, async (u)=>{
     const snap=await getDoc(doc(db,'users',u.uid));
     myData=snap.exists()?snap.data():{};
     $("namaKurir").textContent=myData.nama||myData.namaUsaha||u.email||"Kurir";
-    mySaldo=Number(myData.saldo ?? myData.saldoEwallet ?? myData.deposit ?? 0)||0;
+    mySaldo=Number(myData.saldoEwallet ?? 0)||0;
     $("txtSaldo").textContent=rupiah(mySaldo);
     // Lokasi kurir dari users, kalau ada
     const lat=myData.lat ?? myData.latitude ?? myData.lokasi?.lat;
@@ -261,12 +261,12 @@ window.terimaOrder=async(id)=>{
       const oData=oSnap.data();
       if(oData.status!=='mencari_kurir') throw new Error("Order sudah diambil kurir lain");
       const kData=kSnap.exists()?kSnap.data():{};
-      const saldo=Number(kData.saldo ?? kData.saldoEwallet ?? 0)||0;
+      const saldoEwallet=Number(kData.saldoEwallet ?? 0)||0;
       const total=Number(oData.ongkirBruto ?? oData.ongkirKurir ?? oData.estimated_fare ?? oData.estimatedFare ?? oData.fare ?? oData.totalOngkir ?? oData.ongkir ?? oData.total)||0;
-      const adminFeeTx=Math.ceil(total*0.05); if(saldo < adminFeeTx) throw new Error(`Saldo kurang. Butuh 5% = ${rupiah(adminFeeTx)}, kamu punya ${rupiah(saldo)}`);
+      const adminFeeTx=Math.ceil(total*0.05); if(saldoEwallet < adminFeeTx) throw new Error(`Saldo E-Wallet kurang. Butuh 5% = ${rupiah(adminFeeTx)}, saldo E-Wallet kamu ${rupiah(saldoEwallet)}`);
       const adminFee=Math.ceil(total*0.05);
-      // Tahan deposit: saldo berkurang, saldoDitahan bertambah
-      tx.update(kurirRef,{ saldo: saldo - adminFeeTx, saldoDitahan: (Number(kData.saldoDitahan)||0)+adminFeeTx }); // Hanya potong 5% admin, bukan full total. Dipotong saat terima, dihitung sebagai selesai.
+      // Tahan deposit 5% hanya dari E-Wallet; saldo utama tidak disentuh.
+      tx.update(kurirRef,{ saldoEwallet: saldoEwallet - adminFeeTx, saldoDitahan: (Number(kData.saldoDitahan)||0)+adminFeeTx });
       tx.update(orderRef,{ status:'diterima_kurir', kurirUid: currentUser.uid, kurirNama: myData.nama||currentUser.email, diterimaAt: serverTimestamp(), depositDitahan: total, adminFee, kurirTerima: total-adminFee });
     });
     alert("✅ Order diterima! Deposit ditahan. Sekarang jemput & antar.");
