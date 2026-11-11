@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="id"><head><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>V2 BARU - Riwayat Penolakan - Toko Siap Antar</title>
+<style>
+:root{--yellow:#ffcc00;--ink:#171717;--green:#008b5a;--muted:#64756f;--bg:#f1f2f4;--line:#e6e7e8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#171717;font:14px/1.4 system-ui,sans-serif;padding-bottom:80px}
+button,input,select{font:inherit}
+header{background:#111;color:#fff;padding:10px 14px 16px;border-radius:0 0 20px 20px;position:sticky;top:0;z-index:5}
+.head{max-width:900px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.brand{color:var(--yellow);font-weight:900;font-size:15px;line-height:1.1}.sub{color:#c7cbd0;font-size:9px;font-weight:600}
+.greet{font-size:12px;color:#fff;font-weight:800}.greet b{color:var(--yellow)}
+.logout{background:#202020;border:1px solid #444;color:#fff;border-radius:10px;padding:6px 10px;font-size:11px;font-weight:750;cursor:pointer}
+main{max-width:900px;margin:-10px auto 0;padding:0 10px 90px;position:relative;z-index:2}
+.panel{background:#fff;border-radius:16px;padding:12px;margin-bottom:8px;box-shadow:0 4px 16px #00000008}
+.eyebrow{font-size:9px;letter-spacing:.5px;color:var(--muted);font-weight:800;text-transform:uppercase}.muted{color:var(--muted);font-size:12px}
+.notice{background:#fff8d8;border:1px solid #f4df80;border-radius:10px;padding:10px 12px;font-size:11px;color:#5c4b00;line-height:1.4}
+.badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:800}
+.badge-mitra{background:#ffe8e8;color:#b42318}.badge-kurir{background:#fff3cd;color:#7a5a00}.badge-batal{background:#111;color:#fff}.badge-refund{background:#e8f8ee;color:#087443}.badge-belum{background:#f1f2f4;color:#666}
+.card{border:1px solid #eee;border-radius:12px;padding:12px;margin-bottom:10px}
+.row{display:flex;gap:8px;flex-wrap:wrap}.tile{flex:1;min-width:140px;background:#f9faf8;border:1px solid #eee;border-radius:10px;padding:8px}
+.tile b{display:block;font-size:14px}.tile small{color:var(--muted);font-size:11px}
+.btn{border:0;border-radius:10px;padding:8px 12px;font-weight:800;cursor:pointer}.btn-yellow{background:var(--yellow);color:#111}.btn-dark{background:#111;color:#fff}
+.chip{border:1px solid #ddd;background:#fff;border-radius:20px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer}.chip.on{background:#111;color:#fff;border-color:#111}
+input[type=text]{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px}
+</style></head>
+<body>
+<header><div class="head"><div><div class="brand">TOKO SIAP ANTAR</div><div class="sub">Admin Panel - Riwayat Penolakan</div><div class="greet">Halo, Kak, <b id="adminName">Admin</b> • Riwayat Penolakan</div></div><button class="logout" onclick="location.href='ewallet-admin.html'">← E-Wallet</button></div></header>
+<div style="max-width:900px;margin:10px auto 0;padding:10px 12px;background:#ffcc00;color:#111;border:2px solid #111;border-radius:12px;font-weight:900;text-align:center;font-size:14px">✅ FILE BARU V2 - RIWAYAT PENOLAKAN - Kalau banner ini tidak ada, berarti file lama yang kebuka</div>
+<main>
+<div class="panel"><h1 style="font-size:20px;margin:4px 0 4px">📦 Riwayat Penolakan</h1><div class="muted">Dipisah biar jelas: produk apa yang ditolak, siapa yang menolak, saldo dikembalikan ke siapa.</div>
+<div class="notice" style="margin-top:10px">Admin yang approve pending. Mitra tolak / Kurir tolak / Ojek tolak semua masuk sini. <b>Eksekusi refund di sini aja</b> (tombol di tiap order), tidak perlu balik ke e-wallet. Tombol WA yang menolak juga ada di tiap order.</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+<button class="chip on" data-filter="semua">📋 Semua</button>
+<button class="chip" data-filter="ditolak_mitra">🏪 Ditolak Mitra</button>
+<button class="chip" data-filter="ditolak_kurir">🛵 Ditolak Kurir / Ojek</button>
+<button class="chip" data-filter="kurir_menolak">↩️ Kurir Menolak → Balik Mitra</button>
+<button class="chip" data-filter="dibatalkan">🗑️ Dibatalkan + Refund</button>
+</div>
+<div style="margin-top:10px"><input type="text" id="cari" placeholder="Cari nomor pesanan / nama produk / nama yang menolak / nama pelanggan..."></div>
+<div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-yellow" id="muatBtn">🔄 Muat Ulang</button><button class="btn btn-dark" id="exportBtn">📋 Salin Ringkasan</button></div>
+</div>
+<div class="panel"><div style="display:flex;gap:8px;flex-wrap:wrap"><div class="tile"><small>TOTAL DITOLAK</small><b id="statTotal">-</b></div><div class="tile"><small>DITOLAK MITRA</small><b id="statMitra">-</b></div><div class="tile"><small>DITOLAK KURIR / OJEK</small><b id="statKurir">-</b></div><div class="tile"><small>SUDAH REFUND</small><b id="statRefund">-</b></div></div></div>
+<div class="panel"><div id="list">Memuat riwayat penolakan...</div></div>
+</main>
+<script type="module">
+import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+import {getFirestore,collection,query,where,getDocs,getDoc,doc,limit,orderBy,updateDoc,runTransaction,serverTimestamp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+const firebaseConfig={apiKey:"AIzaSyBxqZhl6t3RwrXMwVdJeIkg0NzGfwvlweM",authDomain:"toko-siap-antar-9a7bb.firebaseapp.com",projectId:"toko-siap-antar-9a7bb",storageBucket:"toko-siap-antar-9a7bb.firebasestorage.app",messagingSenderId:"351335838712",appId:"1:351335838712:web:14cc2c7b91bb0c9e1b5c0d"};
+const app=getApps().length?getApp():initializeApp(firebaseConfig);
+const auth=getAuth(app),db=getFirestore(app);
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const money=n=>'Rp '+(Number(n)||0).toLocaleString('id-ID');
+let allData=[], filter='semua', search='';
+let userCache={};
+let userWaCache={};
+async function namaUser(uid){
+  if(!uid) return '-';
+  if(userCache[uid]) return userCache[uid];
+  try{ const s=await getDoc(doc(db,'users',String(uid))); if(s.exists()){ const d=s.data(); const n=d.nama||d.namaUsaha||d.email||String(uid).slice(0,8); userCache[uid]=n; const waRaw=String(d.wa||d.noWa||d.whatsapp||d.nomorWa||d.phone||d.telepon||d.noHp||'').replace(/\D/g,''); if(waRaw){ let waNorm=waRaw; if(waNorm.startsWith('0')) waNorm='62'+waNorm.slice(1); userWaCache[uid]=waNorm; } return n; } }catch(_){}
+  userCache[uid]=String(uid).slice(0,8); return userCache[uid];
+}
+function waLink(uid){
+  const wa=userWaCache[uid]||'';
+  if(!wa) return '';
+  return `https://wa.me/${wa}`;
+}
+function asDate(v){ try{ if(!v) return null; if(v.toDate) return v.toDate(); if(v.seconds) return new Date(v.seconds*1000); return new Date(v); }catch(_){ return null; } }
+function fmtDate(v){ const d=asDate(v); return d?d.toLocaleString('id-ID',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'-'; }
+async function load(){
+  $('list').innerHTML='Memuat riwayat penolakan...';
+  try{
+    const qs=[
+      query(collection(db,'orders'), where('status','==','ditolak_mitra'), limit(50)),
+      query(collection(db,'orders'), where('status','==','ditolak_kurir'), limit(50)),
+      query(collection(db,'orders'), where('status','==','dibatalkan'), limit(50)),
+      query(collection(db,'orders'), where('kurirMenolak','==',true), limit(50)),
+    ];
+    const snaps=await Promise.all(qs.map(q=>getDocs(q).catch(()=>({docs:[]}))));
+    const map=new Map();
+    snaps.forEach(s=>s.docs.forEach(d=>map.set(d.id,{id:d.id,...d.data()})));
+    // Juga ambil yang punya alasan tolak tapi status sudah berubah (misal sudah balik ke mitra)
+    // Ambil 50 order terbaru yang punya ditolakOlehMitraList / ditolakOlehKurirUid via scan ringan: query orders limit 100 dan filter client
+    try{
+      const snapAll=await getDocs(query(collection(db,'orders'), limit(100)));
+      snapAll.docs.forEach(d=>{ const x={id:d.id,...d.data()}; if(x.ditolakOlehMitraUid||x.ditolakOlehKurirUid||x.alasanTolakMitra||x.alasanTolakKurir||x.kurirMenolak){ if(!map.has(d.id)) map.set(d.id,x); } });
+    }catch(_){}
+    allData=[...map.values()];
+    // Enrich nama
+    for(const x of allData){
+      x._namaMitra = await namaUser(x.mitraUid||x.mitraUsahaUid||x.acceptedByMitraUid||x.ditolakOlehMitraUid||'');
+      x._namaKurir = await namaUser(x.kurirUid||x.ditolakOlehKurirUid||x.dibatalkanOlehKurirUid||'');
+      x._namaPelanggan = await namaUser(x.pelangganUid||x.customerUid||x.userUid||x.uid||x.pembeliUid||'');
+      x._namaPenolak = '';
+      if(x.ditolakOlehMitraUid) x._namaPenolak = await namaUser(x.ditolakOlehMitraUid);
+      else if(x.ditolakOlehKurirUid) x._namaPenolak = await namaUser(x.ditolakOlehKurirUid);
+      else if(x.dibatalkanOlehKurirUid) x._namaPenolak = await namaUser(x.dibatalkanOlehKurirUid);
+      else if(x.kurirMenolak) x._namaPenolak = await namaUser(x.ditolakOlehKurirUid||x.kurirUid||'');
+    }
+    render();
+  }catch(e){ $('list').innerHTML='<div style="color:#b42318">Gagal: '+esc(e.message)+'</div>'; }
+}
+function kategori(x){
+  const s=String(x.status||'').toLowerCase();
+  if(s==='ditolak_mitra') return 'ditolak_mitra';
+  if(s==='ditolak_kurir') return 'ditolak_kurir';
+  if(s==='dibatalkan') return 'dibatalkan';
+  if(x.kurirMenolak || x.kembaliKeMitra) return 'kurir_menolak';
+  if(x.ditolakOlehMitraUid) return 'ditolak_mitra';
+  if(x.ditolakOlehKurirUid) return 'ditolak_kurir';
+  return 'lain';
+}
+function render(){
+  let list=allData.filter(x=>{
+    if(filter==='semua') return true;
+    return kategori(x)===filter;
+  });
+  if(search){
+    const q=search.toLowerCase();
+    list=list.filter(x=>{
+      const produk=(Array.isArray(x.items)?x.items.map(i=>i.name||i.nama||'').join(' '):'')+' '+(x.namaProduk||'')+' '+(x.nomorPesanan||'')+' '+(x._namaPenolak||'')+' '+(x._namaPelanggan||'')+' '+(x._namaMitra||'')+' '+(x._namaKurir||'');
+      return produk.toLowerCase().includes(q);
+    });
+  }
+  list.sort((a,b)=>(asDate(b.updatedAt||b.createdAt)?.getTime()||0)-(asDate(a.updatedAt||a.createdAt)?.getTime()||0));
+  $('statTotal').textContent=allData.length;
+  $('statMitra').textContent=allData.filter(x=>kategori(x)==='ditolak_mitra').length;
+  $('statKurir').textContent=allData.filter(x=>kategori(x)==='ditolak_kurir'||kategori(x)==='kurir_menolak').length;
+  $('statRefund').textContent=allData.filter(x=>x.refundMasuk===true).length + ' order';
+  if(!list.length){ $('list').innerHTML='<div class="muted">Tidak ada riwayat penolakan untuk filter ini.</div>'; return; }
+  $('list').innerHTML=list.map(x=>{
+    const kat=kategori(x);
+    const badge = kat==='ditolak_mitra' ? '<span class="badge badge-mitra">🏪 DITOLAK MITRA</span>' : kat==='ditolak_kurir' ? '<span class="badge badge-kurir">🛵 DITOLAK KURIR / OJEK</span>' : kat==='dibatalkan' ? '<span class="badge badge-batal">🗑️ DIBATALKAN</span>' : '<span class="badge badge-kurir">↩️ KURIR MENOLAK → BALIK MITRA</span>';
+    const items=Array.isArray(x.items)&&x.items.length ? x.items.map(it=>`<div>• ${esc(it.name||it.nama||'Produk')} x ${it.qty||1} - ${money(it.price||it.harga||0)}</div>`).join('') : `<div>• ${esc(x.namaProduk||x.produk||'Produk tidak tercatat')} - Total ${money(x.total||0)}</div>`;
+    const uidPenolak = x.ditolakOlehMitraUid || x.ditolakOlehKurirUid || x.dibatalkanOlehKurirUid || (x.kurirMenolak ? (x.ditolakOlehKurirUid||x.kurirUid) : '') || '';
+    const waPenolak = uidPenolak ? waLink(uidPenolak) : '';
+    const waBtnPenolak = waPenolak ? `<a href="${waPenolak}" target="_blank" rel="noopener" style="display:inline-block;margin-top:6px;background:#25D366;color:#fff;padding:6px 10px;border-radius:8px;font-weight:800;text-decoration:none;font-size:12px">💬 WA Yang Menolak: ${esc(x._namaPenolak||'-')} - ${esc(waPenolak.replace('https://wa.me/','+'))}</a>` : `<div style="font-size:11px;color:#999;margin-top:4px">WA yang menolak tidak tercatat di akun (field wa / noWa kosong)</div>`;
+    const siapaMenolak = x.ditolakOlehMitraUid ? `🏪 Mitra: <b>${esc(x._namaPenolak||x._namaMitra)}</b> (UID: ${esc(x.ditolakOlehMitraUid)})` : (x.ditolakOlehKurirUid||x.kurirMenolak) ? `🛵 Kurir / Ojek: <b>${esc(x._namaPenolak||x._namaKurir)}</b> (UID: ${esc(x.ditolakOlehKurirUid||x.kurirUid||'-')})` : x.status==='dibatalkan' ? `🗑️ Dibatalkan oleh Admin` : '-';
+    const alasan = x.alasanTolakMitra||x.alasanTolakKurir||x.alasanBatalKurir||x.pesanKurirMenolak||x.alasanTolak||'-';
+    const payRaw=String(x.metodePembayaran||x.paymentMethod||'').toLowerCase();
+    const isCOD = payRaw.includes('cod');
+    const uidPelanggan = x.pelangganUid||x.customerUid||x.userUid||x.uid||x.pembeliUid||'';
+    const waPelanggan = uidPelanggan ? waLink(uidPelanggan) : '';
+    const waBtnPelanggan = waPelanggan ? `<a href="${waPelanggan}" target="_blank" rel="noopener" style="display:inline-block;margin-top:6px;background:#25D366;color:#fff;padding:6px 10px;border-radius:8px;font-weight:800;text-decoration:none;font-size:12px">💬 WA Pelanggan</a>` : '';
+    const tombolRefund = (!isCOD && x.refundMasuk!==true && Number(x.total||0)>0 && uidPelanggan) ? `<button class="btn btn-yellow" data-action="eksekusi-refund" data-id="${esc(x.id)}" data-pelanggan="${esc(uidPelanggan)}" data-total="${Number(x.total||0)}" style="margin-top:8px">💰 Eksekusi Refund Di Sini - Rp ${Number(x.total||0).toLocaleString('id-ID')} ke E-Wallet Pelanggan</button>` : '';
+    const refundHtml = x.refundMasuk===true ? `<span class="badge badge-refund">✅ SUDAH REFUND Rp ${Number(x.refundNominal||0).toLocaleString('id-ID')}</span><div style="font-size:12px;margin-top:4px">Saldo dikembalikan ke: <b>Pelanggan ${esc(x._namaPelanggan)}</b> (UID: ${esc(uidPelanggan)}) • E-Wallet Pelanggan • ${fmtDate(x.refundAt)}</div>${waBtnPelanggan}` : isCOD ? `<span class="badge badge-belum">COD - Tidak ada refund (bayar di tempat)</span>` : (x.status==='dibatalkan' ? `<span class="badge badge-belum">⚠️ Belum refund - klik Eksekusi Refund di bawah</span>${tombolRefund}` : `<span class="badge badge-belum">⏳ Belum refund - Order masih jalan / dicarikan pengganti</span><div style="font-size:12px;margin-top:4px">Kalau akhirnya dibatalkan total, saldo akan dikembalikan ke: <b>Pelanggan ${esc(x._namaPelanggan)}</b> sebesar ${money(x.total||0)}</div>${tombolRefund}`);
+    return `<div class="card"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><strong>${esc(x.nomorPesanan||x.id)}</strong>${badge}</div><div class="muted" style="font-size:12px">${fmtDate(x.updatedAt||x.createdAt)} • Total ${money(x.total||0)} • Bayar: ${esc(x.metodePembayaran||x.paymentMethod||'-')}</div>
+    <div style="margin-top:10px"><b style="font-size:12px">📦 PRODUK APA YANG DITOLAK:</b><div style="margin-top:4px;font-size:13px">${items}</div></div>
+    <div style="margin-top:10px;background:#fff8d8;border:1px solid #f4df80;border-radius:10px;padding:10px"><b style="font-size:12px">❌ SIAPA YANG MENOLAK:</b><div style="font-size:13px;margin-top:4px">${siapaMenolak}</div><div style="font-size:12px;margin-top:2px">Alasan: <b>${esc(alasan)}</b></div><div style="font-size:12px">Mitra awal: ${esc(x._namaMitra)} • Kurir awal: ${esc(x._namaKurir)}</div>${waBtnPenolak}</div>
+    <div style="margin-top:10px;background:#f0fdf4;border:1px solid #c8eecf;border-radius:10px;padding:10px"><b style="font-size:12px">💰 KEPADA SIAPA SALDO DIKEMBALIKAN:</b><div style="margin-top:4px">${refundHtml}</div></div>
+    </div>`;
+  }).join('');
+}
+document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{ document.querySelectorAll('[data-filter]').forEach(x=>x.classList.remove('on')); b.classList.add('on'); filter=b.dataset.filter; render(); });
+$('cari').oninput=e=>{ search=e.target.value.trim(); render(); };
+$('muatBtn').onclick=()=>load();
+$('exportBtn').onclick=()=>{
+  const teks=allData.map(x=>`Order ${x.nomorPesanan||x.id} | Produk: ${(Array.isArray(x.items)?x.items.map(i=>i.name||'').join(', '):x.namaProduk||'')} | Ditolak oleh: ${x.ditolakOlehMitraUid?'Mitra '+x._namaMitra:x.ditolakOlehKurirUid?'Kurir '+x._namaKurir:'Admin'} | Alasan: ${x.alasanTolakMitra||x.alasanTolakKurir||'-'} | Saldo kembali ke: Pelanggan ${x._namaPelanggan} Rp ${Number(x.refundNominal||0).toLocaleString('id-ID')} | Refund: ${x.refundMasuk?'Sudah':'Belum'}`).join('\n');
+  navigator.clipboard.writeText(teks).then(()=>alert('Ringkasan tersalin. Tempel di WA / Excel.'));
+};
+document.addEventListener('click', async e=>{
+  const btn=e.target.closest('button[data-action="eksekusi-refund"]');
+  if(!btn) return;
+  const orderId=btn.dataset.id, pelangganUid=btn.dataset.pelanggan, total=Number(btn.dataset.total||0);
+  if(!orderId || !pelangganUid || !total) return alert('Data refund tidak valid');
+  if(!confirm(`Eksekusi refund Rp ${total.toLocaleString('id-ID')} ke e-wallet pelanggan di sini? Saldo pelanggan akan bertambah, order jadi dibatalkan.`)) return;
+  btn.disabled=true; btn.textContent='Memproses refund...';
+  try{
+    await runTransaction(db, async tx=>{
+      const oref=doc(db,'orders',orderId);
+      const osnap=await tx.get(oref);
+      if(!osnap.exists()) throw new Error('Pesanan tidak ditemukan');
+      const od=osnap.data();
+      if(od.refundMasuk===true) throw new Error('Refund sudah pernah masuk, tidak bisa double');
+      const pref=doc(db,'users',pelangganUid);
+      const psnap=await tx.get(pref);
+      if(!psnap.exists()) throw new Error('Akun pelanggan tidak ditemukan');
+      const pd=psnap.data();
+      const curP=Number(pd.saldoEwallet ?? pd.saldoWallet ?? pd.saldo ?? 0);
+      tx.update(pref,{saldoEwallet:curP+total, saldoWallet:curP+total, saldo:curP+total, updatedAt:serverTimestamp()});
+      tx.update(oref,{status:'dibatalkan', statusSebelumnya:String(od.status||''), dibatalkanOleh:'admin', dibatalkanAt:serverTimestamp(), refundMasuk:true, refundNominal:total, refundKePelangganUid:pelangganUid, refundAt:serverTimestamp(), refundDariHalaman:'riwayat-penolakan', adminSaldoMasuk:false, mitraSaldoMasuk:false, kurirSaldoDipotong:false, updatedAt:serverTimestamp()});
+    });
+    alert('✅ Refund berhasil dieksekusi di sini. Saldo sudah masuk ke e-wallet pelanggan.');
+    await load();
+  }catch(err){ alert('Gagal refund: '+err.message); btn.disabled=false; btn.textContent='💰 Eksekusi Refund Di Sini'; }
+});
+onAuthStateChanged(auth,u=>{ if(!u){ $('list').innerHTML='Login dulu lewat e-wallet admin.'; return; } $('adminName').textContent=u.email||'Admin'; load(); });
+</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
