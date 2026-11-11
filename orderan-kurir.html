@@ -390,6 +390,7 @@ async function prosesSelesaikanOrder(id){
   if(total<=0) throw new Error('Nominal ongkir tidak valid.');
   const fee=Math.ceil(total*0.05);
   await updateDoc(doc(db,'orders',id),{
+    kurirUid:uid,
     status:'selesai',
     selesaiAt:serverTimestamp(),
     adminFee:fee,
