@@ -42,7 +42,7 @@
   font-family: "Optimistic Mono", ui-monospace, monospace;
 }
 </style><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>V7 BARU - Pesanan Masuk Mitra - Toko Siap Antar</title>
+<title>V8 BARU - Pesanan Masuk Mitra - Toko Siap Antar</title>
 <style>
 :root{--yellow:#ffcc00;--ink:#171717;--green:#008b5a;--muted:#64756f;--bg:#f1f2f4;--line:#e6e7e8}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:#171717;font:14px/1.4 system-ui,sans-serif;padding-bottom:80px}
@@ -90,7 +90,7 @@ label{display:block;font-size:11px;font-weight:700;margin:8px 0 4px}input,select
 <div><div class="brand">🛵 TOKO SIAP ANTAR</div><div class="sub">Mitra Usaha · Pesanan Masuk</div><div class="greet" id="greetingTop" style="display:none"></div></div>
 </div><button id="logoutBtn" class="logout hidden" type="button">Keluar</button></div></header>
 
-<div id="tandaFileBaru" style="max-width:900px;margin:10px auto 0;padding:10px 12px;background:#ffcc00;color:#111;border:2px solid #111;border-radius:12px;font-weight:900;text-align:center;font-size:14px">✅ FILE BARU V7 - FIX DIANTAR - Kalau banner ini tidak ada, berarti file lama yang kebuka</div>
+<div id="tandaFileBaru" style="max-width:900px;margin:10px auto 0;padding:10px 12px;background:#ffcc00;color:#111;border:2px solid #111;border-radius:12px;font-weight:900;text-align:center;font-size:14px">✅ FILE BARU V8 - FIX DIANTAR + APPROVAL ADMIN - Kalau banner ini tidak ada, berarti file lama yang kebuka</div>
 <main>
 <section id="loginPanel" class="panel"><div class="eyebrow">AKSES MITRA USAHA</div><h1>Masuk Mitra Usaha</h1><p class="muted">Role=mitra_usaha, status=aktif, aktif=true</p>
 <form id="loginForm"><label>Email</label><input id="email" type="email" required><label>Password</label><input id="password" type="password" required><button class="btn" style="width:100%;margin-top:12px" type="submit">Masuk</button></form><div id="loginMsg" class="err"></div></section>
@@ -140,7 +140,7 @@ function isVisibleToMitra(x){
   const status=String(x.status||'').trim().toLowerCase();
   const uid=userNow?.uid;
   const assigned=x.mitraUsahaUid===uid||x.mitraUid===uid||x.acceptedByMitraUid===uid;
-  return status==='disetujui' || (assigned && ['dikemas','diantar','menunggu_kurir','menunggu_verifikasi_admin'].includes(status)); // V7: diantar harus kelihatan, kalau tidak tombol Selesaikan hilang
+  return status==='disetujui' || (assigned && ['dikemas','diantar','menunggu_kurir','menunggu_verifikasi_admin'].includes(status)); // V8: diantar harus kelihatan, kalau tidak tombol Selesaikan hilang
 }
 async function fetchAssignedOrders(){
   const found=new Map(), uid=userNow.uid;
@@ -218,7 +218,7 @@ function renderOrderRecord(x){
   } else if(milikSaya && sudahDikemas && diprosesSendiri){
     pilihanProses=`<div class="actions" style="margin-top:10px"><button class="btn" type="button" data-order-action="mark-shipped" data-id="${esc(x.id)}">🚚 Dikirim</button></div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
   } else if(milikSaya && sudahDikirim){
-    pilihanProses=`<div class="actions" style="margin-top:10px"><button class="btn" type="button" data-order-action="finish-with-receipt" data-id="${esc(x.id)}">✅ Selesaikan Pesanan - V7 BARU</button></div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
+    pilihanProses=`<div class="actions" style="margin-top:10px"><button class="btn" type="button" data-order-action="finish-with-receipt" data-id="${esc(x.id)}">✅ Selesaikan Pesanan - V8 BARU</button></div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
   }
   const resiInfo=(sudahSelesai||statusRaw==='menunggu_verifikasi_admin') && x.resiOcrText?`<div class="ok" style="margin-top:8px"><b>Resi tersimpan (hasil OCR)</b><div class="meta" style="white-space:pre-wrap;margin-top:5px">${esc(x.resiOcrText)}</div><div class="meta">Berkas: ${esc(x.resiNamaFile||'-')}</div></div>`:'';
   const metodeLabel=x.metodePenyerahan==='mitra_kirim_sendiri'?'Dikirim sendiri oleh mitra':x.metodePenyerahan==='serahkan_ke_kurir'?'Diserahkan ke kurir':x.metodePenyerahan==='via_expedisi'?'Diproses melalui ekspedisi':'';
@@ -313,7 +313,7 @@ function openReceiptModal(orderId){
           if(x.acceptedByMitraUid!==uid&&x.mitraUsahaUid!==uid&&x.mitraUid!==uid)throw new Error('Pesanan ini bukan milik akun mitra Anda.');
           const statusNow=String(x.status||x.statusPemenuhan||'').toLowerCase();
           if(statusNow!=='diantar'&&statusNow!=='menunggu_verifikasi_admin')throw new Error('Pesanan harus berstatus diantar sebelum menunggu verifikasi admin.');
-          // V7: Langsung selesai + siapkan bagi saldo, biar admin Perbaiki bisa bagi mitra + admin
+          // V8: Kirim ke admin untuk verifikasi, JANGAN langsung selesai + siapkan bagi saldo, biar admin Perbaiki bisa bagi mitra + admin
           const _total = Number(x.total||0);
           let _sub = Number(x.subtotal ?? x.subTotal ?? 0);
           let _ong = Number(x.ongkir ?? x.ongkosKirim ?? 0);
@@ -321,13 +321,13 @@ function openReceiptModal(orderId){
           if(!_sub && _total && !_ong) _sub = _total;
           const _adminFee = Math.ceil((_sub + _ong) * 0.05);
           const _isKurir = !!x.kurirUid;
-          tx.update(ref,{status:'selesai',statusPembayaran:'menunggu_verifikasi',statusPembayaranAt:serverTimestamp(),resiOcrText:textOcr,resiNamaFile:file.name,resiMimeType:file.type||'image',resiUkuranBytes:file.size,resiDibacaOlehUid:uid,resiDibacaAt:serverTimestamp(),selesaiOlehUid:uid,selesaiAt:serverTimestamp(),adminFee:_adminFee,adminFeeDibayar:true,adminFeeDibayarAt:serverTimestamp(),adminSaldoMasuk:false,mitraSaldoMasuk:false,kurirSaldoDipotong:_isKurir?false:true,updatedAt:serverTimestamp()});
+          tx.update(ref,{status:'menunggu_verifikasi_admin',statusPembayaran:'menunggu_verifikasi',statusPembayaranAt:serverTimestamp(),resiOcrText:textOcr,resiNamaFile:file.name,resiMimeType:file.type||'image',resiUkuranBytes:file.size,resiDibacaOlehUid:uid,resiDibacaAt:serverTimestamp(),selesaiOlehUid:uid,selesaiAt:serverTimestamp(),adminFee:_adminFee,adminFeeDibayar:true,adminFeeDibayarAt:serverTimestamp(),adminSaldoMasuk:false,mitraSaldoMasuk:false,adminSaldoMasuk:false,menungguApprovalAdmin:true,approvalAdminAt:null,updatedAt:serverTimestamp()});
         });
-        modal.remove();await loadRecords();
+        modal.remove();await loadRecords();alert('✅ Resi terkirim ke admin. Tunggu admin cek resi + Setujui, baru saldo mitra + admin 5% dibagi.');
       }catch(e){
         const _m = String(e.message||'');
         if(_m.includes('permission') || _m.includes('insufficient')){
-          // Fallback V7: titip ke tracking, admin Perbaiki V7/V8 akan selesaikan + bagi saldo
+          // Fallback V8: titip ke tracking, admin Perbaiki V7/V8 akan selesaikan + bagi saldo
           try{
             const _ref2 = doc(db,'orders',orderId);
             const _snap2 = await getDoc(_ref2);
@@ -338,8 +338,8 @@ function openReceiptModal(orderId){
             if(!_sub2 && _tot2 && _ong2) _sub2 = _tot2 - _ong2;
             if(!_sub2 && _tot2 && !_ong2) _sub2 = _tot2;
             const _fee2 = Math.ceil((_sub2 + _ong2) * 0.05);
-            await setDoc(doc(db,'tracking',orderId), {orderId:orderId, mitraUid: _x2.mitraUid||_x2.mitraUsahaUid||_x2.acceptedByMitraUid||userNow.uid, kurirUid: _x2.kurirUid||'', status:'selesai', perluAdminSelesaikan:true, perluBagiMitra:true, adminFee:_fee2, total:_tot2, resiOcrText:textOcr, resiNamaFile:file.name, createdAt:serverTimestamp(), updatedAt:serverTimestamp()}, {merge:true});
-            modal.remove(); await loadRecords(); alert('✅ Permintaan selesai terkirim ke admin. Minta admin klik Perbaiki V7/V8, order akan jadi selesai + saldo dibagi.'); return;
+            await setDoc(doc(db,'tracking',orderId), {orderId:orderId, mitraUid: _x2.mitraUid||_x2.mitraUsahaUid||_x2.acceptedByMitraUid||userNow.uid, kurirUid: _x2.kurirUid||'', status:'menunggu_verifikasi_admin', perluAdminSelesaikan:true, perluApprovalAdmin:true, perluBagiMitra:true, adminFee:_fee2, total:_tot2, resiOcrText:textOcr, resiNamaFile:file.name, createdAt:serverTimestamp(), updatedAt:serverTimestamp()}, {merge:true});
+            modal.remove(); await loadRecords(); alert('✅ Resi terkirim ke admin. Tunggu admin cek resi + Setujui, baru saldo dibagi.'); return;
           }catch(e2){ err.textContent='Gagal titip ke admin: '+e2.message; err.style.display='block'; saveBtn.disabled=false; saveBtn.textContent='Simpan & Selesaikan Pesanan'; return; }
         }
         err.textContent=e.message||'Gagal menyimpan resi.';err.style.display='block';saveBtn.disabled=false;saveBtn.textContent='Simpan & Selesaikan Pesanan';}
