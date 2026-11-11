@@ -45,7 +45,7 @@
 </style>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>V8 BARU - E-Wallet Admin - Rapi Clean | Toko Siap Antar</title>
+<title>V9 BARU - E-Wallet Admin - Rapi Clean | Toko Siap Antar</title>
 <style>
 @font-face{font-family:"Optimistic";font-style:normal;font-weight:400 600;font-display:swap;src:url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2")}
 @font-face{font-family:"Optimistic Mono";font-style:normal;font-weight:400;font-display:swap;src:url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2")}
@@ -77,7 +77,7 @@ main{max-width:820px;margin:-10px auto 0;padding:0 10px 80px;position:relative;z
 <img src="logo2.png" alt="Logo" onerror="this.src='logo3.png'">
 <div style="min-width:0"><div class="brand">TOKO SIAP ANTAR</div><div class="greet" id="welcomeTop">Halo, Kak, <b>Admin</b></div><div class="sub">Admin Panel - E-Wallet</div></div>
 </div><button id="logoutBtn" class="logout">Login</button></div></header>
-<div id="tandaFileBaru" style="max-width:820px;margin:10px auto 0;padding:10px 12px;background:#ffcc00;color:#111;border:2px solid #111;border-radius:12px;font-weight:900;text-align:center;font-size:14px">✅ FILE BARU V8 - 11 NOV - FIX PERBAIKI + BACA TRACKING - Kalau banner ini tidak ada, berarti file lama yang kebuka</div>
+<div id="tandaFileBaru" style="max-width:820px;margin:10px auto 0;padding:10px 12px;background:#ffcc00;color:#111;border:2px solid #111;border-radius:12px;font-weight:900;text-align:center;font-size:14px">✅ FILE BARU V9 - 11 NOV - FIX PERBAIKI + BACA TRACKING - Kalau banner ini tidak ada, berarti file lama yang kebuka</div>
 <main><section id="dashboard">
 <div class="panel">
 <div class="wallet-label">Saldo Admin (Laba)</div><div class="balance" id="balance">Memuat saldo...</div>
@@ -85,9 +85,10 @@ main{max-width:820px;margin:-10px auto 0;padding:0 10px 80px;position:relative;z
 <div class="wallet-stat"><div class="label">Total Pendapatan</div><div class="value" id="income">Memuat...</div></div>
 <div class="wallet-stat"><div class="label">Total Dicairkan</div><div class="value" id="withdrawn">Memuat...</div></div>
 </div><div id="actionMsg"></div>
-<button id="fixAdminSaldoBtn" class="btn btn-yellow" style="width:100%;margin-top:8px;padding:10px;font-weight:800">🔧 Perbaiki Saldo Admin - V8 BARU - + Selesaikan Titipan Kurir</button>
-<div id="fixAdminSaldoInfo" style="font-size:11px;color:#666;margin-top:6px">Tombol ini menjumlah 5% dari semua pesanan status selesai yang belum dihitung ke admin, lalu masukkan ke admin_saldo/total. Kalau sudah pernah diperbaiki, tidak akan double.</div>
+<button id="fixAdminSaldoBtn" class="btn btn-yellow" style="width:100%;margin-top:8px;padding:10px;font-weight:800">🔧 Perbaiki Saldo Admin - V9 BARU - + Selesaikan Titipan Kurir</button>
+<div id="fixAdminSaldoInfo" style="font-size:11px;color:#666;margin-top:6px">Perbaiki hanya untuk pesanan SUDAH SELESAI (sudah disetujui). Yang masih menunggu verifikasi resi, pakai tombol Setujui di atas. Tombol ini menjumlah 5% dari semua pesanan status selesai yang belum dihitung ke admin, lalu masukkan ke admin_saldo/total. Kalau sudah pernah diperbaiki, tidak akan double.</div>
 </div>
+<div class="panel"><h2 style="margin:0 0 6px;font-size:14px;font-weight:800">⏳ Menunggu Verifikasi Admin - Resi Mitra</h2><div style="font-size:11px;color:#666;margin-bottom:10px">Mitra kirim resi -> admin cek resi di sini -> klik Setujui & Bagi Saldo, baru saldo mitra + admin 5% dibagi. Jangan pakai Perbaiki untuk yang belum disetujui.</div><div id="verifikasiResiQueue" class="list">Memuat data...</div></div>
 <div class="panel"><div style="margin-bottom:12px"><h2 style="margin:0;font-size:14px;font-weight:800">Navigasi Admin</h2></div><div class="grid">
 <a class="menu" href="./semua-pesanan-admin.html"><div class="menu-icon">📦</div><b>Pesanan</b><small>Fix Saldo</small></a>
 <a class="menu" href="./data-mitra.html"><div class="menu-icon">🏪</div><b>Mitra</b><small>Mitra Usaha</small></a>
@@ -113,7 +114,7 @@ let user=null;
 const money=n=>'Rp '+Number(n||0).toLocaleString('id-ID');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function msg(s,ok=false){const el=$('actionMsg');if(!el)return;el.className=ok?'ok':'err';el.textContent=s;el.style.display='block'}
-await setPersistence(auth,browserLocalPersistence).catch(()=>{}); console.log('FILE BARU V8 - EWALLET ADMIN - FIX PERBAIKI + TRACKING');
+await setPersistence(auth,browserLocalPersistence).catch(()=>{}); console.log('FILE BARU V9 - EWALLET ADMIN - FIX PERBAIKI + TRACKING');
 
 /* Profil hanya untuk sapaan. Saldo admin tidak lagi diambil dari users/{uid}. */
 async function getProfileAny(u){
@@ -137,6 +138,33 @@ function loadAdminWallet(){
   }catch(e){ $('balance').textContent='Tidak dapat dimuat'; msg('Gagal membaca saldo admin: '+e.message); }
 }
 
+async function loadVerifikasiResi(){
+  const box=$('verifikasiResiQueue'); if(!box) return;
+  try{
+    const q=query(collection(db,'orders'), where('status','==','menunggu_verifikasi_admin'), limit(20));
+    const snap=await getDocs(q).catch(()=>({docs:[]}));
+    if(!snap.docs?.length){ box.innerHTML='<div style="font-size:12px;color:#999">Tidak ada resi menunggu verifikasi</div>'; return; }
+    box.innerHTML = await Promise.all(snap.docs.map(async d=>{
+      const x={id:d.id, ...d.data()};
+      const total=Number(x.total||0);
+      let sub=Number(x.subtotal ?? x.subTotal ?? 0);
+      let ong=Number(x.ongkir ?? x.ongkosKirim ?? 0);
+      if(!sub && total && ong) sub=total-ong;
+      if(!sub && total && !ong) sub=total;
+      const adminFee=Number(x.adminFee||0) || Math.round((sub+ong)*0.05);
+      const mitraUid=String(x.mitraUid||x.mitraUsahaUid||x.acceptedByMitraUid||x.ownerUid||'');
+      let mitraNama='Mitra';
+      try{ const us=await getDoc(doc(db,'users',mitraUid)); if(us.exists()) mitraNama=us.data().nama||us.data().namaUsaha||mitraNama; }catch(_){}
+      const mitraCredit = x.kurirUid ? sub : Math.max(0, (sub+ong)-adminFee);
+      return `<div class="item" style="border:1px solid #eee;border-radius:10px;padding:10px;margin-bottom:8px">
+        <strong>${esc(x.nomorPesanan||x.id)} - ${esc(mitraNama)}</strong>
+        <div style="font-size:12px;color:#444;margin-top:4px">Total: <b>${money(total)}</b> • Subtotal: ${money(sub)} • Ongkir: ${money(ong)} • Admin 5%: <b>${money(adminFee)}</b> • Mitra dapat: <b>${money(mitraCredit)}</b></div>
+        <div style="margin-top:8px;background:#f7faf8;border:1px solid #e2eee7;border-radius:8px;padding:8px"><b style="font-size:11px">📄 RESI (OCR) - CEK DULU SEBELUM SETUJUI:</b><div style="font-size:12px;white-space:pre-wrap;margin-top:4px">${esc(x.resiOcrText||'(tidak ada teks resi)')}</div><div style="font-size:11px;color:#666;margin-top:4px">File: ${esc(x.resiNamaFile||'-')}</div></div>
+        <div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-yellow" data-action="approve-resi" data-id="${esc(x.id)}" data-mitra="${esc(mitraUid)}" data-adminfee="${adminFee}" data-mitrac="${mitraCredit}">✅ Cek Resi Sudah Benar - Setujui & Bagi Saldo</button><button class="btn btn-black" data-action="reject" data-col="orders" data-id="${esc(x.id)}">Tolak</button></div>
+      </div>`;
+    })).then(a=>a.join(''));
+  }catch(e){ box.innerHTML='<div style="font-size:12px;color:#b42318">Gagal: '+esc(e.message)+'</div>'; }
+}
 async function loadQueues(){
  try{
   const topupQ=query(collection(db,'ewallet_topups'),where('status','==','menunggu'),orderBy('createdAt','desc'),limit(20));
@@ -238,7 +266,7 @@ window.addEventListener('pageshow',()=>{if(user){loadAdminWallet();loadQueues()}
         if(adminCredit>0){ tambah+=adminCredit; hitung++; toMark.push(d.id); }
         else skip++;
       });
-      if(tambah===0 && toPotongKurir.length===0 && toBagiMitra.length===0){ msg('Tidak ada pesanan selesai yang belum dihitung ke admin. Saldo sudah benar.', true); btn.disabled=false; btn.textContent='🔧 Perbaiki Saldo Admin - V8 BARU - + Selesaikan Titipan Kurir + Potong Kurir + Bagi Mitra'; return; }
+      if(tambah===0 && toPotongKurir.length===0 && toBagiMitra.length===0){ msg('Tidak ada pesanan selesai yang belum dihitung ke admin. Saldo sudah benar.', true); btn.disabled=false; btn.textContent='🔧 Perbaiki Saldo Admin - V9 BARU - + Selesaikan Titipan Kurir + Potong Kurir + Bagi Mitra'; return; }
       await runTransaction(db, async tx=>{
         const ref=doc(db,'admin_saldo','total');
         const snap=await tx.get(ref);
@@ -291,7 +319,7 @@ window.addEventListener('pageshow',()=>{if(user){loadAdminWallet();loadQueues()}
       });
       msg('Perbaikan berhasil ✅ Admin +Rp '+tambah.toLocaleString('id-ID')+' dari '+hitung+' pesanan. Kurir dipotong '+toPotongKurir.length+' pesanan. Mitra dibagi '+toBagiMitra.length+' pesanan. '+skip+' pesanan sudah dihitung sebelumnya.', true);
     }catch(e){ msg('Gagal perbaiki: '+e.message); }
-    btn.disabled=false; btn.textContent='🔧 Perbaiki Saldo Admin - V8 BARU - + Selesaikan Titipan Kurir + Potong Kurir + Bagi Mitra';
+    btn.disabled=false; btn.textContent='🔧 Perbaiki Saldo Admin - V9 BARU - + Selesaikan Titipan Kurir + Potong Kurir + Bagi Mitra';
   };
 document.addEventListener('click',async e=>{
  const b=e.target.closest('[data-action]');if(!b)return;
@@ -299,7 +327,7 @@ document.addEventListener('click',async e=>{
  if(!user){alert('Login dulu di profil.html');location.href='./profil.html';return}
  if(action==='reject'){
   if(!confirm('Tolak '+id+'?'))return;b.disabled=true;
-  try{await updateDoc(doc(db,col,id),{status:'ditolak',reviewedBy:user.uid,reviewedAt:serverTimestamp()});msg('Ditolak',true);await loadQueues()}
+  try{await updateDoc(doc(db,col,id),{status:'ditolak',reviewedBy:user.uid,reviewedAt:serverTimestamp()});msg('Ditolak',true);await loadQueues(); loadVerifikasiResi(); await loadVerifikasiResi();}
   catch(x){msg('Gagal: '+x.message);b.disabled=false}return;
  }
  if(action==='approve-topup'){
@@ -313,8 +341,42 @@ document.addEventListener('click',async e=>{
     tx.update(ur,{saldoEwallet:nw,saldoWallet:nw,saldo:nw,totalTopup:Number(d.totalTopup||0)+amount,updatedAt:serverTimestamp()});
     tx.update(tr,{status:'disetujui',reviewedBy:user.uid,reviewedAt:serverTimestamp()});
    });
-   msg('Top-up disetujui ✅',true);await loadQueues();
+   msg('Top-up disetujui ✅',true);await loadQueues(); loadVerifikasiResi(); await loadVerifikasiResi();;
   }catch(x){msg('Gagal: '+x.message);b.disabled=false}return;
+ }
+ if(action==='approve-resi'){
+  const orderId=id, mitraUid=b.dataset.mitra||'', adminFee=Number(b.dataset.adminfee||0), mitraCredit=Number(b.dataset.mitrac||0);
+  if(!orderId || !mitraUid){ msg('Data resi tidak valid.'); return; }
+  if(!confirm('CEK RESI SUDAH BENAR? Setujui & bagi saldo: Mitra +'+money(mitraCredit)+' , Admin +'+money(adminFee)+'?')) return;
+  b.disabled=true;
+  try{
+    await runTransaction(db, async tx=>{
+      const oref=doc(db,'orders',orderId);
+      const osnap=await tx.get(oref);
+      if(!osnap.exists()) throw new Error('Pesanan tidak ditemukan');
+      const od=osnap.data();
+      if(String(od.status||'').toLowerCase()!=='menunggu_verifikasi_admin') throw new Error('Pesanan tidak lagi menunggu verifikasi');
+      const mref=doc(db,'users',mitraUid);
+      const msnap=await tx.get(mref);
+      if(!msnap.exists()) throw new Error('Mitra tidak ditemukan');
+      const md=msnap.data();
+      const curM=Number(md.saldoEwallet ?? md.saldoWallet ?? md.saldo ?? 0);
+      const nwM=curM + mitraCredit;
+      const aref=doc(db,'admin_saldo','total');
+      const asnap=await tx.get(aref);
+      const ad=asnap.exists()?asnap.data():{};
+      const oldSaldo=Number(ad.saldo||0);
+      const oldPend=Number(ad.totalPendapatanPesanan??ad.totalPendapatan??0);
+      // Tulis semua
+      tx.update(oref,{status:'selesai', menungguApprovalAdmin:false, approvalAdminAt:serverTimestamp(), approvalAdminBy:user.uid, adminFee:adminFee, adminFeeDibayar:true, adminFeeDibayarAt:serverTimestamp(), adminSaldoMasuk:true, mitraSaldoMasuk:true, mitraDibagiAt:serverTimestamp(), adminSaldoDiperbaikiAt:serverTimestamp(), updatedAt:serverTimestamp()});
+      tx.update(mref,{saldoEwallet:nwM, saldoWallet:nwM, saldo:nwM, updatedAt:serverTimestamp()});
+      if(asnap.exists()) tx.update(aref,{saldo:oldSaldo+adminFee, totalPendapatanPesanan:oldPend+adminFee, totalPendapatan:oldPend+adminFee, updatedAt:serverTimestamp()});
+      else tx.set(aref,{saldo:adminFee, totalPendapatanPesanan:adminFee, totalPendapatan:adminFee, totalDicairkan:0, createdAt:serverTimestamp(), updatedAt:serverTimestamp()});
+    });
+    msg('Resi disetujui ✅ Mitra +'+money(mitraCredit)+', Admin +'+money(adminFee)+'.', true);
+    await loadVerifikasiResi(); await loadQueues();
+  }catch(x){ msg('Gagal setujui resi: '+x.message); b.disabled=false; }
+  return;
  }
  if(action==='approve-withdraw'){
   if(!uid||!Number.isFinite(amount)||amount<=0){msg('Data pencairan tidak valid.');return}
@@ -327,7 +389,7 @@ document.addEventListener('click',async e=>{
     tx.update(ur,{saldoEwallet:nw,saldoWallet:nw,saldo:nw,totalDicairkan:Number(d.totalDicairkan||0)+amount,updatedAt:serverTimestamp()});
     tx.update(wr,{status:'disetujui',reviewedBy:user.uid,reviewedAt:serverTimestamp(),saldoBefore:old,saldoAfter:nw,saldoDipotong:amount});
    });
-   msg('Pencairan disetujui & potong '+money(amount)+' ✅',true);await loadQueues();
+   msg('Pencairan disetujui & potong '+money(amount)+' ✅',true);await loadQueues(); loadVerifikasiResi(); await loadVerifikasiResi();;
   }catch(x){msg('Gagal: '+x.message);b.disabled=false}
  }
 });
