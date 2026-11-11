@@ -21,7 +21,7 @@
   font-family: "Optimistic Mono", ui-monospace, monospace;
 }
 </style><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>V3 BARU - Riwayat Penolakan - Toko Siap Antar</title>
+<title>V4 BARU - REFUND CATAT MUTASI - V3 BARU - Riwayat Penolakan - Toko Siap Antar</title>
 <style>
 :root{--yellow:#ffcc00;--ink:#171717;--green:#008b5a;--muted:#64756f;--bg:#f1f2f4;--line:#e6e7e8}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:#171717;font:14px/1.4 system-ui,sans-serif;padding-bottom:80px}
@@ -208,7 +208,10 @@ document.addEventListener('click', async e=>{
       if(!psnap.exists()) throw new Error('Akun pelanggan tidak ditemukan');
       const pd=psnap.data();
       const curP=Number(pd.saldoEwallet ?? pd.saldoWallet ?? pd.saldo ?? 0);
-      tx.update(pref,{saldoEwallet:curP+total, saldoWallet:curP+total, saldo:curP+total, updatedAt:serverTimestamp()});
+      // FIX V4: Refund dicatat di ewallet_transactions biar muncul di Riwayat Mutasi pelanggan + bisa dicairkan / dipakai belanja
+      const refundTxRef=doc(collection(db,'ewallet_transactions'));
+      tx.set(refundTxRef,{uid:pelangganUid, email:pd.email||'', role:'pelanggan', type:'Refund Pesanan Dibatalkan', direction:'credit', amount:total, balanceBefore:curP, balanceAfter:curP+total, orderId:orderId, nomorPesanan:od.nomorPesanan||orderId, status:'berhasil', createdAt:serverTimestamp(), paidAt:serverTimestamp(), note:'Refund pesanan '+(od.nomorPesanan||orderId)+' yang dibatalkan. Saldo bisa dicairkan & dipakai belanja produk lain.'});
+      tx.update(pref,{saldoEwallet:curP+total, saldoWallet:curP+total, saldo:curP+total, totalRefund:(Number(pd.totalRefund||0)+total), updatedAt:serverTimestamp()});
       tx.update(oref,{status:'dibatalkan', statusSebelumnya:String(od.status||''), dibatalkanOleh:'admin', dibatalkanAt:serverTimestamp(), refundMasuk:true, refundNominal:total, refundKePelangganUid:pelangganUid, refundAt:serverTimestamp(), refundDariHalaman:'riwayat-penolakan', adminSaldoMasuk:false, mitraSaldoMasuk:false, kurirSaldoDipotong:false, updatedAt:serverTimestamp()});
     });
     alert('✅ Refund berhasil dieksekusi di sini. Saldo sudah masuk ke e-wallet pelanggan.');
