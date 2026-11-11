@@ -21,7 +21,7 @@
   font-family: "Optimistic Mono", ui-monospace, monospace;
 }
 </style><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>V2 BARU - Riwayat Penolakan - Toko Siap Antar</title>
+<title>V3 BARU - Riwayat Penolakan - Toko Siap Antar</title>
 <style>
 :root{--yellow:#ffcc00;--ink:#171717;--green:#008b5a;--muted:#64756f;--bg:#f1f2f4;--line:#e6e7e8}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:#171717;font:14px/1.4 system-ui,sans-serif;padding-bottom:80px}
@@ -46,7 +46,7 @@ input[type=text]{width:100%;padding:10px 12px;border:1px solid #ddd;border-radiu
 </style></head>
 <body>
 <header><div class="head"><div><div class="brand">TOKO SIAP ANTAR</div><div class="sub">Admin Panel - Riwayat Penolakan</div><div class="greet">Halo, Kak, <b id="adminName">Admin</b> • Riwayat Penolakan</div></div><button class="logout" onclick="location.href='ewallet-admin.html'">← E-Wallet</button></div></header>
-<div style="max-width:900px;margin:10px auto 0;padding:10px 12px;background:#ffcc00;color:#111;border:2px solid #111;border-radius:12px;font-weight:900;text-align:center;font-size:14px">✅ FILE BARU V2 - RIWAYAT PENOLAKAN - Kalau banner ini tidak ada, berarti file lama yang kebuka</div>
+<div style="max-width:900px;margin:10px auto 0;padding:10px 12px;background:#ffcc00;color:#111;border:2px solid #111;border-radius:12px;font-weight:900;text-align:center;font-size:14px">✅ FILE BARU V3 - RIWAYAT PENOLAKAN - Kalau banner ini tidak ada, berarti file lama yang kebuka</div>
 <main>
 <div class="panel"><h1 style="font-size:20px;margin:4px 0 4px">📦 Riwayat Penolakan</h1><div class="muted">Dipisah biar jelas: produk apa yang ditolak, siapa yang menolak, saldo dikembalikan ke siapa.</div>
 <div class="notice" style="margin-top:10px">Admin yang approve pending. Mitra tolak / Kurir tolak / Ojek tolak semua masuk sini. <b>Eksekusi refund di sini aja</b> (tombol di tiap order), tidak perlu balik ke e-wallet. Tombol WA yang menolak juga ada di tiap order.</div>
@@ -122,6 +122,10 @@ async function load(){
     render();
   }catch(e){ $('list').innerHTML='<div style="color:#b42318">Gagal: '+esc(e.message)+'</div>'; }
 }
+function isOjekOrder(x){
+  const s = String((x.jenisLayanan||x.layanan||x.kategori||x.jenis||x.tipe||x.jenisOrder||x.metodePengiriman||x.shippingMethod||x.pengiriman||'') + ' ' + (x.jenisKendaraan||'')).toLowerCase();
+  return s.includes('ojek');
+}
 function kategori(x){
   const s=String(x.status||'').toLowerCase();
   if(s==='ditolak_mitra') return 'ditolak_mitra';
@@ -153,6 +157,7 @@ function render(){
   $('list').innerHTML=list.map(x=>{
     const kat=kategori(x);
     const badge = kat==='ditolak_mitra' ? '<span class="badge badge-mitra">🏪 DITOLAK MITRA</span>' : kat==='ditolak_kurir' ? '<span class="badge badge-kurir">🛵 DITOLAK KURIR / OJEK</span>' : kat==='dibatalkan' ? '<span class="badge badge-batal">🗑️ DIBATALKAN</span>' : '<span class="badge badge-kurir">↩️ KURIR MENOLAK → BALIK MITRA</span>';
+    const badgeOjek = isOjek ? '<span class="badge" style="background:#e8f8ee;color:#087443">🛵 OJEK - COD - TANPA REFUND</span>' : '';
     const items=Array.isArray(x.items)&&x.items.length ? x.items.map(it=>`<div>• ${esc(it.name||it.nama||'Produk')} x ${it.qty||1} - ${money(it.price||it.harga||0)}</div>`).join('') : `<div>• ${esc(x.namaProduk||x.produk||'Produk tidak tercatat')} - Total ${money(x.total||0)}</div>`;
     const uidPenolak = x.ditolakOlehMitraUid || x.ditolakOlehKurirUid || x.dibatalkanOlehKurirUid || (x.kurirMenolak ? (x.ditolakOlehKurirUid||x.kurirUid) : '') || '';
     const waPenolak = uidPenolak ? waLink(uidPenolak) : '';
@@ -160,13 +165,14 @@ function render(){
     const siapaMenolak = x.ditolakOlehMitraUid ? `🏪 Mitra: <b>${esc(x._namaPenolak||x._namaMitra)}</b> (UID: ${esc(x.ditolakOlehMitraUid)})` : (x.ditolakOlehKurirUid||x.kurirMenolak) ? `🛵 Kurir / Ojek: <b>${esc(x._namaPenolak||x._namaKurir)}</b> (UID: ${esc(x.ditolakOlehKurirUid||x.kurirUid||'-')})` : x.status==='dibatalkan' ? `🗑️ Dibatalkan oleh Admin` : '-';
     const alasan = x.alasanTolakMitra||x.alasanTolakKurir||x.alasanBatalKurir||x.pesanKurirMenolak||x.alasanTolak||'-';
     const payRaw=String(x.metodePembayaran||x.paymentMethod||'').toLowerCase();
-    const isCOD = payRaw.includes('cod');
+    const isOjek = isOjekOrder(x);
+    const isCOD = payRaw.includes('cod') || isOjek; // V3: Ojek selalu COD, jangan refund
     const uidPelanggan = x.pelangganUid||x.customerUid||x.userUid||x.uid||x.pembeliUid||'';
     const waPelanggan = uidPelanggan ? waLink(uidPelanggan) : '';
     const waBtnPelanggan = waPelanggan ? `<a href="${waPelanggan}" target="_blank" rel="noopener" style="display:inline-block;margin-top:6px;background:#25D366;color:#fff;padding:6px 10px;border-radius:8px;font-weight:800;text-decoration:none;font-size:12px">💬 WA Pelanggan</a>` : '';
     const tombolRefund = (!isCOD && x.refundMasuk!==true && Number(x.total||0)>0 && uidPelanggan) ? `<button class="btn btn-yellow" data-action="eksekusi-refund" data-id="${esc(x.id)}" data-pelanggan="${esc(uidPelanggan)}" data-total="${Number(x.total||0)}" style="margin-top:8px">💰 Eksekusi Refund Di Sini - Rp ${Number(x.total||0).toLocaleString('id-ID')} ke E-Wallet Pelanggan</button>` : '';
-    const refundHtml = x.refundMasuk===true ? `<span class="badge badge-refund">✅ SUDAH REFUND Rp ${Number(x.refundNominal||0).toLocaleString('id-ID')}</span><div style="font-size:12px;margin-top:4px">Saldo dikembalikan ke: <b>Pelanggan ${esc(x._namaPelanggan)}</b> (UID: ${esc(uidPelanggan)}) • E-Wallet Pelanggan • ${fmtDate(x.refundAt)}</div>${waBtnPelanggan}` : isCOD ? `<span class="badge badge-belum">COD - Tidak ada refund (bayar di tempat)</span>` : (x.status==='dibatalkan' ? `<span class="badge badge-belum">⚠️ Belum refund - klik Eksekusi Refund di bawah</span>${tombolRefund}` : `<span class="badge badge-belum">⏳ Belum refund - Order masih jalan / dicarikan pengganti</span><div style="font-size:12px;margin-top:4px">Kalau akhirnya dibatalkan total, saldo akan dikembalikan ke: <b>Pelanggan ${esc(x._namaPelanggan)}</b> sebesar ${money(x.total||0)}</div>${tombolRefund}`);
-    return `<div class="card"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><strong>${esc(x.nomorPesanan||x.id)}</strong>${badge}</div><div class="muted" style="font-size:12px">${fmtDate(x.updatedAt||x.createdAt)} • Total ${money(x.total||0)} • Bayar: ${esc(x.metodePembayaran||x.paymentMethod||'-')}</div>
+    const refundHtml = x.refundMasuk===true ? `<span class="badge badge-refund">✅ SUDAH REFUND Rp ${Number(x.refundNominal||0).toLocaleString('id-ID')}</span><div style="font-size:12px;margin-top:4px">Saldo dikembalikan ke: <b>Pelanggan ${esc(x._namaPelanggan)}</b> (UID: ${esc(uidPelanggan)}) • E-Wallet Pelanggan • ${fmtDate(x.refundAt)}</div>${waBtnPelanggan}` : isCOD ? `<span class="badge badge-belum">OJEK / COD - Tidak ada refund (bayar di tempat)</span>` : (x.status==='dibatalkan' ? `<span class="badge badge-belum">⚠️ Belum refund - klik Eksekusi Refund di bawah</span>${tombolRefund}` : `<span class="badge badge-belum">⏳ Belum refund - Order masih jalan / dicarikan pengganti</span><div style="font-size:12px;margin-top:4px">Kalau akhirnya dibatalkan total, saldo akan dikembalikan ke: <b>Pelanggan ${esc(x._namaPelanggan)}</b> sebesar ${money(x.total||0)}</div>${tombolRefund}`);
+    return `<div class="card"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><strong>${esc(x.nomorPesanan||x.id)}</strong><span>${badge} ${badgeOjek}</span></div><div class="muted" style="font-size:12px">${fmtDate(x.updatedAt||x.createdAt)} • Total ${money(x.total||0)} • Bayar: ${esc(x.metodePembayaran||x.paymentMethod||'-')}</div>
     <div style="margin-top:10px"><b style="font-size:12px">📦 PRODUK APA YANG DITOLAK:</b><div style="margin-top:4px;font-size:13px">${items}</div></div>
     <div style="margin-top:10px;background:#fff8d8;border:1px solid #f4df80;border-radius:10px;padding:10px"><b style="font-size:12px">❌ SIAPA YANG MENOLAK:</b><div style="font-size:13px;margin-top:4px">${siapaMenolak}</div><div style="font-size:12px;margin-top:2px">Alasan: <b>${esc(alasan)}</b></div><div style="font-size:12px">Mitra awal: ${esc(x._namaMitra)} • Kurir awal: ${esc(x._namaKurir)}</div>${waBtnPenolak}</div>
     <div style="margin-top:10px;background:#f0fdf4;border:1px solid #c8eecf;border-radius:10px;padding:10px"><b style="font-size:12px">💰 KEPADA SIAPA SALDO DIKEMBALIKAN:</b><div style="margin-top:4px">${refundHtml}</div></div>
@@ -185,6 +191,8 @@ document.addEventListener('click', async e=>{
   if(!btn) return;
   const orderId=btn.dataset.id, pelangganUid=btn.dataset.pelanggan, total=Number(btn.dataset.total||0);
   if(!orderId || !pelangganUid || !total) return alert('Data refund tidak valid');
+  const _ord = allData.find(o=>o.id===orderId);
+  if(_ord && isOjekOrder(_ord)) return alert('Ojek jangan di-refund, karena pembayaran COD (bayar di tempat).');
   if(!confirm(`Eksekusi refund Rp ${total.toLocaleString('id-ID')} ke e-wallet pelanggan di sini? Saldo pelanggan akan bertambah, order jadi dibatalkan.`)) return;
   btn.disabled=true; btn.textContent='Memproses refund...';
   try{
@@ -194,6 +202,7 @@ document.addEventListener('click', async e=>{
       if(!osnap.exists()) throw new Error('Pesanan tidak ditemukan');
       const od=osnap.data();
       if(od.refundMasuk===true) throw new Error('Refund sudah pernah masuk, tidak bisa double');
+      if(isOjekOrder(od)) throw new Error('Ojek jangan di-refund, karena COD.');
       const pref=doc(db,'users',pelangganUid);
       const psnap=await tx.get(pref);
       if(!psnap.exists()) throw new Error('Akun pelanggan tidak ditemukan');
