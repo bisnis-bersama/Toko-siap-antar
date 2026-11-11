@@ -24,7 +24,7 @@
 </style>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>V2 BARU - E-Wallet Kurir | Toko Siap Antar</title>
+<title>V3 BARU - BERSIH PRO - E-Wallet Kurir | Toko Siap Antar</title>
 <style>
 @font-face{font-family:"Optimistic";font-style:normal;font-weight:400 600;font-display:swap;src:url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2")}
 @font-face{font-family:"Optimistic Mono";font-style:normal;font-weight:400;font-display:swap;src:url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2")}
@@ -87,18 +87,21 @@ input,select{width:100%;border:1px solid #cbd1d6;border-radius:10px;padding:10px
 <form id="loginForm"><label>Email</label><input id="email" type="email" autocomplete="username" required><label>Password</label><input id="password" type="password" autocomplete="current-password" required><button class="submit" style="width:100%;margin-top:12px" type="submit">Masuk</button></form><div id="loginMsg" class="err hidden"></div></section>
 <section id="dashboard" class="hidden">
 <div class="panel wallet"><div class="wallet-label">SALDO TERSEDIA</div><div class="balance" id="balance">Rp 0</div>
-<div class="wallet-row">
-<div class="wallet-stat"><span>Total ongkir bruto</span><strong id="grossIncome">Rp 0</strong></div>
-<div class="wallet-stat"><span>Potongan admin 5%</span><strong id="adminCut">Rp 0</strong></div>
+<div class="wallet-row" style="grid-template-columns:1fr 1fr">
 <div class="wallet-stat"><span>Pendapatan bersih</span><strong id="income">Rp 0</strong></div>
 <div class="wallet-stat"><span>Total dicairkan</span><strong id="withdrawn">Rp 0</strong></div>
-</div></div>
+</div>
+<details style="margin-top:10px;border:1px solid #eee;border-radius:10px"><summary style="list-style:none;cursor:pointer;padding:10px 12px;font-weight:800;font-size:13px">Rincian</summary><div style="padding:0 12px 12px"><div class="wallet-row">
+<div class="wallet-stat"><span>Total ongkir bruto</span><strong id="grossIncome">Rp 0</strong></div>
+<div class="wallet-stat"><span>Potongan admin 5%</span><strong id="adminCut">Rp 0</strong></div>
+</div></div></details>
+</div>
 <div class="panel"><div class="section-title"><h2>Menu Kurir</h2><span>3 MENU UTAMA</span></div>
 <div class="menu-grid">
-<a class="menu" href="./pesanan-tersedia-kurir.html" id="menuPesananMasukKurir"><span class="menu-icon">📦</span><span class="dot" id="dotPesananMasukKurir"></span><b>Pesanan Masuk</b></a>
-<a class="menu" href="./orderan-kurir.html" id="menuOrderanGojekKurir"><span class="menu-icon">🛵</span><span class="dot" id="dotOrderanGojekKurir"></span><b>Orderan Gojek</b></a>
+<a class="menu" href="./pesanan-tersedia-kurir.html"><span class="menu-icon">📦</span><span class="dot" id="dotPesananMasukKurir"></span><b>Pesanan Masuk</b></a>
+<a class="menu" href="./orderan-kurir.html"><span class="menu-icon">🛵</span><span class="dot" id="dotOrderanGojekKurir"></span><b>Orderan Gojek</b></a>
 <a class="menu" href="./riwayat-pengantaran-kurir.html"><span class="menu-icon">↻</span><b>Riwayat</b></a>
-</div><div class="notice">Pendapatan kurir berasal dari ongkir pesanan yang ditugaskan kepada kurir internal. Potongan admin sebesar 5% dihitung dari ongkir bruto. Ongkir mitra dan ekspedisi tidak masuk saldo kurir.</div>
+</div><details style="margin-top:10px;border:1px solid #eee;border-radius:10px"><summary style="list-style:none;cursor:pointer;padding:10px 12px;font-weight:800;font-size:13px">ⓘ Info</summary><div style="padding:0 12px 12px;font-size:12px;color:#666;line-height:1.6">Pendapatan kurir berasal dari ongkir pesanan yang ditugaskan kepada kurir internal. Potongan admin 5% dihitung dari ongkir bruto. Ongkir mitra dan ekspedisi tidak masuk saldo kurir.</div></details>
 </div>
 <div class="panel"><div class="section-title"><h2>Kelola Saldo</h2><span>KURIR</span></div>
 <div class="tabs"><button class="active" data-tab="topup">＋ Top-up</button><button data-tab="withdraw">↗ Pencairan</button><button data-tab="bank">🏦 Rekening</button></div>
@@ -111,21 +114,19 @@ input,select{width:100%;border:1px solid #cbd1d6;border-radius:10px;padding:10px
 <div class="panel"><div class="section-title"><h2>Riwayat Pendapatan Ongkir</h2><span>MUTASI KURIR</span></div><div id="transactions" class="list"><div class="muted">Memuat mutasi…</div></div></div>
 <div class="panel"><div class="section-title"><h2>Riwayat Top-up & Pencairan</h2><span>STATUS</span></div><div id="requests" class="list"><div class="muted">Belum ada pengajuan.</div></div></div>
 </section></main>
-<nav id="bottomNav" class="bottom hidden"><a href="./pesanan-tersedia-kurir.html" id="bottomPesananKurir"><span class="ico">📦</span><span class="dot" id="dotBottomPesananKurir"></span>Pesanan Masuk</a><a href="./pengantaran-kurir.html" id="bottomPengantaranKurir"><span class="ico">🛵</span><span class="dot" id="dotBottomPengantaranKurir"></span>Pengantaran</a><a href="./riwayat-pengantaran-kurir.html"><span class="ico">↻</span>Riwayat</a></nav>
+<nav id="bottomNav" class="bottom hidden"><a href="./pesanan-tersedia-kurir.html"><span class="ico">📦</span><span class="dot" id="dotBottomPesananKurir"></span>Pesanan Masuk</a><a href="./pengantaran-kurir.html"><span class="ico">🛵</span><span class="dot" id="dotBottomPengantaranKurir"></span>Pengantaran</a><a href="./riwayat-pengantaran-kurir.html"><span class="ico">↻</span>Riwayat</a></nav>
 <script type="module">
 import {auth,db} from "./firebase-config.js";
-import {async function hitungNotifKurir(uid){
+import {onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+import {doc,getDoc,collection,query,where,getDocs,addDoc,updateDoc,serverTimestamp,limit} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+const $=id=>document.getElementById(id),ROLE='kurir';
+let notifKurirTimer=null;
+async function hitungNotifKurir(uid){
   try{
     let masuk=0, antar=0;
-    const q1=query(collection(db,'orders'), where('status','==','mencari_kurir'), limit(50));
-    const s1=await getDocs(q1);
-    s1.docs.forEach(d=>{ const x=d.data(); const ditolak=Array.isArray(x.ditolakOleh)?x.ditolakOleh.map(String):[]; if(!ditolak.includes(String(uid))) masuk++; });
-    const q2=query(collection(db,'orders'), where('status','==','menunggu_kurir'), limit(50));
-    const s2=await getDocs(q2);
-    s2.docs.forEach(d=>{ const x=d.data(); const ditolak=Array.isArray(x.ditolakOleh)?x.ditolakOleh.map(String):[]; if(!ditolak.includes(String(uid))) masuk++; });
-    const q3=query(collection(db,'orders'), where('kurirUid','==',String(uid)), limit(50));
-    const s3=await getDocs(q3);
-    s3.docs.forEach(d=>{ const x=d.data(); if(['sedang_mengantar','diterima_kurir'].includes(String(x.status))) antar++; });
+    try{ const s1=await getDocs(query(collection(db,'orders'), where('status','==','mencari_kurir'), limit(50))); s1.docs.forEach(d=>{ const x=d.data(); const ditolak=Array.isArray(x.ditolakOleh)?x.ditolakOleh.map(String):[]; if(!ditolak.includes(String(uid))) masuk++; }); }catch(_){}
+    try{ const s2=await getDocs(query(collection(db,'orders'), where('status','==','menunggu_kurir'), limit(50))); s2.docs.forEach(d=>{ const x=d.data(); const ditolak=Array.isArray(x.ditolakOleh)?x.ditolakOleh.map(String):[]; if(!ditolak.includes(String(uid))) masuk++; }); }catch(_){}
+    try{ const s3=await getDocs(query(collection(db,'orders'), where('kurirUid','==',String(uid)), limit(50))); s3.docs.forEach(d=>{ const x=d.data(); if(['sedang_mengantar','diterima_kurir'].includes(String(x.status))) antar++; }); }catch(_){}
     const d1=document.getElementById('dotPesananMasukKurir'); if(d1) d1.classList.toggle('show', masuk>0);
     const d2=document.getElementById('dotOrderanGojekKurir'); if(d2) d2.classList.toggle('show', masuk>0);
     const d3=document.getElementById('dotBottomPesananKurir'); if(d3) d3.classList.toggle('show', masuk>0);
@@ -133,10 +134,7 @@ import {async function hitungNotifKurir(uid){
     if(masuk>0) document.title=`(${masuk}) Pesanan Baru - E-Wallet Kurir`;
   }catch(e){ console.log('hitung notif kurir gagal', e); }
 }
-setInterval(()=>{ try{ const u=auth.currentUser; if(u) hitungNotifKurir(u.uid); }catch(_){} }, 8000);
-onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-import {doc,getDoc,collection,query,where,getDocs,addDoc,updateDoc,serverTimestamp,limit} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
-const $=id=>document.getElementById(id),ROLE='kurir';
+
 let user=null,profile={},profileDocId=null,balance=0;
 // Isi data rekening admin sesuai rekening penerima top-up.
 const ADMIN_PAYMENT={accounts:[{bank:'BCA',number:'4180734771'},{bank:'SeaBank',number:'901341445605'},{bank:'DANA / GoPay',number:'082319264646'}],accountName:'YUDI ALIYUDIN'};
@@ -196,6 +194,7 @@ onAuthStateChanged(auth,async u=>{
   $('welcomeTop').textContent='Halo, Kak, '+name;$('welcomeTop').style.display='block';
   $('savedBank').value=profile.bankName||'';$('savedNumber').value=profile.bankAccountNumber||'';$('savedName').value=profile.bankAccountName||'';$('savedBank2').value=profile.bankName2||'';$('savedNumber2').value=profile.bankAccountNumber2||'';$('savedName2').value=profile.bankAccountName2||'';$('savedBank3').value=profile.bankName3||'';$('savedNumber3').value=profile.bankAccountNumber3||'';$('savedName3').value=profile.bankAccountName3||'';
   $('loginPanel').classList.add('hidden');$('dashboard').classList.remove('hidden');$('logoutBtn').classList.remove('hidden');$('bottomNav').classList.remove('hidden');
+    hitungNotifKurir(u.uid); if(notifKurirTimer) clearInterval(notifKurirTimer); notifKurirTimer=setInterval(()=>hitungNotifKurir(u.uid), 30000);
   await refresh();
  }catch(x){$('loginPanel').classList.remove('hidden');$('dashboard').classList.add('hidden');$('loginMsg').textContent='Dashboard gagal dibuka: '+x.message;$('loginMsg').classList.remove('hidden');}
 });
