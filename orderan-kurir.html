@@ -355,78 +355,41 @@ window.selesaikanOrder=(id)=>{
 };
 
 async function prosesSelesaikanOrder(id){
-  // Mengikuti pola approveWithdraw(): saldo disinkronkan dan transaksi negatif dicatat.
-  // Pemotongan kurir, pemasukan admin, log, dan status order dilakukan atomik.
-  const logRef=doc(collection(db,'ewallet_transaksi'));
-  await runTransaction(db,async(tx)=>{
-    const orderRef=doc(db,'orders',id);
-    const courierRef=doc(db,'users',currentUser.uid);
-    const adminSaldoRef=doc(db,'admin_saldo','total');
-
-    const [oSnap,kSnap,aSnap]=await Promise.all([
-      tx.get(orderRef), tx.get(courierRef), tx.get(adminSaldoRef)
-    ]);
-    if(!oSnap.exists()) throw new Error('Order tidak ditemukan.');
-    if(!kSnap.exists()) throw new Error('Data kurir tidak ditemukan.');
-
-    const order=oSnap.data();
-    if(!['sedang_mengantar','diterima_kurir'].includes(order.status))
-      throw new Error('Order tidak lagi berstatus sedang mengantar.');
-    if(String(order.kurirUid)!==String(currentUser.uid))
-      throw new Error('Order ini bukan milik akun kurir yang sedang login.');
-    if(order.adminFeeDibayar===true)
-      throw new Error('Potongan admin untuk order ini sudah pernah diproses.');
-
-    const total=Number(order.ongkirBruto ?? order.ongkirKurir ?? order.estimated_fare ?? order.estimatedFare ?? order.fare ?? order.totalOngkir ?? order.ongkir ?? order.total)||0;
-    if(!Number.isFinite(total)||total<=0) throw new Error('Nominal ongkir order tidak valid.');
-
-    const fee=Math.ceil(total*0.05);
-    const courier=kSnap.data();
-    const courierWallet=Number(courier.saldoEwallet ?? courier.saldoWallet ?? courier.saldo ?? 0)||0;
-    if(courierWallet<fee) throw new Error(`Saldo E-Wallet kurir tidak cukup. Dibutuhkan ${rupiah(fee)}, tersedia ${rupiah(courierWallet)}.`);
-
-    const admin=aSnap.exists()?aSnap.data():{};
-    const adminWallet=Number(admin.saldo||0)||0;
-    const oldIncome=Number(admin.totalPendapatanPesanan ?? admin.totalPendapatan ?? 0)||0;
-    const courierAfter=courierWallet-fee;
-    const adminAfter=adminWallet+fee;
-    const incomeAfter=oldIncome+fee;
-
-    tx.update(courierRef,{
-      saldoEwallet:courierAfter, saldoWallet:courierAfter, saldo:courierAfter,
-      updatedAt:serverTimestamp()
-    });
-
-    if(aSnap.exists()){
-      tx.update(adminSaldoRef,{
-        saldo:adminAfter, totalPendapatanPesanan:incomeAfter,
-        totalPendapatan:incomeAfter, updatedAt:serverTimestamp()
-      });
-    }else{
-      tx.set(adminSaldoRef,{
-        saldo:adminAfter, totalPendapatanPesanan:incomeAfter,
-        totalPendapatan:incomeAfter, totalDicairkan:0,
-        createdAt:serverTimestamp(), updatedAt:serverTimestamp()
-      });
-    }
-
-    // Riwayat pemotongan E-Wallet kurir, mengikuti struktur log pencairan.
-    tx.set(logRef,{
-      uid:currentUser.uid, kategori:'biaya_admin_pesanan', jumlah:-fee,
-      saldoSebelum:courierWallet, saldoSesudah:courierAfter,
-      status:'berhasil', createdAt:serverTimestamp(), orderId:id,
-      keterangan:'Potongan biaya admin 5% untuk pesanan selesai'
-    });
-
-    tx.update(orderRef,{
-      status:'selesai', selesaiAt:serverTimestamp(), adminFee:fee,
-      adminFeeDibayar:true, adminFeeDibayarAt:serverTimestamp(),
-      adminSaldoRef:'admin_saldo/total', kurirTerima:total-fee,
-      updatedAt:serverTimestamp()
-    });
+  const o=orderList.find(x=>x.id===id);
+  if(!o) throw new Error('Order tidak ditemukan di list.');
+  if(!['sedang_mengantar','diterima_kurir'].includes(o.status)) throw new Error('Order bukan berstatus sedang mengantar.');
+  if(o.adminFeeDibayar===true) throw new Error('Potongan admin sudah diproses.');
+  const uid=String(currentUser.uid);
+  const isMine=String(o.kurirUid)===uid
+    || String(o.kurirTargetUid)===uid
+    || (Array.isArray(o.ditawarkanKe) && o.ditawarkanKe.map(String).includes(uid))
+    || (Array.isArray(o.kurirPilihanUid) && o.kurirPilihanUid.map(String).includes(uid));
+  if(!isMine) throw new Error('Order ini bukan milik akun kurir yang sedang login.');
+  const total=Number(o.total)||0;
+  if(total<=0) throw new Error('Nominal ongkir tidak valid.');
+  const fee=Math.ceil(total*0.05);
+  await updateDoc(doc(db,'orders',id),{
+    status:'selesai',
+    selesaiAt:serverTimestamp(),
+    adminFee:fee,
+    adminFeeDibayar:true,
+    adminFeeDibayarAt:serverTimestamp(),
+    adminSaldoMasuk:false,
+    kurirTerima:total-fee,
+    updatedAt:serverTimestamp()
   });
+  try{
+    const kSnap=await getDoc(doc(db,'users',currentUser.uid));
+    const wallet=Number(kSnap.data()?.saldoEwallet??0)||0;
+    if(wallet>=fee){
+      await updateDoc(doc(db,'users',currentUser.uid),{saldoEwallet:wallet-fee,updatedAt:serverTimestamp()});
+    }else{
+      await updateDoc(doc(db,'orders',id),{saldoKurirBelumDipotong:true});
+    }
+  }catch(e){
+    await updateDoc(doc(db,'orders',id),{saldoKurirBelumDipotong:true}).catch(()=>{});
+  }
 }
-
 async function refreshSaldoKurir(){
   const snap=await getDoc(doc(db,'users',currentUser.uid));
   if(snap.exists()){
