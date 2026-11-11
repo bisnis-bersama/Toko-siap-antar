@@ -30,7 +30,7 @@
 </style>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>V5 BARU - VERSI LAMA + NOTIF + BERSIH | Toko Siap Antar</title>
+<title>V6 BARU - FIX QRIS + REKENING | Toko Siap Antar</title>
 <style>
 :root{--yellow:#ffcc00;--muted:#64756f;--bg:#f1f2f4;--ok:#087443;--err:#b42318}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:#171717;font:16px/1.45 system-ui,sans-serif;padding-bottom:90px}
@@ -118,10 +118,10 @@ input,select{width:100%;border:1px solid #cbd1d6;border-radius:12px;padding:12px
   </div>
 
   <details class="drop" open><summary>Kelola Saldo</summary><div class="dropContent"><div class="panel" style="margin:0">
-    <div class="tabs"><button class="active" data-tab="topup">＋ Top-up</button><button data-tab="withdraw">↗ Pencairan</button><button data-tab="bank">🏦 Rekening</button></div>
+    <div class="tabs"><button type="button" class="active" data-tab="topup" onclick="switchTabMitra('topup')">＋ Top-up</button><button type="button" data-tab="withdraw" onclick="switchTabMitra('withdraw')">↗ Pencairan</button><button type="button" data-tab="bank" onclick="switchTabMitra('bank')">🏦 Rekening</button></div>
     <section id="topupPane"><form id="topupForm">
       <label>Nominal top-up (Rp)</label><input id="topupAmount" type="number" min="1000" step="1000" required>
-      <label>Metode pembayaran</label><select id="method"><option value="transfer_bank">Transfer bank</option><option value="qris">QRIS</option><option value="metode_lain">Metode lain (konfirmasi admin)</option></select>
+      <label>Metode pembayaran</label><select id="method" onchange="renderPaymentInfoMitra()"><option value="transfer_bank">Transfer bank</option><option value="qris">QRIS</option><option value="metode_lain">Metode lain (konfirmasi admin)</option></select><div id="paymentInfo" class="item" style="margin-top:8px"></div>
       <label>Catatan (opsional)</label><input id="topupNote" maxlength="250"><button class="submit">Ajukan Top-up</button>
     </form><div class="meta">Top-up menunggu verifikasi. Payment gateway otomatis belum dihubungkan.</div></section>
     <section id="withdrawPane" class="hidden"><form id="withdrawForm">
@@ -236,7 +236,6 @@ async function loadPendingCount(){
     if(count>0){badge.textContent=count>99?"99+":count;badge.classList.remove("hidden");}
     else badge.classList.add("hidden");
     const dotBottom=$("dotBottomMasukMitra"); if(dotBottom) dotBottom.classList.toggle("show", count>0);
-    if(count>0) document.title=`(${count}) Pesanan Baru - E-Wallet Mitra`;
   }catch(e){console.log("pending count error",e);}
 }
 $("loginForm").onsubmit=async e=>{
@@ -297,6 +296,32 @@ onAuthStateChanged(auth,async u=>{
     $("loginMsg").textContent="Dashboard gagal dibuka: "+x.message;$("loginMsg").classList.remove("hidden");
   }
 });
+</script>
+<script>
+// FIX V6: QRIS + Rekening jalan tanpa nunggu Firebase, biar tap langsung muncul
+const ADMIN_PAYMENT_MITRA={accounts:[{bank:'BCA',number:'4180734771'},{bank:'SeaBank',number:'901341445605'},{bank:'DANA / GoPay',number:'082319264646'}],accountName:'YUDI ALIYUDIN'};
+function switchTabMitra(tab){
+  try{
+    document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active', x.dataset.tab===tab));
+    ['topup','withdraw','bank'].forEach(k=>{ const el=document.getElementById(k+'Pane'); if(el) el.classList.toggle('hidden', k!==tab); });
+  }catch(e){}
+}
+function renderPaymentInfoMitra(){
+  try{
+    const box=document.getElementById('paymentInfo'); if(!box) return;
+    const m=document.getElementById('method').value;
+    if(m==='qris'){
+      box.innerHTML='<strong>Pembayaran QRIS</strong><div style="margin-top:8px;text-align:center"><img src="./qris.jpg" alt="QRIS" style="max-width:100%;width:280px;height:auto;object-fit:contain" onerror="this.parentElement.innerHTML=\'<span style=\'font-size:12px;color:#666\'>File qris.jpg belum ditemukan. Letakkan qris.jpg di folder yang sama dengan halaman ini.</span>\'"></div><div style="font-size:11px;color:#666;margin-top:6px">Scan QRIS untuk pembayaran top-up.</div>';
+    }else if(m==='transfer_bank'){
+      box.innerHTML='<strong>Transfer ke rekening admin</strong><div style="margin-top:8px;display:grid;gap:6px">'+ADMIN_PAYMENT_MITRA.accounts.map(a=>'<div style="display:flex;justify-content:space-between"><span>'+a.bank+'</span><strong>'+a.number+'</strong></div>').join('')+'<div style="display:flex;justify-content:space-between"><span>Nama pemilik</span><strong>'+ADMIN_PAYMENT_MITRA.accountName+'</strong></div></div><div style="font-size:11px;color:#666;margin-top:6px">Konfirmasi pembayaran setelah transfer.</div>';
+    }else{
+      box.innerHTML='<strong>Metode lain</strong><div style="font-size:11px;color:#666;margin-top:4px">Silakan konfirmasi metode pembayaran kepada admin.</div>';
+    }
+  }catch(e){}
+}
+document.addEventListener('DOMContentLoaded', ()=>{ renderPaymentInfoMitra(); });
+// Kalau method berubah, render lagi (fallback kalau onchange di atas tidak jalan)
+document.addEventListener('change', (e)=>{ if(e.target && e.target.id==='method') renderPaymentInfoMitra(); });
 </script>
 <script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
 </html>
