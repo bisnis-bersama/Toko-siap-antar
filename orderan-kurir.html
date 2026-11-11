@@ -355,8 +355,9 @@ window.selesaikanOrder=(id)=>{
 };
 
 async function prosesSelesaikanOrder(id){
-  // Saldo admin utama aplikasi berada di admin_saldo/total, bukan users/{uid_admin}.
-  // Semua perubahan saldo dan status order dilakukan dalam satu transaksi atomik.
+  // Mengikuti pola approveWithdraw(): saldo disinkronkan dan transaksi negatif dicatat.
+  // Pemotongan kurir, pemasukan admin, log, dan status order dilakukan atomik.
+  const logRef=doc(collection(db,'ewallet_transaksi'));
   await runTransaction(db,async(tx)=>{
     const orderRef=doc(db,'orders',id);
     const courierRef=doc(db,'users',currentUser.uid);
@@ -408,6 +409,14 @@ async function prosesSelesaikanOrder(id){
         createdAt:serverTimestamp(), updatedAt:serverTimestamp()
       });
     }
+
+    // Riwayat pemotongan E-Wallet kurir, mengikuti struktur log pencairan.
+    tx.set(logRef,{
+      uid:currentUser.uid, kategori:'biaya_admin_pesanan', jumlah:-fee,
+      saldoSebelum:courierWallet, saldoSesudah:courierAfter,
+      status:'berhasil', createdAt:serverTimestamp(), orderId:id,
+      keterangan:'Potongan biaya admin 5% untuk pesanan selesai'
+    });
 
     tx.update(orderRef,{
       status:'selesai', selesaiAt:serverTimestamp(), adminFee:fee,
