@@ -30,7 +30,7 @@
 </style>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>V4 BARU - BERSIH PRO - E-Wallet Mitra Usaha | Toko Siap Antar</title>
+<title>V5 BARU - VERSI LAMA + NOTIF + BERSIH | Toko Siap Antar</title>
 <style>
 :root{--yellow:#ffcc00;--muted:#64756f;--bg:#f1f2f4;--ok:#087443;--err:#b42318}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:#171717;font:16px/1.45 system-ui,sans-serif;padding-bottom:90px}
@@ -52,7 +52,6 @@ main{max-width:760px;margin:-18px auto 0;padding:0 14px 100px;position:relative;
 .iconMenu a{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;text-decoration:none;color:#111;background:#fff;border:1px solid #ececec;border-radius:18px;padding:14px 6px;box-shadow:0 4px 12px #00000006;transition:.15s}
 .iconMenu a:active{transform:scale(.97)}.iconBox{width:54px;height:54px;border-radius:16px;background:#111;color:var(--yellow);display:grid;place-items:center;font-size:26px;position:relative}
 .iconMenu b{font-size:12px;font-weight:800;text-align:center;line-height:1.2}
-.panel{box-shadow:0 2px 8px #00000006}.wallet-label{letter-spacing:.5px}
 .badgeNotif{position:absolute;top:-6px;right:-6px;min-width:22px;height:22px;background:#22c55e;color:#fff;font-size:11px;font-weight:900;border-radius:999px;display:grid;place-items:center;padding:0 6px;border:2px solid #fff;box-shadow:0 2px 6px #0003;animation:kedipHijau 1s infinite}.bottom a{position:relative}.bottom a .dot{position:absolute;top:4px;right:10px;width:13px;height:13px;background:#22c55e;border:2px solid #fff;border-radius:50%;display:none;animation:kedipHijau 1s infinite}.bottom a .dot.show{display:block}@keyframes kedipHijau{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.25;transform:scale(.85)}}
 .badgeNotif.hidden{display:none!important}
 .drop{border-radius:18px;overflow:hidden;background:#fff;border:1px solid #ececec;margin-bottom:12px;box-shadow:0 4px 14px #00000005}
@@ -102,13 +101,13 @@ input,select{width:100%;border:1px solid #cbd1d6;border-radius:12px;padding:12px
       <div class="wallet-stat"><span>Total pendapatan bersih</span><strong id="income">Rp 0</strong></div>
       <div class="wallet-stat"><span>Total dicairkan</span><strong id="withdrawn">Rp 0</strong></div>
     </div>
-    <details class="drop" style="margin-top:10px"><summary>Rincian</summary><div class="dropContent"><div class="incomeBreakdown">
+    <div class="incomeBreakdown">
       <div class="breakItem"><span>Penjualan produk (bruto)</span><strong id="grossSales">Rp 0</strong></div>
       <div class="breakItem"><span>Ongkir hak mitra (bruto)</span><strong id="shippingIncome">Rp 0</strong></div>
       <div class="breakItem"><span>Potongan admin 5%</span><strong id="adminCut">Rp 0</strong></div>
       <div class="breakItem"><span>Hasil bersih penjualan</span><strong id="netSales">Rp 0</strong></div>
-    </div></div></details>
-    <details class="drop" style="margin-top:10px"><summary>ⓘ Info</summary><div class="dropContent" style="font-size:12px;color:#666;line-height:1.6">Pembagian penjualan mengikuti metode pengiriman. Ongkir ekspedisi dan antar sendiri masuk hak mitra; ongkir kurir internal masuk hak kurir. Potongan admin 5% dari hak bruto. Saldo masuk otomatis setelah pesanan selesai.</div></details>
+    </div>
+    <div class="notice">Pembagian penjualan mengikuti metode pengiriman. Ongkir ekspedisi dan antar sendiri masuk hak mitra; ongkir kurir internal masuk hak kurir. Potongan admin sebesar 5% dari hak bruto.</div>
   </div>
 
   <div class="iconMenu" id="roleNavigation">
@@ -118,13 +117,13 @@ input,select{width:100%;border:1px solid #cbd1d6;border-radius:12px;padding:12px
     <a href="./riwayat-pesanan-mitra-usaha.html"><span class="iconBox">🧾</span><b>Riwayat Pesanan</b></a>
   </div>
 
-  <details class="drop"><summary>Kelola Saldo</summary><div class="dropContent"><div class="panel" style="margin:0">
+  <details class="drop" open><summary>Kelola Saldo</summary><div class="dropContent"><div class="panel" style="margin:0">
     <div class="tabs"><button class="active" data-tab="topup">＋ Top-up</button><button data-tab="withdraw">↗ Pencairan</button><button data-tab="bank">🏦 Rekening</button></div>
     <section id="topupPane"><form id="topupForm">
       <label>Nominal top-up (Rp)</label><input id="topupAmount" type="number" min="1000" step="1000" required>
       <label>Metode pembayaran</label><select id="method"><option value="transfer_bank">Transfer bank</option><option value="qris">QRIS</option><option value="metode_lain">Metode lain (konfirmasi admin)</option></select>
       <label>Catatan (opsional)</label><input id="topupNote" maxlength="250"><button class="submit">Ajukan Top-up</button>
-    </form><details style="margin-top:8px"><summary style="font-size:11px;color:#666">ⓘ Info Top-up</summary><div style="font-size:11px;color:#666;margin-top:4px">Top-up menunggu verifikasi. Payment gateway otomatis belum dihubungkan.</div></details></section>
+    </form><div class="meta">Top-up menunggu verifikasi. Payment gateway otomatis belum dihubungkan.</div></section>
     <section id="withdrawPane" class="hidden"><form id="withdrawForm">
       <label>Nominal pencairan (Rp)</label><input id="withdrawAmount" type="number" min="1000" step="1000" required>
       <label>Nama bank</label><input id="bankName" required><label>Nomor rekening</label><input id="accountNumber" inputmode="numeric" required>
@@ -220,7 +219,6 @@ async function loadPendingCount(){
   if(!user) return;
   try{
     let count=0;
-    // Status yang dianggap pesanan baru buat mitra - masing-masing try/catch biar 1 query ditolak Rules tidak bikin login gagal
     const statuses=["menunggu_harga_mitra","disetujui","dikemas"];
     for(const st of statuses){
       try{
