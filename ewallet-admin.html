@@ -45,7 +45,7 @@
 </style>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>V16 BARU - E-Wallet Admin - Rapi Clean | Toko Siap Antar</title>
+<title>V17 BARU - E-Wallet Admin - Rapi Clean | Toko Siap Antar</title>
 <style>
 @font-face{font-family:"Optimistic";font-style:normal;font-weight:400 600;font-display:swap;src:url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2")}
 @font-face{font-family:"Optimistic Mono";font-style:normal;font-weight:400;font-display:swap;src:url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2")}
@@ -57,16 +57,11 @@ body{margin:0;background:var(--bg);font:14px/1.4 system-ui,sans-serif;padding-bo
 .brand{font-weight:900;font-size:15px;color:var(--yellow)}.sub{font-size:9px;color:#c7cbd0}.greet{font-size:12px;font-weight:800;color:#fff;margin-top:1px}.greet b{color:var(--yellow)}
 .logout{background:#202020;border:1px solid #444;color:#fff;border-radius:10px;padding:6px 10px;cursor:pointer;font-size:11px}
 main{max-width:820px;margin:-10px auto 0;padding:0 10px 80px;position:relative;z-index:2}.panel{background:#fff;border-radius:16px;padding:12px;margin-bottom:8px;box-shadow:0 4px 16px #0000000a;overflow:hidden}
-.icon-bar{display:flex;gap:10px;overflow-x:auto;padding:8px 2px;scrollbar-width:none}
-.icon-bar::-webkit-scrollbar{display:none}
-.icon-btn{position:relative;flex:0 0 56px;width:56px;height:56px;border-radius:16px;background:#fff;border:1px solid #eee;font-size:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px #00000008}
-.icon-btn.active{background:#111;color:#fff;border-color:#111}
-.icon-btn .dot{position:absolute;top:6px;right:6px;width:13px;height:13px;background:#22c55e;border:3px solid #fff;border-radius:50%;display:none;animation:kedipHijau 1s infinite}
-.icon-btn .dot.show{display:block}
+.menu{position:relative}
+.menu .dot{position:absolute;top:6px;right:6px;width:13px;height:13px;background:#22c55e;border:2px solid #fff;border-radius:50%;display:none;animation:kedipHijau 1s infinite;z-index:2}
+.menu .dot.show{display:block}
 @keyframes kedipHijau{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.25;transform:scale(.85)}}
 .panel-toggle{display:none}
-.panel-toggle.open{display:block}
-.icon-hint{font-size:11px;color:#666;text-align:center;margin-top:2px}
  main{overflow-x:hidden} .btn{max-width:100%;white-space:normal;word-break:break-word} .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px} .menu{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px 6px;border:1px solid #eee;border-radius:12px;text-decoration:none;color:#111;min-height:72px;overflow:hidden} .menu b{font-size:12px;line-height:1.2} .menu small{font-size:10px;color:#666;line-height:1.2} .menu-icon{font-size:22px;line-height:1} .item{overflow:hidden;word-break:break-word} .item button{max-width:100%}
 .wallet-label{font-size:9px;color:#737d8b;font-weight:700;letter-spacing:.5px;text-transform:uppercase}.balance{font-size:26px;font-weight:900;margin:4px 0 10px;line-height:1.1}
 .wallet-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #eee}
@@ -88,7 +83,7 @@ main{max-width:820px;margin:-10px auto 0;padding:0 10px 80px;position:relative;z
 <img src="logo2.png" alt="Logo" onerror="this.src='logo3.png'">
 <div style="min-width:0"><div class="brand">TOKO SIAP ANTAR</div><div class="greet" id="welcomeTop">Halo, Kak, <b>Admin</b></div><div class="sub">Admin Panel - E-Wallet</div></div>
 </div><button id="logoutBtn" class="logout">Login</button></div></header>
-<div id="tandaFileBaru" style="max-width:820px;margin:10px auto 0;padding:10px 12px;background:#ffcc00;color:#111;border:2px solid #111;border-radius:12px;font-weight:900;text-align:center;font-size:14px">✅ FILE BARU V16 - ICON SAJA - 11 NOV - FIX PERBAIKI + BACA TRACKING - Kalau banner ini tidak ada, berarti file lama yang kebuka</div>
+<div id="tandaFileBaru" style="max-width:820px;margin:10px auto 0;padding:10px 12px;background:#ffcc00;color:#111;border:2px solid #111;border-radius:12px;font-weight:900;text-align:center;font-size:14px">✅ FILE BARU V17 - 8 ICON SAJA - 11 NOV - FIX PERBAIKI + BACA TRACKING - Kalau banner ini tidak ada, berarti file lama yang kebuka</div>
 <main><section id="dashboard">
 <div class="panel">
 <div class="wallet-label">Saldo Admin (Laba)</div><div class="balance" id="balance">Memuat saldo...</div>
@@ -96,32 +91,24 @@ main{max-width:820px;margin:-10px auto 0;padding:0 10px 80px;position:relative;z
 <div class="wallet-stat"><div class="label">Total Pendapatan</div><div class="value" id="income">Memuat...</div></div>
 <div class="wallet-stat"><div class="label">Total Dicairkan</div><div class="value" id="withdrawn">Memuat...</div></div>
 </div><div id="actionMsg"></div>
-<button id="fixAdminSaldoBtn" class="btn btn-yellow" style="width:100%;margin-top:8px;padding:10px;font-weight:800">🔧 Perbaiki Saldo Admin - V16 BARU - + Selesaikan Titipan Kurir</button>
+<button id="fixAdminSaldoBtn" class="btn btn-yellow" style="width:100%;margin-top:8px;padding:10px;font-weight:800">🔧 Perbaiki Saldo Admin - V17 BARU - + Selesaikan Titipan Kurir</button>
 <div id="fixAdminSaldoInfo" style="font-size:11px;color:#666;margin-top:6px">Perbaiki hanya untuk pesanan SUDAH SELESAI (sudah disetujui). Yang masih menunggu verifikasi resi, pakai tombol Setujui di atas. Tombol ini menjumlah 5% dari semua pesanan status selesai yang belum dihitung ke admin, lalu masukkan ke admin_saldo/total. Kalau sudah pernah diperbaiki, tidak akan double.</div>
 </div>
-<div class="panel" style="padding:10px 12px"><div class="icon-bar">
-<button class="icon-btn" data-panel="panel-verifikasi" id="icon-verifikasi" title="Verifikasi Resi">🧾<span class="dot" id="dot-verifikasi"></span></button>
-<button class="icon-btn" data-panel="panel-ditolak" id="icon-ditolak" title="Ditolak">❌<span class="dot" id="dot-ditolak"></span></button>
-<button class="icon-btn" data-panel="panel-nilai" id="icon-nilai" title="Nilai Kurir">⭐<span class="dot" id="dot-nilai"></span></button>
-<button class="icon-btn" data-panel="panel-semua-ditolak" id="icon-semua-ditolak" title="Semua Ditolak">📦<span class="dot" id="dot-semua-ditolak"></span></button>
-<button class="icon-btn" data-panel="panel-topup" id="icon-topup" title="Top-up">💰<span class="dot" id="dot-topup"></span></button>
-<button class="icon-btn" data-panel="panel-pencairan" id="icon-pencairan" title="Pencairan">💸<span class="dot" id="dot-pencairan"></span></button>
-<button class="icon-btn" data-panel="panel-riwayat" id="icon-riwayat" title="Riwayat Penolakan" onclick="location.href='riwayat-penolakan.html'">📋<span class="dot" id="dot-riwayat"></span></button>
-</div><div class="icon-hint">Tap ikon untuk buka panel • Titik hijau kedip = ada pesan baru</div></div>
+
 <div class="panel panel-toggle" id="panel-verifikasi"><h2 style="margin:0 0 6px;font-size:14px;font-weight:800">🧾 Verifikasi Resi Mitra</h2><div style="font-size:11px;color:#666;margin-bottom:10px">Mitra kirim resi -> admin cek resi di sini -> klik Setujui & Bagi Saldo, baru saldo mitra + admin 5% dibagi. Jangan pakai Perbaiki untuk yang belum disetujui.</div><div id="verifikasiResiQueue" class="list">Memuat data...</div></div>
 <div class="panel panel-toggle" id="panel-ditolak"><h2 style="margin:0 0 6px;font-size:14px;font-weight:800">❌ Ditolak - Tindakan Admin</h2><div style="font-size:11px;color:#666;margin-bottom:10px">Mitra tolak = cari mitra lain (belum refund, order masih jalan). Kurir tolak = balik ke mitra proses sendiri (belum refund). Refund ke e-wallet pelanggan HANYA kalau admin klik Batalkan Total di bawah. Ojek / COD tidak di-refund.</div><div id="ditolakQueue" class="list">Memuat data...</div></div>
 <div class="panel panel-toggle" id="panel-nilai"><h2 style="margin:0 0 6px;font-size:14px;font-weight:800">⭐ Nilai Kurir</h2><div style="font-size:11px;color:#666;margin-bottom:10px">Awal 100. Tolak -10, Batal -5, Selesai +2. Di bawah 70 = peringatan, di bawah 50 = suspend / jangan dikasih order dulu.</div><div id="nilaiKurirQueue" class="list">Memuat nilai kurir...</div></div>
 <div class="panel panel-toggle" id="panel-semua-ditolak"><h2 style="margin:0 0 6px;font-size:14px;font-weight:800">📦 Semua Ditolak - Admin Wajib Tau</h2><div style="font-size:11px;color:#666;margin-bottom:10px">Semua yang ditolak mitra / kurir / ojek masuk sini. Admin yang approve pending, bukan mitra/kurir. Klik detail untuk lihat produknya.</div><div id="semuaDitolakQueue" class="list">Memuat...</div></div>
 <div class="panel"><div style="margin-bottom:12px"><h2 style="margin:0;font-size:14px;font-weight:800">Navigasi Admin</h2></div>
 <div class="grid">
-<a class="menu" href="./riwayat-penolakan.html" style="border:2px solid #111;background:#fffbe6"><div class="menu-icon">📦</div><b>Riwayat Tolak</b><small>Refund + WA</small></a>
-<a class="menu" href="./semua-pesanan-admin.html"><div class="menu-icon">📦</div><b>Pesanan</b><small>Fix Saldo</small></a>
-<a class="menu" href="./data-mitra.html"><div class="menu-icon">🏪</div><b>Mitra</b><small>Mitra Usaha</small></a>
-<a class="menu" href="./data-kurir.html"><div class="menu-icon">🛵</div><b>Kurir</b></a>
-<a class="menu" href="./data-pelanggan.html"><div class="menu-icon">👥</div><b>Pelanggan</b></a>
-<a class="menu" href="./verifikasi-pencairan.html"><div class="menu-icon">💸</div><b>Pencairan</b></a>
-<a class="menu" href="./keuangan-admin.html"><div class="menu-icon">💰</div><b>Keuangan</b></a>
-<a class="menu" href="./pengaturan-admin.html"><div class="menu-icon">⚙️</div><b>Pengaturan</b></a>
+<a class="menu" href="./riwayat-penolakan.html" style="border:2px solid #111;background:#fffbe6"><div class="menu-icon">📦</div><span class="dot" id="dot-riwayat"></span><b>Riwayat Tolak</b><small>Refund + WA</small></a>
+<a class="menu" href="./semua-pesanan-admin.html"><div class="menu-icon">📦</div><span class="dot" id="dot-pesanan"></span><b>Pesanan</b><small>Fix Saldo</small></a>
+<a class="menu" href="./data-mitra.html"><div class="menu-icon">🏪</div><span class="dot" id="dot-mitra"></span><b>Mitra</b><small>Mitra Usaha</small></a>
+<a class="menu" href="./data-kurir.html"><div class="menu-icon">🛵</div><span class="dot" id="dot-kurir"></span><b>Kurir</b></a>
+<a class="menu" href="./data-pelanggan.html"><div class="menu-icon">👥</div><span class="dot" id="dot-pelanggan"></span><b>Pelanggan</b></a>
+<a class="menu" href="./verifikasi-pencairan.html"><div class="menu-icon">💸</div><span class="dot" id="dot-pencairan"></span><b>Pencairan</b></a>
+<a class="menu" href="./keuangan-admin.html"><div class="menu-icon">💰</div><span class="dot" id="dot-keuangan"></span><b>Keuangan</b></a>
+<a class="menu" href="./pengaturan-admin.html"><div class="menu-icon">⚙️</div><span class="dot" id="dot-pengaturan"></span><b>Pengaturan</b></a>
 </div></div>
 <div class="panel panel-toggle" id="panel-topup"><h2 style="margin:0 0 10px;font-size:13px">💰 Top-up Menunggu</h2><div id="topupQueue" class="list">Memuat data...</div></div>
 <div class="panel panel-toggle" id="panel-pencairan"><h2 style="margin:0 0 10px;font-size:13px">💸 Pencairan Menunggu</h2><div id="withdrawQueue" class="list">Memuat data...</div></div>
@@ -139,7 +126,7 @@ let user=null;
 const money=n=>'Rp '+Number(n||0).toLocaleString('id-ID');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function msg(s,ok=false){const el=$('actionMsg');if(!el)return;el.className=ok?'ok':'err';el.textContent=s;el.style.display='block'}
-await setPersistence(auth,browserLocalPersistence).catch(()=>{}); console.log('FILE BARU V16 - ICON SAJA - EWALLET ADMIN - FIX PERBAIKI + TRACKING');
+await setPersistence(auth,browserLocalPersistence).catch(()=>{}); console.log('FILE BARU V17 - 8 ICON SAJA - EWALLET ADMIN - FIX PERBAIKI + TRACKING');
 
 /* Profil hanya untuk sapaan. Saldo admin tidak lagi diambil dari users/{uid}. */
 async function getProfileAny(u){
@@ -271,22 +258,8 @@ async function loadQueues(){
 }
 
 $('logoutBtn').onclick=async()=>{try{await signOut(auth)}catch(e){}location.href='./profil.html'};
-// V16: Icon saja, panel dibuka pas tap icon, titik hijau kedip kalau ada pesan baru
+// V17: Cuma 8 icon yang sudah ada, dot di pojok kanan atas tiap icon
 function setDot(id, count){ const el=document.getElementById(id); if(!el) return; if(Number(count)>0) el.classList.add('show'); else el.classList.remove('show'); }
-function togglePanel(panelId, btn){
-  document.querySelectorAll('.panel-toggle').forEach(p=>{ if(p.id===panelId) p.classList.toggle('open'); else p.classList.remove('open'); });
-  document.querySelectorAll('.icon-btn').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  const open=document.getElementById(panelId);
-  if(open && open.classList.contains('open')) open.scrollIntoView({behavior:'smooth', block:'start'});
-}
-document.querySelectorAll('.icon-btn[data-panel]').forEach(b=>{ b.addEventListener('click', ()=>{ if(b.id==='icon-riwayat') return; togglePanel(b.dataset.panel, b); }); });
-// Hook ke load functions yang sudah ada: setelah load, update dot
-const _origVerifikasi = window.loadVerifikasiResi;
-const _origDitolak = window.loadDitolakQueue;
-const _origNilai = window.loadNilaiKurir;
-const _origSemua = window.loadSemuaDitolak;
-const _origQueues = window.loadQueues;
 setInterval(()=>{
   try{
     const v=document.querySelectorAll('#verifikasiResiQueue .item').length;
@@ -295,9 +268,14 @@ setInterval(()=>{
     const s=document.querySelectorAll('#semuaDitolakQueue .item').length;
     const t=document.querySelectorAll('#topupQueue .item').length;
     const c=document.querySelectorAll('#withdrawQueue .item').length;
-    setDot('dot-verifikasi', v); setDot('dot-ditolak', d); setDot('dot-nilai', n); setDot('dot-semua-ditolak', s); setDot('dot-topup', t); setDot('dot-pencairan', c);
-    // Riwayat dot ikut ditolak + semua ditolak
     setDot('dot-riwayat', d+s);
+    setDot('dot-pesanan', v);
+    setDot('dot-mitra', d);
+    setDot('dot-kurir', n+d);
+    setDot('dot-pelanggan', 0);
+    setDot('dot-pencairan', c);
+    setDot('dot-keuangan', t);
+    setDot('dot-pengaturan', 0);
   }catch(_){}
 }, 2000);
 onAuthStateChanged(auth,async u=>{
@@ -382,7 +360,7 @@ window.addEventListener('pageshow',()=>{if(user){loadAdminWallet();loadQueues()}
         if(adminCredit>0){ tambah+=adminCredit; hitung++; toMark.push(d.id); }
         else skip++;
       });
-      if(tambah===0 && toPotongKurir.length===0 && toBagiMitra.length===0){ msg('Tidak ada pesanan selesai yang belum dihitung ke admin. Saldo sudah benar.', true); btn.disabled=false; btn.textContent='🔧 Perbaiki Saldo Admin - V16 BARU - + Selesaikan Titipan Kurir + Potong Kurir + Bagi Mitra'; return; }
+      if(tambah===0 && toPotongKurir.length===0 && toBagiMitra.length===0){ msg('Tidak ada pesanan selesai yang belum dihitung ke admin. Saldo sudah benar.', true); btn.disabled=false; btn.textContent='🔧 Perbaiki Saldo Admin - V17 BARU - + Selesaikan Titipan Kurir + Potong Kurir + Bagi Mitra'; return; }
       await runTransaction(db, async tx=>{
         const ref=doc(db,'admin_saldo','total');
         const snap=await tx.get(ref);
@@ -435,7 +413,7 @@ window.addEventListener('pageshow',()=>{if(user){loadAdminWallet();loadQueues()}
       });
       msg('Perbaikan berhasil ✅ Admin +Rp '+tambah.toLocaleString('id-ID')+' dari '+hitung+' pesanan. Kurir dipotong '+toPotongKurir.length+' pesanan. Mitra dibagi '+toBagiMitra.length+' pesanan. '+skip+' pesanan sudah dihitung sebelumnya.', true);
     }catch(e){ msg('Gagal perbaiki: '+e.message); }
-    btn.disabled=false; btn.textContent='🔧 Perbaiki Saldo Admin - V16 BARU - + Selesaikan Titipan Kurir + Potong Kurir + Bagi Mitra';
+    btn.disabled=false; btn.textContent='🔧 Perbaiki Saldo Admin - V17 BARU - + Selesaikan Titipan Kurir + Potong Kurir + Bagi Mitra';
   };
 document.addEventListener('click',async e=>{
  const b=e.target.closest('[data-action]');if(!b)return;
