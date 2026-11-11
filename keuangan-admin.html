@@ -1,6 +1,5 @@
 <!doctype html>
-<html lang="id">
-<head><style>
+<html lang="id"><head><style>
 @font-face {
   font-family: "Optimistic";
   font-style: normal;
@@ -21,573 +20,86 @@
 :where(code, pre, kbd, samp) {
   font-family: "Optimistic Mono", ui-monospace, monospace;
 }
-</style><style>
-@font-face {
-  font-family: "Optimistic";
-  font-style: normal;
-  font-weight: 400 600;
-  font-display: swap;
-  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Optimistic Mono";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
-}
-:where(html) {
-  font-family: "Optimistic", system-ui, sans-serif;
-}
-:where(code, pre, kbd, samp) {
-  font-family: "Optimistic Mono", ui-monospace, monospace;
-}
-</style>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>V19 BARU - E-Wallet Admin - Rapi Clean | Toko Siap Antar</title>
+</style><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Keuangan Admin - Mode Bersih Pro | Toko Siap Antar</title>
 <style>
-@font-face{font-family:"Optimistic";font-style:normal;font-weight:400 600;font-display:swap;src:url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2")}
-@font-face{font-family:"Optimistic Mono";font-style:normal;font-weight:400;font-display:swap;src:url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2")}
-:where(html){font-family:"Optimistic",system-ui,sans-serif}:where(code,pre,kbd,samp){font-family:"Optimistic Mono",ui-monospace,monospace}
-:root{--yellow:#ffcc00;--bg:#f1f2f4;--muted:#64756f}*{box-sizing:border-box}
-body{margin:0;background:var(--bg);font:14px/1.4 system-ui,sans-serif;padding-bottom:80px}
-.top{background:#111;color:#fff;padding:10px 14px 16px;border-radius:0 0 20px 20px}.topline{max-width:900px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:8px}
-.brandWrap{display:flex;align-items:center;gap:8px}.brandWrap img{width:36px;height:36px;border-radius:10px;background:#fff;padding:3px;object-fit:contain}
-.brand{font-weight:900;font-size:15px;color:var(--yellow)}.sub{font-size:9px;color:#c7cbd0}.greet{font-size:12px;font-weight:800;color:#fff;margin-top:1px}.greet b{color:var(--yellow)}
-.logout{background:#202020;border:1px solid #444;color:#fff;border-radius:10px;padding:6px 10px;cursor:pointer;font-size:11px}
-main{max-width:820px;margin:-10px auto 0;padding:0 10px 80px;position:relative;z-index:2}.panel{background:#fff;border-radius:16px;padding:12px;margin-bottom:8px;box-shadow:0 4px 16px #0000000a;overflow:hidden}
-.menu{position:relative}
-.menu .dot{position:absolute;top:6px;right:6px;width:13px;height:13px;background:#22c55e;border:2px solid #fff;border-radius:50%;display:none;animation:kedipHijau 1s infinite;z-index:2}
-.menu .dot.show{display:block}
-@keyframes kedipHijau{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.25;transform:scale(.85)}}
-.panel-toggle{display:none}
- main{overflow-x:hidden} .btn{max-width:100%;white-space:normal;word-break:break-word} .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px} .menu{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px 6px;border:1px solid #eee;border-radius:12px;text-decoration:none;color:#111;min-height:72px;overflow:hidden} .menu b{font-size:12px;line-height:1.2} .menu small{font-size:10px;color:#666;line-height:1.2} .menu-icon{font-size:22px;line-height:1} .item{overflow:hidden;word-break:break-word} .item button{max-width:100%}
-.wallet-label{font-size:9px;color:#737d8b;font-weight:700;letter-spacing:.5px;text-transform:uppercase}.balance{font-size:26px;font-weight:900;margin:4px 0 10px;line-height:1.1}
-.wallet-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #eee}
-.wallet-stat{background:#f9faf8;border:1px solid #eee;border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:2px}.wallet-stat .label{font-size:9px;color:#6b7280;font-weight:600;line-height:1.2}.wallet-stat .value{font-size:13px;font-weight:800;color:#111;line-height:1.2;word-break:break-word}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.menu{border:1px solid #e8e8e8;border-radius:12px;padding:8px 4px;text-align:center;text-decoration:none;color:#111;background:#fff;display:flex;flex-direction:column;align-items:center;gap:4px;transition:.15s}
-.menu:active{transform:scale(.97)}.menu-icon{width:38px;height:38px;border-radius:10px;background:#111;color:var(--yellow);display:grid;place-items:center;font-size:18px}.menu b{font-size:11px;line-height:1.2}.menu small{font-size:8px;color:var(--muted);line-height:1.2}
-.bottom{position:fixed;bottom:0;left:0;right:0;background:#111;border-top:3px solid var(--yellow);display:flex;justify-content:space-around;padding:9px 5px calc(9px + env(safe-area-inset-bottom));z-index:10}
-.bottom a{color:#8b8b8b;text-decoration:none;text-align:center;font-size:11px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:2px}.bottom a.active{color:var(--yellow)}
-.list{display:grid;gap:10px}.item{border:1px solid #e6e7e8;border-radius:16px;padding:14px;background:#fff}.badge{font-size:11px;font-weight:800;border-radius:999px;padding:5px 10px}.badge-ok{background:#fff4c2;color:#6d5700}.badge-err{background:#fdecea;color:#b42318}
-.detail{display:grid;grid-template-columns:118px 1fr;gap:8px;font-size:13px;margin:10px 0;padding:10px;background:#f7f8f8;border-radius:12px;border:1px solid #eee}
-.btn{border:0;border-radius:12px;padding:10px 14px;font-weight:850;cursor:pointer;flex:1;min-width:110px}.btn:disabled{opacity:.5;cursor:not-allowed}.btn-yellow{background:var(--yellow);color:#111}.btn-black{background:#111;color:var(--yellow)}
-.err{background:#fff0ed;border:1px solid #f5c6c1;border-radius:10px;padding:10px;font-size:13px;color:#b42318}.ok{background:#e6f7ef;border:1px solid #c3ead7;border-radius:10px;padding:10px;font-size:13px;color:#087443}
-.mono{font-family:ui-monospace,monospace;font-weight:800;background:#fff8d8;padding:4px 8px;border-radius:8px;border:1px dashed #f4df80;word-break:break-all}#actionMsg:empty{display:none}
-@media(max-width:360px){.detail{grid-template-columns:90px 1fr}.balance{font-size:23px}}
-</style>
-</head>
+:root{--yellow:#ffcc00;--bg:#f1f2f4;--muted:#64756f;--ink:#171717}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font:14px/1.5 system-ui,sans-serif;color:var(--ink);padding-bottom:80px}
+.top{background:#111;color:#fff;padding:12px 16px 20px;border-radius:0 0 20px 20px}
+.topline{max-width:900px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.brand{color:var(--yellow);font-weight:900;font-size:16px;line-height:1.1}.sub{color:#c7cbd0;font-size:11px}
+.back{background:#222;border:1px solid #444;color:#fff;border-radius:10px;padding:7px 12px;font-size:12px;text-decoration:none;font-weight:700}
+main{max-width:900px;margin:-10px auto 0;padding:0 12px 80px}
+.panel{background:#fff;border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:0 4px 16px #00000008}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card{border:1px solid #eee;border-radius:14px;padding:12px;background:#fff}
+.card .ico{font-size:22px}.card .lbl{font-size:11px;color:var(--muted);margin-top:4px}.card .val{font-size:18px;font-weight:900;margin-top:2px}
+.card.dark{background:#111;color:#fff;border-color:#111}.card.dark .lbl{color:#c7cbd0}.card.dark .val{color:var(--yellow)}
+.card.yellow{background:#fffbe6;border-color:#f4df80}
+.card.blue{background:#eef6ff;border-color:#c8dcff}
+details{border:1px solid #eee;border-radius:12px;background:#fff;padding:0;margin-bottom:10px;overflow:hidden}
+details summary{list-style:none;cursor:pointer;padding:12px 14px;font-weight:800;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+details summary::-webkit-details-marker{display:none}
+details summary:after{content:"+";font-size:18px;color:#999}
+details[open ] summary:after{content:"-"}
+details .body{padding:0 14px 14px;font-size:12px;color:#555;line-height:1.6}
+.log{font-size:11px;color:#666;white-space:pre-wrap;background:#f7f8f8;border-radius:10px;padding:10px;max-height:120px;overflow:auto}
+.list{display:grid;gap:8px}.item{border:1px solid #eee;border-radius:12px;padding:10px;background:#fff;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.meta{font-size:11px;color:var(--muted)}.err{color:#b42318;background:#fdecea;border:1px solid #f5c6c1;border-radius:10px;padding:10px;font-size:12px}
+.btn{border:0;border-radius:10px;background:var(--yellow);padding:9px 14px;font-weight:800;cursor:pointer}
+</style></head>
 <body>
-<header class="top"><div class="topline"><div class="brandWrap">
-<img src="logo2.png" alt="Logo" onerror="this.src='logo3.png'">
-<div style="min-width:0"><div class="brand">TOKO SIAP ANTAR</div><div class="greet" id="welcomeTop">Halo, Kak, <b>Admin</b></div><div class="sub">Admin Panel - E-Wallet</div></div>
-</div><button id="logoutBtn" class="logout">Login</button></div></header>
-<div id="tandaFileBaru" style="max-width:820px;margin:10px auto 0;padding:10px 12px;background:#ffcc00;color:#111;border:2px solid #111;border-radius:12px;font-weight:900;text-align:center;font-size:14px">✅ FILE BARU V19 - 5% BUKAN MODAL - 11 NOV - FIX PERBAIKI + BACA TRACKING - Kalau banner ini tidak ada, berarti file lama yang kebuka</div>
-<main><section id="dashboard">
-<div class="panel">
-<div class="wallet-label">Saldo Admin (Hanya 5% - Laba Admin)</div><div class="balance" id="balance">Memuat saldo...</div><div style="font-size:11px;color:#666;margin-top:-6px">Admin hanya terima 5% dari mitra & kurir. Modal penjualan punya mitra, ongkir punya kurir. Bukan uang admin.</div>
-<div class="wallet-row">
-<div class="wallet-stat"><div class="label">Total 5% Terkumpul (Laba Admin)</div><div class="value" id="income">Memuat...</div></div>
-<div class="wallet-stat"><div class="label">Total Dicairkan</div><div class="value" id="withdrawn">Memuat...</div></div>
-<div class="wallet-stat" style="background:#fff8d8;border-color:#f4df80"><div class="label">Modal Mitra (Bukan Uang Admin)</div><div class="value" id="modalMitra">Memuat...</div><small style="font-size:10px;color:#666">Diteruskan ke mitra, bukan laba admin</small></div>
-<div class="wallet-stat" style="background:#eef6ff;border-color:#c8dcff"><div class="label">Ongkir Kurir (Bukan Uang Admin)</div><div class="value" id="ongkirKurir">Memuat...</div><small style="font-size:10px;color:#666">Diteruskan ke kurir, bukan laba admin</small></div>
+<div class="top"><div class="topline"><div><div class="brand">TOKO SIAP ANTAR</div><div class="sub" id="accountNameTop">Keuangan Admin</div></div><a class="back" href="./ewallet-admin.html">← E-Wallet</a></div></div>
+<main>
+<div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><h1 style="margin:0;font-size:18px">Keuangan</h1><div style="font-size:12px;color:var(--muted)">Saldo admin hanya 5%</div></div><button class="btn" onclick="location.reload()">↻ Muat Ulang</button></div>
+<div class="panel"><div class="grid4" id="cards">
+<div class="card dark"><div class="ico">💰</div><div class="lbl">Saldo Admin (Hanya 5%)</div><div class="val" id="saldoAdmin">Memuat...</div></div>
+<div class="card"><div class="ico">🧾</div><div class="lbl">Total Jual</div><div class="val" id="totalJual">Memuat...</div></div>
+<div class="card yellow"><div class="ico">🏪</div><div class="lbl">Modal Mitra</div><div class="val" id="totalModal">Memuat...</div><div style="font-size:10px;color:#666">Bukan uang admin</div></div>
+<div class="card blue"><div class="ico">🛵</div><div class="lbl">Ongkir Kurir</div><div class="val" id="totalOngkir">Memuat...</div><div style="font-size:10px;color:#666">Bukan uang admin</div></div>
 </div>
-<div style="margin-top:10px;background:#f7f8f8;border:1px solid #eee;border-radius:10px;padding:10px;font-size:12px;line-height:1.5"><b>Rincian 1 Pesanan Contoh:</b> Total Rp 100.000 = Modal Mitra Rp 80.000 + Ongkir Kurir Rp 15.000 + Laba Admin 5% Rp 5.000. Yang masuk saldo admin cuma <b>Rp 5.000</b>, bukan Rp 100.000.</div><div id="actionMsg"></div>
-<button id="fixAdminSaldoBtn" class="btn btn-yellow" style="width:100%;margin-top:8px;padding:10px;font-weight:800">🔧 Perbaiki Saldo Admin - V19 BARU - + Selesaikan Titipan Kurir</button>
-<div id="fixAdminSaldoInfo" style="font-size:11px;color:#666;margin-top:6px">Perbaiki hanya untuk pesanan SUDAH SELESAI (sudah disetujui). Yang masih menunggu verifikasi resi, pakai tombol Setujui di atas. Tombol ini HANYA menjumlah 5% (laba admin) dari semua pesanan status selesai yang belum dihitung ke admin, lalu masukkan ke admin_saldo/total. Kalau sudah pernah diperbaiki, tidak akan double.</div>
+<div style="margin-top:12px;background:#f7f8f8;border:1px solid #eee;border-radius:10px;padding:10px;font-size:12px;line-height:1.5">Contoh: Total Rp 100.000 = Modal Rp 80.000 + Ongkir Rp 15.000 + <b>Laba Admin 5% Rp 5.000</b>. Yang masuk saldo admin cuma Rp 5.000.</div>
 </div>
-
-<div class="panel panel-toggle" id="panel-verifikasi"><h2 style="margin:0 0 6px;font-size:14px;font-weight:800">🧾 Verifikasi Resi Mitra</h2><div style="font-size:11px;color:#666;margin-bottom:10px">Mitra kirim resi -> admin cek resi di sini -> klik Setujui & Bagi Saldo, baru saldo mitra + admin 5% dibagi. Jangan pakai Perbaiki untuk yang belum disetujui.</div><div id="verifikasiResiQueue" class="list">Memuat data...</div></div>
-<div class="panel panel-toggle" id="panel-ditolak"><h2 style="margin:0 0 6px;font-size:14px;font-weight:800">❌ Ditolak - Tindakan Admin</h2><div style="font-size:11px;color:#666;margin-bottom:10px">Mitra tolak = cari mitra lain (belum refund, order masih jalan). Kurir tolak = balik ke mitra proses sendiri (belum refund). Refund ke e-wallet pelanggan HANYA kalau admin klik Batalkan Total di bawah. Ojek / COD tidak di-refund.</div><div id="ditolakQueue" class="list">Memuat data...</div></div>
-<div class="panel panel-toggle" id="panel-nilai"><h2 style="margin:0 0 6px;font-size:14px;font-weight:800">⭐ Nilai Kurir</h2><div style="font-size:11px;color:#666;margin-bottom:10px">Awal 100. Tolak -10, Batal -5, Selesai +2. Di bawah 70 = peringatan, di bawah 50 = suspend / jangan dikasih order dulu.</div><div id="nilaiKurirQueue" class="list">Memuat nilai kurir...</div></div>
-<div class="panel panel-toggle" id="panel-semua-ditolak"><h2 style="margin:0 0 6px;font-size:14px;font-weight:800">📦 Semua Ditolak - Admin Wajib Tau</h2><div style="font-size:11px;color:#666;margin-bottom:10px">Semua yang ditolak mitra / kurir / ojek masuk sini. Admin yang approve pending, bukan mitra/kurir. Klik detail untuk lihat produknya.</div><div id="semuaDitolakQueue" class="list">Memuat...</div></div>
-<div class="panel"><div style="margin-bottom:12px"><h2 style="margin:0;font-size:14px;font-weight:800">Navigasi Admin</h2></div>
-<div class="grid">
-<a class="menu" href="./riwayat-penolakan.html" style="border:2px solid #111;background:#fffbe6"><div class="menu-icon">📦</div><span class="dot" id="dot-riwayat"></span><b>Riwayat Tolak</b><small>Refund + WA</small></a>
-<a class="menu" href="./semua-pesanan-admin.html"><div class="menu-icon">📦</div><span class="dot" id="dot-pesanan"></span><b>Pesanan</b><small>Fix Saldo</small></a>
-<a class="menu" href="./data-mitra.html"><div class="menu-icon">🏪</div><span class="dot" id="dot-mitra"></span><b>Mitra</b><small>Mitra Usaha</small></a>
-<a class="menu" href="./data-kurir.html"><div class="menu-icon">🛵</div><span class="dot" id="dot-kurir"></span><b>Kurir</b></a>
-<a class="menu" href="./data-pelanggan.html"><div class="menu-icon">👥</div><span class="dot" id="dot-pelanggan"></span><b>Pelanggan</b></a>
-<a class="menu" href="./verifikasi-pencairan.html"><div class="menu-icon">💸</div><span class="dot" id="dot-pencairan"></span><b>Pencairan</b></a>
-<a class="menu" href="./keuangan-admin.html"><div class="menu-icon">💰</div><span class="dot" id="dot-keuangan"></span><b>Keuangan</b></a>
-<a class="menu" href="./pengaturan-admin.html"><div class="menu-icon">⚙️</div><span class="dot" id="dot-pengaturan"></span><b>Pengaturan</b></a>
-</div></div>
-<div class="panel panel-toggle" id="panel-topup"><h2 style="margin:0 0 10px;font-size:13px">💰 Top-up Menunggu</h2><div id="topupQueue" class="list">Memuat data...</div></div>
-<div class="panel panel-toggle" id="panel-pencairan"><h2 style="margin:0 0 10px;font-size:13px">💸 Pencairan Menunggu</h2><div id="withdrawQueue" class="list">Memuat data...</div></div>
-</section></main>
-<nav class="bottom"><a href="./index.html">🏠<br>Beranda</a><a class="active" href="./ewallet-admin.html">💳<br>E-Wallet</a><a href="./verifikasi-pencairan.html">💸<br>Pencairan</a><a href="./semua-pesanan-admin.html">📦<br>Pesanan</a></nav>
-
+<details><summary>ⓘ Info / Panduan</summary><div class="body">Admin hanya terima 5% dari mitra & kurir. Modal penjualan punya mitra, ongkir punya kurir. Saldo admin tidak termasuk modal & ongkir. Pencairan butuh verifikasi admin. Saldo masuk otomatis setelah pesanan selesai & disetujui.</div></details>
+<div class="panel"><div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0;font-size:14px">Transaksi Terbaru</h3><span style="font-size:11px;color:var(--muted)" id="txCount"></span></div><div class="list" id="content" style="margin-top:10px">Memuat...</div></div>
+<details><summary>Log</summary><div class="body"><div id="log" class="log"></div></div></details>
+</main>
 <script type="module">
-import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-import {getAuth,onAuthStateChanged,signOut,setPersistence,browserLocalPersistence} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-import {getFirestore,doc,getDoc,collection,query,where,getDocs,updateDoc,serverTimestamp,limit,orderBy,runTransaction,onSnapshot} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
-const firebaseConfig={apiKey:"AIzaSyBxqZhl6t3RwrXMwVdJeIkg0NzGfwvlweM",authDomain:"toko-siap-antar-9a7bb.firebaseapp.com",projectId:"toko-siap-antar-9a7bb",storageBucket:"toko-siap-antar-9a7bb.firebasestorage.app",messagingSenderId:"351335838712",appId:"1:351335838712:web:14cc2c7b91bb0c9e1b5c0d"};
-let app;try{app=getApps().length?getApp():initializeApp(firebaseConfig)}catch(e){app=getApp()}
-const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
-let user=null;
-const money=n=>'Rp '+Number(n||0).toLocaleString('id-ID');
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function msg(s,ok=false){const el=$('actionMsg');if(!el)return;el.className=ok?'ok':'err';el.textContent=s;el.style.display='block'}
-await setPersistence(auth,browserLocalPersistence).catch(()=>{}); console.log('FILE BARU V19 - 5% BUKAN MODAL - EWALLET ADMIN - FIX PERBAIKI + TRACKING');
-
-/* Profil hanya untuk sapaan. Saldo admin tidak lagi diambil dari users/{uid}. */
-async function getProfileAny(u){
- try{const s=await getDoc(doc(db,'users',u.uid));if(s.exists())return s.data()}catch(e){}
- try{const email=(u.email||'').toLowerCase();if(!email)return null;const q=query(collection(db,'users'),where('email','==',email),limit(1));const qs=await getDocs(q);if(!qs.empty)return qs.docs[0].data()}catch(e){}
- return null;
+import {auth,db} from "./firebase-config.js";
+import {onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+import {doc,getDoc,collection,getDocs,query,where,limit} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function rupiah(n){return 'Rp '+(Number(n)||0).toLocaleString('id-ID');}
+function log(m){ const el=$("log"); if(el) el.textContent+="\n"+m; }
+async function requireAdmin(u){
+  const ps=await getDoc(doc(db,"users",u.uid));
+  if(!ps.exists()) throw new Error("Profil akun tidak ditemukan.");
+  const p=ps.data(), role=String(p.role||"").toLowerCase();
+  if(!["admin","superadmin"].includes(role)) throw new Error("Akses ditolak. Khusus Admin/Superadmin.");
+  if(p.status==="nonaktif" || p.aktif===false) throw new Error("Akun admin sedang nonaktif.");
+  return p;
 }
-
-/* Mengikuti sumber saldo yang ditambah oleh proses verifikasi pesanan: admin_saldo/total */
-let _unsubAdminSaldo=null;
-async function hitungRincianPenjualan(){
+async function loadAccountName(u){ try{ const s=await getDoc(doc(db,"users",u.uid)); const p=s.data(); if(p) $("accountNameTop").textContent="Halo, Kak, "+(p.nama||p.namaUsaha||u.email)+" • Keuangan"; }catch(e){} }
+onAuthStateChanged(auth, async u=>{
+  if(!u){ $("content").innerHTML='Login dulu lewat e-wallet.'; return; }
+  try{ await requireAdmin(u); }catch(e){ $("content").innerHTML='<div class="err">'+esc(e.message)+'</div>'; return; }
+  loadAccountName(u);
   try{
-    const snap = await getDocs(query(collection(db,'orders'), where('status','==','selesai'), limit(100)));
-    let modal=0, ongkir=0;
-    snap.docs.forEach(d=>{
-      const x=d.data();
-      const total=Number(x.total||0);
-      let sub=Number(x.subtotal ?? x.subTotal ?? 0);
-      let ong=Number(x.ongkir ?? x.ongkosKirim ?? 0);
-      if(!sub && total && ong) sub=total-ong;
-      if(!sub && total && !ong) sub=total;
-      modal += sub; ongkir += ong;
-    });
-    const elM=document.getElementById('modalMitra'); if(elM) elM.textContent=money(modal);
-    const elO=document.getElementById('ongkirKurir'); if(elO) elO.textContent=money(ongkir);
-  }catch(e){ const elM=document.getElementById('modalMitra'); if(elM) elM.textContent='-'; }
-}
-function loadAdminWallet(){
-  $('balance').textContent='Memuat saldo...';$('income').textContent='Memuat...';$('withdrawn').textContent='Memuat...';
-  try{
-    if(_unsubAdminSaldo) _unsubAdminSaldo();
-    _unsubAdminSaldo=onSnapshot(doc(db,'admin_saldo','total'), (snap)=>{
-      const d=snap.exists()?snap.data():{};
-      $('balance').textContent=money(Number(d.saldo||0));
-      $('income').textContent=money(Number(d.totalPendapatanPesanan??d.totalPendapatan??d.saldo??0));
-      $('withdrawn').textContent=money(Number(d.totalDicairkan||0));
-    }, (e)=>{ $('balance').textContent='Tidak dapat dimuat';$('income').textContent='-';$('withdrawn').textContent='-'; msg('Gagal membaca saldo admin: '+e.message); });
-  }catch(e){ $('balance').textContent='Tidak dapat dimuat'; msg('Gagal membaca saldo admin: '+e.message); }
-}
-
-async function loadNilaiKurir(){
-  const box=$('nilaiKurirQueue'); if(!box) return;
-  try{
-    const snap=await getDocs(query(collection(db,'users'), where('role','==','kurir'), limit(50))).catch(()=>({docs:[]}));
-    // Kalau role tidak konsisten, ambil semua users yang punya nilaiKurir
-    let list=snap.docs.map(d=>({id:d.id, ...d.data()}));
-    if(!list.length){
-      const snap2=await getDocs(collection(db,'users')).catch(()=>({docs:[]}));
-      list=snap2.docs.map(d=>({id:d.id, ...d.data()})).filter(u=>u.nilaiKurir!==undefined || u.jumlahTolakKurir!==undefined || u.jumlahSelesaiKurir!==undefined);
-    }
-    if(!list.length){ box.innerHTML='<div style="font-size:12px;color:#999">Belum ada data nilai kurir</div>'; return; }
-    list.sort((a,b)=>Number(a.nilaiKurir??100)-Number(b.nilaiKurir??100));
-    box.innerHTML=list.map(u=>{
-      const nilai=Number(u.nilaiKurir??u.ratingKurir??100);
-      const tolak=Number(u.jumlahTolakKurir||0), selesai=Number(u.jumlahSelesaiKurir||0), batal=Number(u.jumlahBatalKurir||0);
-      const warna = nilai<50 ? '#b42318' : nilai<70 ? '#b45309' : '#087443';
-      const label = nilai<50 ? '⛔ SUSPEND - Jangan kasih order dulu' : nilai<70 ? '⚠️ PERINGATAN - Sering menolak' : '✅ BAGUS';
-      return `<div class="item" style="border:1px solid #eee;border-radius:10px;padding:10px;margin-bottom:8px"><strong>${esc(u.nama||u.email||u.id)}</strong> <span style="color:${warna};font-weight:900">Nilai: ${nilai} - ${label}</span><div style="font-size:12px;margin-top:4px">Tolak: ${tolak}x • Batal: ${batal}x • Selesai: ${selesai}x</div></div>`;
-    }).join('');
-  }catch(e){ box.innerHTML='<div style="font-size:12px;color:#b42318">Gagal: '+esc(e.message)+'</div>'; }
-}
-async function loadSemuaDitolak(){
-  const box=$('semuaDitolakQueue'); if(!box) return;
-  try{
-    const q1=query(collection(db,'orders'), where('status','==','ditolak_mitra'), limit(20));
-    const q2=query(collection(db,'orders'), where('status','==','ditolak_kurir'), limit(20));
-    const q3=query(collection(db,'orders'), where('status','==','dibatalkan'), limit(20));
-    const [s1,s2,s3]=await Promise.all([getDocs(q1).catch(()=>({docs:[]})), getDocs(q2).catch(()=>({docs:[]})), getDocs(q3).catch(()=>({docs:[]}))]);
-    const all=[...s1.docs, ...s2.docs, ...s3.docs];
-    if(!all.length){ box.innerHTML='<div style="font-size:12px;color:#999">Tidak ada produk/pesanan ditolak. Semua pending sudah di-approve admin.</div>'; return; }
-    box.innerHTML=all.map(d=>{
-      const x={id:d.id, ...d.data()};
-      const items=Array.isArray(x.items)?x.items.map(it=>`${esc(it.name||it.nama||'Produk')} x ${it.qty||1}`).join(', ') : (x.namaProduk||x.produk||'-');
-      return `<div class="item" style="border:1px solid #f5c6c6;border-radius:10px;padding:10px;margin-bottom:8px;background:#fff5f5"><strong>${esc(x.nomorPesanan||x.id)} - ${esc(x.status)}</strong><div style="font-size:12px;margin-top:4px">Produk: ${items}</div><div style="font-size:12px">Mitra: ${esc(x.mitraUid||x.mitraUsahaUid||x.acceptedByMitraUid||'-')} • Kurir: ${esc(x.kurirUid||'-')} • Pelanggan: ${esc(x.pelangganUid||x.customerUid||'-')}</div><div style="font-size:12px">Alasan: ${esc(x.alasanTolakMitra||x.alasanTolakKurir||x.alasanBatalKurir||x.alasanTolak||'-')} • Total: ${money(Number(x.total||0))} • Refund: ${x.refundMasuk?'Sudah Rp '+money(Number(x.refundNominal||0)):'Belum / COD'}</div></div>`;
-    }).join('');
-  }catch(e){ box.innerHTML='<div style="font-size:12px;color:#b42318">Gagal: '+esc(e.message)+'</div>'; }
-}
-async function loadDitolakQueue(){
-  const box=$('ditolakQueue'); if(!box) return;
-  try{
-    const q1=query(collection(db,'orders'), where('status','==','ditolak_mitra'), limit(20));
-    const q2=query(collection(db,'orders'), where('status','==','ditolak_kurir'), limit(20));
-    const [s1,s2]=await Promise.all([getDocs(q1).catch(()=>({docs:[]})), getDocs(q2).catch(()=>({docs:[]}))]);
-    const all=[...s1.docs, ...s2.docs];
-    if(!all.length){ box.innerHTML='<div style="font-size:12px;color:#999">Tidak ada pesanan ditolak</div>'; return; }
-    box.innerHTML = all.map(d=>{
-      const x={id:d.id, ...d.data()};
-      const isMitra=x.status==='ditolak_mitra';
-      const alasan=isMitra ? (x.alasanTolakMitra||'-') : (x.alasanBatalKurir||x.alasanTolakKurir||'-');
-      const hitung=isMitra ? '' : ` • Dibatalkan ${Number(x.jumlahBatalKurir||0)}x`;
-      return `<div class="item" style="border:1px solid #f5c6c6;border-radius:10px;padding:10px;margin-bottom:8px;background:#fff5f5">
-        <strong>${esc(x.nomorPesanan||x.id)} - ${isMitra?'DITOLAK MITRA':'DITOLAK KURIR (3x batal)'}${hitung}</strong>
-        <div style="font-size:12px;margin-top:4px">Total: <b>${money(Number(x.total||0))}</b> • Alasan: ${esc(alasan)}</div>
-        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-          ${isMitra?`<button class="btn btn-yellow" data-action="reassign-mitra" data-id="${esc(x.id)}">🔁 Cari Mitra Lain - Kembalikan ke Disetujui</button>`:''}
-          ${!isMitra?`<button class="btn btn-yellow" data-action="reassign-kurir" data-id="${esc(x.id)}">🔁 Cari Kurir Lain - Kembalikan ke Mencari Kurir</button>`:''}
-          <button class="btn btn-black" data-action="batalkan-order" data-id="${esc(x.id)}">🗑️ Batalkan Total + Refund ke Pelanggan</button>
-        </div>
-      </div>`;
-    }).join('');
-  }catch(e){ box.innerHTML='<div style="font-size:12px;color:#b42318">Gagal: '+esc(e.message)+'</div>'; }
-}
-async function loadVerifikasiResi(){
-  const box=$('verifikasiResiQueue'); if(!box) return;
-  try{
-    const q=query(collection(db,'orders'), where('status','==','menunggu_verifikasi_admin'), limit(20));
-    const snap=await getDocs(q).catch(()=>({docs:[]}));
-    if(!snap.docs?.length){ box.innerHTML='<div style="font-size:12px;color:#999">Tidak ada resi menunggu verifikasi</div>'; return; }
-    box.innerHTML = await Promise.all(snap.docs.map(async d=>{
-      const x={id:d.id, ...d.data()};
-      const total=Number(x.total||0);
-      let sub=Number(x.subtotal ?? x.subTotal ?? 0);
-      let ong=Number(x.ongkir ?? x.ongkosKirim ?? 0);
-      if(!sub && total && ong) sub=total-ong;
-      if(!sub && total && !ong) sub=total;
-      const adminFee=Number(x.adminFee||0) || Math.round((sub+ong)*0.05);
-      const mitraUid=String(x.mitraUid||x.mitraUsahaUid||x.acceptedByMitraUid||x.ownerUid||'');
-      let mitraNama='Mitra';
-      try{ const us=await getDoc(doc(db,'users',mitraUid)); if(us.exists()) mitraNama=us.data().nama||us.data().namaUsaha||mitraNama; }catch(_){}
-      const mitraCredit = x.kurirUid ? sub : Math.max(0, (sub+ong)-adminFee);
-      return `<div class="item" style="border:1px solid #eee;border-radius:10px;padding:10px;margin-bottom:8px">
-        <strong>${esc(x.nomorPesanan||x.id)} - ${esc(mitraNama)}</strong>
-        <div style="font-size:12px;color:#444;margin-top:4px">Total: <b>${money(total)}</b> • Subtotal: ${money(sub)} • Ongkir: ${money(ong)} • Admin 5%: <b>${money(adminFee)}</b> • Mitra dapat: <b>${money(mitraCredit)}</b></div>
-        <div style="margin-top:8px;background:#f7faf8;border:1px solid #e2eee7;border-radius:8px;padding:8px"><b style="font-size:11px">📄 RESI (OCR) - CEK DULU SEBELUM SETUJUI:</b><div style="font-size:12px;white-space:pre-wrap;margin-top:4px">${esc(x.resiOcrText||'(tidak ada teks resi)')}</div><div style="font-size:11px;color:#666;margin-top:4px">File: ${esc(x.resiNamaFile||'-')}</div></div>
-        <div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-yellow" data-action="approve-resi" data-id="${esc(x.id)}" data-mitra="${esc(mitraUid)}" data-adminfee="${adminFee}" data-mitrac="${mitraCredit}">✅ Cek Resi Sudah Benar - Setujui & Bagi Saldo</button><button class="btn btn-black" data-action="reject" data-col="orders" data-id="${esc(x.id)}">Tolak</button></div>
-      </div>`;
-    })).then(a=>a.join(''));
-  }catch(e){ box.innerHTML='<div style="font-size:12px;color:#b42318">Gagal: '+esc(e.message)+'</div>'; }
-}
-async function loadQueues(){
- try{
-  const topupQ=query(collection(db,'ewallet_topups'),where('status','==','menunggu'),orderBy('createdAt','desc'),limit(20));
-  const withdrawQ=query(collection(db,'ewallet_withdrawals'),where('status','==','menunggu'),orderBy('createdAt','desc'),limit(20));
-  const [topupSnap,withdrawSnap]=await Promise.all([getDocs(topupQ).catch(()=>({docs:[]})),getDocs(withdrawQ).catch(()=>({docs:[]}))]);
-  $('topupQueue').innerHTML=topupSnap.docs?.length?(await Promise.all(topupSnap.docs.map(async d=>{
-   const x={id:d.id,...d.data()};
-   return `<div class="item"><strong>Top-up ${money(x.amount)} - ${esc(x.email||x.uid||'')}</strong><div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-yellow" data-action="approve-topup" data-id="${esc(x.id)}" data-uid="${esc(x.uid||'')}" data-amount="${Number(x.amount||0)}">Setujui</button><button class="btn btn-black" data-action="reject" data-col="ewallet_topups" data-id="${esc(x.id)}">Tolak</button></div></div>`;
-  }))).join(''):'<div style="font-size:12px;color:#999">Tidak ada top-up menunggu</div>';
-  $('withdrawQueue').innerHTML=withdrawSnap.docs?.length?(await Promise.all(withdrawSnap.docs.map(async d=>{
-   const x={id:d.id,...d.data()};let p=null;
-   try{const us=await getDoc(doc(db,'users',x.uid));if(us.exists())p=us.data()}catch(e){}
-   const saldo=Number(p?.saldoEwallet??p?.saldoWallet??p?.saldo??0),nominal=Number(x.amount||0),cukup=saldo>=nominal;
-   return `<div class="item"><div style="display:flex;justify-content:space-between"><strong>Cair ${money(nominal)}</strong><span class="badge ${cukup?'badge-ok':'badge-err'}">${cukup?'Cukup':'Kurang'}</span></div><div class="detail"><b>Mitra</b><span>${esc(p?.nama||p?.namaUsaha||x.email||'-')}</span><b>Nominal</b><span style="font-weight:900">${money(nominal)}</span><b>Rek</b><span class="mono">${esc(x.bankName||p?.bankName||'')} ${esc(x.accountNumber||p?.bankAccountNumber||'')} a.n ${esc(x.accountName||p?.bankAccountName||'')}</span><b>Saldo</b><span>${money(saldo)}</span></div><div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-yellow" data-action="approve-withdraw" data-id="${esc(x.id)}" data-uid="${esc(x.uid||'')}" data-amount="${nominal}" ${!cukup?'disabled':''}>✅ Setujui & Potong</button><button class="btn btn-black" data-action="reject" data-col="ewallet_withdrawals" data-id="${esc(x.id)}">Tolak</button></div></div>`;
-  }))).join(''):'<div style="font-size:12px;color:#999">Tidak ada pencairan menunggu</div>';
- }catch(e){$('topupQueue').innerHTML='<div class="err">Gagal: '+esc(e.message)+'</div>';$('withdrawQueue').innerHTML='<div class="err">Gagal: '+esc(e.message)+'</div>'}
-}
-
-$('logoutBtn').onclick=async()=>{try{await signOut(auth)}catch(e){}location.href='./profil.html'};
-// V17: Cuma 8 icon yang sudah ada, dot di pojok kanan atas tiap icon
-function setDot(id, count){ const el=document.getElementById(id); if(!el) return; if(Number(count)>0) el.classList.add('show'); else el.classList.remove('show'); }
-// V18: Hitung pending Pesanan Admin langsung dari orders, bukan cuma dari Verifikasi Resi
-let pendingPesananCount = 0;
-async function hitungPendingPesanan(){
-  try{
-    // Pending di Pesanan Admin = status pending / menunggu / belum diproses
-    const pendingStatus = ['pending','menunggu','menunggu_verifikasi','menunggu_admin','menunggu_mitra','menunggu_kurir','menunggu_verifikasi_admin','menunggu_persetujuan','belum_diproses','diantar','sedang_diproses'];
-    let total = 0;
-    // Query per status, karena Firestore where in dibatasi 10, kita query pending + menunggu dulu yang paling sering
-    for(const st of ['pending','menunggu','menunggu_verifikasi_admin','menunggu_mitra','diantar']){
-      try{
-        const q = query(collection(db,'orders'), where('status','==',st), limit(50));
-        const snap = await getDocs(q);
-        total += snap.size;
-      }catch(_){}
-    }
-    // Tambah yang di DOM verifikasi (resi) kalau belum kehitung
-    const vDom = document.querySelectorAll('#verifikasiResiQueue .item').length;
-    // Kalau total dari query 0 tapi DOM ada, pakai DOM
-    if(total===0) total = vDom;
-    pendingPesananCount = total;
-    setDot('dot-pesanan', total);
-    // Riwayat juga ikut kalau ada pending ditolak
-  }catch(e){ console.log('hitung pending gagal', e); }
-}
-
-setInterval(()=>{
-  hitungPendingPesanan(); hitungRincianPenjualan();
-  try{
-    const v=document.querySelectorAll('#verifikasiResiQueue .item').length;
-    const d=document.querySelectorAll('#ditolakQueue .item').length;
-    const n=document.querySelectorAll('#nilaiKurirQueue .item').length;
-    const s=document.querySelectorAll('#semuaDitolakQueue .item').length;
-    const t=document.querySelectorAll('#topupQueue .item').length;
-    const c=document.querySelectorAll('#withdrawQueue .item').length;
-    setDot('dot-riwayat', d+s);
-    // V18: dot Pesanan dari pendingPesananCount (query orders), bukan cuma verifikasi
-    setDot('dot-pesanan', Math.max(pendingPesananCount, v));
-    setDot('dot-mitra', d);
-    setDot('dot-kurir', n+d);
-    setDot('dot-pelanggan', 0);
-    setDot('dot-pencairan', c);
-    setDot('dot-keuangan', t);
-    setDot('dot-pengaturan', 0);
-  }catch(_){}
-}, 2000);
-setTimeout(()=>{ hitungPendingPesanan(); hitungRincianPenjualan(); }, 1500);
-onAuthStateChanged(auth,async u=>{
- user=u||null;
- if(!u){$('welcomeTop').innerHTML='Halo, Kak, <b>Admin</b>';$('logoutBtn').textContent='Login';$('logoutBtn').onclick=()=>location.href='./profil.html';$('balance').textContent=money(0);$('income').textContent=money(0);$('withdrawn').textContent=money(0);$('topupQueue').textContent='Login untuk melihat antrean';$('withdrawQueue').textContent='Login untuk melihat antrean';return}
- $('logoutBtn').textContent='Keluar';$('logoutBtn').onclick=async()=>{try{await signOut(auth)}catch(e){}location.href='./profil.html'};
- try{const p=await getProfileAny(u);const nama=p?.nama||p?.namaUsaha||u.email||'Admin';$('welcomeTop').innerHTML='Halo, Kak, <b>'+esc(nama)+'</b>'}catch(e){$('welcomeTop').innerHTML='Halo, Kak, <b>'+esc(u.email||'Admin')+'</b>'}
- await Promise.all([loadAdminWallet(),loadQueues()]);
-});
-
-/* Saat kembali dari halaman lain, perbarui data tanpa reload paksa. */
-window.addEventListener('pageshow',()=>{if(user){loadAdminWallet();loadQueues()}});
-
-// Perbaiki saldo admin lama: hitung 5% dari pesanan selesai yang belum dihitung admin - semua baca dulu, baru tulis
-  $('fixAdminSaldoBtn').onclick=async()=>{
-    if(!user){ alert('Login dulu'); return; }
-    if(!confirm('Hitung ulang saldo admin 5% dari semua pesanan selesai yang belum dihitung? Ini tidak akan double.')) return;
-    const btn=$('fixAdminSaldoBtn'); btn.disabled=true; btn.textContent='Menghitung...';
-    try{
-      // V4: Selesaikan dulu titipan kurir dari tracking (kurir gagal update orders karena Rules lama)
-      try{
-        const tq = await getDocs(query(collection(db,'tracking'), where('perluAdminSelesaikan','==',true)));
-        let diprosesTracking = 0;
-        for(const d of tq.docs){
-          const tr = d.data()||{};
-          const oid = tr.orderId || d.id;
-          const oref = doc(db,'orders',oid);
-          const osnap = await getDoc(oref);
-          if(osnap.exists() && osnap.data().status !== 'selesai'){
-            await updateDoc(oref, {
-              kurirUid: tr.kurirUid || osnap.data().kurirUid || '',
-              mitraUid: tr.mitraUid || osnap.data().mitraUid || osnap.data().mitraUsahaUid || osnap.data().acceptedByMitraUid || '',
-              status:'selesai',
-              selesaiAt: serverTimestamp(),
-              adminFee: Number(tr.adminFee||0),
-              adminFeeDibayar:true,
-              adminFeeDibayarAt: serverTimestamp(),
-              adminSaldoMasuk:false,
-              kurirSaldoDipotong:false,
-              perluPotongKurir:true,
-              mitraSaldoMasuk:false,
-              kurirTerima: Number(tr.kurirTerima||0),
-              updatedAt: serverTimestamp()
-            });
-            diprosesTracking++;
-          }
-          await updateDoc(doc(db,'tracking',d.id), { perluAdminSelesaikan:false, diprosesAdminAt: serverTimestamp(), updatedAt: serverTimestamp() });
-        }
-        if(diprosesTracking>0) console.log('V6 tracking diproses:', diprosesTracking);
-      }catch(e){ console.log('V6 tracking fallback:', e.message); }
-      const qs=await getDocs(query(collection(db,'orders'), where('status','==','selesai')));
-      let tambah=0, hitung=0, skip=0;
-      const toMark=[];
-      const toPotongKurir=[];
-      const toBagiMitra=[];
-      qs.forEach(d=>{
-        const o=d.data()||{};
-        // V6: Potong kurir terpisah, jangan skip kalau admin sudah masuk tapi kurir belum dipotong
-        const feeKurir = Number(o.adminFee||0);
-        const perluPotong = o.kurirUid && o.kurirSaldoDipotong!==true && feeKurir>0;
-        if(perluPotong) toPotongKurir.push({id:d.id, kurirUid:String(o.kurirUid), fee:feeKurir});
-        const mitraUid = String(o.mitraUid || o.mitraUsahaUid || o.acceptedByMitraUid || o.ownerUid || o.mitraId || o.sellerUid || '');
-        if(mitraUid && o.mitraSaldoMasuk!==true){
-          const _totalTmp = Number(o.total||0);
-          let _subTmp = Number(o.subtotal ?? o.subTotal ?? 0);
-          let _ongTmp = Number(o.ongkir ?? o.ongkosKirim ?? 0);
-          if(!_subTmp && _totalTmp && _ongTmp) _subTmp = _totalTmp - _ongTmp;
-          if(!_subTmp && _totalTmp && !_ongTmp) _subTmp = _totalTmp;
-          const _adminTmp = feeKurir>0 ? feeKurir : Math.round((_subTmp+_ongTmp)*0.05);
-          const _mitraCredit = o.kurirUid ? _subTmp : Math.max(0, (_subTmp+_ongTmp) - _adminTmp);
-          if(_mitraCredit>0) toBagiMitra.push({id:d.id, mitraUid:mitraUid, credit:_mitraCredit});
-        }
-        if(o.adminSaldoMasuk===true){ skip++; return; }
-        const total=Number(o.total||0);
-        let sub=Number(o.subtotal ?? o.subTotal ?? 0);
-        let ongkir=Number(o.ongkir ?? o.ongkosKirim ?? 0);
-        if(!sub && total && ongkir) sub=total-ongkir;
-        if(!sub && total && !ongkir) sub=total;
-        const kotor=sub+ongkir;
-        // Pakai adminFee yang sudah dihitung kurir kalau ada, biar pas dengan yang dipotong
-        const adminCredit = feeKurir>0 ? feeKurir : Math.round(kotor*0.05);
-        if(adminCredit>0){ tambah+=adminCredit; hitung++; toMark.push(d.id); }
-        else skip++;
-      });
-      if(tambah===0 && toPotongKurir.length===0 && toBagiMitra.length===0){ msg('Tidak ada pesanan selesai yang belum dihitung ke admin. Saldo sudah benar.', true); btn.disabled=false; btn.textContent='🔧 Perbaiki Saldo Admin - V19 BARU - + Selesaikan Titipan Kurir + Potong Kurir + Bagi Mitra'; return; }
-      await runTransaction(db, async tx=>{
-        const ref=doc(db,'admin_saldo','total');
-        const snap=await tx.get(ref);
-        const d=snap.exists()?snap.data():{};
-        const oldSaldo=Number(d.saldo||0);
-        const oldPend=Number(d.totalPendapatanPesanan??d.totalPendapatan??0);
-        // Semua baca dulu
-        const orderSnaps=[];
-        for(const id of toMark){ const oref=doc(db,'orders',id); const osnap=await tx.get(oref); orderSnaps.push({oref, osnap}); }
-        // V6: Baca saldo kurir yang perlu dipotong
-        const kurirSnaps=[];
-        for(const pk of toPotongKurir){
-          const uref=doc(db,'users',pk.kurirUid);
-          const usnap=await tx.get(uref);
-          kurirSnaps.push({uref, usnap, fee:pk.fee, orderId:pk.id});
-        }
-        const mitraSnaps=[];
-        for(const pm of toBagiMitra){
-          const mref=doc(db,'users',pm.mitraUid);
-          const msnap=await tx.get(mref);
-          mitraSnaps.push({mref, msnap, credit:pm.credit, orderId:pm.id});
-        }
-        // Baru tulis
-        if(tambah>0){
-          if(snap.exists()) tx.update(ref,{saldo:oldSaldo+tambah, totalPendapatanPesanan:oldPend+tambah, totalPendapatan:oldPend+tambah, updatedAt:serverTimestamp()});
-          else tx.set(ref,{saldo:tambah, totalPendapatanPesanan:tambah, totalPendapatan:tambah, totalDicairkan:0, createdAt:serverTimestamp(), updatedAt:serverTimestamp()});
-        } else if(!snap.exists()){
-          tx.set(ref,{saldo:0, totalPendapatanPesanan:0, totalPendapatan:0, totalDicairkan:0, createdAt:serverTimestamp(), updatedAt:serverTimestamp()});
-        }
-        for(const {oref, osnap} of orderSnaps){ if(osnap.exists()) tx.update(oref,{adminSaldoMasuk:true, adminSaldoDiperbaikiAt:serverTimestamp()}); }
-        // V6: Potong saldo kurir 5% di sini, jangan double kalau sudah dipotong
-        for(const {uref, usnap, fee, orderId} of kurirSnaps){
-          if(!usnap.exists()) continue;
-          const ud=usnap.data()||{};
-          const cur=Number(ud.saldoEwallet ?? ud.saldoWallet ?? ud.saldo ?? 0);
-          const nw=Math.max(0, cur - fee);
-          tx.update(uref,{saldoEwallet:nw, saldoWallet:nw, saldo:nw, updatedAt:serverTimestamp()});
-          const oref2=doc(db,'orders',orderId);
-          tx.update(oref2,{kurirSaldoDipotong:true, perluPotongKurir:false, updatedAt:serverTimestamp()});
-        }
-        for(const {mref, msnap, credit, orderId} of mitraSnaps){
-          if(!msnap.exists()) continue;
-          const md=msnap.data()||{};
-          const curM=Number(md.saldoEwallet ?? md.saldoWallet ?? md.saldo ?? 0);
-          const nwM=curM + credit;
-          tx.update(mref,{saldoEwallet:nwM, saldoWallet:nwM, saldo:nwM, updatedAt:serverTimestamp()});
-          const oref3=doc(db,'orders',orderId);
-          tx.update(oref3,{mitraSaldoMasuk:true, mitraDibagiAt:serverTimestamp(), updatedAt:serverTimestamp()});
-        }
-      });
-      msg('Perbaikan berhasil ✅ Admin +Rp '+tambah.toLocaleString('id-ID')+' dari '+hitung+' pesanan. Kurir dipotong '+toPotongKurir.length+' pesanan. Mitra dibagi '+toBagiMitra.length+' pesanan. '+skip+' pesanan sudah dihitung sebelumnya.', true);
-    }catch(e){ msg('Gagal perbaiki: '+e.message); }
-    btn.disabled=false; btn.textContent='🔧 Perbaiki Saldo Admin - V19 BARU - + Selesaikan Titipan Kurir + Potong Kurir + Bagi Mitra';
-  };
-document.addEventListener('click',async e=>{
- const b=e.target.closest('[data-action]');if(!b)return;
- const action=b.dataset.action,col=b.dataset.col,id=b.dataset.id,uid=b.dataset.uid,amount=Number(b.dataset.amount||0);
- if(!user){alert('Login dulu di profil.html');location.href='./profil.html';return}
- if(action==='reject'){
-  if(!confirm('Tolak '+id+'?'))return;b.disabled=true;
-  try{await updateDoc(doc(db,col,id),{status:'ditolak',reviewedBy:user.uid,reviewedAt:serverTimestamp()});msg('Ditolak',true);await loadQueues(); loadVerifikasiResi(); loadDitolakQueue(); loadNilaiKurir(); loadSemuaDitolak(); await loadVerifikasiResi();}
-  catch(x){msg('Gagal: '+x.message);b.disabled=false}return;
- }
- if(action==='approve-topup'){
-  if(!uid||!Number.isFinite(amount)||amount<=0){msg('Data top-up tidak valid.');return}
-  if(!confirm('Setujui top-up '+money(amount)+'?'))return;b.disabled=true;
-  try{
-   await runTransaction(db,async tx=>{
-    const ur=doc(db,'users',uid),tr=doc(db,'ewallet_topups',id),us=await tx.get(ur),topup=await tx.get(tr);
-    if(!us.exists())throw Error('User tidak ada');if(!topup.exists())throw Error('Data top-up tidak ditemukan');if(topup.data().status!=='menunggu')throw Error('Top-up sudah diproses');
-    const d=us.data(),old=Number(d.saldoEwallet??d.saldoWallet??d.saldo??0),nw=old+amount;
-    tx.update(ur,{saldoEwallet:nw,saldoWallet:nw,saldo:nw,totalTopup:Number(d.totalTopup||0)+amount,updatedAt:serverTimestamp()});
-    tx.update(tr,{status:'disetujui',reviewedBy:user.uid,reviewedAt:serverTimestamp()});
-   });
-   msg('Top-up disetujui ✅',true);await loadQueues(); loadVerifikasiResi(); loadDitolakQueue(); loadNilaiKurir(); loadSemuaDitolak(); await loadVerifikasiResi();;
-  }catch(x){msg('Gagal: '+x.message);b.disabled=false}return;
- }
- if(action==='reassign-mitra'){
-  if(!confirm('Kembalikan order ini ke Disetujui untuk dicari mitra lain? Mitra yang nolak tidak akan dapat lagi order ini.')) return;
-  b.disabled=true;
-  try{
-    await updateDoc(doc(db,'orders',id), {status:'disetujui', statusSebelumnya:'ditolak_mitra', updatedAt:serverTimestamp()});
-    msg('Order dikembalikan ke Disetujui ✅ Cari mitra lain.', true); await loadDitolakQueue();
-  }catch(x){ msg('Gagal: '+x.message); b.disabled=false; } return;
- }
- if(action==='reassign-kurir'){
-  if(!confirm('Kembalikan order ini ke Mencari Kurir untuk kurir lain?')) return;
-  b.disabled=true;
-  try{
-    await updateDoc(doc(db,'orders',id), {status:'mencari_kurir', statusSebelumnya:'ditolak_kurir', jumlahBatalKurir:0, kurirUid:null, updatedAt:serverTimestamp()});
-    msg('Order dikembalikan ke Mencari Kurir ✅', true); await loadDitolakQueue();
-  }catch(x){ msg('Gagal: '+x.message); b.disabled=false; } return;
- }
- if(action==='batalkan-order'){
-  if(!confirm('BATALKAN TOTAL + REFUND ke e-wallet pelanggan? Saldo pelanggan akan bertambah sesuai total pesanan (kecuali COD). Saldo mitra/kurir/admin TIDAK dibagi.')) return;
-  b.disabled=true;
-  try{
-    await runTransaction(db, async tx=>{
-      const oref=doc(db,'orders',id);
-      const osnap=await tx.get(oref);
-      if(!osnap.exists()) throw new Error('Pesanan tidak ditemukan');
-      const od=osnap.data();
-      const statusNow=String(od.status||'').toLowerCase();
-      if(statusNow==='dibatalkan') throw new Error('Pesanan sudah dibatalkan');
-      if(od.refundMasuk===true) throw new Error('Refund sudah pernah masuk, tidak bisa double');
-      const payRaw=String(od.metodePembayaran||od.paymentMethod||'').trim().toLowerCase();
-      const _ojekStr=String((od.jenisLayanan||od.layanan||od.kategori||od.jenis||od.metodePengiriman||od.shippingMethod||'')+' '+(od.jenisKendaraan||'')).toLowerCase();
-      const _isOjek=_ojekStr.includes('ojek');
-      const total=Number(od.total||0);
-      const pelangganUid=String(od.pelangganUid||od.customerUid||od.userUid||od.uid||od.pembeliUid||'');
-      const isCOD = payRaw==='cod' || payRaw.includes('cod') || payRaw.includes('bayar di tempat') || _isOjek; // V13: Ojek selalu COD, jangan refund
-      let refundNominal=0;
-      let refundKe=null;
-      if(!isCOD && total>0 && pelangganUid){
-        refundNominal=total;
-        const pref=doc(db,'users',pelangganUid);
-        const psnap=await tx.get(pref);
-        if(!psnap.exists()) throw new Error('Akun pelanggan tidak ditemukan untuk refund');
-        const pd=psnap.data();
-        const curP=Number(pd.saldoEwallet ?? pd.saldoWallet ?? pd.saldo ?? 0);
-        tx.update(pref,{saldoEwallet:curP+refundNominal, saldoWallet:curP+refundNominal, saldo:curP+refundNominal, updatedAt:serverTimestamp()});
-        refundKe=pelangganUid;
-      }
-      tx.update(oref,{status:'dibatalkan', statusSebelumnya:statusNow, dibatalkanOleh:'admin', dibatalkanAt:serverTimestamp(), refundMasuk: refundNominal>0, refundNominal: refundNominal, refundKePelangganUid: refundKe||null, refundAt: refundNominal>0?serverTimestamp():null, adminSaldoMasuk:false, mitraSaldoMasuk:false, kurirSaldoDipotong:false, updatedAt:serverTimestamp()});
-      // Simpan info untuk pesan
-      tx._refundInfo={refundNominal, isCOD};
-    });
-    msg('Order dibatalkan + refund ke pelanggan ✅ (COD tidak di-refund, Transfer/QRIS di-refund full total).', true); await loadDitolakQueue(); await loadVerifikasiResi();
-  }catch(x){ msg('Gagal batalkan: '+x.message); b.disabled=false; } return;
- }
- if(action==='approve-resi'){
-  const orderId=id, mitraUid=b.dataset.mitra||'', adminFee=Number(b.dataset.adminfee||0), mitraCredit=Number(b.dataset.mitrac||0);
-  if(!orderId || !mitraUid){ msg('Data resi tidak valid.'); return; }
-  if(!confirm('CEK RESI SUDAH BENAR? Setujui & bagi saldo: Mitra +'+money(mitraCredit)+' , Admin +'+money(adminFee)+'?')) return;
-  b.disabled=true;
-  try{
-    await runTransaction(db, async tx=>{
-      const oref=doc(db,'orders',orderId);
-      const osnap=await tx.get(oref);
-      if(!osnap.exists()) throw new Error('Pesanan tidak ditemukan');
-      const od=osnap.data();
-      if(String(od.status||'').toLowerCase()!=='menunggu_verifikasi_admin') throw new Error('Pesanan tidak lagi menunggu verifikasi');
-      const mref=doc(db,'users',mitraUid);
-      const msnap=await tx.get(mref);
-      if(!msnap.exists()) throw new Error('Mitra tidak ditemukan');
-      const md=msnap.data();
-      const curM=Number(md.saldoEwallet ?? md.saldoWallet ?? md.saldo ?? 0);
-      const nwM=curM + mitraCredit;
-      const aref=doc(db,'admin_saldo','total');
-      const asnap=await tx.get(aref);
-      const ad=asnap.exists()?asnap.data():{};
-      const oldSaldo=Number(ad.saldo||0);
-      const oldPend=Number(ad.totalPendapatanPesanan??ad.totalPendapatan??0);
-      // Tulis semua
-      tx.update(oref,{status:'selesai', menungguApprovalAdmin:false, approvalAdminAt:serverTimestamp(), approvalAdminBy:user.uid, adminFee:adminFee, adminFeeDibayar:true, adminFeeDibayarAt:serverTimestamp(), adminSaldoMasuk:true, mitraSaldoMasuk:true, mitraDibagiAt:serverTimestamp(), adminSaldoDiperbaikiAt:serverTimestamp(), updatedAt:serverTimestamp()});
-      tx.update(mref,{saldoEwallet:nwM, saldoWallet:nwM, saldo:nwM, updatedAt:serverTimestamp()});
-      if(asnap.exists()) tx.update(aref,{saldo:oldSaldo+adminFee, totalPendapatanPesanan:oldPend+adminFee, totalPendapatan:oldPend+adminFee, updatedAt:serverTimestamp()});
-      else tx.set(aref,{saldo:adminFee, totalPendapatanPesanan:adminFee, totalPendapatan:adminFee, totalDicairkan:0, createdAt:serverTimestamp(), updatedAt:serverTimestamp()});
-    });
-    msg('Resi disetujui ✅ Mitra +'+money(mitraCredit)+', Admin +'+money(adminFee)+'.', true);
-    await loadVerifikasiResi(); await loadQueues();
-  }catch(x){ msg('Gagal setujui resi: '+x.message); b.disabled=false; }
-  return;
- }
- if(action==='approve-withdraw'){
-  if(!uid||!Number.isFinite(amount)||amount<=0){msg('Data pencairan tidak valid.');return}
-  if(!confirm('SETUJUI PENCAIRAN '+money(amount)+'? Saldo mitra akan DIPOTONG otomatis!'))return;b.disabled=true;
-  try{
-   await runTransaction(db,async tx=>{
-    const ur=doc(db,'users',uid),wr=doc(db,'ewallet_withdrawals',id),us=await tx.get(ur),withdrawal=await tx.get(wr);
-    if(!us.exists())throw Error('User tidak ada');if(!withdrawal.exists())throw Error('Data pencairan tidak ditemukan');if(withdrawal.data().status!=='menunggu')throw Error('Pencairan sudah diproses');
-    const d=us.data(),old=Number(d.saldoEwallet??d.saldoWallet??d.saldo??0);if(old<amount)throw Error('Saldo tidak cukup: '+money(old));const nw=old-amount;
-    tx.update(ur,{saldoEwallet:nw,saldoWallet:nw,saldo:nw,totalDicairkan:Number(d.totalDicairkan||0)+amount,updatedAt:serverTimestamp()});
-    tx.update(wr,{status:'disetujui',reviewedBy:user.uid,reviewedAt:serverTimestamp(),saldoBefore:old,saldoAfter:nw,saldoDipotong:amount});
-   });
-   msg('Pencairan disetujui & potong '+money(amount)+' ✅',true);await loadQueues(); loadVerifikasiResi(); loadDitolakQueue(); loadNilaiKurir(); loadSemuaDitolak(); await loadVerifikasiResi();;
-  }catch(x){msg('Gagal: '+x.message);b.disabled=false}
- }
+    const snap=await getDocs(query(collection(db,"orders"), where("status","==","selesai"), limit(100)));
+    let jual=0, modal=0, ongkir=0, laba=0;
+    snap.forEach(d=>{ const o=d.data(); const total=Number(o.total||0); let sub=Number(o.subtotal ?? o.subTotal ?? o.mitraModalTotal ?? o.modalTotal ?? 0); let ong=Number(o.ongkir ?? o.ongkosKirim ?? 0); if(!sub && total && ong) sub=total-ong; if(!sub && total && !ong) sub=total; const fee=Number(o.adminFee ?? o.labaAdmin ?? 0) || Math.round(total*0.05); jual+=total; modal+=sub; ongkir+=ong; laba+=fee; });
+    $("saldoAdmin").textContent=rupiah(laba);
+    $("totalJual").textContent=rupiah(jual);
+    $("totalModal").textContent=rupiah(modal);
+    $("totalOngkir").textContent=rupiah(ongkir);
+    // Saldo admin dari admin_saldo juga, kalau ada, pakai itu biar konsisten dengan ewallet-admin
+    try{ const ad=await getDoc(doc(db,"admin_saldo","total")); if(ad.exists()) $("saldoAdmin").textContent=rupiah(Number(ad.data().saldo||laba)); }catch(_){}
+    const txSnap=await getDocs(query(collection(db,"wallet_transactions"), limit(30)));
+    $("txCount").textContent=txSnap.size+" transaksi";
+    let txHtml=txSnap.docs.map(d=>{ const t=d.data(); return `<div class="item"><div><strong>${esc(t.type)}</strong><div class="meta">${esc(t.nomorPesanan||t.orderId||'')}</div></div><strong>${rupiah(t.amount)}</strong></div>`; }).join('');
+    $("content").innerHTML=txHtml||'<div class="meta">Belum ada transaksi</div>';
+  }catch(e){ $("content").innerHTML='<div class="err">'+esc(e.message)+'</div>'; log(e.message); }
 });
 </script>
-<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
-</html>
+<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
