@@ -355,41 +355,64 @@ window.selesaikanOrder=(id)=>{
 };
 
 async function prosesSelesaikanOrder(id){
-  // Pastikan tujuan kredit adalah satu akun admin yang role-nya benar-benar "admin".
-  const adminSnap=await getDocs(query(collection(db,'users'),where('role','==','admin')));
-  if(adminSnap.empty) throw new Error('Akun admin dengan role "admin" tidak ditemukan di users.');
-  if(adminSnap.size!==1) throw new Error('Ditemukan lebih dari satu akun admin. Tentukan akun penerima saldo admin terlebih dahulu agar dana tidak salah masuk.');
-  const adminDoc=adminSnap.docs[0];
+  // Saldo admin utama aplikasi berada di admin_saldo/total, bukan users/{uid_admin}.
+  // Semua perubahan saldo dan status order dilakukan dalam satu transaksi atomik.
   await runTransaction(db,async(tx)=>{
     const orderRef=doc(db,'orders',id);
     const courierRef=doc(db,'users',currentUser.uid);
-    const adminRef=doc(db,'users',adminDoc.id);
-    const [oSnap,kSnap,aSnap]=await Promise.all([tx.get(orderRef),tx.get(courierRef),tx.get(adminRef)]);
+    const adminSaldoRef=doc(db,'admin_saldo','total');
+
+    const [oSnap,kSnap,aSnap]=await Promise.all([
+      tx.get(orderRef), tx.get(courierRef), tx.get(adminSaldoRef)
+    ]);
     if(!oSnap.exists()) throw new Error('Order tidak ditemukan.');
     if(!kSnap.exists()) throw new Error('Data kurir tidak ditemukan.');
-    if(!aSnap.exists()) throw new Error('Data admin tidak ditemukan.');
+
     const order=oSnap.data();
-    if(!['sedang_mengantar','diterima_kurir'].includes(order.status)) throw new Error('Order bukan berstatus sedang mengantar atau sudah selesai diproses.');
-    if(String(order.kurirUid)!==String(currentUser.uid)) throw new Error('Order ini bukan milik akun kurir yang sedang login.');
-    if(order.adminFeeDibayar===true) throw new Error('Potongan admin untuk order ini sudah pernah diproses.');
-    const courier=kSnap.data(), admin=aSnap.data();
-    if(String(admin.role||'').toLowerCase()!=='admin') throw new Error('Dokumen penerima bukan akun admin.');
-    const total=Number(order.ongkirBruto??order.ongkirKurir??order.estimated_fare??order.estimatedFare??order.fare??order.totalOngkir??order.ongkir??order.total)||0;
+    if(!['sedang_mengantar','diterima_kurir'].includes(order.status))
+      throw new Error('Order tidak lagi berstatus sedang mengantar.');
+    if(String(order.kurirUid)!==String(currentUser.uid))
+      throw new Error('Order ini bukan milik akun kurir yang sedang login.');
+    if(order.adminFeeDibayar===true)
+      throw new Error('Potongan admin untuk order ini sudah pernah diproses.');
+
+    const total=Number(order.ongkirBruto ?? order.ongkirKurir ?? order.estimated_fare ?? order.estimatedFare ?? order.fare ?? order.totalOngkir ?? order.ongkir ?? order.total)||0;
     if(!Number.isFinite(total)||total<=0) throw new Error('Nominal ongkir order tidak valid.');
+
     const fee=Math.ceil(total*0.05);
-    const courierWallet=Number(courier.saldoEwallet??0)||0;
-    const adminWallet=Number(admin.saldoEwallet??0)||0;
+    const courier=kSnap.data();
+    const courierWallet=Number(courier.saldoEwallet ?? courier.saldoWallet ?? courier.saldo ?? 0)||0;
     if(courierWallet<fee) throw new Error(`Saldo E-Wallet kurir tidak cukup. Dibutuhkan ${rupiah(fee)}, tersedia ${rupiah(courierWallet)}.`);
-    tx.update(courierRef,{saldoEwallet:courierWallet-fee,updatedAt:serverTimestamp()});
-    tx.update(adminRef,{saldoEwallet:adminWallet+fee,updatedAt:serverTimestamp()});
+
+    const admin=aSnap.exists()?aSnap.data():{};
+    const adminWallet=Number(admin.saldo||0)||0;
+    const oldIncome=Number(admin.totalPendapatanPesanan ?? admin.totalPendapatan ?? 0)||0;
+    const courierAfter=courierWallet-fee;
+    const adminAfter=adminWallet+fee;
+    const incomeAfter=oldIncome+fee;
+
+    tx.update(courierRef,{
+      saldoEwallet:courierAfter, saldoWallet:courierAfter, saldo:courierAfter,
+      updatedAt:serverTimestamp()
+    });
+
+    if(aSnap.exists()){
+      tx.update(adminSaldoRef,{
+        saldo:adminAfter, totalPendapatanPesanan:incomeAfter,
+        totalPendapatan:incomeAfter, updatedAt:serverTimestamp()
+      });
+    }else{
+      tx.set(adminSaldoRef,{
+        saldo:adminAfter, totalPendapatanPesanan:incomeAfter,
+        totalPendapatan:incomeAfter, totalDicairkan:0,
+        createdAt:serverTimestamp(), updatedAt:serverTimestamp()
+      });
+    }
+
     tx.update(orderRef,{
-      status:'selesai',
-      selesaiAt:serverTimestamp(),
-      adminFee:fee,
-      adminFeeDibayar:true,
-      adminFeeDibayarAt:serverTimestamp(),
-      adminWalletUid:adminDoc.id,
-      kurirTerima:total-fee,
+      status:'selesai', selesaiAt:serverTimestamp(), adminFee:fee,
+      adminFeeDibayar:true, adminFeeDibayarAt:serverTimestamp(),
+      adminSaldoRef:'admin_saldo/total', kurirTerima:total-fee,
       updatedAt:serverTimestamp()
     });
   });
