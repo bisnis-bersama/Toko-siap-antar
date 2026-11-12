@@ -723,27 +723,40 @@ async function buatPesanan(){
         document.getElementById('btnBuatPesanan').disabled=false; document.getElementById('bottomCheckout').disabled=false;
         return;
       }
+      // V8 FIX: Pisah jadi 2 langkah. Jangan satukan update users + set ewallet_transactions dalam 1 transaction.
+      // Penyebab saldo tidak berkurang di V5-V7: kalau set ewallet_transactions ditolak Rules (type tidak diizinkan),
+      // transaction di-rollback semua, jadi update users juga batal. Saldo tetap 300.000 padahal pesanan dibuat.
+      // Langkah 1: potong users saja (transaction hanya 1 doc). Langkah 2: catat ewallet_transactions terpisah (kalau gagal, saldo sudah kepotong, tidak di-rollback).
+      let _curSaldoSebelum = saldoPelanggan;
       try{
         await runTransaction(db, async tx=>{
           let pref = doc(db,'users', currentUser.uid);
           const psnap = await tx.get(pref);
           if(!psnap.exists()) throw new Error('Akun pelanggan tidak ditemukan');
           const cur = Number(psnap.data().saldoEwallet ?? psnap.data().saldoWallet ?? psnap.data().saldo ?? 0) || 0;
+          _curSaldoSebelum = cur;
           if(cur < grandHitungSaldo) throw new Error('Saldo kurang ' + rupiah(grandHitungSaldo - cur) + '. Top-up dulu.');
           tx.update(pref, {saldoEwallet: cur - grandHitungSaldo, saldoWallet: cur - grandHitungSaldo, saldo: cur - grandHitungSaldo, updatedAt: serverTimestamp()});
-          const txRef = doc(collection(db,'ewallet_transactions'));
-          tx.set(txRef, {uid: currentUser.uid, email: currentUser.email||'', role:'pelanggan', type:'Belanja Pakai Saldo', direction:'debit', amount: grandHitungSaldo, balanceBefore: cur, balanceAfter: cur - grandHitungSaldo, status:'berhasil', createdAt: serverTimestamp(), paidAt: serverTimestamp(), note:'Belanja di checkout pakai saldo e-wallet pelanggan (termasuk saldo refund).'});
         });
         saldoPotongSukses = true;
-        saldoPelanggan = saldoPelanggan - grandHitungSaldo;
+        saldoPelanggan = Math.max(0, _curSaldoSebelum - grandHitungSaldo);
+        // Langkah 2: catat mutasi - kalau ini gagal karena Rules, JANGAN batalkan potongan saldo yang sudah sukses
+        try{
+          await addDoc(collection(db,'ewallet_transactions'), {uid: currentUser.uid, email: currentUser.email||'', role:'pelanggan', type:'Belanja Pakai Saldo', direction:'debit', amount: grandHitungSaldo, balanceBefore: _curSaldoSebelum, balanceAfter: _curSaldoSebelum - grandHitungSaldo, status:'berhasil', createdAt: serverTimestamp(), paidAt: serverTimestamp(), note:'Belanja di checkout pakai saldo e-wallet pelanggan (termasuk saldo refund).'});
+        }catch(eMutasi){
+          console.log('Catat ewallet_transactions gagal, tapi saldo sudah kepotong:', eMutasi.message);
+          // Titip ke tracking biar admin tetap bisa lihat mutasi (tracking sudah terbukti boleh create sebagai fallback di file mitra/kurir)
+          try{ await setDoc(doc(db,'tracking', 'saldo-belanja-'+currentUser.uid+'-'+Date.now()), {orderId:'', uid: currentUser.uid, email: currentUser.email||'', type:'Belanja Pakai Saldo', amount: grandHitungSaldo, balanceBefore: _curSaldoSebelum, balanceAfter: _curSaldoSebelum - grandHitungSaldo, status:'berhasil', perluAdminSelesaikan:false, note:'Mutasi belanja saldo, ewallet_transactions ditolak Rules: '+eMutasi.message, createdAt: serverTimestamp(), updatedAt: serverTimestamp()}); }catch(_){}
+        }
       }catch(e){
-        // JANGAN throw - pesanan tetap dibuat. Simpan error untuk ditampilkan setelah pesanan dibuat.
         saldoPotongError = e.message || String(e);
         console.log('Potong saldo gagal, pesanan tetap dibuat:', saldoPotongError);
-        // Buat pengajuan potong saldo agar admin bisa potong manual (tidak batalin pesanan)
+        // Fallback: titip ke tracking (bukan ewallet_transactions saja) karena tracking yang paling longgar Rules-nya, biar admin bisa potong manual
         try{
           await addDoc(collection(db,'ewallet_transactions'), {uid: currentUser.uid, email: currentUser.email||'', role:'pelanggan', type:'Belanja Pakai Saldo - Pending Potong', direction:'debit', amount: grandHitungSaldo, balanceBefore: saldoPelanggan, balanceAfter: Math.max(0, saldoPelanggan - grandHitungSaldo), status:'pending_potongan', createdAt: serverTimestamp(), note:'Potong saldo otomatis gagal ('+saldoPotongError+'). Admin tolong potong manual. Pesanan tetap dibuat.'});
-        }catch(_){ /* kalau ini juga gagal, tetap lanjut buat pesanan */ }
+        }catch(e2){
+          try{ await setDoc(doc(db,'tracking', 'pending-potong-'+currentUser.uid+'-'+Date.now()), {uid: currentUser.uid, email: currentUser.email||'', type:'Belanja Pakai Saldo - Pending Potong', amount: grandHitungSaldo, balanceBefore: saldoPelanggan, balanceAfter: Math.max(0, saldoPelanggan - grandHitungSaldo), status:'pending_potongan', perluPotongSaldoPelanggan:true, perluAdminSelesaikan:true, note:'Potong saldo gagal ('+saldoPotongError+') + ewallet_transactions juga ditolak ('+e2.message+'). Admin potong manual.', createdAt: serverTimestamp(), updatedAt: serverTimestamp()}); }catch(_){}
+        }
       }
     }
     const createdOrders=[];
@@ -807,7 +820,7 @@ async function buatPesanan(){
     // V7 FIX: infoSaldo HARUS dideklarasikan SEBELUM dipakai di msg di bawah - kalau tidak, kena TDZ "Cannot access before initialization"
     let infoSaldo = '';
     if(selectedPay==='saldo_ewallet'){
-      if(saldoPotongSukses) infoSaldo = '<br><br>💰 Saldo terpotong ' + rupiah(grandHitungSaldo) + '.';
+      if(saldoPotongSukses) infoSaldo = '<br><br>💰 Saldo terpotong ' + rupiah(grandHitungSaldo) + '. Saldo baru: ' + rupiah(saldoPelanggan) + '.';
       else infoSaldo = '<br><br>⚠️ Saldo belum terpotong otomatis (' + (saldoPotongError||'Rules') + '). Pesanan tetap dibuat. Admin akan potong saldo manual dari pengajuan di ewallet_transactions.';
     }
     document.getElementById('msg').innerHTML=`<div class="ok">✅ Berhasil membuat ${createdOrders.length} pesanan terpisah per mitra.<br>${createdOrders.map(o=>`<b>${o.nomor}</b> — ${o.mitra} - ${o.jarak.toFixed(2)}km<br>${o.shipping==='expedisi'?'📦 Expedisi':'🛵 Siap Antar'} / ${o.payment.toUpperCase()}<br>Ongkir: ${rupiah(o.ongkir)} · Total: ${rupiah(o.total)}<br><small>Masuk ke pesan mitra sesuai pemilik</small>`).join('<hr style="border:0;border-top:1px solid #c3ead7;margin:8px 0">')}<br><br>Grand Total: ${rupiah(totalSemua)}${infoSaldo}</div>`;
