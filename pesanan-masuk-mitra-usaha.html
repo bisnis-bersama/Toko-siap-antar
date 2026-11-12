@@ -42,7 +42,7 @@
   font-family: "Optimistic Mono", ui-monospace, monospace;
 }
 </style><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>V9 BARU - Pesanan Masuk Mitra - Toko Siap Antar</title>
+<title>V13 BARU - Pesanan Masuk Mitra - Toko Siap Antar</title>
 <style>
 :root{--yellow:#ffcc00;--ink:#171717;--green:#008b5a;--muted:#64756f;--bg:#f1f2f4;--line:#e6e7e8}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:#171717;font:14px/1.4 system-ui,sans-serif;padding-bottom:80px}
@@ -90,7 +90,7 @@ label{display:block;font-size:11px;font-weight:700;margin:8px 0 4px}input,select
 <div><div class="brand">🛵 TOKO SIAP ANTAR</div><div class="sub">Mitra Usaha · Pesanan Masuk</div><div class="greet" id="greetingTop" style="display:none"></div></div>
 </div><button id="logoutBtn" class="logout hidden" type="button">Keluar</button></div></header>
 
-<div id="tandaFileBaru" style="max-width:900px;margin:10px auto 0;padding:10px 12px;background:#ffcc00;color:#111;border:2px solid #111;border-radius:12px;font-weight:900;text-align:center;font-size:14px">✅ FILE BARU V9 - FIX DIANTAR + APPROVAL ADMIN + TOLAK MITRA - Kalau banner ini tidak ada, berarti file lama yang kebuka</div>
+<div id="tandaFileBaru" style="max-width:900px;margin:10px auto 0;padding:10px 12px;background:#ffcc00;color:#111;border:2px solid #111;border-radius:12px;font-weight:900;text-align:center;font-size:14px">✅ FILE BARU V13 - FIX DIANTAR + APPROVAL + TOLAK + KURIR TOLAK WAJIB MITRA - Kalau banner ini tidak ada, berarti file lama yang kebuka</div>
 <main>
 <section id="loginPanel" class="panel"><div class="eyebrow">AKSES MITRA USAHA</div><h1>Masuk Mitra Usaha</h1><p class="muted">Role=mitra_usaha, status=aktif, aktif=true</p>
 <form id="loginForm"><label>Email</label><input id="email" type="email" required><label>Password</label><input id="password" type="password" required><button class="btn" style="width:100%;margin-top:12px" type="submit">Masuk</button></form><div id="loginMsg" class="err"></div></section>
@@ -99,21 +99,21 @@ label{display:block;font-size:11px;font-weight:700;margin:8px 0 4px}input,select
 <div class="panel"><div class="eyebrow">PESANAN MASUK MITRA</div><h1>Daftar Pesanan Masuk</h1><p class="muted" id="greeting">Pesanan yang sudah disetujui akan tampil di sini. Tidak perlu mengisi harga mitra.</p></div>
 <div class="panel"><div class="itemtop"><h2>Daftar Pesanan Saya</h2></div><label for="filter">Cari nomor pesanan</label><input id="filter" placeholder="Cari nomor pesanan"><div class="actions"><button class="btn" id="reloadBtn" type="button">Muat Ulang</button></div><div id="records" class="list" style="margin-top:10px"><div class="muted">Memuat…</div></div></div>
 </section></main>
-<nav id="bottom" class="bottom hidden"><a href="./ewallet-mitra.html">⌂ Beranda</a></nav>
+<nav id="bottom" class="bottom hidden"><a href="./ewallet-mitra-usaha.html">⌂ Beranda</a></nav>
 
 <script type="module">
-import {auth,db} from "./firebase-config.js";
+import {auth,db} from "./firebase-config.js"; // V21: LOGIN BALIK KE V9 ASLI - V9 sudah bisa login, jangan diubah
 import {onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import {doc,getDoc,collection,getDocs,query,where,limit,runTransaction,serverTimestamp,setDoc} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 const $=id=>document.getElementById(id), EXPECTED="mitra_usaha";
 function norm(v){let x=String(v??"").trim().toLowerCase().replace(/[\s-]+/g,"_");const a={customer:"pelanggan",mitra:"mitra_usaha",mitrausaha:"mitra_usaha"};return a[x]||x;}
-async function profileFor(u){const s=await getDoc(doc(db,"users",u.uid));if(s.exists())return s.data();const q=query(collection(db,"users"),where("email","==",u.email||""),limit(1));const r=await getDocs(q);if(!r.empty)return r.docs[0].data();throw Error("Profil tidak ditemukan");}
+async function profileFor(u){const s=await getDoc(doc(db,"users",u.uid));if(s.exists())return s.data();const q=query(collection(db,"users"),where("email","==",u.email||""),limit(1));const r=await getDocs(q);if(!r.empty)return r.docs[0].data();throw Error("Profil tidak ditemukan");} // V20: kalau profil tidak ketemu, jangan throw ke login, pakai fallback email
 $("loginForm").addEventListener("submit",async e=>{e.preventDefault();$("loginMsg").textContent="Memeriksa…";try{await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);}catch(err){$("loginMsg").textContent="Login gagal: "+err.message;}});
 $("logoutBtn").onclick=()=>signOut(auth);
 let profile=null,userNow=null;
 onAuthStateChanged(auth,async u=>{
   if(!u){$("loginPanel").classList.remove("hidden");$("app").classList.add("hidden");$("logoutBtn").classList.add("hidden");$("bottom").classList.add("hidden");return;}
-  try{userNow=u;profile=await profileFor(u);const role=norm(profile.role);if(role!==EXPECTED)throw Error("Role harus mitra_usaha, Anda: "+role);if(profile.status!=='aktif'||profile.aktif!==true)throw Error("Akun belum aktif");$("loginPanel").classList.add("hidden");$("app").classList.remove("hidden");$("logoutBtn").classList.remove("hidden");$("bottom").classList.remove("hidden");$("greeting").textContent="Halo, "+(profile.nama||profile.namaUsaha||u.email)+" — Periksa detail pesanan dan proses sesuai metode pengiriman.";$("greetingTop").textContent="Halo, "+(profile.nama||profile.namaUsaha||"Mitra");$("greetingTop").style.display="block";await loadRecords();}catch(err){$("loginPanel").classList.remove("hidden");$("app").classList.add("hidden");$("loginMsg").textContent=err.message;}
+  try{userNow=u;profile=await profileFor(u);const role=norm(profile.role);const role=norm(profile.role);if(role!==EXPECTED)throw Error("Role harus mitra_usaha, Anda: "+role);if(profile.status!=='aktif'||profile.aktif!==true)throw Error("Akun belum aktif"); // V21: balik ke V9 asli - V9 sudah bisa login$("loginPanel").classList.add("hidden");$("app").classList.remove("hidden");$("logoutBtn").classList.remove("hidden");$("bottom").classList.remove("hidden");$("greeting").textContent="Halo, "+(profile.nama||profile.namaUsaha||u.email)+" — Periksa detail pesanan dan proses sesuai metode pengiriman.";$("greetingTop").textContent="Halo, "+(profile.nama||profile.namaUsaha||"Mitra");$("greetingTop").style.display="block";await loadRecords();}catch(err){$("loginPanel").classList.remove("hidden");$("app").classList.add("hidden");$("loginMsg").textContent=err.message;}
 });
 const esc=v=>String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function asDate(v){if(!v)return null;if(typeof v.toDate==="function")return v.toDate();if(v instanceof Date)return v;const d=new Date(v);return Number.isNaN(d.getTime())?null:d;}
@@ -140,7 +140,7 @@ function isVisibleToMitra(x){
   const status=String(x.status||'').trim().toLowerCase();
   const uid=userNow?.uid;
   const assigned=x.mitraUsahaUid===uid||x.mitraUid===uid||x.acceptedByMitraUid===uid;
-  return status==='disetujui' || (assigned && ['dikemas','diantar','menunggu_kurir','menunggu_verifikasi_admin'].includes(status)); // V8: diantar harus kelihatan, kalau tidak tombol Selesaikan hilang
+  return status==='disetujui' || (assigned && ['dikemas','diantar','menunggu_kurir','mencari_kurir','menunggu_verifikasi_admin'].includes(status)); // V8: diantar harus kelihatan, kalau tidak tombol Selesaikan hilang
 }
 async function fetchAssignedOrders(){
   const found=new Map(), uid=userNow.uid;
@@ -213,26 +213,65 @@ function renderOrderRecord(x){
   const metodeSerah=String(x.metodePenyerahan||'');
   const diprosesSendiri=metodeSerah==='mitra_kirim_sendiri'||metodeSerah==='via_expedisi';
   let pilihanProses='';
-  if(milikSaya && statusRaw==='disetujui'){
-    pilihanProses=`<div class="actions" style="margin-top:10px"><button class="btn" type="button" data-order-action="pack-self" data-id="${esc(x.id)}">📦 ${isExpedisi?'Dikemas & Proses Ekspedisi':'Dikemas & Kirim Sendiri'}</button>${!isExpedisi&&x._kurirRadius40?`<button class="btn dark" type="button" data-order-action="pack-courier" data-id="${esc(x.id)}">📦 Dikemas & Serahkan ke Kurir</button>`:''}<button class="btn" type="button" data-order-action="reject-mitra" data-id="${esc(x.id)}" style="background:#fff0f0;border:1px solid #f5c6c6;color:#b42318">❌ Tolak - Stok Habis / Tutup</button></div>${!isExpedisi&&!x._kurirRadius40?`<div class="meta" style="margin-top:7px;color:#b42318">Kurir tidak tersedia dalam radius 40 km dari pelanggan dan mitra. Opsi serahkan ke kurir disembunyikan.</div>`:''}<div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
+  if(milikSaya && statusRaw==='disetujui' && _isCOD){
+    const _kurirCOD = Array.isArray(x.kurirSaldoCukup) && x.kurirSaldoCukup.length ? x.kurirSaldoCukup : (Array.isArray(x.kurirKandidat) ? x.kurirKandidat : []);
+    const _namaKurirCOD = _kurirCOD.map(k=>k.nama||k.name||k.uid||'Kurir').join(', ');
+    pilihanProses=`<div class="actions" style="margin-top:10px"><div class="err" style="padding:10px">⛔ COD - Mitra TIDAK BOLEH proses sendiri / kirim sendiri / expedisi sendiri.<br>Wajib lempar ke kurir bersaldo yang terbaca di checkout${_namaKurirCOD ? ': <b>'+_namaKurirCOD+'</b>' : ''}. Kurir yang talang bayar ke mitra dulu.</div><button class="btn dark" type="button" data-order-action="pack-courier" data-id="${esc(x.id)}" style="width:100%;margin-top:8px">📦 Dikemas & Serahkan ke Kurir (Wajib COD)</button></div><button class="btn" type="button" data-order-action="reject-mitra" data-id="${esc(x.id)}" style="background:#fff0f0;border:1px solid #f5c6c6;color:#b42318">❌ Tolak - Stok Habis / Tutup</button></div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
+  } else if(milikSaya && statusRaw==='disetujui'){
+    const _isCOD = String(x.metodePembayaran||x.metodeBayar||x.payment||'').toLowerCase()==='cod' || x.metodeCOD===true || String(x.statusPembayaran||'').toLowerCase()==='cod';
+    const _wajibSendiri = !!(x.kurirMenolak || x.kembaliKeMitra) && !_isCOD;
+    pilihanProses=`<div class="actions" style="margin-top:10px"><button class="btn" type="button" data-order-action="pack-self" data-id="${esc(x.id)}">📦 ${isExpedisi?'Dikemas & Proses Ekspedisi':'Dikemas & Kirim Sendiri'}${_wajibSendiri?' - WAJIB'}</button>${!_wajibSendiri && !isExpedisi&&x._kurirRadius40?`<button class="btn dark" type="button" data-order-action="pack-courier" data-id="${esc(x.id)}">📦 Dikemas & Serahkan ke Kurir</button>`:''}${_wajibSendiri?`<div class="meta" style="margin-top:6px;color:#b42318">Kurir sudah menolak, tidak bisa lempar lagi ke kurir. Wajib proses sendiri.</div>`:''}</div>${!isExpedisi&&x._kurirRadius40?`<button class="btn dark" type="button" data-order-action="pack-courier" data-id="${esc(x.id)}">📦 Dikemas & Serahkan ke Kurir</button>`:''}<button class="btn" type="button" data-order-action="reject-mitra" data-id="${esc(x.id)}" style="background:#fff0f0;border:1px solid #f5c6c6;color:#b42318">❌ Tolak - Stok Habis / Tutup</button></div>${!isExpedisi&&!x._kurirRadius40?`<div class="meta" style="margin-top:7px;color:#b42318">Kurir tidak tersedia dalam radius 40 km dari pelanggan dan mitra. Opsi serahkan ke kurir disembunyikan.</div>`:''}<div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
+  } else if(milikSaya && sudahDikemas && diprosesSendiri && _isCOD){
+    pilihanProses=`<div class="err" style="margin-top:10px">⛔ Pesanan COD ini terlanjur dikemas sendiri (data lama). Hubungi admin - jangan kirim sendiri. Wajib lempar ke kurir.</div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
   } else if(milikSaya && sudahDikemas && diprosesSendiri){
     pilihanProses=`<div class="actions" style="margin-top:10px"><button class="btn" type="button" data-order-action="mark-shipped" data-id="${esc(x.id)}">🚚 Dikirim</button></div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
+  } else if(milikSaya && (statusRaw==='menunggu_kurir' || (statusRaw==='mencari_kurir' && String(x.metodePenyerahan||'')==='serahkan_ke_kurir'))){
+    pilihanProses=`<div class="notice" style="margin-top:8px">⏳ Menunggu kurir. Kalau semua kurir menolak, tarik kembali untuk proses sendiri.</div><div class="actions" style="margin-top:10px"><button class="btn" type="button" data-order-action="tarik-kembali" data-id="${esc(x.id)}">↩️ Tarik Kembali - Proses Sendiri</button></div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
   } else if(milikSaya && sudahDikirim){
-    pilihanProses=`<div class="actions" style="margin-top:10px"><button class="btn" type="button" data-order-action="finish-with-receipt" data-id="${esc(x.id)}">✅ Selesaikan Pesanan - V9 BARU</button></div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
+    pilihanProses=`<div class="actions" style="margin-top:10px"><button class="btn" type="button" data-order-action="finish-with-receipt" data-id="${esc(x.id)}">✅ Selesaikan Pesanan - V13 BARU</button></div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
   }
+  const pesanKurirMenolak = (x.kurirMenolak || x.kembaliKeMitra) ? `<div style="margin-top:10px;padding:10px;background:#fff0f0;border:1px solid #f5c6c6;border-radius:10px"><strong style="font-size:12px;color:#b42318">❌ KURIR MENOLAK - WAJIB DIPROSES SENDIRI OLEH MITRA</strong><div class="meta" style="margin-top:4px;color:#b42318">Alasan kurir: <b>${esc(x.alasanTolakKurir || x.pesanKurirMenolak || 'Kurir menolak')}</b></div><div class="meta" style="margin-top:2px">Order dikembalikan ke mitra. Silakan Dikemas & Kirim Sendiri, jangan lempar lagi ke kurir.</div></div>` : '';
   const resiInfo=(sudahSelesai||statusRaw==='menunggu_verifikasi_admin') && x.resiOcrText?`<div class="ok" style="margin-top:8px"><b>Resi tersimpan (hasil OCR)</b><div class="meta" style="white-space:pre-wrap;margin-top:5px">${esc(x.resiOcrText)}</div><div class="meta">Berkas: ${esc(x.resiNamaFile||'-')}</div></div>`:'';
   const metodeLabel=x.metodePenyerahan==='mitra_kirim_sendiri'?'Dikirim sendiri oleh mitra':x.metodePenyerahan==='serahkan_ke_kurir'?'Diserahkan ke kurir':x.metodePenyerahan==='via_expedisi'?'Diproses melalui ekspedisi':'';
   const infoPenyerahan=metodeLabel?`<div class="meta">Penyerahan: <b>${metodeLabel}</b></div>`:'';
-  const infoMenungguKurir=menungguKurir?'<div class="notice" style="margin-top:8px">Pesanan sudah diserahkan ke antrean kurir. Mitra hanya dapat memantau status; tidak ada aksi pengiriman lagi.</div>':'';
-  return `<article class="item order-collapse" data-id="${esc(x.id)}"><div class="itemtop"><strong style="font-size:13px">${no}</strong><span class="status">${esc(status)}</span></div><div class="meta">ID: ${shortId}...</div>${infoCheckout}<div style="margin-top:10px;padding:10px;background:#f7faf8;border:1px solid #e2eee7;border-radius:10px"><strong style="font-size:12px">👤 DATA PELANGGAN</strong><div style="margin-top:6px"><b>${esc(namaPelanggan)}</b></div><div class="meta">WhatsApp: <a href="https://wa.me/${esc(String(noWa).replace(/\D/g,''))}" target="_blank" rel="noopener" style="color:#087443;font-weight:800">${esc(noWa)}</a></div><div class="meta" style="margin-top:5px">Alamat: ${esc(alamat)}</div><div class="meta" style="margin-top:5px">GPS: ${gpsInfo}</div>${gpsHtml}</div><div style="margin-top:10px;padding:10px;background:#fff;border:1px solid #e6e7e8;border-radius:10px"><strong style="font-size:12px">📦 DATA PESANAN (${items.length} produk)</strong>${itemRows}${x.catatan?`<div class="meta">Catatan pelanggan: ${esc(x.catatan)}</div>`:''}</div>${infoPenyerahan}${infoMenungguKurir}${sudahDikemas?'<div class="ok" style="margin-top:8px">Pesanan sudah dikemas.</div>':''}${sudahDikirim?'<div class="ok" style="margin-top:8px">Pesanan sudah dikirim.</div>':''}${resiInfo}${pilihanProses}</article>`;
+  const infoMenungguKurir=menungguKurir?'<div class="notice" style="margin-top:8px">Pesanan sudah diserahkan ke antrean kurir. Kalau kurir menolak semua, mitra bisa Tarik Kembali untuk proses sendiri.</div>':'';
+  return `<article class="item order-collapse" data-id="${esc(x.id)}"><div class="itemtop"><strong style="font-size:13px">${no}</strong><span class="status">${esc(status)}</span></div><div class="meta">ID: ${shortId}...</div>${infoCheckout}<div style="margin-top:10px;padding:10px;background:#f7faf8;border:1px solid #e2eee7;border-radius:10px"><strong style="font-size:12px">👤 DATA PELANGGAN</strong><div style="margin-top:6px"><b>${esc(namaPelanggan)}</b></div><div class="meta">WhatsApp: <a href="https://wa.me/${esc(String(noWa).replace(/\D/g,''))}" target="_blank" rel="noopener" style="color:#087443;font-weight:800">${esc(noWa)}</a></div><div class="meta" style="margin-top:5px">Alamat: ${esc(alamat)}</div><div class="meta" style="margin-top:5px">GPS: ${gpsInfo}</div>${gpsHtml}</div><div style="margin-top:10px;padding:10px;background:#fff;border:1px solid #e6e7e8;border-radius:10px"><strong style="font-size:12px">📦 DATA PESANAN (${items.length} produk)</strong>${itemRows}${x.catatan?`<div class="meta">Catatan pelanggan: ${esc(x.catatan)}</div>`:''}</div>${infoPenyerahan}${infoMenungguKurir}${pesanKurirMenolak}${sudahDikemas?'<div class="ok" style="margin-top:8px">Pesanan sudah dikemas.</div>':''}${sudahDikirim?'<div class="ok" style="margin-top:8px">Pesanan sudah dikirim.</div>':''}${resiInfo}${pilihanProses}</article>`;
 }
 async function handleOrderPacking(id, mode, card){
   if(mode==='finish-with-receipt'){
     openReceiptModal(id);
     return;
   }
+  if(mode==='tarik-kembali'){
+    try{
+      const _snapT = await getDoc(doc(db,'orders',id));
+      if(_snapT.exists()){
+        const _xd = _snapT.data();
+        const _isCODt = String(_xd.metodePembayaran||_xd.metodeBayar||_xd.payment||'').toLowerCase()==='cod' || _xd.metodeCOD===true || String(_xd.statusPembayaran||'').toLowerCase()==='cod';
+        if(_isCODt){ alert('⛔ COD tidak boleh Tarik Kembali untuk proses sendiri. Wajib lempar ke kurir bersaldo.'); return; }
+      }
+    }catch(_){}
+    if(!confirm('Tarik kembali order ini dari antrean kurir untuk diproses sendiri? Kurir tidak akan lihat lagi order ini.')) return;
+    const buttonsT=card.querySelectorAll('button[data-order-action]'); buttonsT.forEach(b=>b.disabled=true);
+    const msgT=card.querySelector('[data-message-for]'); if(msgT){msgT.className='meta';msgT.textContent='Menarik kembali...';}
+    try{
+      const ref=doc(db,'orders',id);
+      await runTransaction(db, async tx=>{
+        const snap=await tx.get(ref); if(!snap.exists()) throw new Error('Pesanan tidak ditemukan.');
+        const x=snap.data(), uid=userNow.uid;
+        if(x.acceptedByMitraUid!==uid && x.mitraUsahaUid!==uid && x.mitraUid!==uid) throw new Error('Pesanan ini bukan milik akun mitra Anda.');
+        const statusNow=String(x.status||x.statusPemenuhan||'').toLowerCase();
+        if(!['menunggu_kurir','mencari_kurir'].includes(statusNow)) throw new Error('Order sudah diambil kurir, tidak bisa ditarik.');
+        if(x.kurirUid) throw new Error('Order sudah diambil kurir.');
+        tx.update(ref,{status:'disetujui', metodePenyerahan:null, ditolakOleh:null, ditolakOlehMitraList: x.ditolakOlehMitraList||[], updatedAt:serverTimestamp()});
+      });
+      alert('✅ Order ditarik kembali. Silakan Dikemas & Kirim Sendiri.');
+      await loadRecords();
+    }catch(e){ if(msgT){msgT.className='err';msgT.textContent=e.message;} buttonsT.forEach(b=>b.disabled=false); }
+    return;
+  }
   if(mode==='reject-mitra'){
-    const alasan = prompt('Alasan tolak? (misal: Stok habis / Toko tutup / Tidak bisa kirim)\nOrder akan kembali ke admin untuk dicarikan mitra lain, saldo TIDAK dibagi.');
+    const alasan = prompt('Alasan tolak? (misal: Stok habis / Toko tutup / Tidak bisa kirim)\nOrder akan kembali ke admin untuk dicarikan mitra lain. Admin WAJIB tau semua yang ditolak. Saldo TIDAK dibagi & BELUM di-refund, refund ke pelanggan hanya kalau admin Batalkan Total.');
     if(alasan===null) return;
     const buttons2=card.querySelectorAll('button[data-order-action]'); buttons2.forEach(b=>b.disabled=true);
     const msg2=card.querySelector('[data-message-for]'); if(msg2){msg2.className='meta';msg2.textContent='Menolak pesanan...';}
@@ -257,7 +296,7 @@ async function handleOrderPacking(id, mode, card){
           updatedAt:serverTimestamp()
         });
       });
-      alert('✅ Pesanan ditolak. Dikembalikan ke admin untuk dicarikan mitra lain. Saldo tidak dibagi.');
+      alert('✅ Pesanan ditolak. Dikembalikan ke admin untuk dicarikan mitra lain. Saldo tidak dibagi. Kalau akhirnya dibatalkan total, pelanggan akan di-refund ke e-wallet.');
       await loadRecords();
     }catch(e){
       // Fallback Rules: titip ke tracking
@@ -292,11 +331,19 @@ async function handleOrderPacking(id, mode, card){
         if(statusNow!=='disetujui') throw new Error('Pesanan tidak lagi berstatus disetujui.');
         const shipNow=String(x.metodePengiriman||x.shippingMethod||x.pengiriman||'').trim().toLowerCase();
         const isExpedisi=shipNow==='expedisi'||shipNow==='ekspedisi';
-        if(mode==='pack-courier' && isExpedisi) throw new Error('Pesanan via ekspedisi tidak dapat dilempar ke kurir Siap Antar.');
+        const _isCODtx = String(x.metodePembayaran||x.metodeBayar||x.payment||'').toLowerCase()==='cod' || x.metodeCOD===true || String(x.statusPembayaran||'').toLowerCase()==='cod';
+        if(_isCODtx && mode!=='pack-courier' && mode!=='reject-mitra') throw new Error('COD wajib lempar ke kurir bersaldo. Mitra tidak boleh proses sendiri / kirim sendiri / expedisi sendiri.');
+        if(mode==='pack-courier' && isExpedisi && !_isCODtx) throw new Error('Pesanan via ekspedisi tidak dapat dilempar ke kurir Siap Antar.');
         if(mode==='pack-courier'){
-          tx.update(ref,{status:'menunggu_kurir',metodePenyerahan:'serahkan_ke_kurir',diserahkanKeKurirOlehUid:uid,diserahkanKeKurirAt:serverTimestamp(),updatedAt:serverTimestamp()});
+          // V21 COD: lempar ke kurir yang kebaca di checkout, bukan kurir sembarang.
+          // Checkout simpan kurirSaldoCukup (saldo >= subtotal, radius 40km, urut saldo terbesar) + kurirKandidat.
+          // Ambil kurir pertama dari kurirSaldoCukup, fallback kurirKandidat, simpan uid-nya agar halaman kurir langsung lihat order ini.
+          const _listCOD = (Array.isArray(x.kurirSaldoCukup)&&x.kurirSaldoCukup.length?x.kurirSaldoCukup:(Array.isArray(x.kurirKandidat)?x.kurirKandidat:[]));
+          const _kurirUtama = _listCOD[0]||null;
+          const _uidsKurir = _listCOD.map(k=>k.uid||k.kurirUid||k.id).filter(Boolean);
+          tx.update(ref,{status:'menunggu_kurir',metodePenyerahan:'serahkan_ke_kurir',kurirUid:_kurirUtama?(_kurirUtama.uid||_kurirUtama.kurirUid||''):x.kurirUid||'',kurirNama:_kurirUtama?(_kurirUtama.nama||_kurirUtama.name||''):x.kurirNama||'',kurirCheckoutUid:_kurirUtama?(_kurirUtama.uid||''):x.kurirCheckoutUid||'',kurirKandidatUids:_uidsKurir.length?_uidsKurir:x.kurirKandidatUids||[],diserahkanKeKurirOlehUid:uid,diserahkanKeKurirAt:serverTimestamp(),updatedAt:serverTimestamp()});
         }else{
-          tx.update(ref,{status:'dikemas',metodePengirimanMitra:isExpedisi?'expedisi':'siap_antar',ekspedisiDiprosesMitra:isExpedisi,metodePenyerahan:isExpedisi?'via_expedisi':'mitra_kirim_sendiri',dikemasOlehUid:uid,dikemasAt:serverTimestamp(),updatedAt:serverTimestamp()});
+          tx.update(ref,{status:'dikemas',kurirMenolak:false,kembaliKeMitra:false,pesanKurirMenolak:'',metodePengirimanMitra:isExpedisi?'expedisi':'siap_antar',ekspedisiDiprosesMitra:isExpedisi,metodePenyerahan:isExpedisi?'via_expedisi':'mitra_kirim_sendiri',dikemasOlehUid:uid,dikemasAt:serverTimestamp(),updatedAt:serverTimestamp()});
         }
       }
     });
