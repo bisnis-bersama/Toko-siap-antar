@@ -178,6 +178,16 @@ body.dark-mode .menu-drawer-head strong{color:#70e6a4}
 body.dark-mode .menu-close{background:#26382f;color:#e7f2ec}
 body.dark-mode .menu-item{background:#1f3028;border-color:#34483e;color:#e7f2ec}
 body.dark-mode .menu-item:active{background:#294a37}
+
+/* Dark theme initial paint support */
+html.dark-mode-pending body, body.dark-mode{background:#101a16!important;color:#e7f2ec!important}
+html.dark-mode-pending .quick-wrap{background:#14221b!important}
+html.dark-mode-pending .search{background:#1b2923!important;border-color:#496454!important}
+html.dark-mode-pending .search input{color:#f0f7f2!important}
+html.dark-mode-pending .product{background:#1b2923!important;border-color:#34483e!important}
+html.dark-mode-pending .product-meta{background:#26382f!important;color:#c5d7cc!important}
+html.dark-mode-pending .product-name{color:#edf8f1!important}
+html.dark-mode-pending .bottom-nav{background:#17251e!important;border-color:#34483e!important}
 </style>
 </head>
 <body>
@@ -514,21 +524,6 @@ document.getElementById('cartBtn').onclick=()=>{
 document.getElementById('historyBtn').onclick=()=>{location.href='riwayat-pelanggan.html';};
 document.getElementById('profileBtn').onclick=()=>{location.href='profil.html';};
 
-// Tombol header: aktif/nonaktifkan mode gelap dan simpan pilihan pengguna.
-const themeToggle = document.getElementById('themeToggle');
-function applyTheme(isDark){
-  document.body.classList.toggle('dark-mode', isDark);
-  document.documentElement.classList.remove('dark-mode-pending');
-  themeToggle.textContent = isDark ? '☀️' : '🌙';
-  themeToggle.setAttribute('aria-label', isDark ? 'Aktifkan mode terang' : 'Aktifkan mode gelap');
-  themeToggle.title = isDark ? 'Mode terang' : 'Mode gelap';
-  try { localStorage.setItem('tsa_dark_mode', isDark ? '1' : '0'); } catch(e) {}
-}
-let savedDarkMode = true;
-try { const savedTheme = localStorage.getItem('tsa_dark_mode'); savedDarkMode = savedTheme === null ? true : savedTheme === '1'; } catch(e) {}
-applyTheme(savedDarkMode);
-themeToggle.onclick = () => applyTheme(!document.body.classList.contains('dark-mode'));
-
 document.getElementById('facebook').onclick=e=>{e.preventDefault();alert('Tambahkan tautan Facebook toko pada HTML.');};
 document.getElementById('instagram').onclick=e=>{e.preventDefault();alert('Tambahkan tautan Instagram toko pada HTML.');};
 document.getElementById('whatsapp').onclick=e=>{e.preventDefault();window.open('https://wa.me/','_blank','noopener');};
@@ -837,5 +832,30 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
   document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.classList.contains('show'))close();});
 })();
 </script>
+
+<script>
+/* Pengendali tema mandiri agar tidak bergantung pada skrip aplikasi lain. */
+(function () {
+  const button = document.getElementById('themeToggle');
+  const root = document.documentElement;
+  function setTheme(dark, save) {
+    document.body.classList.toggle('dark-mode', dark);
+    root.classList.remove('dark-mode-pending');
+    if (button) {
+      button.textContent = dark ? '☀️' : '🌙';
+      button.setAttribute('aria-label', dark ? 'Aktifkan mode terang' : 'Aktifkan mode gelap');
+      button.title = dark ? 'Mode terang' : 'Mode gelap';
+    }
+    if (save) { try { localStorage.setItem('tsa_dark_mode', dark ? '1' : '0'); } catch (e) {} }
+  }
+  let dark = true;
+  try { const saved = localStorage.getItem('tsa_dark_mode'); dark = saved === null ? true : saved === '1'; } catch (e) {}
+  setTheme(dark, false);
+  if (button) button.addEventListener('click', function () {
+    setTheme(!document.body.classList.contains('dark-mode'), true);
+  });
+})();
+</script>
+
 </body>
 </html>
