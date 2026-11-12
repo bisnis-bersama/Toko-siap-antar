@@ -804,13 +804,13 @@ async function buatPesanan(){
     localStorage.setItem('tsa_cart','[]'); cart=[];
     renderProdukSummary();
     const totalSemua=createdOrders.reduce((a,o)=>a+o.total,0);
-    document.getElementById('msg').innerHTML=`<div class="ok">✅ Berhasil membuat ${createdOrders.length} pesanan terpisah per mitra.<br>${createdOrders.map(o=>`<b>${o.nomor}</b> — ${o.mitra} - ${o.jarak.toFixed(2)}km<br>${o.shipping==='expedisi'?'📦 Expedisi':'🛵 Siap Antar'} / ${o.payment.toUpperCase()}<br>Ongkir: ${rupiah(o.ongkir)} · Total: ${rupiah(o.total)}<br><small>Masuk ke pesan mitra sesuai pemilik</small>`).join('<hr style="border:0;border-top:1px solid #c3ead7;margin:8px 0">')}<br><br>Grand Total: ${rupiah(totalSemua)}${infoSaldo}</div>`;
-    // V5: Kalau potong saldo gagal karena Rules, beri tahu tapi pesanan tetap sukses - jangan balik ke checkout
+    // V7 FIX: infoSaldo HARUS dideklarasikan SEBELUM dipakai di msg di bawah - kalau tidak, kena TDZ "Cannot access before initialization"
     let infoSaldo = '';
     if(selectedPay==='saldo_ewallet'){
       if(saldoPotongSukses) infoSaldo = '<br><br>💰 Saldo terpotong ' + rupiah(grandHitungSaldo) + '.';
       else infoSaldo = '<br><br>⚠️ Saldo belum terpotong otomatis (' + (saldoPotongError||'Rules') + '). Pesanan tetap dibuat. Admin akan potong saldo manual dari pengajuan di ewallet_transactions.';
     }
+    document.getElementById('msg').innerHTML=`<div class="ok">✅ Berhasil membuat ${createdOrders.length} pesanan terpisah per mitra.<br>${createdOrders.map(o=>`<b>${o.nomor}</b> — ${o.mitra} - ${o.jarak.toFixed(2)}km<br>${o.shipping==='expedisi'?'📦 Expedisi':'🛵 Siap Antar'} / ${o.payment.toUpperCase()}<br>Ongkir: ${rupiah(o.ongkir)} · Total: ${rupiah(o.total)}<br><small>Masuk ke pesan mitra sesuai pemilik</small>`).join('<hr style="border:0;border-top:1px solid #c3ead7;margin:8px 0">')}<br><br>Grand Total: ${rupiah(totalSemua)}${infoSaldo}</div>`;
     document.getElementById('bottomTotal').textContent=rupiah(totalSemua);
     setTimeout(()=>{location.href='riwayat.html';},3500);
   }catch(e){
