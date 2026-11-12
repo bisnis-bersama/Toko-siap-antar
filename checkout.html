@@ -696,24 +696,55 @@ async function buatPesanan(){
       if(!groupsMap.has(key))groupsMap.set(key,{uid,shipping:cfg.shipping,payment:selectedPay,shippingCost:ongkir,service:service?.id||'',info:cfg.info||{},items:[],kurirAll:cfg.kurirAll||[],kurirSaldoCukup:cfg.kurirSaldoCukup||[]});
       groupsMap.get(key).items.push(item);
     }
-    // FIX: Potong saldo pelanggan sekali untuk grand total (sebelum buat pesanan per mitra)
+    // V5: Potong saldo TIDAK BOLEH lagi ngebatalin pesanan.
+    // Penyebab pesanan balik lagi ke checkout di V4: runTransaction update users/uid ditolak Firestore Rules
+    // (pelanggan tidak boleh update saldo sendiri) -> throw -> catch -> pesanan tidak dibuat.
+    // Solusi: (1) Baca ulang saldo fresh dari server sebelum potong, (2) Kalau potong gagal (permission / saldo), pesanan TETAP dibuat,
+    // lalu buat pengajuan potong saldo (ewallet_transactions status pending_potongan) biar admin yang potong. Pesanan tidak batal.
+    let saldoPotongSukses = false;
+    let saldoPotongError = '';
+    let grandHitungSaldo = 0;
     if(selectedPay==='saldo_ewallet'){
-      const grandHitung = [...groupsMap.values()].reduce((sum,g)=>{
+      grandHitungSaldo = [...groupsMap.values()].reduce((sum,g)=>{
         const sub = g.items.reduce((a,x)=>a+(Number(x.price)||0)*(Number(x.qty)||1),0);
         return sum + sub + (g.shippingCost||0);
       },0);
-      await runTransaction(db, async tx=>{
-        // V4: Potong hanya di doc akun login (users/uid) - tanpa cari doc lain via email
-        let pref = doc(db,'users', currentUser.uid);
-        const psnap = await tx.get(pref);
-        if(!psnap.exists()) throw new Error('Akun pelanggan tidak ditemukan');
-        const cur = Number(psnap.data().saldoEwallet ?? psnap.data().saldoWallet ?? psnap.data().saldo ?? 0) || 0;
-        if(cur < grandHitung) throw new Error('Saldo kurang ' + rupiah(grandHitung - cur) + '. Top-up dulu.');
-        tx.update(pref, {saldoEwallet: cur - grandHitung, saldoWallet: cur - grandHitung, saldo: cur - grandHitung, updatedAt: serverTimestamp()});
-        const txRef = doc(collection(db,'ewallet_transactions'));
-        tx.set(txRef, {uid: currentUser.uid, email: currentUser.email||'', role:'pelanggan', type:'Belanja Pakai Saldo', direction:'debit', amount: grandHitung, balanceBefore: cur, balanceAfter: cur - grandHitung, status:'berhasil', createdAt: serverTimestamp(), paidAt: serverTimestamp(), note:'Belanja di checkout pakai saldo e-wallet pelanggan (termasuk saldo refund).'});
-      });
-      saldoPelanggan = saldoPelanggan - grandHitung;
+      // Baca ulang fresh dari server (bukan dari userData lama)
+      try{
+        const fresh = await getDoc(doc(db,'users', currentUser.uid));
+        if(fresh.exists()){ userData = fresh.data(); const fv = userData.saldoEwallet ?? userData.saldoWallet ?? userData.saldo ?? userData.walletBalance ?? 0; saldoPelanggan = Number(String(fv).replace(/[^0-9.-]/g,'')) || 0; }
+      }catch(e){ console.log('refresh saldo fresh', e.message); }
+      if(saldoPelanggan < grandHitungSaldo){
+        // Saldo benar-benar kurang (bukan error rules) -> baru arahkan top-up, belum buat pesanan
+        alert('Saldo kurang ' + rupiah(grandHitungSaldo - saldoPelanggan) + '. Top-up dulu ya.');
+        keTopupSaldo();
+        orderSubmitting = false;
+        document.getElementById('btnBuatPesanan').style.display=''; document.getElementById('bottomCheckout').style.display='';
+        document.getElementById('btnBuatPesanan').disabled=false; document.getElementById('bottomCheckout').disabled=false;
+        return;
+      }
+      try{
+        await runTransaction(db, async tx=>{
+          let pref = doc(db,'users', currentUser.uid);
+          const psnap = await tx.get(pref);
+          if(!psnap.exists()) throw new Error('Akun pelanggan tidak ditemukan');
+          const cur = Number(psnap.data().saldoEwallet ?? psnap.data().saldoWallet ?? psnap.data().saldo ?? 0) || 0;
+          if(cur < grandHitungSaldo) throw new Error('Saldo kurang ' + rupiah(grandHitungSaldo - cur) + '. Top-up dulu.');
+          tx.update(pref, {saldoEwallet: cur - grandHitungSaldo, saldoWallet: cur - grandHitungSaldo, saldo: cur - grandHitungSaldo, updatedAt: serverTimestamp()});
+          const txRef = doc(collection(db,'ewallet_transactions'));
+          tx.set(txRef, {uid: currentUser.uid, email: currentUser.email||'', role:'pelanggan', type:'Belanja Pakai Saldo', direction:'debit', amount: grandHitungSaldo, balanceBefore: cur, balanceAfter: cur - grandHitungSaldo, status:'berhasil', createdAt: serverTimestamp(), paidAt: serverTimestamp(), note:'Belanja di checkout pakai saldo e-wallet pelanggan (termasuk saldo refund).'});
+        });
+        saldoPotongSukses = true;
+        saldoPelanggan = saldoPelanggan - grandHitungSaldo;
+      }catch(e){
+        // JANGAN throw - pesanan tetap dibuat. Simpan error untuk ditampilkan setelah pesanan dibuat.
+        saldoPotongError = e.message || String(e);
+        console.log('Potong saldo gagal, pesanan tetap dibuat:', saldoPotongError);
+        // Buat pengajuan potong saldo agar admin bisa potong manual (tidak batalin pesanan)
+        try{
+          await addDoc(collection(db,'ewallet_transactions'), {uid: currentUser.uid, email: currentUser.email||'', role:'pelanggan', type:'Belanja Pakai Saldo - Pending Potong', direction:'debit', amount: grandHitungSaldo, balanceBefore: saldoPelanggan, balanceAfter: Math.max(0, saldoPelanggan - grandHitungSaldo), status:'pending_potongan', createdAt: serverTimestamp(), note:'Potong saldo otomatis gagal ('+saldoPotongError+'). Admin tolong potong manual. Pesanan tetap dibuat.'});
+        }catch(_){ /* kalau ini juga gagal, tetap lanjut buat pesanan */ }
+      }
     }
     const createdOrders=[];
     const makeOrderNumber=()=>'TSA-'+Date.now().toString().slice(-8)+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
@@ -734,7 +765,7 @@ async function buatPesanan(){
         jarakKm:group.info.jarak||0, lat:pLat||null,lng:pLng||null,
         lokasi:pLat&&pLng?{lat:pLat,lng:pLng}:null,
         alamatPengiriman:alamatData, alamat:alamatData.alamat, telepon:alamatData.telepon,
-        metodePembayaran:selectedPay, metodeCOD:selectedPay==='cod', dibayarPakaiSaldo: selectedPay==='saldo_ewallet',
+        metodePembayaran:selectedPay, metodeCOD:selectedPay==='cod', dibayarPakaiSaldo: selectedPay==='saldo_ewallet', saldoPotongSukses: selectedPay==='saldo_ewallet' ? saldoPotongSukses : null, saldoPotongError: selectedPay==='saldo_ewallet' ? saldoPotongError : '', saldoPotongNominal: selectedPay==='saldo_ewallet' ? grandHitungSaldo : 0,
         status:'pending', statusPesanan:'pending', statusPemenuhan:'pending_admin',
         statusPembayaran:selectedPay==='cod'?'cod':(selectedPay==='saldo_ewallet'?'lunas_saldo':'menunggu_verifikasi'),
         slaStatus:'berjalan',slaDurasiMenit:60,slaDeadlineAt:new Date(Date.now()+3600000),
@@ -750,13 +781,19 @@ async function buatPesanan(){
     localStorage.setItem('tsa_cart','[]'); cart=[];
     renderProdukSummary();
     const totalSemua=createdOrders.reduce((a,o)=>a+o.total,0);
-    document.getElementById('msg').innerHTML=`<div class="ok">✅ Berhasil membuat ${createdOrders.length} pesanan terpisah per mitra.<br>${createdOrders.map(o=>`<b>${o.nomor}</b> — ${o.mitra} - ${o.jarak.toFixed(2)}km<br>${o.shipping==='expedisi'?'📦 Expedisi':'🛵 Siap Antar'} / ${o.payment.toUpperCase()}<br>Ongkir: ${rupiah(o.ongkir)} · Total: ${rupiah(o.total)}<br><small>Masuk ke pesan mitra sesuai pemilik</small>`).join('<hr style="border:0;border-top:1px solid #c3ead7;margin:8px 0">')}<br><br>Grand Total: ${rupiah(totalSemua)}</div>`;
+    document.getElementById('msg').innerHTML=`<div class="ok">✅ Berhasil membuat ${createdOrders.length} pesanan terpisah per mitra.<br>${createdOrders.map(o=>`<b>${o.nomor}</b> — ${o.mitra} - ${o.jarak.toFixed(2)}km<br>${o.shipping==='expedisi'?'📦 Expedisi':'🛵 Siap Antar'} / ${o.payment.toUpperCase()}<br>Ongkir: ${rupiah(o.ongkir)} · Total: ${rupiah(o.total)}<br><small>Masuk ke pesan mitra sesuai pemilik</small>`).join('<hr style="border:0;border-top:1px solid #c3ead7;margin:8px 0">')}<br><br>Grand Total: ${rupiah(totalSemua)}${infoSaldo}</div>`;
+    // V5: Kalau potong saldo gagal karena Rules, beri tahu tapi pesanan tetap sukses - jangan balik ke checkout
+    let infoSaldo = '';
+    if(selectedPay==='saldo_ewallet'){
+      if(saldoPotongSukses) infoSaldo = '<br><br>💰 Saldo terpotong ' + rupiah(grandHitungSaldo) + '.';
+      else infoSaldo = '<br><br>⚠️ Saldo belum terpotong otomatis (' + (saldoPotongError||'Rules') + '). Pesanan tetap dibuat. Admin akan potong saldo manual dari pengajuan di ewallet_transactions.';
+    }
     document.getElementById('bottomTotal').textContent=rupiah(totalSemua);
     setTimeout(()=>{location.href='riwayat.html';},3500);
   }catch(e){
     console.error(e);
     orderSubmitting=false;
-    document.getElementById('msg').innerHTML='<div class="err">❌ Gagal buat pesanan: '+e.message+'</div>';
+    document.getElementById('msg').innerHTML='<div class="err">❌ Gagal buat pesanan: '+e.message+'<br><small>Kode: '+(e.code||'-')+' | Metode: '+selectedPay+' | Grand Total: '+rupiah(grandTotalGlobal)+' | Saldo terbaca: '+rupiah(saldoPelanggan)+'<br>Screenshot pesan ini biar ketahuan penyebabnya.</small></div>';
     btn.style.display=''; bottomBtn.style.display='';
     btn.disabled=false; bottomBtn.disabled=false;
     btn.textContent='Buat Pesanan per Mitra →';
