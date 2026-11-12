@@ -90,21 +90,9 @@ label{display:block;font-size:11px;font-weight:700;margin:8px 0 4px}input,select
 <div><div class="brand">🛵 TOKO SIAP ANTAR</div><div class="sub">Mitra Usaha · Pesanan Masuk</div><div class="greet" id="greetingTop" style="display:none"></div></div>
 </div><button id="logoutBtn" class="logout hidden" type="button">Keluar</button></div></header>
 
-<div id="tandaFileBaru" style="max-width:900px;margin:10px auto 0;padding:10px 12px;background:#ffcc00;color:#111;border:2px solid #111;border-radius:12px;font-weight:900;text-align:center;font-size:14px">✅ FILE BARU V18 - FIX IMPORT SETELAH KODE + ERROR KELIHATAN + COD + APPROVAL + TOLAK + KURIR TOLAK WAJIB MITRA - Kalau banner ini tidak ada, berarti file lama yang kebuka</div>
+<div id="tandaFileBaru" style="max-width:900px;margin:10px auto 0;padding:10px 12px;background:#ffcc00;color:#111;border:2px solid #111;border-radius:12px;font-weight:900;text-align:center;font-size:14px">✅ FILE BARU V13 - FIX DIANTAR + APPROVAL + TOLAK + KURIR TOLAK WAJIB MITRA - Kalau banner ini tidak ada, berarti file lama yang kebuka</div>
 <main>
-<script>
-  // Pengaman V17: kalau JS module gagal load (misal firebase-config.js tidak ada di Vercel), loading tidak boleh mentok selamanya.
-  // Setelah 4 detik, kalau JS module belum jalan, paksa tampilkan form login + pesan error.
-  window.addEventListener('error', function(e){ var m=document.getElementById('loginMsg'); if(m) m.textContent='Error JS: '+(e.message||'unknown')+' - screenshot ini ke admin.'; });
-  setTimeout(function(){
-    if(!window.__mitraJsJalan){
-      var load=document.getElementById('loadingSesi'); if(load) load.style.display='none';
-      var lp=document.getElementById('loginPanel'); if(lp) lp.classList.remove('hidden');
-      var msg=document.getElementById('loginMsg'); if(msg) msg.textContent='JS module gagal jalan (import / SyntaxError). Buka Console HP / Chrome (F12) lihat error merahnya, atau upload ulang V18 ini. Kalau masih muncul pesan ini, berarti file di Vercel belum ke-update.';
-    }
-  },4000);
-</script>
-<div id="loadingSesi" class="panel" style="text-align:center;padding:20px"><b>⏳ Memuat sesi login dari e-wallet...</b><br><small id="debugSesi" class="muted">Mengecek sesi di project toko-siap-antar-9a7bb...</small></div><section id="loginPanel" class="panel hidden"><div class="eyebrow">AKSES MITRA USAHA</div><h1>Masuk Mitra Usaha</h1><p class="muted">Masuk pakai akun yang sama dengan e-wallet. Kalau sudah login di e-wallet, halaman ini otomatis masuk, tidak perlu login lagi.</p>
+<section id="loginPanel" class="panel"><div class="eyebrow">AKSES MITRA USAHA</div><h1>Masuk Mitra Usaha</h1><p class="muted">Role=mitra_usaha, status=aktif, aktif=true</p>
 <form id="loginForm"><label>Email</label><input id="email" type="email" required><label>Password</label><input id="password" type="password" required><button class="btn" style="width:100%;margin-top:12px" type="submit">Masuk</button></form><div id="loginMsg" class="err"></div></section>
 
 <section id="app" class="hidden">
@@ -114,56 +102,18 @@ label{display:block;font-size:11px;font-weight:700;margin:8px 0 4px}input,select
 <nav id="bottom" class="bottom hidden"><a href="./ewallet-mitra.html">⌂ Beranda</a></nav>
 
 <script type="module">
-import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-import {getFirestore,doc,getDoc,collection,getDocs,query,where,limit,runTransaction,serverTimestamp,setDoc} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
-const firebaseConfig={apiKey:"AIzaSyBxqZhl6t3RwrXMwVdJeIkg0NzGfwvlweM",authDomain:"toko-siap-antar-9a7bb.firebaseapp.com",projectId:"toko-siap-antar-9a7bb",storageBucket:"toko-siap-antar-9a7bb.firebasestorage.app",messagingSenderId:"351335838712",appId:"1:351335838712:web:14cc2c7b91bb0c9e1b5c0d"};
-const app=getApps().length?getApp():initializeApp(firebaseConfig);
-const auth=getAuth(app),db=getFirestore(app);
-window.__mitraJsJalan=true;
+import {auth,db} from "./firebase-config.js";
+import {onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+import {doc,getDoc,collection,getDocs,query,where,limit,runTransaction,serverTimestamp,setDoc} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 const $=id=>document.getElementById(id), EXPECTED="mitra_usaha";
 function norm(v){let x=String(v??"").trim().toLowerCase().replace(/[\s-]+/g,"_");const a={customer:"pelanggan",mitra:"mitra_usaha",mitrausaha:"mitra_usaha"};return a[x]||x;}
 async function profileFor(u){const s=await getDoc(doc(db,"users",u.uid));if(s.exists())return s.data();const q=query(collection(db,"users"),where("email","==",u.email||""),limit(1));const r=await getDocs(q);if(!r.empty)return r.docs[0].data();throw Error("Profil tidak ditemukan");}
 $("loginForm").addEventListener("submit",async e=>{e.preventDefault();$("loginMsg").textContent="Memeriksa…";try{await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);}catch(err){$("loginMsg").textContent="Login gagal: "+err.message;}});
 $("logoutBtn").onclick=()=>signOut(auth);
 let profile=null,userNow=null;
-let _authSudahDapatSesi=false;
-// V15 FIX SESI LOGIN: Jangan langsung tampilkan form login saat pertama buka.
-// Firebase butuh waktu ~1 detik untuk pulihkan sesi dari e-wallet (IndexedDB). Callback pertama sering null dulu, lalu baru ada user.
-// Kalau langsung tampilkan login, user yang sudah login di e-wallet akan dikira belum login (seperti screenshot V13).
-// Solusi: tampilkan "Memuat sesi..." dulu, baru tampilkan form login kalau setelah 2.5 detik tetap tidak ada user.
-$("loginMsg").textContent="Memuat sesi login dari e-wallet...";
-try{ const _dbg=document.getElementById('debugSesi'); if(_dbg) _dbg.textContent='Project: '+(auth.app?.options?.projectId||'toko-siap-antar-9a7bb')+' | AuthDomain: '+(auth.app?.options?.authDomain||'-')+' | Browser: '+navigator.userAgent.slice(0,60); }catch(_){}
 onAuthStateChanged(auth,async u=>{
-  if(!u){
-    // Tunggu sebentar, bisa jadi sesi masih dipulihkan
-    setTimeout(()=>{
-      if(_authSudahDapatSesi) return;
-      const _load=document.getElementById('loadingSesi'); if(_load) _load.classList.add('hidden');
-      $("loginPanel").classList.remove("hidden");$("app").classList.add("hidden");$("logoutBtn").classList.add("hidden");$("bottom").classList.add("hidden");
-      $("loginMsg").textContent="Sesi tidak ditemukan di project Toko Siap Antar. Ini wajar kalau kamu loginnya di e-wallet FIXZY (project teknisi-ponsel-maja) - sesi Firebase tidak bisa nyebrang beda project. Login SEKALI di sini pakai email yang sama, setelah itu di HP ini tidak akan ditanya lagi (sesi tersimpan).";
-    },2500);
-    return;
-  }
-  _authSudahDapatSesi=true;
-  const _load2=document.getElementById('loadingSesi'); if(_load2) _load2.classList.add('hidden');
-  try{
-    userNow=u;
-    try{ profile=await profileFor(u); }catch(_){ profile={nama:u.email,email:u.email,role:'mitra_usaha'}; }
-    const role=norm(profile.role);
-    // V15 FIX ROLE: Jangan tolak mentah-mentah kalau role bukan persis mitra_usaha.
-    // Satu email bisa dipakai sebagai pelanggan + mitra + admin (contoh: akun A Yudi Thea dipakai di e-wallet sebagai pelanggan/admin, tapi di sini sebagai mitra).
-    // Kalau ditolak di sini, user yang sudah login di e-wallet akan dilempar lagi ke form login.
-    // Yang dicek: user sudah login. Filter pesanan tetap pakai uid (isAssignedToMe / isVisibleToMitra), jadi pelanggan tidak bisa lihat pesanan mitra lain.
-    const roleBolehMitra=['mitra_usaha','mitra','mitrausaha','admin','superadmin','owner','mitra_pengantaran','kurir','pelanggan'];
-    if(!roleBolehMitra.includes(role)){
-      // Role tidak dikenal, tetap izinkan masuk tapi tampilkan peringatan, jangan lempar ke login
-      console.log('Role tidak standar, tetap izinkan sebagai mitra:',role);
-    }
-    // V15 FIX STATUS: Jangan blokir kalau status/aktif tidak persis 'aktif'/true (misal field kosong di akun lama). Tampilkan peringatan saja, tetap boleh lihat pesanan.
-    if(profile.status!=='aktif'||profile.aktif!==true){ console.log('Status akun bukan aktif, tetap izinkan lihat pesanan:',profile.status,profile.aktif); }
-    $("loginPanel").classList.add("hidden");$("app").classList.remove("hidden");$("logoutBtn").classList.remove("hidden");$("bottom").classList.remove("hidden");$("greeting").textContent="Halo, "+(profile.nama||profile.namaUsaha||u.email)+" — Periksa detail pesanan dan proses sesuai metode pengiriman.";$("greetingTop").textContent="Halo, "+(profile.nama||profile.namaUsaha||"Mitra");$("greetingTop").style.display="block";await loadRecords();
-  }catch(err){$("loginPanel").classList.remove("hidden");$("app").classList.add("hidden");$("loginMsg").textContent=err.message;}
+  if(!u){$("loginPanel").classList.remove("hidden");$("app").classList.add("hidden");$("logoutBtn").classList.add("hidden");$("bottom").classList.add("hidden");return;}
+  try{userNow=u;profile=await profileFor(u);const role=norm(profile.role);/* V19: balik ke V14 yang COD jalan. Hanya longgarkan role/status, jangan ubah import/config. Terima mitra_usaha/mitra/admin/superadmin/pelanggan, jangan lempar ke login kalau role beda. Jangan blokir kalau status bukan aktif. */$("loginPanel").classList.add("hidden");$("app").classList.remove("hidden");$("logoutBtn").classList.remove("hidden");$("bottom").classList.remove("hidden");$("greeting").textContent="Halo, "+(profile.nama||profile.namaUsaha||u.email)+" — Periksa detail pesanan dan proses sesuai metode pengiriman.";$("greetingTop").textContent="Halo, "+(profile.nama||profile.namaUsaha||"Mitra");$("greetingTop").style.display="block";await loadRecords();}catch(err){$("loginPanel").classList.remove("hidden");$("app").classList.add("hidden");$("loginMsg").textContent=err.message;}
 });
 const esc=v=>String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function asDate(v){if(!v)return null;if(typeof v.toDate==="function")return v.toDate();if(v instanceof Date)return v;const d=new Date(v);return Number.isNaN(d.getTime())?null:d;}
