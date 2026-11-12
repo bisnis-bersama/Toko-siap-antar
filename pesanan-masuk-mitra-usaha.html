@@ -90,8 +90,19 @@ label{display:block;font-size:11px;font-weight:700;margin:8px 0 4px}input,select
 <div><div class="brand">🛵 TOKO SIAP ANTAR</div><div class="sub">Mitra Usaha · Pesanan Masuk</div><div class="greet" id="greetingTop" style="display:none"></div></div>
 </div><button id="logoutBtn" class="logout hidden" type="button">Keluar</button></div></header>
 
-<div id="tandaFileBaru" style="max-width:900px;margin:10px auto 0;padding:10px 12px;background:#ffcc00;color:#111;border:2px solid #111;border-radius:12px;font-weight:900;text-align:center;font-size:14px">✅ FILE BARU V16 - FIX SESI LOGIN V13 + DEBUG + COD + APPROVAL + TOLAK + KURIR TOLAK WAJIB MITRA - Kalau banner ini tidak ada, berarti file lama yang kebuka</div>
+<div id="tandaFileBaru" style="max-width:900px;margin:10px auto 0;padding:10px 12px;background:#ffcc00;color:#111;border:2px solid #111;border-radius:12px;font-weight:900;text-align:center;font-size:14px">✅ FILE BARU V17 - FIX JS GAGAL LOAD + CONFIG INLINE + COD + APPROVAL + TOLAK + KURIR TOLAK WAJIB MITRA - Kalau banner ini tidak ada, berarti file lama yang kebuka</div>
 <main>
+<script>
+  // Pengaman V17: kalau JS module gagal load (misal firebase-config.js tidak ada di Vercel), loading tidak boleh mentok selamanya.
+  // Setelah 4 detik, kalau JS module belum jalan, paksa tampilkan form login + pesan error.
+  setTimeout(function(){
+    if(!window.__mitraJsJalan){
+      var load=document.getElementById('loadingSesi'); if(load) load.style.display='none';
+      var lp=document.getElementById('loginPanel'); if(lp) lp.classList.remove('hidden');
+      var msg=document.getElementById('loginMsg'); if(msg) msg.textContent='JS gagal jalan: firebase-config.js tidak ketemu di Vercel (import gagal). V17 sudah pakai config inline, tapi file ini masih V16. Upload V17 / cek file firebase-config.js di Vercel.';
+    }
+  },4000);
+</script>
 <div id="loadingSesi" class="panel" style="text-align:center;padding:20px"><b>⏳ Memuat sesi login dari e-wallet...</b><br><small id="debugSesi" class="muted">Mengecek sesi di project toko-siap-antar-9a7bb...</small></div><section id="loginPanel" class="panel hidden"><div class="eyebrow">AKSES MITRA USAHA</div><h1>Masuk Mitra Usaha</h1><p class="muted">Masuk pakai akun yang sama dengan e-wallet. Kalau sudah login di e-wallet, halaman ini otomatis masuk, tidak perlu login lagi.</p>
 <form id="loginForm"><label>Email</label><input id="email" type="email" required><label>Password</label><input id="password" type="password" required><button class="btn" style="width:100%;margin-top:12px" type="submit">Masuk</button></form><div id="loginMsg" class="err"></div></section>
 
@@ -102,7 +113,13 @@ label{display:block;font-size:11px;font-weight:700;margin:8px 0 4px}input,select
 <nav id="bottom" class="bottom hidden"><a href="./ewallet-mitra.html">⌂ Beranda</a></nav>
 
 <script type="module">
-import {auth,db} from "./firebase-config.js";
+import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import {getAuth} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+import {getFirestore} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+const firebaseConfig={apiKey:"AIzaSyBxqZhl6t3RwrXMwVdJeIkg0NzGfwvlweM",authDomain:"toko-siap-antar-9a7bb.firebaseapp.com",projectId:"toko-siap-antar-9a7bb",storageBucket:"toko-siap-antar-9a7bb.firebasestorage.app",messagingSenderId:"351335838712",appId:"1:351335838712:web:14cc2c7b91bb0c9e1b5c0d"};
+const app=getApps().length?getApp():initializeApp(firebaseConfig);
+const auth=getAuth(app),db=getFirestore(app);
+window.__mitraJsJalan=true;
 import {onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import {doc,getDoc,collection,getDocs,query,where,limit,runTransaction,serverTimestamp,setDoc} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 const $=id=>document.getElementById(id), EXPECTED="mitra_usaha";
