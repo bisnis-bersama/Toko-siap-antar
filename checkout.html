@@ -20,9 +20,30 @@
 :where(code, pre, kbd, samp) {
   font-family: "Optimistic Mono", ui-monospace, monospace;
 }
+</style><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
 </style>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#00a85a">
-<title>Checkout Kelompok Mitra - COD 40km + Online 8 Jam Kerja</title>
+<title>V2 BARU - Checkout + Bayar Pakai Saldo Pelanggan - COD 40km + Online 8 Jam Kerja</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{margin:0;background:#f4fff7;color:#18312b;font:14px/1.5 system-ui,sans-serif;padding-bottom:110px}
@@ -96,6 +117,8 @@ main{max-width:840px;margin:auto;padding:12px}
 <div class="card" id="pembayaranGlobalCard"><h3 style="margin-bottom:6px">💳 Pembayaran Global</h3><div class="muted" style="margin-bottom:10px">Satu metode untuk semua mitra. COD hanya aktif jika SEMUA mitra punya kurir 40km bersaldo cukup. Pesanan tetap dibuat terpisah per mitra.</div>
 <div class="pay-option active" data-global-pay="transfer"><input type="radio" name="globalPay" value="transfer" checked><div><b>Transfer Bank</b><div class="muted">BCA / SeaBank / DANA / GoPay - a.n. YUDI ALIYUDIN</div></div></div>
 <div class="pay-option" data-global-pay="qris"><input type="radio" name="globalPay" value="qris"><div><b>QRIS</b><div class="muted">Scan satu QRIS untuk total seluruh pesanan</div></div></div>
+<div class="pay-option" data-global-pay="saldo_ewallet"><input type="radio" name="globalPay" value="saldo_ewallet"><div style="flex:1"><b>💰 Saldo E-Wallet Pelanggan</b><div class="muted" id="saldoPelangganMuted">Memuat saldo...</div></div></div>
+<div id="globalSaldoDetail" class="dropdown" style="display:none"><b>💰 Bayar Pakai Saldo Pelanggan</b><div class="muted" style="margin-top:6px">Saldo dari top-up + refund pesanan gagal / ditolak bisa dipakai di sini. Saldo dipotong otomatis saat pesanan dibuat.</div><div style="margin-top:8px;display:flex;justify-content:space-between"><span>Saldo kamu</span><b id="saldoPelangganText">Rp 0</b></div><div style="display:flex;justify-content:space-between"><span>Grand Total</span><b id="saldoGrandTotalText">Rp 0</b></div><div id="saldoCukupBox" class="ok" style="display:none;margin-top:8px">✅ Saldo cukup. Sisa setelah bayar: <b id="saldoSisaText">Rp 0</b></div><div id="saldoKurangBox" class="err" style="display:none;margin-top:8px">⚠️ Saldo kurang <b id="saldoKurangNominal">Rp 0</b>. Top-up dulu biar bisa checkout pakai saldo.<br><button type="button" id="btnTopupSaldo" class="btn btn-primary" style="width:100%;margin-top:8px">➕ Top-up Saldo Dulu</button></div></div>
 <div class="pay-option disabled" data-global-pay="cod" id="globalCodOption" style="display:none"><input type="radio" name="globalPay" value="cod"><div><b>COD (Bayar di Tempat) - Bersyarat</b><div class="muted" id="codMuted">Butuh kurir 40km dengan saldo cukup</div></div></div>
 <div id="globalTransferDetail" class="dropdown"><b>💳 Rekening Admin - a.n. YUDI ALIYUDIN</b><br><br><b>Bank BCA:</b> 4180734771<br><b>SeaBank:</b> 901341445605<br><b>DANA / GoPay:</b> 082319264646<br><small class="muted">Upload bukti pembayaran setelah pesanan dibuat di riwayat.</small></div>
 <div id="globalQrisDetail" class="dropdown" style="display:none"><b>📱 QRIS Admin - a.n. YUDI ALIYUDIN</b><div style="text-align:center;margin:10px"><img src="qris.jpg" alt="QRIS Admin" style="max-width:280px;width:100%;border:2px solid #00a85a;border-radius:12px" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><div class="err" style="display:none">File qris.jpg belum tersedia di folder hosting.</div></div></div>
@@ -132,7 +155,7 @@ main{max-width:840px;margin:auto;padding:12px}
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-import {getFirestore,doc,getDoc,setDoc,collection,addDoc,serverTimestamp,query,where,getDocs} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import {getFirestore,doc,getDoc,setDoc,collection,addDoc,serverTimestamp,query,where,getDocs,runTransaction} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
 const firebaseConfig = {apiKey: "AIzaSyBxqZhl6t3RwrXMwVdJeIkg0NzGfwvlweM",authDomain: "toko-siap-antar-9a7bb.firebaseapp.com",projectId: "toko-siap-antar-9a7bb",storageBucket: "toko-siap-antar-9a7bb.firebasestorage.app",messagingSenderId: "351335838712",appId: "1:351335838712:web:14cc2c7b91bb0c9e1b5c0d"};
 const app=initializeApp(firebaseConfig);
@@ -148,7 +171,7 @@ let totalBarang=0;
 let totalQty=0;
 let pLat=null,pLng=null,mitra=null,jarak=null,ongkirSiapAntar=5000;
 let selectedPay='transfer';
-let orderSubmitting=false;
+let orderSubmitting=false; let saldoPelanggan=0; let grandTotalGlobal=0;
 const checkoutByOwner = new Map();
 const expeditionOptions = [{id:'jne_reg',name:'JNE Reguler',cost:9000},{id:'jne_yes',name:'JNE YES',cost:18000},{id:'jnt_reg',name:'J&T Reguler',cost:10000},{id:'sicepat_reg',name:'SiCepat Reg',cost:11000},{id:'anteraja_reg',name:'AnterAja',cost:12000},{id:'jne_jtr',name:'JNE JTR',cost:25000}];
 const RADIUS_KM = 40; // sesuai permintaan user
@@ -309,12 +332,41 @@ function updateTotalsGlobal(){
     const shipCost=cfg.shipping==='expedisi'?service.cost:(info.ongkir||5000);
     grand+=subtotal+shipCost;
   }
+  grandTotalGlobal=grand;
   document.getElementById('bottomTotal').textContent=rupiah(grand);
   document.getElementById('grandTotalText').textContent=rupiah(grand);
   document.getElementById('totalBarang').textContent=rupiah(totalBarang);
   document.getElementById('totalQty').textContent=totalQty+' pcs';
+  updateSaldoBox();
 }
 
+// ===== FIX: BAYAR PAKAI SALDO PELANGGAN - jika kurang arahkan top-up dulu =====
+function loadSaldoPelanggan(){
+  let s = 0;
+  if(userData) s = Number(userData.saldoEwallet ?? userData.saldoWallet ?? userData.saldo ?? 0) || 0;
+  try{ const saved = JSON.parse(localStorage.getItem('tsa_saldo_belanja')||'{}'); if(saved.pakaiSaldo && saved.saldoTersedia) s = Math.max(s, Number(saved.saldoTersedia||0)); }catch(_){}
+  saldoPelanggan = s;
+  updateSaldoBox();
+}
+function updateSaldoBox(){
+  const muted = document.getElementById('saldoPelangganMuted');
+  if(muted) muted.textContent = 'Saldo tersedia: ' + rupiah(saldoPelanggan) + (saldoPelanggan>0 ? ' • Bisa dipakai belanja' : ' • Top-up dulu kalau kurang');
+  const txt = document.getElementById('saldoPelangganText'); if(txt) txt.textContent = rupiah(saldoPelanggan);
+  const gt = document.getElementById('saldoGrandTotalText'); if(gt) gt.textContent = rupiah(grandTotalGlobal);
+  const kurang = grandTotalGlobal - saldoPelanggan;
+  const kurangBox = document.getElementById('saldoKurangBox');
+  const cukupBox = document.getElementById('saldoCukupBox');
+  if(kurangBox) kurangBox.style.display = (kurang>0) ? 'block' : 'none';
+  if(cukupBox) cukupBox.style.display = (kurang<=0 && grandTotalGlobal>0) ? 'block' : 'none';
+  const kurangEl = document.getElementById('saldoKurangNominal'); if(kurangEl) kurangEl.textContent = rupiah(Math.max(0,kurang));
+  const sisaEl = document.getElementById('saldoSisaText'); if(sisaEl) sisaEl.textContent = rupiah(Math.max(0, saldoPelanggan - grandTotalGlobal));
+}
+function keTopupSaldo(){
+  try{ localStorage.setItem('tsa_cart_before_topup', localStorage.getItem('tsa_cart')||'[]'); localStorage.setItem('tsa_balik_checkout','1'); }catch(_){}
+  const kurang = Math.max(0, grandTotalGlobal - saldoPelanggan);
+  window.location.href = './ewallet-pelanggan.html?topup=1&kurang=' + kurang;
+}
+window.keTopupSaldo = keTopupSaldo;
 async function renderPerToko(){
   const groups=ownerItems();
   if(!groups.size){document.getElementById('perTokoList').innerHTML='<div class="muted">Belum ada produk.</div>';return;}
@@ -427,10 +479,12 @@ function updateTotalsPerOwner(){
     const ong=document.querySelector(`[data-owner-ongkir="${CSS.escape(uid)}"]`);
     if(ong) ong.textContent=rupiah(shipCost);
   }
+  grandTotalGlobal=grand;
   document.getElementById('bottomTotal').textContent=rupiah(grand);
   document.getElementById('grandTotalText').textContent=rupiah(grand);
   document.getElementById('totalBarang').textContent=rupiah(totalBarang);
   document.getElementById('totalQty').textContent=totalQty+' pcs';
+  updateSaldoBox();
 }
 
 function updateGlobalPayment(){
@@ -472,12 +526,15 @@ function updateGlobalPayment(){
   document.getElementById('globalTransferDetail').style.display=selectedPay==='transfer'?'block':'none';
   document.getElementById('globalQrisDetail').style.display=selectedPay==='qris'?'block':'none';
   document.getElementById('globalCodDetail').style.display=selectedPay==='cod'?'block':'none';
+  const saldoDetail=document.getElementById('globalSaldoDetail'); if(saldoDetail) saldoDetail.style.display=selectedPay==='saldo_ewallet'?'block':'none';
+  updateSaldoBox();
 }
 document.querySelectorAll('[data-global-pay]').forEach(el=>el.addEventListener('click',()=>{
   if(el.classList.contains('disabled')) return;
   selectedPay=el.dataset.globalPay;
   updateGlobalPayment();
 }));
+document.addEventListener('click', e=>{ if(e.target && e.target.id==='btnTopupSaldo'){ e.preventDefault(); keTopupSaldo(); } });
 
 async function loadAlamat(){
   if(!currentUser){
@@ -592,9 +649,21 @@ async function buatPesanan(){
       return;
     }
   }
-  if(!['transfer','qris','cod'].includes(selectedPay)){
-    alert('Pilih metode pembayaran yang tersedia: QRIS, Transfer, atau COD jika memenuhi syarat.');
+  if(!['transfer','qris','cod','saldo_ewallet'].includes(selectedPay)){
+    alert('Pilih metode pembayaran yang tersedia: Saldo E-Wallet, QRIS, Transfer, atau COD jika memenuhi syarat.');
     return;
+  }
+  // FIX: Bayar pakai saldo - hitung grand total dulu, kalau kurang arahkan top-up
+  if(selectedPay==='saldo_ewallet'){
+    await renderPerToko(); updateTotalsGlobal(); loadSaldoPelanggan();
+    if(grandTotalGlobal > saldoPelanggan){
+      alert('Saldo kurang ' + rupiah(grandTotalGlobal - saldoPelanggan) + '. Top-up dulu ya.');
+      keTopupSaldo();
+      return;
+    }
+    if(!confirm('Bayar ' + rupiah(grandTotalGlobal) + ' pakai Saldo E-Wallet? Saldo akan terpotong otomatis. Sisa: ' + rupiah(saldoPelanggan - grandTotalGlobal))){
+      return;
+    }
   }
   orderSubmitting=true;
   const btn=document.getElementById('btnBuatPesanan');
@@ -617,6 +686,24 @@ async function buatPesanan(){
       if(!groupsMap.has(key))groupsMap.set(key,{uid,shipping:cfg.shipping,payment:selectedPay,shippingCost:ongkir,service:service?.id||'',info:cfg.info||{},items:[],kurirAll:cfg.kurirAll||[],kurirSaldoCukup:cfg.kurirSaldoCukup||[]});
       groupsMap.get(key).items.push(item);
     }
+    // FIX: Potong saldo pelanggan sekali untuk grand total (sebelum buat pesanan per mitra)
+    if(selectedPay==='saldo_ewallet'){
+      const grandHitung = [...groupsMap.values()].reduce((sum,g)=>{
+        const sub = g.items.reduce((a,x)=>a+(Number(x.price)||0)*(Number(x.qty)||1),0);
+        return sum + sub + (g.shippingCost||0);
+      },0);
+      await runTransaction(db, async tx=>{
+        const pref = doc(db,'users', currentUser.uid);
+        const psnap = await tx.get(pref);
+        if(!psnap.exists()) throw new Error('Akun pelanggan tidak ditemukan');
+        const cur = Number(psnap.data().saldoEwallet ?? psnap.data().saldoWallet ?? psnap.data().saldo ?? 0) || 0;
+        if(cur < grandHitung) throw new Error('Saldo kurang ' + rupiah(grandHitung - cur) + '. Top-up dulu.');
+        tx.update(pref, {saldoEwallet: cur - grandHitung, saldoWallet: cur - grandHitung, saldo: cur - grandHitung, updatedAt: serverTimestamp()});
+        const txRef = doc(collection(db,'ewallet_transactions'));
+        tx.set(txRef, {uid: currentUser.uid, email: currentUser.email||'', role:'pelanggan', type:'Belanja Pakai Saldo', direction:'debit', amount: grandHitung, balanceBefore: cur, balanceAfter: cur - grandHitung, status:'berhasil', createdAt: serverTimestamp(), paidAt: serverTimestamp(), note:'Belanja di checkout pakai saldo e-wallet pelanggan (termasuk saldo refund).'});
+      });
+      saldoPelanggan = saldoPelanggan - grandHitung;
+    }
     const createdOrders=[];
     const makeOrderNumber=()=>'TSA-'+Date.now().toString().slice(-8)+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
     for(const group of groupsMap.values()){
@@ -636,9 +723,9 @@ async function buatPesanan(){
         jarakKm:group.info.jarak||0, lat:pLat||null,lng:pLng||null,
         lokasi:pLat&&pLng?{lat:pLat,lng:pLng}:null,
         alamatPengiriman:alamatData, alamat:alamatData.alamat, telepon:alamatData.telepon,
-        metodePembayaran:selectedPay, metodeCOD:selectedPay==='cod',
+        metodePembayaran:selectedPay, metodeCOD:selectedPay==='cod', dibayarPakaiSaldo: selectedPay==='saldo_ewallet',
         status:'pending', statusPesanan:'pending', statusPemenuhan:'pending_admin',
-        statusPembayaran:selectedPay==='cod'?'cod':'menunggu_verifikasi',
+        statusPembayaran:selectedPay==='cod'?'cod':(selectedPay==='saldo_ewallet'?'lunas_saldo':'menunggu_verifikasi'),
         slaStatus:'berjalan',slaDurasiMenit:60,slaDeadlineAt:new Date(Date.now()+3600000),
         kurirUid:'', kurirKandidat:group.kurirAll.map(k=>({uid:k.uid,nama:k.nama,jarakMitra:k.jarakMitra,saldo:k.saldo})),
         kurirSaldoCukup:group.kurirSaldoCukup.map(k=>({uid:k.uid,nama:k.nama,saldo:k.saldo})),
@@ -698,4 +785,4 @@ onAuthStateChanged(auth, async (user)=>{
 });
 renderProdukSummary();
 </script>
-<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
+<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
