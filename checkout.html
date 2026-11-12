@@ -398,8 +398,13 @@ async function renderPerToko(){
     const subtotal=items.reduce((a,x)=>a+(Number(x.price)||0)*(Number(x.qty)||1),0);
     const kurirAll=(info.lat&&info.lng&&pLat&&pLng)?await cariKurirDalamRadius(info.lat,info.lng):[];
     const kurirTersedia=kurirAll.length>0;
-    // kurir yang punya saldo cukup untuk COD (minimal >= subtotal)
-    const kurirSaldoCukup=kurirAll.filter(k=>k.saldo>=subtotal && k.saldo>0);
+    // kurir yang punya saldo cukup untuk COD: harus cukup bayar harga produk (ke mitra) + admin 5% DARI PRODUK + ADMIN 5% DARI ONGKIR (ke admin).
+    // Admin 5% dari produk juga, bukan cuma dari ongkir. Jadi adminFee = 5% * (subtotal + ongkir) = 5% total.
+    // Contoh screenshot: produk 185.000 (admin 5% produk = 9.250) + ongkir 5.000 (admin 5% ongkir = 250) = admin total 9.500, syarat saldo kurir >= 185.000 + 9.500 = 194.500.
+    const _ongkirCOD = Number(info.ongkir||0);
+    const _adminFeeCOD = Math.ceil((subtotal + _ongkirCOD)*0.05);
+    const _butuhSaldoCOD = subtotal + _adminFeeCOD;
+    const kurirSaldoCukup=kurirAll.filter(k=>k.saldo>=_butuhSaldoCOD && k.saldo>0);
     const adaKurirSaldo=kurirSaldoCukup.length>0;
     const canCourier=items.every(x=>produkBisaKirim(x,'siap_antar')) && kurirTersedia;
     const ekspedisiDiizinkan=items.every(x=>produkBisaKirim(x,'expedisi'));
@@ -417,7 +422,7 @@ async function renderPerToko(){
     const badge = info.jarak!=null ? `<span class="jarak-badge">${jarakText}</span>` : `<span class="jarak-badge-warn">Butuh GPS</span>`;
     let statusKurir='';
     if(canCourier){
-      statusKurir=`<div class="ok" style="margin:6px 0">✅ ${kurirAll.length} kurir dalam radius ${RADIUS_KM}km • ${adaKurirSaldo?`${kurirSaldoCukup.length} punya saldo ≥ ${rupiah(subtotal)} untuk COD`:`Tidak ada kurir bersaldo cukup untuk COD (butuh ≥ ${rupiah(subtotal)})`}<br><small>${kurirAll.slice(0,3).map(k=>`${k.nama} - ${k.jarakMitra.toFixed(1)}km - saldo ${rupiah(k.saldo)}`).join('<br>')}</small></div>`;
+      statusKurir=`<div class="ok" style="margin:6px 0">✅ ${kurirAll.length} kurir dalam radius ${RADIUS_KM}km • ${adaKurirSaldo?`${kurirSaldoCukup.length} punya saldo ≥ ${rupiah(_butuhSaldoCOD)} (produk + admin 5% produk + admin 5% ongkir) untuk COD`:`Tidak ada kurir bersaldo cukup untuk COD (butuh ≥ ${rupiah(_butuhSaldoCOD)} = produk + admin 5% total)`}<br><small>${kurirAll.slice(0,3).map(k=>`${k.nama} - ${k.jarakMitra.toFixed(1)}km - saldo ${rupiah(k.saldo)}`).join('<br>')}</small></div>`;
     } else {
       statusKurir=`<div class="err" style="margin:6px 0">ℹ️ Tidak ada kurir dalam ${RADIUS_KM}km • Pengiriman hanya Expedisi<br><small>Mitra ${info.nama} jauh / kurir offline. COD otomatis nonaktif untuk mitra ini.</small></div>`;
     }
@@ -736,7 +741,8 @@ async function buatPesanan(){
           const cur = Number(psnap.data().saldoEwallet ?? psnap.data().saldoWallet ?? psnap.data().saldo ?? 0) || 0;
           _curSaldoSebelum = cur;
           if(cur < grandHitungSaldo) throw new Error('Saldo kurang ' + rupiah(grandHitungSaldo - cur) + '. Top-up dulu.');
-          tx.update(pref, {saldoEwallet: cur - grandHitungSaldo, saldoWallet: cur - grandHitungSaldo, saldo: cur - grandHitungSaldo, updatedAt: serverTimestamp()});
+          // V9: Hanya update saldoEwallet + saldo + updatedAt. Jangan update saldoWallet di sini karena Rules lama tidak izinkan saldoWallet (hasOnly tidak ada saldoWallet) -> transaction ditolak -> saldo tidak berkurang. saldoWallet disamakan oleh admin / halaman e-wallet saat baca (saldoEwallet yang jadi acuan).
+          tx.update(pref, {saldoEwallet: cur - grandHitungSaldo, saldo: cur - grandHitungSaldo, updatedAt: serverTimestamp()});
         });
         saldoPotongSukses = true;
         saldoPelanggan = Math.max(0, _curSaldoSebelum - grandHitungSaldo);
@@ -774,6 +780,10 @@ async function buatPesanan(){
         mitraCandidateUids:group.uid==='unknown'?[]:[group.uid],
         mitraNama:group.info.nama||'Mitra', mitraUid:group.uid==='unknown'?'':group.uid,
         subtotal,ongkir:ongkirGroup,total:subtotal+ongkirGroup,totalQty:qty,
+        // SINGLE SOURCE pembagian: simpan di collection orders, pembagian baca dari sini aja, jangan hitung ulang di halaman lain.
+        // Aturan baru: produk 100rb -> mitra 95rb, ongkir 10rb -> kurir 9.500, admin 5.500 (5% produk + 5% ongkir).
+        // Kalau mitra proses sendiri, ongkir buat mitra: mitraDapat + kurirDapat = 104.500, admin tetap 5.500.
+        mitraDapat:Math.round(subtotal*0.95), kurirDapat:Math.round(ongkirGroup*0.95), adminFee:Math.ceil((subtotal+ongkirGroup)*0.05), adminDapat:Math.ceil((subtotal+ongkirGroup)*0.05), setorMitra:Math.round(subtotal*0.95), setorKurir:Math.round(ongkirGroup*0.95),
         metodePengiriman:group.shipping, expedisiName:group.service,
         jarakKm:group.info.jarak||0, lat:pLat||null,lng:pLng||null,
         lokasi:pLat&&pLng?{lat:pLat,lng:pLng}:null,
@@ -785,7 +795,7 @@ async function buatPesanan(){
         kurirUid:'', kurirKandidat:group.kurirAll.map(k=>({uid:k.uid,nama:k.nama,jarakMitra:k.jarakMitra,saldo:k.saldo})),
         kurirSaldoCukup:group.kurirSaldoCukup.map(k=>({uid:k.uid,nama:k.nama,saldo:k.saldo})),
         mitraAlamat:group.info.alamat||'',mitraLat:group.info.lat||null,mitraLng:group.info.lng||null,
-        radiusCOD:RADIUS_KM, codSyarat: selectedPay==='cod'?`Kurir ${RADIUS_KM}km + saldo ≥ ${rupiah(subtotal)}`:'',
+        radiusCOD:RADIUS_KM, codSyarat: selectedPay==='cod'?`Kurir ${RADIUS_KM}km + saldo ≥ ${rupiah(Math.round(subtotal*0.95)+Math.ceil((subtotal+ongkirGroup)*0.05))} (mitra 95% + admin 5%)`:'',
         createdAt:serverTimestamp(),updatedAt:serverTimestamp()
       };
       // V6: Rules lama nolak saldo_ewallet / lunas_saldo -> coba dulu data lengkap, kalau ditolak Rules, ulangi pakai data lama (transfer + menunggu_verifikasi) + catatan saldo, biar pesanan tetap terkirim
