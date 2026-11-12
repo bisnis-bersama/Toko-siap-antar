@@ -775,7 +775,30 @@ async function buatPesanan(){
         radiusCOD:RADIUS_KM, codSyarat: selectedPay==='cod'?`Kurir ${RADIUS_KM}km + saldo ≥ ${rupiah(subtotal)}`:'',
         createdAt:serverTimestamp(),updatedAt:serverTimestamp()
       };
-      const ref=await addDoc(collection(db,'orders'),orderData);
+      // V6: Rules lama nolak saldo_ewallet / lunas_saldo -> coba dulu data lengkap, kalau ditolak Rules, ulangi pakai data lama (transfer + menunggu_verifikasi) + catatan saldo, biar pesanan tetap terkirim
+      let ref;
+      try{
+        ref=await addDoc(collection(db,'orders'),orderData);
+      }catch(eOrders){
+        if(eOrders.code==='permission-denied' || (eOrders.message||'').includes('permission')){
+          console.log('Rules nolak order saldo, retry pakai format lama:', eOrders.message);
+          const orderLegacy = {...orderData};
+          // Hapus field baru yang mungkin ditolak Rules, pakai format yang dulu jalan (transfer/qris/cod)
+          delete orderLegacy.dibayarPakaiSaldo; delete orderLegacy.saldoPotongSukses; delete orderLegacy.saldoPotongError; delete orderLegacy.saldoPotongNominal;
+          orderLegacy.metodePembayaran = 'transfer';
+          orderLegacy.metodeCOD = false;
+          orderLegacy.statusPembayaran = 'menunggu_verifikasi';
+          orderLegacy.catatanPembayaranAsli = 'Dibayar pakai Saldo E-Wallet pelanggan Rp ' + rupiah(grandHitungSaldo) + ' (saldoPotongSukses=' + saldoPotongSukses + ', error=' + saldoPotongError + '). Aslinya saldo_ewallet / lunas_saldo, diubah ke transfer karena Rules belum diupdate. Admin tolong cek Rules V6.';
+          orderLegacy.dibayarPakaiSaldoAsli = 'saldo_ewallet';
+          try{
+            ref=await addDoc(collection(db,'orders'),orderLegacy);
+          }catch(e2){
+            // Kalau masih ditolak juga, simpan ke localStorage biar tidak hilang + tampilkan penyebab Rules-nya
+            try{ const gagal = JSON.parse(localStorage.getItem('tsa_orders_gagal')||'[]'); gagal.push({orderData: orderLegacy, error: e2.message, code: e2.code||'', at: new Date().toISOString()}); localStorage.setItem('tsa_orders_gagal', JSON.stringify(gagal)); }catch(_){}
+            throw new Error('Firestore Rules nolak buat pesanan (' + (e2.code||e2.message) + '). Update Rules di bawah dulu (V6), lalu checkout lagi. Pesanan sudah disimpan di HP (tsa_orders_gagal) jadi tidak hilang.');
+          }
+        } else { throw eOrders; }
+      }
       createdOrders.push({nomor,total:subtotal+ongkirGroup,qty,orderId:ref.id,shipping:group.shipping,payment:group.payment,ongkir:ongkirGroup,mitra:group.info.nama||'Mitra',jarak:group.info.jarak||0});
     }
     localStorage.setItem('tsa_cart','[]'); cart=[];
