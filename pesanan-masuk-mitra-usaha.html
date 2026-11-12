@@ -90,9 +90,9 @@ label{display:block;font-size:11px;font-weight:700;margin:8px 0 4px}input,select
 <div><div class="brand">🛵 TOKO SIAP ANTAR</div><div class="sub">Mitra Usaha · Pesanan Masuk</div><div class="greet" id="greetingTop" style="display:none"></div></div>
 </div><button id="logoutBtn" class="logout hidden" type="button">Keluar</button></div></header>
 
-<div id="tandaFileBaru" style="max-width:900px;margin:10px auto 0;padding:10px 12px;background:#ffcc00;color:#111;border:2px solid #111;border-radius:12px;font-weight:900;text-align:center;font-size:14px">✅ FILE BARU V15 - FIX SESI LOGIN E-WALLET + COD + APPROVAL + TOLAK + KURIR TOLAK WAJIB MITRA - Kalau banner ini tidak ada, berarti file lama yang kebuka</div>
+<div id="tandaFileBaru" style="max-width:900px;margin:10px auto 0;padding:10px 12px;background:#ffcc00;color:#111;border:2px solid #111;border-radius:12px;font-weight:900;text-align:center;font-size:14px">✅ FILE BARU V16 - FIX SESI LOGIN V13 + DEBUG + COD + APPROVAL + TOLAK + KURIR TOLAK WAJIB MITRA - Kalau banner ini tidak ada, berarti file lama yang kebuka</div>
 <main>
-<section id="loginPanel" class="panel"><div class="eyebrow">AKSES MITRA USAHA</div><h1>Masuk Mitra Usaha</h1><p class="muted">Masuk pakai akun yang sama dengan e-wallet. Kalau sudah login di e-wallet, halaman ini otomatis masuk, tidak perlu login lagi.</p>
+<div id="loadingSesi" class="panel" style="text-align:center;padding:20px"><b>⏳ Memuat sesi login dari e-wallet...</b><br><small id="debugSesi" class="muted">Mengecek sesi di project toko-siap-antar-9a7bb...</small></div><section id="loginPanel" class="panel hidden"><div class="eyebrow">AKSES MITRA USAHA</div><h1>Masuk Mitra Usaha</h1><p class="muted">Masuk pakai akun yang sama dengan e-wallet. Kalau sudah login di e-wallet, halaman ini otomatis masuk, tidak perlu login lagi.</p>
 <form id="loginForm"><label>Email</label><input id="email" type="email" required><label>Password</label><input id="password" type="password" required><button class="btn" style="width:100%;margin-top:12px" type="submit">Masuk</button></form><div id="loginMsg" class="err"></div></section>
 
 <section id="app" class="hidden">
@@ -117,17 +117,20 @@ let _authSudahDapatSesi=false;
 // Kalau langsung tampilkan login, user yang sudah login di e-wallet akan dikira belum login (seperti screenshot V13).
 // Solusi: tampilkan "Memuat sesi..." dulu, baru tampilkan form login kalau setelah 2.5 detik tetap tidak ada user.
 $("loginMsg").textContent="Memuat sesi login dari e-wallet...";
+try{ const _dbg=document.getElementById('debugSesi'); if(_dbg) _dbg.textContent='Project: '+(auth.app?.options?.projectId||'toko-siap-antar-9a7bb')+' | AuthDomain: '+(auth.app?.options?.authDomain||'-')+' | Browser: '+navigator.userAgent.slice(0,60); }catch(_){}
 onAuthStateChanged(auth,async u=>{
   if(!u){
     // Tunggu sebentar, bisa jadi sesi masih dipulihkan
     setTimeout(()=>{
       if(_authSudahDapatSesi) return;
+      const _load=document.getElementById('loadingSesi'); if(_load) _load.classList.add('hidden');
       $("loginPanel").classList.remove("hidden");$("app").classList.add("hidden");$("logoutBtn").classList.add("hidden");$("bottom").classList.add("hidden");
-      $("loginMsg").textContent="Belum login. Masuk pakai akun yang sama dengan e-wallet.";
+      $("loginMsg").textContent="Sesi tidak ditemukan di project Toko Siap Antar. Ini wajar kalau kamu loginnya di e-wallet FIXZY (project teknisi-ponsel-maja) - sesi Firebase tidak bisa nyebrang beda project. Login SEKALI di sini pakai email yang sama, setelah itu di HP ini tidak akan ditanya lagi (sesi tersimpan).";
     },2500);
     return;
   }
   _authSudahDapatSesi=true;
+  const _load2=document.getElementById('loadingSesi'); if(_load2) _load2.classList.add('hidden');
   try{
     userNow=u;
     try{ profile=await profileFor(u); }catch(_){ profile={nama:u.email,email:u.email,role:'mitra_usaha'}; }
