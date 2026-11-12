@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101a16">
+<script>
+try { const t=localStorage.getItem('tsa_dark_mode'); if(t===null||t==='1') document.documentElement.classList.add('dark-mode-pending'); } catch(e) { document.documentElement.classList.add('dark-mode-pending'); }
+</script>
+<title>Tentang Kami - Toko Siap Antar</title>
+<style>
+:root{--green:#00a85a;--cyan:#00c8d7;--yellow:#ffd400;--bg:#f4fff7;--card:#fff;--ink:#18312b;--muted:#64756d;--line:#dceee5}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;min-height:100vh;padding-bottom:30px;transition:background .2s,color .2s}
+header{position:sticky;top:0;z-index:5;background:var(--card);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-bottom:3px solid var(--yellow);box-shadow:0 2px 8px #0000000d}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}.brand img{width:58px;height:52px;object-fit:contain;border-radius:10px}.brand strong{display:block;color:var(--green);font-size:16px}.brand span{display:block;color:var(--muted);font-size:12px;margin-top:4px}.actions{display:flex;gap:7px;flex-shrink:0}button{cursor:pointer}.actions button,.back{border:1px solid #b9e5d0;background:#eafff2;color:#087b49;border-radius:12px;padding:10px 12px;font-size:17px}
+main{max-width:850px;margin:22px auto;padding:0 14px}.hero-banner{margin-bottom:14px;border:3px solid var(--yellow);border-radius:20px;overflow:hidden;background:#eafff2;box-shadow:0 6px 18px #009b4b1c}.hero-banner img{display:block;width:100%;height:auto;object-fit:cover}.hero{background:linear-gradient(125deg,#009b4b,#00bcae);color:white;border-radius:22px;padding:28px 22px;text-align:center;box-shadow:0 8px 22px #009b4b22}.hero .symbol{font-size:42px}.hero h1{font-size:clamp(25px,5vw,38px);margin:8px 0}.hero p{line-height:1.65;margin:0 auto;max-width:650px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin-top:14px;box-shadow:0 3px 12px #18312b0b}.card h2{color:var(--green);font-size:20px;margin:0 0 10px}.card p{line-height:1.75;color:var(--muted);margin:0}.features{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}.feature{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:16px}.feature b{display:block;margin-bottom:7px}.feature span{font-size:13px;line-height:1.55;color:var(--muted)}.cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}.cta a{display:inline-block;text-decoration:none;background:var(--yellow);color:#222;font-weight:700;padding:12px 17px;border-radius:12px}.cta a.secondary{background:#e5fff0;color:#087b49;border:1px solid #b9e5d0}footer{text-align:center;color:var(--muted);font-size:12px;padding:22px 12px}
+body.dark-mode,html.dark-mode-pending body{--bg:#101a16;--card:#17251e;--ink:#e7f2ec;--muted:#b7c8bf;--line:#34483e;background:var(--bg);color:var(--ink)}body.dark-mode .actions button,html.dark-mode-pending .actions button,body.dark-mode .cta a.secondary{background:#26382f;color:#d9f6e5;border-color:#496454}body.dark-mode .feature,body.dark-mode .card{box-shadow:none}body.dark-mode .hero{box-shadow:none}
+@media(max-width:520px){header{padding:8px 10px}.brand img{width:48px;height:46px}.brand strong{font-size:13px}.brand span{font-size:10px}.features{grid-template-columns:1fr}.hero{padding:24px 17px}.card{padding:17px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><img src="logo2.png" alt="Logo Toko Siap Antar"><div><strong>Toko Siap Antar</strong><span>Marketplace Indonesia</span></div></div>
+  <div class="actions"><button id="backHome" type="button" aria-label="Kembali ke beranda" title="Kembali ke beranda">⌂</button><button id="themeToggle" type="button" aria-label="Aktifkan mode terang" title="Mode gelap">🌙</button></div>
+</header>
+<main>
+  <section class="hero-banner" aria-label="Ilustrasi layanan pengantaran Toko Siap Antar">
+    <img src="toko-siap-antar-banner.webp" alt="Toko Siap Antar dengan mobil dan motor pengiriman, layanan cepat, aman, dan terpercaya" loading="eager">
+  </section>
+  <section class="hero">
+    <h1>Tentang Toko Siap Antar</h1>
+    <p>Marketplace Indonesia yang membantu pelanggan menemukan produk dari berbagai kategori dan mitra, dengan informasi pengantaran yang mudah dipahami.</p>
+  </section>
+  <section class="card">
+    <h2>Siapa Kami?</h2>
+    <p>Toko Siap Antar adalah platform marketplace yang menghadirkan beragam pilihan produk dalam satu tempat. Pelanggan dapat menjelajahi kategori, mencari produk atau mitra, lalu menghubungi penjual dan melakukan pemesanan melalui fitur yang tersedia di website.</p>
+  </section>
+  <section class="card">
+    <h2>Tujuan Kami</h2>
+    <p>Kami ingin membuat proses mencari dan mendapatkan kebutuhan sehari-hari menjadi lebih praktis, sekaligus membuka ruang bagi penjual dan mitra pengantaran untuk memperkenalkan layanan serta produknya kepada pelanggan.</p>
+  </section>
+  <div class="features">
+    <div class="feature"><b>🔎 Banyak kategori</b><span>Jelajahi berbagai kategori produk, mulai dari makanan, minuman, kebutuhan rumah, elektronik, hingga jasa.</span></div>
+    <div class="feature"><b>🏪 Dukungan mitra</b><span>Memberi kesempatan kepada pelaku usaha untuk bergabung dan menampilkan produk mereka.</span></div>
+    <div class="feature"><b>🛵 Mitra pengantaran</b><span>Menghubungkan kebutuhan pelanggan dengan pilihan layanan pengantaran yang tersedia.</span></div>
+    <div class="feature"><b>📱 Praktis diakses</b><span>Tampilan website dirancang agar dapat digunakan melalui ponsel maupun komputer.</span></div>
+  </div>
+  <section class="card">
+    <h2>Hubungi Kami</h2>
+    <p>Untuk pertanyaan, informasi kemitraan, atau bantuan penggunaan layanan, silakan hubungi admin Toko Siap Antar melalui WhatsApp.</p>
+    <div class="cta"><a href="https://wa.me/62895707182299" target="_blank" rel="noopener">💬 Chat Admin</a><a class="secondary" href="index.html">Kembali Belanja</a></div>
+  </section>
+</main>
+<footer>© 2026 Toko Siap Antar. Terima kasih telah berkunjung.</footer>
+<script>
+(function(){
+ const btn=document.getElementById('themeToggle');
+ function apply(dark,save){document.body.classList.toggle('dark-mode',dark);document.documentElement.classList.remove('dark-mode-pending');btn.textContent=dark?'☀️':'🌙';btn.title=dark?'Mode terang':'Mode gelap';btn.setAttribute('aria-label',dark?'Aktifkan mode terang':'Aktifkan mode gelap');if(save){try{localStorage.setItem('tsa_dark_mode',dark?'1':'0')}catch(e){}}}
+ let dark=true;try{const saved=localStorage.getItem('tsa_dark_mode');dark=saved===null?true:saved==='1'}catch(e){}apply(dark,false);
+ btn.addEventListener('click',()=>apply(!document.body.classList.contains('dark-mode'),true));
+ document.getElementById('backHome').addEventListener('click',()=>location.href='index.html');
+})();
+</script>
+</body>
+</html>
