@@ -62,6 +62,27 @@
 :where(code, pre, kbd, samp) {
   font-family: "Optimistic Mono", ui-monospace, monospace;
 }
+</style><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
 </style><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Kurir - GPS dari Akun Mitra</title>
 <style>
 :root{--y:#ffcc00;--g:#00B14F;--b:#111;--bg:#f3f3f3}*{box-sizing:border-box;margin:0;padding:0}body{font:12.5px/1.45 system-ui,sans-serif;background:var(--bg);padding-bottom:30px}
@@ -151,9 +172,21 @@ function num(v){ const n=Number(v); return isNaN(n)||v===null?null:n; }
 function distanceKm(a,b){ if(!a||!b||!a[0]||!b[0]) return null; const R=6371; const dLat=(b[0]-a[0])*Math.PI/180, dLng=(b[1]-a[1])*Math.PI/180; const aa=Math.sin(dLat/2)**2+Math.cos(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.sin(dLng/2)**2; return 2*R*Math.asin(Math.sqrt(aa)); }
 
 function parseSplit(o){
-  // Halaman kurir hanya menampilkan nominal ongkir. Pembagian saldo dilakukan admin setelah verifikasi.
-  const ongkirFull = num(get(o, ['ongkir','ongkosKirim','biayaOngkir'],0))||0;
-  return {ongkirKurir:ongkirFull};
+  // SINGLE SOURCE: nominal asli cuma di collection orders (dari checkout). Halaman ini JANGAN hitung ulang dari tempat lain.
+  // Aturan baru: produk 100rb -> mitra 95rb (95%), ongkir 10rb -> kurir 9.500 (95%), admin 5.500 (5% produk + 5% ongkir).
+  // Kalau collection sudah simpan mitraDapat/kurirDapat/adminFee (dari checkout), pakai itu. Kalau belum (order lama), hitung dari subtotal+ongkir.
+  const sub = num(get(o, ['subtotal','subTotal','totalBarang','hargaProduk'],0))||0;
+  const ong = num(get(o, ['ongkir','ongkosKirim','biayaOngkir'],0))||0;
+  const tot = num(get(o, ['total','grandTotal'],0))|| (sub+ong);
+  const mitraDapat = num(get(o, ['mitraDapat','setorMitra'],0)) || Math.round(sub*0.95);
+  const kurirDapat = num(get(o, ['kurirDapat','setorKurir'],0)) || Math.round(ong*0.95);
+  const adminFee = num(get(o, ['adminFee','adminDapat'],0)) || Math.ceil((sub+ong)*0.05);
+  const isCOD = String(get(o, ['metodePembayaran','metodeBayar','payment'],'')).toLowerCase()==='cod' || get(o, ['metodeCOD'])===true || String(get(o, ['statusPembayaran'],'')).toLowerCase()==='cod';
+  // Tagihan COD ke pelanggan = total (produk+ongkir), ditampilkan ke kurir TANPA nama/harga produk. Kurir cuma tau total yang harus ditagih.
+  const tagihanCOD = isCOD ? tot : 0;
+  // Untuk COD, yang antar saldonya dipotong untuk setor mitra 95% + admin 5%. Potong kurir = mitraDapat + adminFee (contoh: 95.000 + 5.500 = 100.500). Potong mitra self = adminFee aja (5.500).
+  const potongKurirCOD = mitraDapat + adminFee;
+  return {ongkirKurir:kurirDapat, ongkirFull:ong, subtotal:sub, total:tot, mitraDapat, kurirDapat, adminFee, isCOD, tagihanCOD, potongKurirCOD};
 }
 
 // AMBIL GPS DARI AKUN MITRA YANG MENERIMA PESANAN
@@ -264,11 +297,10 @@ function renderOrder(o, isAktif=false){
   const jarakMitra=distInfo?.toMitra;
   const jarakPelanggan=distInfo?.toCustomer;
   const items=getItemList(o);
-  const products=items.length?items.map(it=>{
-    const nm=get(it,['nama','namaProduk','name','produk','title'],'Produk');
-    const qty=num(get(it,['jumlah','qty','quantity'],1))||1;
-    return `<div class="subaddr" style="font-size:12px;color:#222">• ${nm} × ${qty}</div>`;
-  }).join(''):'<div class="subaddr">Rincian produk tidak tersedia di dokumen pesanan.</div>';
+  // PRIVASI KURIR: nama + harga produk JANGAN ditampilkan ke kurir. Takut produk berharga, kurir punya pikiran jahat.
+  // Kurir cuma liat Nama Paket + jumlah barang, tanpa tau isinya apa. Di mitra gapapa tampil full karena produk dia sendiri.
+  const _jmlBarang = items.length ? items.reduce((a,it)=>a+(num(get(it,['jumlah','qty','quantity'],1))||1),0) : 0;
+  const products = `<div class="subaddr" style="font-size:12px;color:#222">📦 Paket #${o.nomorPesanan||String(o.id||'').slice(0,8)}${_jmlBarang?` - ${_jmlBarang} barang (isi disembunyikan)`:''}</div><div class="subaddr" style="font-size:11px;color:#666">Nama & harga produk disembunyikan untuk keamanan kurir.</div>`;
   const split=parseSplit(o);
   const phoneDigits=String(pelWa).replace(/\D/g,'');
   const phoneLink=phoneDigits?`<a href="https://wa.me/${phoneDigits}" target="_blank" style="color:#087443;font-weight:900">${pelWa}</a>`:pelWa;
@@ -294,7 +326,7 @@ function renderOrder(o, isAktif=false){
       ${gpsPelOk?`<a href="https://www.google.com/maps/search/${pelLat},${pelLng}" target="_blank">MAPS</a>`:''}</div>
     </div>
     <div class="section">
-      <div class="label">📦 PRODUK YANG HARUS DIANTAR</div>${products}
+      <div class="label">📦 PAKET YANG HARUS DIANTAR</div>${products}
     </div>
     <div class="section ongkir">
       <div class="label" style="color:#00ff88">JARAK KURIR & BATAS LEMPARAN</div>
@@ -303,7 +335,8 @@ function renderOrder(o, isAktif=false){
         <div class="box dark"><span>Kurir → Pelanggan</span><b style="color:var(--y)">${jarakPelanggan!==null&&jarakPelanggan!==undefined?jarakPelanggan.toFixed(2)+' km':'-'}</b></div>
       </div>
       <div class="subaddr" style="color:#fff;margin-top:7px">Semua kurir dengan GPS maksimal ${MAX_JARAK_KM} km dari mitra berhak melihat dan berebut pesanan. Kurir di luar radius tidak ditampilkan.</div>
-      <div class="box dark" style="margin-top:8px"><span>Ongkir kurir</span><b style="color:var(--y)">Rp ${Number(split.ongkirKurir||0).toLocaleString('id-ID')}</b></div>
+      <div class="box dark" style="margin-top:8px"><span>Ongkir untuk kurir (95%)</span><b style="color:var(--y)">Rp ${Number(split.ongkirKurir||0).toLocaleString('id-ID')}</b></div>
+      ${split.isCOD?`<div class="box dark" style="margin-top:8px"><span>Tagihan ke pelanggan (COD)</span><b style="color:#fff">Rp ${Number(split.tagihanCOD||0).toLocaleString('id-ID')}</b><div class="subaddr" style="color:#ccc;font-size:11px">Tagih total ini ke pelanggan. Nama & harga produk tidak ditampilkan.</div></div>`:''}
       ${gpsMitraOk&&gpsPelOk?`<a href="https://www.google.com/maps/dir/${mitraLat},${mitraLng}/${pelLat},${pelLng}" target="_blank" class="btn btn-y">🗺️ Rute Mitra ke Pelanggan</a>`:''}
     </div>
     ${actionButtons}
@@ -325,7 +358,29 @@ window.tolak=async(id)=>{
 
 window.ambil=async(id)=>{
   if(!currentUser){alert('Sesi kurir tidak ditemukan.');return;}
-  if(!confirm('Ambil pesanan ini?')) return;
+  // COD: saldo kurir harus cukup untuk setor mitra 95% + admin 5% sebelum Diambil. Kalau kurang, tolak.
+  // Contoh: produk 100.000, ongkir 10.000 -> potong kurir = 95.000 + 5.500 = 100.500. Kurir harus punya saldo >= 100.500.
+  // Non-COD (transfer): admin sudah pegang uang dari pelanggan, kurir tidak perlu talang, jadi tidak dicek saldo.
+  try{
+    const _snapPre = await getDoc(doc(db,'orders',id));
+    if(_snapPre.exists()){
+      const _o = _snapPre.data();
+      const _splitPre = parseSplit(_o);
+      if(_splitPre.isCOD){
+        const _usnap = await getDoc(doc(db,'users',currentUser.uid));
+        const _saldoKurir = _usnap.exists() ? (Number(_usnap.data().saldoEwallet ?? _usnap.data().saldoWallet ?? _usnap.data().saldo ?? 0)) : 0;
+        if(_saldoKurir < _splitPre.potongKurirCOD){
+          alert(`Saldo kurir tidak cukup untuk COD. Harus cukup setor mitra 95% (Rp ${_splitPre.mitraDapat.toLocaleString('id-ID')}) + admin 5% (Rp ${_splitPre.adminFee.toLocaleString('id-ID')}) = Rp ${_splitPre.potongKurirCOD.toLocaleString('id-ID')}. Saldo kamu Rp ${_saldoKurir.toLocaleString('id-ID')}. Top-up dulu.`);
+          return;
+        }
+        if(!confirm(`Ambil paket ini?\nTagihan COD ke pelanggan: Rp ${_splitPre.tagihanCOD.toLocaleString('id-ID')}.\nOngkir untuk kamu: Rp ${_splitPre.ongkirKurir.toLocaleString('id-ID')}.\nSaldo kamu akan dipotong Rp ${_splitPre.potongKurirCOD.toLocaleString('id-ID')} pas verifikasi admin (setor mitra + admin).`)) return;
+      } else {
+        if(!confirm('Ambil pesanan ini?')) return;
+      }
+    } else {
+      if(!confirm('Ambil pesanan ini?')) return;
+    }
+  }catch(e){ if(!confirm('Ambil pesanan ini?')) return; }
   try{
     const ref=doc(db,'orders',id);
     await runTransaction(db,async tx=>{
@@ -506,5 +561,5 @@ onAuthStateChanged(auth, async (u)=>{
   onSnapshot(doc(db,'users',u.uid), s=>{ if(s.exists()) $('mySaldo').textContent='Rp '+Number(s.data().saldo||0).toLocaleString('id-ID'); });
 });
 </script>
-<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
+<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
 </html>
