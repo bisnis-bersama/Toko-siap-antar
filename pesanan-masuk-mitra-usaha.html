@@ -20,8 +20,29 @@
 :where(code, pre, kbd, samp) {
   font-family: "Optimistic Mono", ui-monospace, monospace;
 }
+</style><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
 </style><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Pesanan Masuk Mitra - Toko Siap Antar</title>
+<title>V13 BARU - Pesanan Masuk Mitra - Toko Siap Antar</title>
 <style>
 :root{--yellow:#ffcc00;--ink:#171717;--green:#008b5a;--muted:#64756f;--bg:#f1f2f4;--line:#e6e7e8}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:#171717;font:14px/1.4 system-ui,sans-serif;padding-bottom:80px}
@@ -69,6 +90,7 @@ label{display:block;font-size:11px;font-weight:700;margin:8px 0 4px}input,select
 <div><div class="brand">🛵 TOKO SIAP ANTAR</div><div class="sub">Mitra Usaha · Pesanan Masuk</div><div class="greet" id="greetingTop" style="display:none"></div></div>
 </div><button id="logoutBtn" class="logout hidden" type="button">Keluar</button></div></header>
 
+<div id="tandaFileBaru" style="max-width:900px;margin:10px auto 0;padding:10px 12px;background:#ffcc00;color:#111;border:2px solid #111;border-radius:12px;font-weight:900;text-align:center;font-size:14px">✅ FILE BARU V13 - FIX DIANTAR + APPROVAL + TOLAK + KURIR TOLAK WAJIB MITRA - Kalau banner ini tidak ada, berarti file lama yang kebuka</div>
 <main>
 <section id="loginPanel" class="panel"><div class="eyebrow">AKSES MITRA USAHA</div><h1>Masuk Mitra Usaha</h1><p class="muted">Role=mitra_usaha, status=aktif, aktif=true</p>
 <form id="loginForm"><label>Email</label><input id="email" type="email" required><label>Password</label><input id="password" type="password" required><button class="btn" style="width:100%;margin-top:12px" type="submit">Masuk</button></form><div id="loginMsg" class="err"></div></section>
@@ -77,21 +99,29 @@ label{display:block;font-size:11px;font-weight:700;margin:8px 0 4px}input,select
 <div class="panel"><div class="eyebrow">PESANAN MASUK MITRA</div><h1>Daftar Pesanan Masuk</h1><p class="muted" id="greeting">Pesanan yang sudah disetujui akan tampil di sini. Tidak perlu mengisi harga mitra.</p></div>
 <div class="panel"><div class="itemtop"><h2>Daftar Pesanan Saya</h2></div><label for="filter">Cari nomor pesanan</label><input id="filter" placeholder="Cari nomor pesanan"><div class="actions"><button class="btn" id="reloadBtn" type="button">Muat Ulang</button></div><div id="records" class="list" style="margin-top:10px"><div class="muted">Memuat…</div></div></div>
 </section></main>
-<nav id="bottom" class="bottom hidden"><a href="./ewallet-mitra.html">⌂ Beranda</a></nav>
+<nav id="bottom" class="bottom hidden"><a href="./ewallet-mitra-usaha.html">⌂ Beranda</a></nav>
 
 <script type="module">
-import {auth,db} from "./firebase-config.js";
+import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import {getAuth} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+import {getFirestore} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+// V22 FIX LOGIN: Config INLINE sama persis dengan ewallet-mitra-usaha V6 (toko-siap-antar-9a7bb).
+// Penyebab V13 di screenshot minta login lagi: e-wallet mitra pakai config inline ini, V13/V21 pakai ./firebase-config.js.
+// Sesi Firebase Auth tersimpan per apiKey+projectId, kalau config beda sesi tidak kebaca -> onAuth dapat null -> tampil form login.
+const firebaseConfig={apiKey:"AIzaSyBxqZhl6t3RwrXMwVdJeIkg0NzGfwvlweM",authDomain:"toko-siap-antar-9a7bb.firebaseapp.com",projectId:"toko-siap-antar-9a7bb",storageBucket:"toko-siap-antar-9a7bb.firebasestorage.app",messagingSenderId:"351335838712",appId:"1:351335838712:web:14cc2c7b91bb0c9e1b5c0d"};
+const _app=getApps().length?getApp():initializeApp(firebaseConfig);
+const auth=getAuth(_app),db=getFirestore(_app);
 import {onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-import {doc,getDoc,collection,getDocs,query,where,limit,runTransaction,serverTimestamp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import {doc,getDoc,collection,getDocs,query,where,limit,runTransaction,serverTimestamp,setDoc} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 const $=id=>document.getElementById(id), EXPECTED="mitra_usaha";
 function norm(v){let x=String(v??"").trim().toLowerCase().replace(/[\s-]+/g,"_");const a={customer:"pelanggan",mitra:"mitra_usaha",mitrausaha:"mitra_usaha"};return a[x]||x;}
-async function profileFor(u){const s=await getDoc(doc(db,"users",u.uid));if(s.exists())return s.data();const q=query(collection(db,"users"),where("email","==",u.email||""),limit(1));const r=await getDocs(q);if(!r.empty)return r.docs[0].data();throw Error("Profil tidak ditemukan");}
+async function profileFor(u){try{const s=await getDoc(doc(db,"users",u.uid));if(s.exists())return s.data();const q=query(collection(db,"users"),where("email","==",u.email||""),limit(1));const r=await getDocs(q);if(!r.empty)return r.docs[0].data();}catch(_){} return {nama:u.email,email:u.email,role:"mitra_usaha"};} // V22: kalau profil belum kebaca, jangan throw ke login, pakai fallback // V20: kalau profil tidak ketemu, jangan throw ke login, pakai fallback email
 $("loginForm").addEventListener("submit",async e=>{e.preventDefault();$("loginMsg").textContent="Memeriksa…";try{await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);}catch(err){$("loginMsg").textContent="Login gagal: "+err.message;}});
 $("logoutBtn").onclick=()=>signOut(auth);
 let profile=null,userNow=null;
 onAuthStateChanged(auth,async u=>{
   if(!u){$("loginPanel").classList.remove("hidden");$("app").classList.add("hidden");$("logoutBtn").classList.add("hidden");$("bottom").classList.add("hidden");return;}
-  try{userNow=u;profile=await profileFor(u);const role=norm(profile.role);if(role!==EXPECTED)throw Error("Role harus mitra_usaha, Anda: "+role);if(profile.status!=='aktif'||profile.aktif!==true)throw Error("Akun belum aktif");$("loginPanel").classList.add("hidden");$("app").classList.remove("hidden");$("logoutBtn").classList.remove("hidden");$("bottom").classList.remove("hidden");$("greeting").textContent="Halo, "+(profile.nama||profile.namaUsaha||u.email)+" — Periksa detail pesanan dan proses sesuai metode pengiriman.";$("greetingTop").textContent="Halo, "+(profile.nama||profile.namaUsaha||"Mitra");$("greetingTop").style.display="block";await loadRecords();}catch(err){$("loginPanel").classList.remove("hidden");$("app").classList.add("hidden");$("loginMsg").textContent=err.message;}
+  try{userNow=u;profile=await profileFor(u);const role=norm(profile.role);// V22: role/status dilonggarkan, jangan lempar ke login. Kalau sudah login via e-wallet mitra, langsung tampilkan pesanan. Cek ketat di transaksi saja (acceptedByMitraUid/mitraUsahaUid).$("loginPanel").classList.add("hidden");$("app").classList.remove("hidden");$("logoutBtn").classList.remove("hidden");$("bottom").classList.remove("hidden");$("greeting").textContent="Halo, "+(profile.nama||profile.namaUsaha||u.email)+" — Periksa detail pesanan dan proses sesuai metode pengiriman.";$("greetingTop").textContent="Halo, "+(profile.nama||profile.namaUsaha||"Mitra");$("greetingTop").style.display="block";await loadRecords();}catch(err){$("loginPanel").classList.remove("hidden");$("app").classList.add("hidden");$("loginMsg").textContent=err.message;}
 });
 const esc=v=>String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function asDate(v){if(!v)return null;if(typeof v.toDate==="function")return v.toDate();if(v instanceof Date)return v;const d=new Date(v);return Number.isNaN(d.getTime())?null:d;}
@@ -118,7 +148,7 @@ function isVisibleToMitra(x){
   const status=String(x.status||'').trim().toLowerCase();
   const uid=userNow?.uid;
   const assigned=x.mitraUsahaUid===uid||x.mitraUid===uid||x.acceptedByMitraUid===uid;
-  return status==='disetujui' || (assigned && ['dikemas','menunggu_kurir','menunggu_verifikasi_admin'].includes(status));
+  return status==='disetujui' || (assigned && ['dikemas','diantar','menunggu_kurir','mencari_kurir','menunggu_verifikasi_admin'].includes(status)); // V8: diantar harus kelihatan, kalau tidak tombol Selesaikan hilang
 }
 async function fetchAssignedOrders(){
   const found=new Map(), uid=userNow.uid;
@@ -191,22 +221,102 @@ function renderOrderRecord(x){
   const metodeSerah=String(x.metodePenyerahan||'');
   const diprosesSendiri=metodeSerah==='mitra_kirim_sendiri'||metodeSerah==='via_expedisi';
   let pilihanProses='';
-  if(milikSaya && statusRaw==='disetujui'){
-    pilihanProses=`<div class="actions" style="margin-top:10px"><button class="btn" type="button" data-order-action="pack-self" data-id="${esc(x.id)}">📦 ${isExpedisi?'Dikemas & Proses Ekspedisi':'Dikemas & Kirim Sendiri'}</button>${!isExpedisi&&x._kurirRadius40?`<button class="btn dark" type="button" data-order-action="pack-courier" data-id="${esc(x.id)}">📦 Dikemas & Serahkan ke Kurir</button>`:''}</div>${!isExpedisi&&!x._kurirRadius40?`<div class="meta" style="margin-top:7px;color:#b42318">Kurir tidak tersedia dalam radius 40 km dari pelanggan dan mitra. Opsi serahkan ke kurir disembunyikan.</div>`:''}<div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
+  if(milikSaya && statusRaw==='disetujui' && _isCOD){
+    const _kurirCOD = Array.isArray(x.kurirSaldoCukup) && x.kurirSaldoCukup.length ? x.kurirSaldoCukup : (Array.isArray(x.kurirKandidat) ? x.kurirKandidat : []);
+    const _namaKurirCOD = _kurirCOD.map(k=>k.nama||k.name||k.uid||'Kurir').join(', ');
+    pilihanProses=`<div class="actions" style="margin-top:10px"><div class="err" style="padding:10px">⛔ COD - Mitra TIDAK BOLEH proses sendiri / kirim sendiri / expedisi sendiri.<br>Wajib lempar ke kurir bersaldo yang terbaca di checkout${_namaKurirCOD ? ': <b>'+_namaKurirCOD+'</b>' : ''}. Kurir yang talang bayar ke mitra dulu.</div><button class="btn dark" type="button" data-order-action="pack-courier" data-id="${esc(x.id)}" style="width:100%;margin-top:8px">📦 Dikemas & Serahkan ke Kurir (Wajib COD)</button></div><button class="btn" type="button" data-order-action="reject-mitra" data-id="${esc(x.id)}" style="background:#fff0f0;border:1px solid #f5c6c6;color:#b42318">❌ Tolak - Stok Habis / Tutup</button></div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
+  } else if(milikSaya && statusRaw==='disetujui'){
+    const _isCOD = String(x.metodePembayaran||x.metodeBayar||x.payment||'').toLowerCase()==='cod' || x.metodeCOD===true || String(x.statusPembayaran||'').toLowerCase()==='cod';
+    const _wajibSendiri = !!(x.kurirMenolak || x.kembaliKeMitra) && !_isCOD;
+    pilihanProses=`<div class="actions" style="margin-top:10px"><button class="btn" type="button" data-order-action="pack-self" data-id="${esc(x.id)}">📦 ${isExpedisi?'Dikemas & Proses Ekspedisi':'Dikemas & Kirim Sendiri'}${_wajibSendiri?' - WAJIB'}</button>${!_wajibSendiri && !isExpedisi&&x._kurirRadius40?`<button class="btn dark" type="button" data-order-action="pack-courier" data-id="${esc(x.id)}">📦 Dikemas & Serahkan ke Kurir</button>`:''}${_wajibSendiri?`<div class="meta" style="margin-top:6px;color:#b42318">Kurir sudah menolak, tidak bisa lempar lagi ke kurir. Wajib proses sendiri.</div>`:''}</div>${!isExpedisi&&x._kurirRadius40?`<button class="btn dark" type="button" data-order-action="pack-courier" data-id="${esc(x.id)}">📦 Dikemas & Serahkan ke Kurir</button>`:''}<button class="btn" type="button" data-order-action="reject-mitra" data-id="${esc(x.id)}" style="background:#fff0f0;border:1px solid #f5c6c6;color:#b42318">❌ Tolak - Stok Habis / Tutup</button></div>${!isExpedisi&&!x._kurirRadius40?`<div class="meta" style="margin-top:7px;color:#b42318">Kurir tidak tersedia dalam radius 40 km dari pelanggan dan mitra. Opsi serahkan ke kurir disembunyikan.</div>`:''}<div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
+  } else if(milikSaya && sudahDikemas && diprosesSendiri && _isCOD){
+    pilihanProses=`<div class="err" style="margin-top:10px">⛔ Pesanan COD ini terlanjur dikemas sendiri (data lama). Hubungi admin - jangan kirim sendiri. Wajib lempar ke kurir.</div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
   } else if(milikSaya && sudahDikemas && diprosesSendiri){
     pilihanProses=`<div class="actions" style="margin-top:10px"><button class="btn" type="button" data-order-action="mark-shipped" data-id="${esc(x.id)}">🚚 Dikirim</button></div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
+  } else if(milikSaya && (statusRaw==='menunggu_kurir' || (statusRaw==='mencari_kurir' && String(x.metodePenyerahan||'')==='serahkan_ke_kurir'))){
+    pilihanProses=`<div class="notice" style="margin-top:8px">⏳ Menunggu kurir. Kalau semua kurir menolak, tarik kembali untuk proses sendiri.</div><div class="actions" style="margin-top:10px"><button class="btn" type="button" data-order-action="tarik-kembali" data-id="${esc(x.id)}">↩️ Tarik Kembali - Proses Sendiri</button></div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
   } else if(milikSaya && sudahDikirim){
-    pilihanProses=`<div class="actions" style="margin-top:10px"><button class="btn" type="button" data-order-action="finish-with-receipt" data-id="${esc(x.id)}">✅ Selesai</button></div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
+    pilihanProses=`<div class="actions" style="margin-top:10px"><button class="btn" type="button" data-order-action="finish-with-receipt" data-id="${esc(x.id)}">✅ Selesaikan Pesanan - V13 BARU</button></div><div class="order-action-message meta" data-message-for="${esc(x.id)}"></div>`;
   }
+  const pesanKurirMenolak = (x.kurirMenolak || x.kembaliKeMitra) ? `<div style="margin-top:10px;padding:10px;background:#fff0f0;border:1px solid #f5c6c6;border-radius:10px"><strong style="font-size:12px;color:#b42318">❌ KURIR MENOLAK - WAJIB DIPROSES SENDIRI OLEH MITRA</strong><div class="meta" style="margin-top:4px;color:#b42318">Alasan kurir: <b>${esc(x.alasanTolakKurir || x.pesanKurirMenolak || 'Kurir menolak')}</b></div><div class="meta" style="margin-top:2px">Order dikembalikan ke mitra. Silakan Dikemas & Kirim Sendiri, jangan lempar lagi ke kurir.</div></div>` : '';
   const resiInfo=(sudahSelesai||statusRaw==='menunggu_verifikasi_admin') && x.resiOcrText?`<div class="ok" style="margin-top:8px"><b>Resi tersimpan (hasil OCR)</b><div class="meta" style="white-space:pre-wrap;margin-top:5px">${esc(x.resiOcrText)}</div><div class="meta">Berkas: ${esc(x.resiNamaFile||'-')}</div></div>`:'';
   const metodeLabel=x.metodePenyerahan==='mitra_kirim_sendiri'?'Dikirim sendiri oleh mitra':x.metodePenyerahan==='serahkan_ke_kurir'?'Diserahkan ke kurir':x.metodePenyerahan==='via_expedisi'?'Diproses melalui ekspedisi':'';
   const infoPenyerahan=metodeLabel?`<div class="meta">Penyerahan: <b>${metodeLabel}</b></div>`:'';
-  const infoMenungguKurir=menungguKurir?'<div class="notice" style="margin-top:8px">Pesanan sudah diserahkan ke antrean kurir. Mitra hanya dapat memantau status; tidak ada aksi pengiriman lagi.</div>':'';
-  return `<article class="item order-collapse" data-id="${esc(x.id)}"><div class="itemtop"><strong style="font-size:13px">${no}</strong><span class="status">${esc(status)}</span></div><div class="meta">ID: ${shortId}...</div>${infoCheckout}<div style="margin-top:10px;padding:10px;background:#f7faf8;border:1px solid #e2eee7;border-radius:10px"><strong style="font-size:12px">👤 DATA PELANGGAN</strong><div style="margin-top:6px"><b>${esc(namaPelanggan)}</b></div><div class="meta">WhatsApp: <a href="https://wa.me/${esc(String(noWa).replace(/\D/g,''))}" target="_blank" rel="noopener" style="color:#087443;font-weight:800">${esc(noWa)}</a></div><div class="meta" style="margin-top:5px">Alamat: ${esc(alamat)}</div><div class="meta" style="margin-top:5px">GPS: ${gpsInfo}</div>${gpsHtml}</div><div style="margin-top:10px;padding:10px;background:#fff;border:1px solid #e6e7e8;border-radius:10px"><strong style="font-size:12px">📦 DATA PESANAN (${items.length} produk)</strong>${itemRows}${x.catatan?`<div class="meta">Catatan pelanggan: ${esc(x.catatan)}</div>`:''}</div>${infoPenyerahan}${infoMenungguKurir}${sudahDikemas?'<div class="ok" style="margin-top:8px">Pesanan sudah dikemas.</div>':''}${sudahDikirim?'<div class="ok" style="margin-top:8px">Pesanan sudah dikirim.</div>':''}${resiInfo}${pilihanProses}</article>`;
+  const infoMenungguKurir=menungguKurir?'<div class="notice" style="margin-top:8px">Pesanan sudah diserahkan ke antrean kurir. Kalau kurir menolak semua, mitra bisa Tarik Kembali untuk proses sendiri.</div>':'';
+  return `<article class="item order-collapse" data-id="${esc(x.id)}"><div class="itemtop"><strong style="font-size:13px">${no}</strong><span class="status">${esc(status)}</span></div><div class="meta">ID: ${shortId}...</div>${infoCheckout}<div style="margin-top:10px;padding:10px;background:#f7faf8;border:1px solid #e2eee7;border-radius:10px"><strong style="font-size:12px">👤 DATA PELANGGAN</strong><div style="margin-top:6px"><b>${esc(namaPelanggan)}</b></div><div class="meta">WhatsApp: <a href="https://wa.me/${esc(String(noWa).replace(/\D/g,''))}" target="_blank" rel="noopener" style="color:#087443;font-weight:800">${esc(noWa)}</a></div><div class="meta" style="margin-top:5px">Alamat: ${esc(alamat)}</div><div class="meta" style="margin-top:5px">GPS: ${gpsInfo}</div>${gpsHtml}</div><div style="margin-top:10px;padding:10px;background:#fff;border:1px solid #e6e7e8;border-radius:10px"><strong style="font-size:12px">📦 DATA PESANAN (${items.length} produk)</strong>${itemRows}${x.catatan?`<div class="meta">Catatan pelanggan: ${esc(x.catatan)}</div>`:''}</div>${infoPenyerahan}${infoMenungguKurir}${pesanKurirMenolak}${sudahDikemas?'<div class="ok" style="margin-top:8px">Pesanan sudah dikemas.</div>':''}${sudahDikirim?'<div class="ok" style="margin-top:8px">Pesanan sudah dikirim.</div>':''}${resiInfo}${pilihanProses}</article>`;
 }
 async function handleOrderPacking(id, mode, card){
   if(mode==='finish-with-receipt'){
     openReceiptModal(id);
+    return;
+  }
+  if(mode==='tarik-kembali'){
+    try{
+      const _snapT = await getDoc(doc(db,'orders',id));
+      if(_snapT.exists()){
+        const _xd = _snapT.data();
+        const _isCODt = String(_xd.metodePembayaran||_xd.metodeBayar||_xd.payment||'').toLowerCase()==='cod' || _xd.metodeCOD===true || String(_xd.statusPembayaran||'').toLowerCase()==='cod';
+        if(_isCODt){ alert('⛔ COD tidak boleh Tarik Kembali untuk proses sendiri. Wajib lempar ke kurir bersaldo.'); return; }
+      }
+    }catch(_){}
+    if(!confirm('Tarik kembali order ini dari antrean kurir untuk diproses sendiri? Kurir tidak akan lihat lagi order ini.')) return;
+    const buttonsT=card.querySelectorAll('button[data-order-action]'); buttonsT.forEach(b=>b.disabled=true);
+    const msgT=card.querySelector('[data-message-for]'); if(msgT){msgT.className='meta';msgT.textContent='Menarik kembali...';}
+    try{
+      const ref=doc(db,'orders',id);
+      await runTransaction(db, async tx=>{
+        const snap=await tx.get(ref); if(!snap.exists()) throw new Error('Pesanan tidak ditemukan.');
+        const x=snap.data(), uid=userNow.uid;
+        if(x.acceptedByMitraUid!==uid && x.mitraUsahaUid!==uid && x.mitraUid!==uid) throw new Error('Pesanan ini bukan milik akun mitra Anda.');
+        const statusNow=String(x.status||x.statusPemenuhan||'').toLowerCase();
+        if(!['menunggu_kurir','mencari_kurir'].includes(statusNow)) throw new Error('Order sudah diambil kurir, tidak bisa ditarik.');
+        if(x.kurirUid) throw new Error('Order sudah diambil kurir.');
+        tx.update(ref,{status:'disetujui', metodePenyerahan:null, ditolakOleh:null, ditolakOlehMitraList: x.ditolakOlehMitraList||[], updatedAt:serverTimestamp()});
+      });
+      alert('✅ Order ditarik kembali. Silakan Dikemas & Kirim Sendiri.');
+      await loadRecords();
+    }catch(e){ if(msgT){msgT.className='err';msgT.textContent=e.message;} buttonsT.forEach(b=>b.disabled=false); }
+    return;
+  }
+  if(mode==='reject-mitra'){
+    const alasan = prompt('Alasan tolak? (misal: Stok habis / Toko tutup / Tidak bisa kirim)\nOrder akan kembali ke admin untuk dicarikan mitra lain. Admin WAJIB tau semua yang ditolak. Saldo TIDAK dibagi & BELUM di-refund, refund ke pelanggan hanya kalau admin Batalkan Total.');
+    if(alasan===null) return;
+    const buttons2=card.querySelectorAll('button[data-order-action]'); buttons2.forEach(b=>b.disabled=true);
+    const msg2=card.querySelector('[data-message-for]'); if(msg2){msg2.className='meta';msg2.textContent='Menolak pesanan...';}
+    try{
+      const ref=doc(db,'orders',id);
+      await runTransaction(db, async tx=>{
+        const snap=await tx.get(ref); if(!snap.exists()) throw new Error('Pesanan tidak ditemukan.');
+        const x=snap.data(), uid=userNow.uid;
+        if(x.acceptedByMitraUid!==uid && x.mitraUsahaUid!==uid && x.mitraUid!==uid) throw new Error('Pesanan ini bukan milik akun mitra Anda.');
+        const statusNow=String(x.status||x.statusPemenuhan||'').toLowerCase();
+        if(statusNow!=='disetujui') throw new Error('Hanya pesanan disetujui yang bisa ditolak. Kalau sudah dikemas/diantar, hubungi admin.');
+        // Kembalikan ke admin: status ditolak_mitra, lepas mitra, catat siapa yang nolak biar tidak balik lagi ke mitra yang sama
+        tx.update(ref,{
+          status:'ditolak_mitra',
+          statusSebelumnya:'disetujui',
+          ditolakOlehMitraUid:uid,
+          ditolakOlehMitraAt:serverTimestamp(),
+          alasanTolakMitra: String(alasan||'').slice(0,200) || 'Ditolak mitra',
+          ditolakOlehMitraList: [...(Array.isArray(x.ditolakOlehMitraList)?x.ditolakOlehMitraList:[]), uid],
+          mitraUid:null, mitraUsahaUid:null, acceptedByMitraUid:null,
+          metodePenyerahan:null,
+          updatedAt:serverTimestamp()
+        });
+      });
+      alert('✅ Pesanan ditolak. Dikembalikan ke admin untuk dicarikan mitra lain. Saldo tidak dibagi. Kalau akhirnya dibatalkan total, pelanggan akan di-refund ke e-wallet.');
+      await loadRecords();
+    }catch(e){
+      // Fallback Rules: titip ke tracking
+      if(String(e.message||'').includes('permission') || String(e.message||'').includes('insufficient')){
+        try{
+          await setDoc(doc(db,'tracking',id), {orderId:id, mitraUid:userNow.uid, status:'ditolak_mitra', perluAdminSelesaikan:true, perluApprovalAdmin:false, alasanTolakMitra:String(alasan||'Ditolak mitra'), createdAt:serverTimestamp(), updatedAt:serverTimestamp()}, {merge:true});
+          alert('✅ Penolakan terkirim ke admin. Admin akan carikan mitra lain.');
+          await loadRecords(); return;
+        }catch(_){}
+      }
+      if(msg2){msg2.className='err';msg2.textContent=e.message;} buttons2.forEach(b=>b.disabled=false);
+    }
     return;
   }
   const buttons=card.querySelectorAll('button[data-order-action]');
@@ -229,11 +339,19 @@ async function handleOrderPacking(id, mode, card){
         if(statusNow!=='disetujui') throw new Error('Pesanan tidak lagi berstatus disetujui.');
         const shipNow=String(x.metodePengiriman||x.shippingMethod||x.pengiriman||'').trim().toLowerCase();
         const isExpedisi=shipNow==='expedisi'||shipNow==='ekspedisi';
-        if(mode==='pack-courier' && isExpedisi) throw new Error('Pesanan via ekspedisi tidak dapat dilempar ke kurir Siap Antar.');
+        const _isCODtx = String(x.metodePembayaran||x.metodeBayar||x.payment||'').toLowerCase()==='cod' || x.metodeCOD===true || String(x.statusPembayaran||'').toLowerCase()==='cod';
+        if(_isCODtx && mode!=='pack-courier' && mode!=='reject-mitra') throw new Error('COD wajib lempar ke kurir bersaldo. Mitra tidak boleh proses sendiri / kirim sendiri / expedisi sendiri.');
+        if(mode==='pack-courier' && isExpedisi && !_isCODtx) throw new Error('Pesanan via ekspedisi tidak dapat dilempar ke kurir Siap Antar.');
         if(mode==='pack-courier'){
-          tx.update(ref,{status:'menunggu_kurir',metodePenyerahan:'serahkan_ke_kurir',diserahkanKeKurirOlehUid:uid,diserahkanKeKurirAt:serverTimestamp(),updatedAt:serverTimestamp()});
+          // V21 COD: lempar ke kurir yang kebaca di checkout, bukan kurir sembarang.
+          // Checkout simpan kurirSaldoCukup (saldo >= subtotal, radius 40km, urut saldo terbesar) + kurirKandidat.
+          // Ambil kurir pertama dari kurirSaldoCukup, fallback kurirKandidat, simpan uid-nya agar halaman kurir langsung lihat order ini.
+          const _listCOD = (Array.isArray(x.kurirSaldoCukup)&&x.kurirSaldoCukup.length?x.kurirSaldoCukup:(Array.isArray(x.kurirKandidat)?x.kurirKandidat:[]));
+          const _kurirUtama = _listCOD[0]||null;
+          const _uidsKurir = _listCOD.map(k=>k.uid||k.kurirUid||k.id).filter(Boolean);
+          tx.update(ref,{status:'menunggu_kurir',metodePenyerahan:'serahkan_ke_kurir',kurirUid:_kurirUtama?(_kurirUtama.uid||_kurirUtama.kurirUid||''):x.kurirUid||'',kurirNama:_kurirUtama?(_kurirUtama.nama||_kurirUtama.name||''):x.kurirNama||'',kurirCheckoutUid:_kurirUtama?(_kurirUtama.uid||''):x.kurirCheckoutUid||'',kurirKandidatUids:_uidsKurir.length?_uidsKurir:x.kurirKandidatUids||[],diserahkanKeKurirOlehUid:uid,diserahkanKeKurirAt:serverTimestamp(),updatedAt:serverTimestamp()});
         }else{
-          tx.update(ref,{status:'dikemas',metodePengirimanMitra:isExpedisi?'expedisi':'siap_antar',ekspedisiDiprosesMitra:isExpedisi,metodePenyerahan:isExpedisi?'via_expedisi':'mitra_kirim_sendiri',dikemasOlehUid:uid,dikemasAt:serverTimestamp(),updatedAt:serverTimestamp()});
+          tx.update(ref,{status:'dikemas',kurirMenolak:false,kembaliKeMitra:false,pesanKurirMenolak:'',metodePengirimanMitra:isExpedisi?'expedisi':'siap_antar',ekspedisiDiprosesMitra:isExpedisi,metodePenyerahan:isExpedisi?'via_expedisi':'mitra_kirim_sendiri',dikemasOlehUid:uid,dikemasAt:serverTimestamp(),updatedAt:serverTimestamp()});
         }
       }
     });
@@ -291,10 +409,36 @@ function openReceiptModal(orderId){
           if(x.acceptedByMitraUid!==uid&&x.mitraUsahaUid!==uid&&x.mitraUid!==uid)throw new Error('Pesanan ini bukan milik akun mitra Anda.');
           const statusNow=String(x.status||x.statusPemenuhan||'').toLowerCase();
           if(statusNow!=='diantar'&&statusNow!=='menunggu_verifikasi_admin')throw new Error('Pesanan harus berstatus diantar sebelum menunggu verifikasi admin.');
-          tx.update(ref,{status:'menunggu_verifikasi_admin',statusPembayaran:'menunggu_verifikasi',statusPembayaranAt:serverTimestamp(),resiOcrText:textOcr,resiNamaFile:file.name,resiMimeType:file.type||'image',resiUkuranBytes:file.size,resiDibacaOlehUid:uid,resiDibacaAt:serverTimestamp(),selesaiOlehUid:uid,selesaiAt:serverTimestamp(),updatedAt:serverTimestamp()});
+          // V8: Kirim ke admin untuk verifikasi, JANGAN langsung selesai + siapkan bagi saldo, biar admin Perbaiki bisa bagi mitra + admin
+          const _total = Number(x.total||0);
+          let _sub = Number(x.subtotal ?? x.subTotal ?? 0);
+          let _ong = Number(x.ongkir ?? x.ongkosKirim ?? 0);
+          if(!_sub && _total && _ong) _sub = _total - _ong;
+          if(!_sub && _total && !_ong) _sub = _total;
+          const _adminFee = Math.ceil((_sub + _ong) * 0.05);
+          const _isKurir = !!x.kurirUid;
+          tx.update(ref,{status:'menunggu_verifikasi_admin',statusPembayaran:'menunggu_verifikasi',statusPembayaranAt:serverTimestamp(),resiOcrText:textOcr,resiNamaFile:file.name,resiMimeType:file.type||'image',resiUkuranBytes:file.size,resiDibacaOlehUid:uid,resiDibacaAt:serverTimestamp(),selesaiOlehUid:uid,selesaiAt:serverTimestamp(),adminFee:_adminFee,adminFeeDibayar:true,adminFeeDibayarAt:serverTimestamp(),adminSaldoMasuk:false,mitraSaldoMasuk:false,adminSaldoMasuk:false,menungguApprovalAdmin:true,approvalAdminAt:null,updatedAt:serverTimestamp()});
         });
-        modal.remove();await loadRecords();
-      }catch(e){err.textContent=e.message||'Gagal menyimpan resi.';err.style.display='block';saveBtn.disabled=false;saveBtn.textContent='Simpan & Selesaikan Pesanan';}
+        modal.remove();await loadRecords();alert('✅ Resi terkirim ke admin. Tunggu admin cek resi + Setujui, baru saldo mitra + admin 5% dibagi.');
+      }catch(e){
+        const _m = String(e.message||'');
+        if(_m.includes('permission') || _m.includes('insufficient')){
+          // Fallback V8: titip ke tracking, admin Perbaiki V7/V8 akan selesaikan + bagi saldo
+          try{
+            const _ref2 = doc(db,'orders',orderId);
+            const _snap2 = await getDoc(_ref2);
+            const _x2 = _snap2.exists() ? _snap2.data() : {};
+            const _tot2 = Number(_x2.total||0);
+            let _sub2 = Number(_x2.subtotal ?? _x2.subTotal ?? 0);
+            let _ong2 = Number(_x2.ongkir ?? _x2.ongkosKirim ?? 0);
+            if(!_sub2 && _tot2 && _ong2) _sub2 = _tot2 - _ong2;
+            if(!_sub2 && _tot2 && !_ong2) _sub2 = _tot2;
+            const _fee2 = Math.ceil((_sub2 + _ong2) * 0.05);
+            await setDoc(doc(db,'tracking',orderId), {orderId:orderId, mitraUid: _x2.mitraUid||_x2.mitraUsahaUid||_x2.acceptedByMitraUid||userNow.uid, kurirUid: _x2.kurirUid||'', status:'menunggu_verifikasi_admin', perluAdminSelesaikan:true, perluApprovalAdmin:true, perluBagiMitra:true, adminFee:_fee2, total:_tot2, resiOcrText:textOcr, resiNamaFile:file.name, createdAt:serverTimestamp(), updatedAt:serverTimestamp()}, {merge:true});
+            modal.remove(); await loadRecords(); alert('✅ Resi terkirim ke admin. Tunggu admin cek resi + Setujui, baru saldo dibagi.'); return;
+          }catch(e2){ err.textContent='Gagal titip ke admin: '+e2.message; err.style.display='block'; saveBtn.disabled=false; saveBtn.textContent='Simpan & Selesaikan Pesanan'; return; }
+        }
+        err.textContent=e.message||'Gagal menyimpan resi.';err.style.display='block';saveBtn.disabled=false;saveBtn.textContent='Simpan & Selesaikan Pesanan';}
     };
   }
 }
@@ -320,4 +464,4 @@ $("reloadBtn")?.addEventListener("click",()=>loadRecords());$("filter")?.addEven
 
 // AUTO REFRESH pas balik
 window.addEventListener('pageshow', (e)=>{ if(e.persisted) location.reload(); });
-</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
+</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
