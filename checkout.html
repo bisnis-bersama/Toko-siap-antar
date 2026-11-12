@@ -43,7 +43,7 @@
 }
 </style>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#00a85a">
-<title>V2 BARU - Checkout + Bayar Pakai Saldo Pelanggan - COD 40km + Online 8 Jam Kerja</title>
+<title>V4 BARU - Hanya Pelanggan Bisa Belanja, Baca Akun Login Saja - Checkout + Bayar Pakai Saldo Pelanggan - COD 40km + Online 8 Jam Kerja</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{margin:0;background:#f4fff7;color:#18312b;font:14px/1.5 system-ui,sans-serif;padding-bottom:110px}
@@ -341,12 +341,17 @@ function updateTotalsGlobal(){
 }
 
 // ===== FIX: BAYAR PAKAI SALDO PELANGGAN - jika kurang arahkan top-up dulu =====
-function loadSaldoPelanggan(){
-  let s = 0;
-  if(userData) s = Number(userData.saldoEwallet ?? userData.saldoWallet ?? userData.saldo ?? 0) || 0;
-  try{ const saved = JSON.parse(localStorage.getItem('tsa_saldo_belanja')||'{}'); if(saved.pakaiSaldo && saved.saldoTersedia) s = Math.max(s, Number(saved.saldoTersedia||0)); }catch(_){}
-  saldoPelanggan = s;
+async function loadSaldoPelanggan(){
+  // V4: HANYA baca akun login (users/uid) - tanpa fallback email / mutasi.
+  // Mitra / kurir / admin walau login tetap tidak bisa belanja, jadi saldo mereka tidak pernah dibaca di sini.
+  // Yang dibaca cuma userData dari akun login yang sudah lolos cek role pelanggan di onAuth.
+  if(!currentUser || !userData) { saldoPelanggan = 0; updateSaldoBox(); return 0; }
+  if(String(userData.role||'').trim().toLowerCase()!=='pelanggan'){ saldoPelanggan = 0; updateSaldoBox(); return 0; }
+  const v = userData.saldoEwallet ?? userData.saldoWallet ?? userData.saldo ?? userData.walletBalance ?? 0;
+  const n = Number(String(v).replace(/[^0-9.-]/g,''));
+  saldoPelanggan = Number.isFinite(n) ? n : 0;
   updateSaldoBox();
+  return saldoPelanggan;
 }
 function updateSaldoBox(){
   const muted = document.getElementById('saldoPelangganMuted');
@@ -527,7 +532,7 @@ function updateGlobalPayment(){
   document.getElementById('globalQrisDetail').style.display=selectedPay==='qris'?'block':'none';
   document.getElementById('globalCodDetail').style.display=selectedPay==='cod'?'block':'none';
   const saldoDetail=document.getElementById('globalSaldoDetail'); if(saldoDetail) saldoDetail.style.display=selectedPay==='saldo_ewallet'?'block':'none';
-  updateSaldoBox();
+  if(selectedPay==='saldo_ewallet') loadSaldoPelanggan(); else updateSaldoBox();
 }
 document.querySelectorAll('[data-global-pay]').forEach(el=>el.addEventListener('click',()=>{
   if(el.classList.contains('disabled')) return;
@@ -640,6 +645,11 @@ async function buatPesanan(){
   if(orderSubmitting) return;
   if(cart.length===0){alert('Keranjang kosong');return;}
   if(!currentUser){alert('Silakan login terlebih dahulu.');location.href='profil.html';return;}
+  // V4: Cek ulang role akun login - mitra / kurir / admin tidak boleh belanja
+  if(!userData || String(userData.role||'').trim().toLowerCase()!=='pelanggan'){
+    alert('Hanya akun pelanggan yang bisa belanja. Akun kamu ('+(userData?.role||'-')+') tidak bisa checkout.');
+    return;
+  }
   // validasi COD bersyarat
   if(selectedPay==='cod'){
     const groups=[...checkoutByOwner.values()];
@@ -655,7 +665,7 @@ async function buatPesanan(){
   }
   // FIX: Bayar pakai saldo - hitung grand total dulu, kalau kurang arahkan top-up
   if(selectedPay==='saldo_ewallet'){
-    await renderPerToko(); updateTotalsGlobal(); loadSaldoPelanggan();
+    await renderPerToko(); updateTotalsGlobal(); await loadSaldoPelanggan();
     if(grandTotalGlobal > saldoPelanggan){
       alert('Saldo kurang ' + rupiah(grandTotalGlobal - saldoPelanggan) + '. Top-up dulu ya.');
       keTopupSaldo();
@@ -693,7 +703,8 @@ async function buatPesanan(){
         return sum + sub + (g.shippingCost||0);
       },0);
       await runTransaction(db, async tx=>{
-        const pref = doc(db,'users', currentUser.uid);
+        // V4: Potong hanya di doc akun login (users/uid) - tanpa cari doc lain via email
+        let pref = doc(db,'users', currentUser.uid);
         const psnap = await tx.get(pref);
         if(!psnap.exists()) throw new Error('Akun pelanggan tidak ditemukan');
         const cur = Number(psnap.data().saldoEwallet ?? psnap.data().saldoWallet ?? psnap.data().saldo ?? 0) || 0;
@@ -767,9 +778,18 @@ onAuthStateChanged(auth, async (user)=>{
   }
   try{
     const profileSnap=await getDoc(doc(db,'users',user.uid));
+    // V4: Hanya baca akun login (users/uid) - tanpa fallback cari pakai email.
     userData=profileSnap.exists()?profileSnap.data():null;
-    if(!userData || String(userData.role||'').trim().toLowerCase()!=='pelanggan'){
-      document.getElementById('msg').innerHTML='<div class="err">⛔ Akses ditolak. Halaman checkout hanya untuk role <b>pelanggan</b>.</div>'; return;
+    if(!userData){
+      document.getElementById('msg').innerHTML='<div class="err">⛔ Akun login tidak ditemukan di users. Silakan login ulang sebagai pelanggan.</div>'; return;
+    }
+    if(String(userData.role||'').trim().toLowerCase()!=='pelanggan'){
+      document.getElementById('msg').innerHTML='<div class="err">⛔ Akses ditolak. Halaman checkout hanya untuk role <b>pelanggan</b>.<br>Akun kamu terdaftar sebagai <b>'+(userData.role||'-')+'</b>, jadi tidak bisa belanja di sini walaupun sudah login.<br><small>Silakan keluar dan login pakai akun pelanggan.</small></div>';
+      document.querySelector('main').style.display='none';
+      document.querySelector('.bottom').style.display='none';
+      document.getElementById('btnBuatPesanan').disabled=true;
+      document.getElementById('bottomCheckout').disabled=true;
+      return;
     }
     document.getElementById('msg').innerHTML='';
     document.querySelector('main').style.display='';
@@ -777,6 +797,7 @@ onAuthStateChanged(auth, async (user)=>{
     document.getElementById('btnBuatPesanan').disabled=false;
     document.getElementById('bottomCheckout').disabled=false;
     await loadAlamat();
+    await loadSaldoPelanggan();
     renderProdukSummary();
   }catch(e){
     console.error(e);
