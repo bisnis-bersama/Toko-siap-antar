@@ -45,7 +45,7 @@
 </style>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>V18 BARU - E-Wallet Admin - Rapi Clean | Toko Siap Antar</title>
+<title>V19 BARU - E-Wallet Admin - Rapi Clean | Toko Siap Antar</title>
 <style>
 @font-face{font-family:"Optimistic";font-style:normal;font-weight:400 600;font-display:swap;src:url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2")}
 @font-face{font-family:"Optimistic Mono";font-style:normal;font-weight:400;font-display:swap;src:url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2")}
@@ -83,16 +83,19 @@ main{max-width:820px;margin:-10px auto 0;padding:0 10px 80px;position:relative;z
 <img src="logo2.png" alt="Logo" onerror="this.src='logo3.png'">
 <div style="min-width:0"><div class="brand">TOKO SIAP ANTAR</div><div class="greet" id="welcomeTop">Halo, Kak, <b>Admin</b></div><div class="sub">Admin Panel - E-Wallet</div></div>
 </div><button id="logoutBtn" class="logout">Login</button></div></header>
-<div id="tandaFileBaru" style="max-width:820px;margin:10px auto 0;padding:10px 12px;background:#ffcc00;color:#111;border:2px solid #111;border-radius:12px;font-weight:900;text-align:center;font-size:14px">✅ FILE BARU V18 - FIX NOTIF PENDING - 11 NOV - FIX PERBAIKI + BACA TRACKING - Kalau banner ini tidak ada, berarti file lama yang kebuka</div>
+<div id="tandaFileBaru" style="max-width:820px;margin:10px auto 0;padding:10px 12px;background:#ffcc00;color:#111;border:2px solid #111;border-radius:12px;font-weight:900;text-align:center;font-size:14px">✅ FILE BARU V19 - 5% BUKAN MODAL - 11 NOV - FIX PERBAIKI + BACA TRACKING - Kalau banner ini tidak ada, berarti file lama yang kebuka</div>
 <main><section id="dashboard">
 <div class="panel">
-<div class="wallet-label">Saldo Admin (Laba)</div><div class="balance" id="balance">Memuat saldo...</div>
+<div class="wallet-label">Saldo Admin (Hanya 5% - Laba Admin)</div><div class="balance" id="balance">Memuat saldo...</div><div style="font-size:11px;color:#666;margin-top:-6px">Admin hanya terima 5% dari mitra & kurir. Modal penjualan punya mitra, ongkir punya kurir. Bukan uang admin.</div>
 <div class="wallet-row">
-<div class="wallet-stat"><div class="label">Total Pendapatan</div><div class="value" id="income">Memuat...</div></div>
+<div class="wallet-stat"><div class="label">Total 5% Terkumpul (Laba Admin)</div><div class="value" id="income">Memuat...</div></div>
 <div class="wallet-stat"><div class="label">Total Dicairkan</div><div class="value" id="withdrawn">Memuat...</div></div>
-</div><div id="actionMsg"></div>
-<button id="fixAdminSaldoBtn" class="btn btn-yellow" style="width:100%;margin-top:8px;padding:10px;font-weight:800">🔧 Perbaiki Saldo Admin - V18 BARU - + Selesaikan Titipan Kurir</button>
-<div id="fixAdminSaldoInfo" style="font-size:11px;color:#666;margin-top:6px">Perbaiki hanya untuk pesanan SUDAH SELESAI (sudah disetujui). Yang masih menunggu verifikasi resi, pakai tombol Setujui di atas. Tombol ini menjumlah 5% dari semua pesanan status selesai yang belum dihitung ke admin, lalu masukkan ke admin_saldo/total. Kalau sudah pernah diperbaiki, tidak akan double.</div>
+<div class="wallet-stat" style="background:#fff8d8;border-color:#f4df80"><div class="label">Modal Mitra (Bukan Uang Admin)</div><div class="value" id="modalMitra">Memuat...</div><small style="font-size:10px;color:#666">Diteruskan ke mitra, bukan laba admin</small></div>
+<div class="wallet-stat" style="background:#eef6ff;border-color:#c8dcff"><div class="label">Ongkir Kurir (Bukan Uang Admin)</div><div class="value" id="ongkirKurir">Memuat...</div><small style="font-size:10px;color:#666">Diteruskan ke kurir, bukan laba admin</small></div>
+</div>
+<div style="margin-top:10px;background:#f7f8f8;border:1px solid #eee;border-radius:10px;padding:10px;font-size:12px;line-height:1.5"><b>Rincian 1 Pesanan Contoh:</b> Total Rp 100.000 = Modal Mitra Rp 80.000 + Ongkir Kurir Rp 15.000 + Laba Admin 5% Rp 5.000. Yang masuk saldo admin cuma <b>Rp 5.000</b>, bukan Rp 100.000.</div><div id="actionMsg"></div>
+<button id="fixAdminSaldoBtn" class="btn btn-yellow" style="width:100%;margin-top:8px;padding:10px;font-weight:800">🔧 Perbaiki Saldo Admin - V19 BARU - + Selesaikan Titipan Kurir</button>
+<div id="fixAdminSaldoInfo" style="font-size:11px;color:#666;margin-top:6px">Perbaiki hanya untuk pesanan SUDAH SELESAI (sudah disetujui). Yang masih menunggu verifikasi resi, pakai tombol Setujui di atas. Tombol ini HANYA menjumlah 5% (laba admin) dari semua pesanan status selesai yang belum dihitung ke admin, lalu masukkan ke admin_saldo/total. Kalau sudah pernah diperbaiki, tidak akan double.</div>
 </div>
 
 <div class="panel panel-toggle" id="panel-verifikasi"><h2 style="margin:0 0 6px;font-size:14px;font-weight:800">🧾 Verifikasi Resi Mitra</h2><div style="font-size:11px;color:#666;margin-bottom:10px">Mitra kirim resi -> admin cek resi di sini -> klik Setujui & Bagi Saldo, baru saldo mitra + admin 5% dibagi. Jangan pakai Perbaiki untuk yang belum disetujui.</div><div id="verifikasiResiQueue" class="list">Memuat data...</div></div>
@@ -126,7 +129,7 @@ let user=null;
 const money=n=>'Rp '+Number(n||0).toLocaleString('id-ID');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function msg(s,ok=false){const el=$('actionMsg');if(!el)return;el.className=ok?'ok':'err';el.textContent=s;el.style.display='block'}
-await setPersistence(auth,browserLocalPersistence).catch(()=>{}); console.log('FILE BARU V18 - FIX NOTIF PENDING - EWALLET ADMIN - FIX PERBAIKI + TRACKING');
+await setPersistence(auth,browserLocalPersistence).catch(()=>{}); console.log('FILE BARU V19 - 5% BUKAN MODAL - EWALLET ADMIN - FIX PERBAIKI + TRACKING');
 
 /* Profil hanya untuk sapaan. Saldo admin tidak lagi diambil dari users/{uid}. */
 async function getProfileAny(u){
@@ -137,6 +140,23 @@ async function getProfileAny(u){
 
 /* Mengikuti sumber saldo yang ditambah oleh proses verifikasi pesanan: admin_saldo/total */
 let _unsubAdminSaldo=null;
+async function hitungRincianPenjualan(){
+  try{
+    const snap = await getDocs(query(collection(db,'orders'), where('status','==','selesai'), limit(100)));
+    let modal=0, ongkir=0;
+    snap.docs.forEach(d=>{
+      const x=d.data();
+      const total=Number(x.total||0);
+      let sub=Number(x.subtotal ?? x.subTotal ?? 0);
+      let ong=Number(x.ongkir ?? x.ongkosKirim ?? 0);
+      if(!sub && total && ong) sub=total-ong;
+      if(!sub && total && !ong) sub=total;
+      modal += sub; ongkir += ong;
+    });
+    const elM=document.getElementById('modalMitra'); if(elM) elM.textContent=money(modal);
+    const elO=document.getElementById('ongkirKurir'); if(elO) elO.textContent=money(ongkir);
+  }catch(e){ const elM=document.getElementById('modalMitra'); if(elM) elM.textContent='-'; }
+}
 function loadAdminWallet(){
   $('balance').textContent='Memuat saldo...';$('income').textContent='Memuat...';$('withdrawn').textContent='Memuat...';
   try{
@@ -286,7 +306,7 @@ async function hitungPendingPesanan(){
 }
 
 setInterval(()=>{
-  hitungPendingPesanan();
+  hitungPendingPesanan(); hitungRincianPenjualan();
   try{
     const v=document.querySelectorAll('#verifikasiResiQueue .item').length;
     const d=document.querySelectorAll('#ditolakQueue .item').length;
@@ -305,7 +325,7 @@ setInterval(()=>{
     setDot('dot-pengaturan', 0);
   }catch(_){}
 }, 2000);
-setTimeout(()=>{ hitungPendingPesanan(); }, 1500);
+setTimeout(()=>{ hitungPendingPesanan(); hitungRincianPenjualan(); }, 1500);
 onAuthStateChanged(auth,async u=>{
  user=u||null;
  if(!u){$('welcomeTop').innerHTML='Halo, Kak, <b>Admin</b>';$('logoutBtn').textContent='Login';$('logoutBtn').onclick=()=>location.href='./profil.html';$('balance').textContent=money(0);$('income').textContent=money(0);$('withdrawn').textContent=money(0);$('topupQueue').textContent='Login untuk melihat antrean';$('withdrawQueue').textContent='Login untuk melihat antrean';return}
@@ -363,8 +383,15 @@ window.addEventListener('pageshow',()=>{if(user){loadAdminWallet();loadQueues()}
         const o=d.data()||{};
         // V6: Potong kurir terpisah, jangan skip kalau admin sudah masuk tapi kurir belum dipotong
         const feeKurir = Number(o.adminFee||0);
-        const perluPotong = o.kurirUid && o.kurirSaldoDipotong!==true && feeKurir>0;
-        if(perluPotong) toPotongKurir.push({id:d.id, kurirUid:String(o.kurirUid), fee:feeKurir});
+        // FIX COD PRODUK (bukan COD OJEK): kalau talang belum dipotong, potong talang + fee. Order COD lama yang udah selesai tapi talang belum kepotong, tetap kepotong di Perbaiki.
+        // COD OJEK tidak ada mitra/items, jadi tidak ada talang.
+        const _isCODadm = String(o.metodePembayaran||o.metodeBayar||o.payment||'').toLowerCase()==='cod' || o.metodeCOD===true || String(o.statusPembayaran||'').toLowerCase()==='cod';
+        const _isProdukAdm = !!(o.mitraUid || o.mitraUsahaUid || o.mitraNama || o.mitraLat || (Array.isArray(o.items) && o.items.length>0) || (Array.isArray(o.mitraGroups) && o.mitraGroups.length>0));
+        const _isCODProdukAdm = _isCODadm && _isProdukAdm;
+        const _talangAdm = _isCODProdukAdm && o.kurirTalangDipotong!==true ? (Number(o.kurirTalang ?? o.subtotal ?? o.subTotal ?? 0) || 0) : 0;
+        const _potongAdm = feeKurir + _talangAdm;
+        const perluPotong = o.kurirUid && (o.kurirSaldoDipotong!==true || _talangAdm>0) && _potongAdm>0;
+        if(perluPotong) toPotongKurir.push({id:d.id, kurirUid:String(o.kurirUid), fee:_potongAdm});
         const mitraUid = String(o.mitraUid || o.mitraUsahaUid || o.acceptedByMitraUid || o.ownerUid || o.mitraId || o.sellerUid || '');
         if(mitraUid && o.mitraSaldoMasuk!==true){
           const _totalTmp = Number(o.total||0);
@@ -388,7 +415,7 @@ window.addEventListener('pageshow',()=>{if(user){loadAdminWallet();loadQueues()}
         if(adminCredit>0){ tambah+=adminCredit; hitung++; toMark.push(d.id); }
         else skip++;
       });
-      if(tambah===0 && toPotongKurir.length===0 && toBagiMitra.length===0){ msg('Tidak ada pesanan selesai yang belum dihitung ke admin. Saldo sudah benar.', true); btn.disabled=false; btn.textContent='🔧 Perbaiki Saldo Admin - V18 BARU - + Selesaikan Titipan Kurir + Potong Kurir + Bagi Mitra'; return; }
+      if(tambah===0 && toPotongKurir.length===0 && toBagiMitra.length===0){ msg('Tidak ada pesanan selesai yang belum dihitung ke admin. Saldo sudah benar.', true); btn.disabled=false; btn.textContent='🔧 Perbaiki Saldo Admin - V19 BARU - + Selesaikan Titipan Kurir + Potong Kurir + Bagi Mitra'; return; }
       await runTransaction(db, async tx=>{
         const ref=doc(db,'admin_saldo','total');
         const snap=await tx.get(ref);
@@ -427,7 +454,7 @@ window.addEventListener('pageshow',()=>{if(user){loadAdminWallet();loadQueues()}
           const nw=Math.max(0, cur - fee);
           tx.update(uref,{saldoEwallet:nw, saldoWallet:nw, saldo:nw, updatedAt:serverTimestamp()});
           const oref2=doc(db,'orders',orderId);
-          tx.update(oref2,{kurirSaldoDipotong:true, perluPotongKurir:false, updatedAt:serverTimestamp()});
+          tx.update(oref2,{kurirSaldoDipotong:true, kurirTalangDipotong:true, perluPotongKurir:false, updatedAt:serverTimestamp()});
         }
         for(const {mref, msnap, credit, orderId} of mitraSnaps){
           if(!msnap.exists()) continue;
@@ -441,7 +468,7 @@ window.addEventListener('pageshow',()=>{if(user){loadAdminWallet();loadQueues()}
       });
       msg('Perbaikan berhasil ✅ Admin +Rp '+tambah.toLocaleString('id-ID')+' dari '+hitung+' pesanan. Kurir dipotong '+toPotongKurir.length+' pesanan. Mitra dibagi '+toBagiMitra.length+' pesanan. '+skip+' pesanan sudah dihitung sebelumnya.', true);
     }catch(e){ msg('Gagal perbaiki: '+e.message); }
-    btn.disabled=false; btn.textContent='🔧 Perbaiki Saldo Admin - V18 BARU - + Selesaikan Titipan Kurir + Potong Kurir + Bagi Mitra';
+    btn.disabled=false; btn.textContent='🔧 Perbaiki Saldo Admin - V19 BARU - + Selesaikan Titipan Kurir + Potong Kurir + Bagi Mitra';
   };
 document.addEventListener('click',async e=>{
  const b=e.target.closest('[data-action]');if(!b)return;
