@@ -25,7 +25,14 @@
 </style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#00a85a">
+<meta name="theme-color" content="#101a16">
+<script>
+  // Terapkan tema sebelum halaman dirender: default mode gelap.
+  try {
+    const savedTheme = localStorage.getItem("tsa_dark_mode");
+    if (savedTheme === null || savedTheme === "1") document.documentElement.classList.add("dark-mode-pending");
+  } catch (e) { document.documentElement.classList.add("dark-mode-pending"); }
+</script>
 <title>Toko Siap Antar - Produk Spreadsheet Mitra</title>
 <style>
 :root{--green:#00a85a;--cyan:#00c8d7;--yellow:#ffd400;--ink:#18312b;--muted:#66756f;--paper:#fffef0;--card:#fff;--line:#dceee5}
@@ -139,6 +146,8 @@ header::before{top:0}header::after{bottom:0}
 .menu-item .menu-icon{width:28px;text-align:center;font-size:20px}
 @media(prefers-reduced-motion:reduce){.menu-drawer{transition:none}}
 /* Mode gelap: diaktifkan dari tombol pada header. */
+html.dark-mode-pending body{--ink:#e7f2ec;--muted:#aabbb2;--paper:#101a16;--card:#1b2923;--line:#34483e;background:#101a16;color:var(--ink)}
+html.dark-mode-pending body header{background:#17251e;box-shadow:0 2px 8px #0006}
 body.dark-mode{--ink:#e7f2ec;--muted:#aabbb2;--paper:#101a16;--card:#1b2923;--line:#34483e;background:#101a16;color:var(--ink)}
 body.dark-mode header{background:#17251e;box-shadow:0 2px 8px #0006}
 body.dark-mode .brand{color:#edf8f1}
@@ -509,13 +518,14 @@ document.getElementById('profileBtn').onclick=()=>{location.href='profil.html';}
 const themeToggle = document.getElementById('themeToggle');
 function applyTheme(isDark){
   document.body.classList.toggle('dark-mode', isDark);
+  document.documentElement.classList.remove('dark-mode-pending');
   themeToggle.textContent = isDark ? '☀️' : '🌙';
   themeToggle.setAttribute('aria-label', isDark ? 'Aktifkan mode terang' : 'Aktifkan mode gelap');
   themeToggle.title = isDark ? 'Mode terang' : 'Mode gelap';
   try { localStorage.setItem('tsa_dark_mode', isDark ? '1' : '0'); } catch(e) {}
 }
-let savedDarkMode = false;
-try { savedDarkMode = localStorage.getItem('tsa_dark_mode') === '1'; } catch(e) {}
+let savedDarkMode = true;
+try { const savedTheme = localStorage.getItem('tsa_dark_mode'); savedDarkMode = savedTheme === null ? true : savedTheme === '1'; } catch(e) {}
 applyTheme(savedDarkMode);
 themeToggle.onclick = () => applyTheme(!document.body.classList.contains('dark-mode'));
 
@@ -776,10 +786,7 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
   document.addEventListener('keydown',function(e){if(e.key==='Escape')closeMenu();});
   // Header
   document.getElementById('refresh')?.addEventListener('click',function(){location.reload();});
-  var themeBtn=document.getElementById('themeToggle');
-  function applyTheme(dark){document.body.classList.toggle('dark-mode',dark);if(themeBtn){themeBtn.textContent=dark?'☀️':'🌙';}try{localStorage.setItem('tsa_dark_mode',dark?'1':'0');}catch(e){}}
-  try{applyTheme(localStorage.getItem('tsa_dark_mode')==='1');}catch(e){}
-  themeBtn?.addEventListener('click',function(){applyTheme(!document.body.classList.contains('dark-mode'));});
+  // Tema dikelola satu kali oleh script utama agar tombol tidak terpasang ganda.
   // Navigasi bawah
   document.getElementById('homeBtn')?.addEventListener('click',function(){location.href='index.html';});
   document.getElementById('historyBtn')?.addEventListener('click',function(){location.href='riwayat-pelanggan.html';});
