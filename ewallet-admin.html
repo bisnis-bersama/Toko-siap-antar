@@ -45,7 +45,7 @@
 </style>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>V19 BARU - E-Wallet Admin - Rapi Clean | Toko Siap Antar</title>
+<title>V22 BARU - E-Wallet Admin - Rapi Clean | Toko Siap Antar</title>
 <style>
 @font-face{font-family:"Optimistic";font-style:normal;font-weight:400 600;font-display:swap;src:url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2")}
 @font-face{font-family:"Optimistic Mono";font-style:normal;font-weight:400;font-display:swap;src:url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2")}
@@ -83,19 +83,19 @@ main{max-width:820px;margin:-10px auto 0;padding:0 10px 80px;position:relative;z
 <img src="logo2.png" alt="Logo" onerror="this.src='logo3.png'">
 <div style="min-width:0"><div class="brand">TOKO SIAP ANTAR</div><div class="greet" id="welcomeTop">Halo, Kak, <b>Admin</b></div><div class="sub">Admin Panel - E-Wallet</div></div>
 </div><button id="logoutBtn" class="logout">Login</button></div></header>
-<div id="tandaFileBaru" style="max-width:820px;margin:10px auto 0;padding:10px 12px;background:#ffcc00;color:#111;border:2px solid #111;border-radius:12px;font-weight:900;text-align:center;font-size:14px">✅ FILE BARU V19 - 5% BUKAN MODAL - 11 NOV - FIX PERBAIKI + BACA TRACKING - Kalau banner ini tidak ada, berarti file lama yang kebuka</div>
+<div id="tandaFileBaru" style="max-width:820px;margin:10px auto 0;padding:10px 12px;background:#ffcc00;color:#111;border:2px solid #111;border-radius:12px;font-weight:900;text-align:center;font-size:14px">✅ FILE BARU V21 - 95% MITRA / 95% KURIR / 5% ADMIN - FIX SINGLE SOURCE - Kalau banner ini tidak ada, berarti file lama yang kebuka</div>
 <main><section id="dashboard">
 <div class="panel">
 <div class="wallet-label">Saldo Admin (Hanya 5% - Laba Admin)</div><div class="balance" id="balance">Memuat saldo...</div><div style="font-size:11px;color:#666;margin-top:-6px">Admin hanya terima 5% dari mitra & kurir. Modal penjualan punya mitra, ongkir punya kurir. Bukan uang admin.</div>
 <div class="wallet-row">
 <div class="wallet-stat"><div class="label">Total 5% Terkumpul (Laba Admin)</div><div class="value" id="income">Memuat...</div></div>
 <div class="wallet-stat"><div class="label">Total Dicairkan</div><div class="value" id="withdrawn">Memuat...</div></div>
-<div class="wallet-stat" style="background:#fff8d8;border-color:#f4df80"><div class="label">Modal Mitra (Bukan Uang Admin)</div><div class="value" id="modalMitra">Memuat...</div><small style="font-size:10px;color:#666">Diteruskan ke mitra, bukan laba admin</small></div>
-<div class="wallet-stat" style="background:#eef6ff;border-color:#c8dcff"><div class="label">Ongkir Kurir (Bukan Uang Admin)</div><div class="value" id="ongkirKurir">Memuat...</div><small style="font-size:10px;color:#666">Diteruskan ke kurir, bukan laba admin</small></div>
+<div class="wallet-stat" style="background:#fff8d8;border-color:#f4df80"><div class="label">Mitra Dapat (95% Produk - Bukan Uang Admin)</div><div class="value" id="modalMitra">Memuat...</div><small style="font-size:10px;color:#666">Diteruskan ke mitra, bukan laba admin</small></div>
+<div class="wallet-stat" style="background:#eef6ff;border-color:#c8dcff"><div class="label">Kurir Dapat (95% Ongkir - Bukan Uang Admin)</div><div class="value" id="ongkirKurir">Memuat...</div><small style="font-size:10px;color:#666">Diteruskan ke kurir, bukan laba admin</small></div>
 </div>
-<div style="margin-top:10px;background:#f7f8f8;border:1px solid #eee;border-radius:10px;padding:10px;font-size:12px;line-height:1.5"><b>Rincian 1 Pesanan Contoh:</b> Total Rp 100.000 = Modal Mitra Rp 80.000 + Ongkir Kurir Rp 15.000 + Laba Admin 5% Rp 5.000. Yang masuk saldo admin cuma <b>Rp 5.000</b>, bukan Rp 100.000.</div><div id="actionMsg"></div>
-<button id="fixAdminSaldoBtn" class="btn btn-yellow" style="width:100%;margin-top:8px;padding:10px;font-weight:800">🔧 Perbaiki Saldo Admin - V19 BARU - + Selesaikan Titipan Kurir</button>
-<div id="fixAdminSaldoInfo" style="font-size:11px;color:#666;margin-top:6px">Perbaiki hanya untuk pesanan SUDAH SELESAI (sudah disetujui). Yang masih menunggu verifikasi resi, pakai tombol Setujui di atas. Tombol ini HANYA menjumlah 5% (laba admin) dari semua pesanan status selesai yang belum dihitung ke admin, lalu masukkan ke admin_saldo/total. Kalau sudah pernah diperbaiki, tidak akan double.</div>
+<div style="margin-top:10px;background:#f7f8f8;border:1px solid #eee;border-radius:10px;padding:10px;font-size:12px;line-height:1.5"><b>Rincian 1 Pesanan Contoh (aturan baru):</b> Total Rp 110.000 = Produk Rp 100.000 + Ongkir Rp 10.000. Mitra dapat Rp 95.000 (95% produk), Kurir dapat Rp 9.500 (95% ongkir), Admin dapat Rp 5.500 (5% produk 5.000 + 5% ongkir 500). Yang masuk saldo admin cuma <b>Rp 5.500</b>, bukan Rp 110.000. Kalau mitra proses sendiri, mitra dapat Rp 104.500 (95.000 + 9.500), admin tetap Rp 5.500.</div><div id="actionMsg"></div>
+<button id="fixAdminSaldoBtn" class="btn btn-yellow" style="width:100%;margin-top:8px;padding:10px;font-weight:800">🔧 Perbaiki Saldo Admin - V21 BARU - + Selesaikan Titipan Kurir</button>
+<div id="fixAdminSaldoInfo" style="font-size:11px;color:#666;margin-top:6px">Perbaiki hanya untuk pesanan SUDAH SELESAI (sudah disetujui). Pembagian baca dari collection orders (mitraDapat / kurirDapat / adminFee dari checkout), bukan hitung ulang di sini. Yang masih menunggu verifikasi resi, pakai tombol Setujui di atas. Tombol ini HANYA menjumlah 5% (laba admin) dari semua pesanan status selesai yang belum dihitung ke admin, lalu masukkan ke admin_saldo/total. Kalau sudah pernah diperbaiki, tidak akan double.</div>
 </div>
 
 <div class="panel panel-toggle" id="panel-verifikasi"><h2 style="margin:0 0 6px;font-size:14px;font-weight:800">🧾 Verifikasi Resi Mitra</h2><div style="font-size:11px;color:#666;margin-bottom:10px">Mitra kirim resi -> admin cek resi di sini -> klik Setujui & Bagi Saldo, baru saldo mitra + admin 5% dibagi. Jangan pakai Perbaiki untuk yang belum disetujui.</div><div id="verifikasiResiQueue" class="list">Memuat data...</div></div>
@@ -129,7 +129,7 @@ let user=null;
 const money=n=>'Rp '+Number(n||0).toLocaleString('id-ID');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function msg(s,ok=false){const el=$('actionMsg');if(!el)return;el.className=ok?'ok':'err';el.textContent=s;el.style.display='block'}
-await setPersistence(auth,browserLocalPersistence).catch(()=>{}); console.log('FILE BARU V19 - 5% BUKAN MODAL - EWALLET ADMIN - FIX PERBAIKI + TRACKING');
+await setPersistence(auth,browserLocalPersistence).catch(()=>{}); console.log('FILE BARU V23 - 95% MITRA / 95% KURIR / 5% ADMIN - EWALLET ADMIN - FIX toBagiKurir');
 
 /* Profil hanya untuk sapaan. Saldo admin tidak lagi diambil dari users/{uid}. */
 async function getProfileAny(u){
@@ -378,7 +378,7 @@ window.addEventListener('pageshow',()=>{if(user){loadAdminWallet();loadQueues()}
       let tambah=0, hitung=0, skip=0;
       const toMark=[];
       const toPotongKurir=[];
-      const toBagiMitra=[];
+      const toBagiMitra=[]; const toBagiKurir=[];
       qs.forEach(d=>{
         const o=d.data()||{};
         // V6: Potong kurir terpisah, jangan skip kalau admin sudah masuk tapi kurir belum dipotong
@@ -444,7 +444,7 @@ window.addEventListener('pageshow',()=>{if(user){loadAdminWallet();loadQueues()}
         if(adminCredit>0){ tambah+=adminCredit; hitung++; toMark.push(d.id); }
         else skip++;
       });
-      if(tambah===0 && toPotongKurir.length===0 && toBagiMitra.length===0 && toBagiKurir.length===0){ msg('Tidak ada pesanan selesai yang belum dihitung ke admin. Saldo sudah benar.', true); btn.disabled=false; btn.textContent='🔧 Perbaiki Saldo Admin - V19 BARU - + Selesaikan Titipan Kurir + Potong Kurir + Bagi Mitra'; return; }
+      if(tambah===0 && toPotongKurir.length===0 && toBagiMitra.length===0 && toBagiKurir.length===0){ msg('Tidak ada pesanan selesai yang belum dihitung ke admin. Saldo sudah benar.', true); btn.disabled=false; btn.textContent='🔧 Perbaiki Saldo Admin - V21 BARU - + Selesaikan Titipan Kurir + Potong Kurir + Bagi Mitra'; return; }
       await runTransaction(db, async tx=>{
         const ref=doc(db,'admin_saldo','total');
         const snap=await tx.get(ref);
@@ -512,7 +512,7 @@ window.addEventListener('pageshow',()=>{if(user){loadAdminWallet();loadQueues()}
       });
       msg('Perbaikan berhasil ✅ Admin +Rp '+tambah.toLocaleString('id-ID')+' dari '+hitung+' pesanan. Kurir dipotong '+toPotongKurir.length+' pesanan. Mitra dibagi '+toBagiMitra.length+' pesanan. Kurir dibagi '+toBagiKurir.length+' pesanan (transfer). '+skip+' pesanan sudah dihitung sebelumnya.', true);
     }catch(e){ msg('Gagal perbaiki: '+e.message); }
-    btn.disabled=false; btn.textContent='🔧 Perbaiki Saldo Admin - V19 BARU - + Selesaikan Titipan Kurir + Potong Kurir + Bagi Mitra';
+    btn.disabled=false; btn.textContent='🔧 Perbaiki Saldo Admin - V21 BARU - + Selesaikan Titipan Kurir + Potong Kurir + Bagi Mitra';
   };
 document.addEventListener('click',async e=>{
  const b=e.target.closest('[data-action]');if(!b)return;
