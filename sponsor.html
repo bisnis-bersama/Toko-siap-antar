@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sponsor & Promo - TOKO SIAP ANTAR</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:14px;background:#f6faf7;color:#173321;font-family:system-ui,Arial,sans-serif;max-width:560px;margin:auto}
+header{background:linear-gradient(135deg,#087c45,#00a85a);color:white;padding:22px;border-radius:18px;margin:8px 0 14px}
+header h1{font-size:23px;margin:0 0 7px}header p{margin:0;font-size:13px;line-height:1.5}
+.card{background:white;border:1px solid #dce9df;border-radius:16px;padding:15px;margin:12px 0;box-shadow:0 2px 8px #0000000a}
+h2{font-size:17px;margin:0 0 12px}label{display:block;font-size:13px;font-weight:750;margin:12px 0 6px}
+input,select{width:100%;padding:12px;border:1px solid #cbded0;border-radius:11px;background:#fff;font:inherit;font-size:14px}
+.small{font-size:11px;color:#637469;line-height:1.5}.price{background:#e9f8ef;color:#087c45;border-radius:13px;padding:13px;font-weight:800}
+.item{border:1px solid #e0e9e2;border-radius:13px;padding:12px;margin:10px 0}
+.itemtop{display:flex;align-items:center;justify-content:space-between;font-weight:800}
+.preview{margin-top:8px;min-height:80px;border:1px dashed #bdcfc1;border-radius:10px;display:grid;place-items:center;overflow:hidden;color:#718076;font-size:12px}
+.preview img{max-width:100%;max-height:170px;object-fit:contain}
+.btn{width:100%;padding:14px;border:0;border-radius:12px;background:#078b4c;color:white;font-size:15px;font-weight:850;margin-top:12px;cursor:pointer}
+.btn.secondary{background:#e8f5ec;color:#087c45;border:1px solid #b8dec5}.btn:disabled{opacity:.55}
+.remove{border:0;background:#fff0ed;color:#b42318;border-radius:8px;padding:7px 9px;font-weight:700}
+.total{display:flex;justify-content:space-between;align-items:center;font-weight:850;font-size:17px}.total strong{font-size:23px;color:#078b4c}
+.notice{padding:11px;border-radius:10px;background:#fff8df;border:1px solid #f2dfa0;font-size:12px;line-height:1.5}
+#qris{width:100%;max-height:300px;object-fit:contain;border:1px solid #eee;border-radius:12px}
+.msg{padding:12px;border-radius:10px;margin:10px 0;font-size:13px}.ok{background:#e8f8ee;color:#087c45}.err{background:#fff0ed;color:#b42318}
+</style>
+</head>
+<body>
+<header><h1>📢 SPONSOR & PROMO</h1><p>Promosikan usaha dan produk Anda di TOKO SIAP ANTAR. Pilih gambar dan durasi tayang sesuai kebutuhan.</p></header>
+<div id="message"></div>
+<section class="card">
+<h2>👤 Data Pengiklan</h2>
+<label>Nama usaha / pengiklan *</label><input id="advertiser" placeholder="Contoh: Toko Berkah">
+<label>Nomor WhatsApp *</label><input id="phone" type="tel" placeholder="08xxxxxxxxxx">
+<label>Link tujuan iklan (opsional)</label><input id="targetUrl" type="url" placeholder="https://...">
+<div class="small">Jika diisi, gambar sponsor dapat diarahkan ke tautan tersebut.</div>
+</section>
+<section class="card">
+<h2>🖼️ Gambar Sponsor</h2>
+<div class="price">Rp1.000 / gambar / hari · Maksimal 10 gambar</div>
+<div id="items"></div>
+<button class="btn secondary" id="addImage" type="button">＋ Tambah gambar</button>
+<div class="small">Gunakan gambar promosi milik sendiri. Format gambar JPG, PNG, atau WEBP. Gambar akan dikompres sebelum dikirim.</div>
+</section>
+<section class="card">
+<h2>🧾 Ringkasan Tagihan</h2>
+<div id="summary"></div>
+<div class="total"><span>Total tagihan</span><strong id="grandTotal">Rp0</strong></div>
+</section>
+<section class="card">
+<h2>💳 Pembayaran</h2>
+<label>Metode pembayaran *</label>
+<select id="paymentMethod"><option value="">Pilih metode</option><option value="Transfer Bank">Transfer Bank</option><option value="QRIS">QRIS</option></select>
+<div id="transferInfo" class="notice" style="display:none;margin-top:10px">
+<strong>Transfer Bank</strong><br>Nomor rekening dan nama pemilik rekening akan diinformasikan admin. Hubungi admin untuk mendapatkan detail transfer.
+</div>
+<div id="qrisInfo" style="display:none;margin-top:10px">
+<strong>Scan QRIS TOKO SIAP ANTAR</strong><p class="small">Pastikan nama merchant sesuai sebelum membayar.</p>
+<img id="qris" src="qris.jpg" alt="QRIS pembayaran" onerror="this.style.display='none';document.getElementById('qrisMissing').style.display='block'">
+<div id="qrisMissing" class="notice" style="display:none">File qris.jpg tidak ditemukan. Letakkan file QRIS di folder yang sama dengan halaman ini.</div>
+</div>
+<label>Upload bukti pembayaran *</label><input id="proof" type="file" accept="image/*">
+<div class="preview" id="proofPreview">Belum ada bukti pembayaran</div>
+<div class="notice" style="margin-top:12px">Iklan belum tayang setelah formulir dikirim. Admin akan memeriksa pembayaran dan menyetujui materi iklan terlebih dahulu.</div>
+<button class="btn" id="submit">Kirim Pesanan Sponsor</button>
+</section>
+<p class="small" style="text-align:center">TOKO SIAP ANTAR · Layanan Sponsor</p>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+import {getFirestore,doc,getDoc} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+const firebaseConfig={apiKey:"AIzaSyBxqZhl6t3RwrXMwVdJeIkg0NzGfwvlweM",authDomain:"toko-siap-antar-9a7bb.firebaseapp.com",projectId:"toko-siap-antar-9a7bb",storageBucket:"toko-siap-antar-9a7bb.firebasestorage.app",messagingSenderId:"351335838712",appId:"1:351335838712:web:14cc2c7b91bb0c9e1b5c0d"};
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+const SCRIPT_URL="https://script.google.com/macros/s/AKfycbxtjGln5huyGFVGz7muW4SQGOsAOroDLj0seCnd41pOXFF39Iee0EmjA09KljV4Ahk/exec";
+const RATE=1000,MAX=10;
+let uid="",accountName="",rows=[],proofBase64="";
+const $=id=>document.getElementById(id);
+const rupiah=n=>"Rp"+Number(n||0).toLocaleString("id-ID");
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+async function compress(file,maxBytes=45000){
+ return new Promise((resolve,reject)=>{
+  const img=new Image(),url=URL.createObjectURL(file);
+  img.onload=()=>{
+   let w=img.width,h=img.height,scale=Math.min(1,1000/Math.max(w,h));w=Math.round(w*scale);h=Math.round(h*scale);
+   const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);
+   let q=.72,data=c.toDataURL("image/jpeg",q),tries=0;
+   while(data.length>maxBytes*1.38&&tries++<10){q-=.06;if(q<.18)break;data=c.toDataURL("image/jpeg",q);}
+   URL.revokeObjectURL(url);resolve(data.split(",")[1]);
+  };img.onerror=()=>{URL.revokeObjectURL(url);reject(Error("Gagal membaca gambar"));};img.src=url;
+ });
+}
+function updateTotal(){
+ const total=rows.reduce((s,r)=>s+Number(r.days)*RATE,0);
+ $("summary").innerHTML=rows.length?rows.map((r,i)=>`<div class="small" style="display:flex;justify-content:space-between;margin:7px 0"><span>Gambar ${i+1} · ${r.days} hari</span><b>${rupiah(Number(r.days)*RATE)}</b></div>`).join(""):`<div class="small">Belum ada gambar yang dipilih.</div>`;
+ $("grandTotal").textContent=rupiah(total);
+}
+function render(){
+ $("items").innerHTML=rows.map((r,i)=>`<div class="item" data-index="${i}">
+ <div class="itemtop"><span>Gambar ${i+1}</span><button class="remove" type="button" data-remove="${i}">Hapus</button></div>
+ <label>Upload gambar *</label><input type="file" accept="image/*" data-file="${i}">
+ <div class="preview" id="preview${i}">${r.preview?`<img src="${r.preview}">`:"Pilih gambar promosi"}</div>
+ <label>Durasi tayang</label><select data-days="${i}">${[1,3,7,15,30].map(d=>`<option value="${d}" ${Number(r.days)===d?"selected":""}>${d} hari · ${rupiah(d*RATE)}</option>`).join("")}</select>
+ </div>`).join("");
+ $("items").querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>{rows.splice(Number(b.dataset.remove),1);render();});
+ $("items").querySelectorAll("[data-days]").forEach(s=>s.onchange=()=>{rows[Number(s.dataset.days)].days=s.value;updateTotal();});
+ $("items").querySelectorAll("[data-file]").forEach(f=>f.onchange=async()=>{
+  const i=Number(f.dataset.file),file=f.files[0];if(!file)return;
+  if(!file.type.startsWith("image/")){alert("Pilih file gambar.");return;}
+  try{const b64=await compress(file);rows[i].image=b64;rows[i].preview=URL.createObjectURL(file);$("preview"+i).innerHTML=`<img src="${rows[i].preview}">`;}
+  catch(e){alert(e.message);}
+ });
+ updateTotal();
+}
+rows.push({days:"1"});render();
+$("addImage").onclick=()=>{if(rows.length>=MAX)return;rows.push({days:"1"});render();};
+$("paymentMethod").onchange=()=>{$("transferInfo").style.display=$("paymentMethod").value==="Transfer Bank"?"block":"none";$("qrisInfo").style.display=$("paymentMethod").value==="QRIS"?"block":"none";};
+$("proof").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{proofBase64=await compress(f,60000);$("proofPreview").innerHTML=`<img src="${URL.createObjectURL(f)}">`;}catch(err){alert(err.message);}};
+onAuthStateChanged(auth,async user=>{
+ if(!user){$("message").innerHTML='<div class="msg err">Silakan login terlebih dahulu sebelum memesan sponsor.</div>';return;}
+ uid=user.uid;accountName=user.displayName||user.email||"";
+ try{const s=await getDoc(doc(db,"users",uid));if(s.exists()){const d=s.data();accountName=d.nama||d.namaToko||d.namaUsaha||accountName;}}
+ catch(e){console.warn("Profil tidak terbaca",e);}
+ if(!$("advertiser").value)$("advertiser").value=accountName;
+});
+$("submit").onclick=async()=>{
+ const advertiser=$("advertiser").value.trim(),phone=$("phone").value.trim(),method=$("paymentMethod").value;
+ if(!uid){alert("Login terlebih dahulu.");return;}
+ if(!advertiser||!phone){alert("Nama usaha dan WhatsApp wajib diisi.");return;}
+ if(rows.some(r=>!r.image)){alert("Semua gambar harus diunggah.");return;}
+ if(!method){alert("Pilih metode pembayaran.");return;}
+ if(!proofBase64){alert("Upload bukti pembayaran.");return;}
+ const total=rows.reduce((s,r)=>s+Number(r.days)*RATE,0);
+ const btn=$("submit");btn.disabled=true;btn.textContent="Mengirim pesanan...";
+ const orderId="SP-"+Date.now();
+ const details=rows.map((r,i)=>({nomor:i+1,durasiHari:Number(r.days),tarifPerHari:RATE,tagihan:Number(r.days)*RATE,gambarBase64:r.image}));
+ const payload={action:"add_sponsor_order",orderId,timestamp:new Date().toISOString(),uid,namaPengiklan:advertiser,whatsapp:phone,targetUrl:$("targetUrl").value.trim(),jumlahGambar:rows.length,totalTagihan:total,metodePembayaran:method,buktiPembayaranBase64:proofBase64,statusPembayaran:"menunggu_verifikasi",statusIklan:"menunggu_persetujuan",detailSponsor:JSON.stringify(details)};
+ try{
+  await fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+  $("message").innerHTML=`<div class="msg ok">Permintaan ${esc(orderId)} telah dikirim. Karena endpoint menggunakan mode pengiriman tanpa respons, status penerimaan perlu dipastikan admin di Spreadsheet. Iklan belum aktif sampai pembayaran dan materi disetujui.</div>`;
+  window.scrollTo({top:0,behavior:"smooth"});
+ }catch(e){$("message").innerHTML=`<div class="msg err">Gagal mengirim: ${esc(e.message)}</div>`;}
+ btn.disabled=false;btn.textContent="Kirim Pesanan Sponsor";
+};
+</script>
+</body></html>
